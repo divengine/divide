@@ -14,6 +14,7 @@ from textual_vision.constants import Command, OptionFlag, WindowFlag
 from textual_vision.events import CommandMessage
 from textual_vision.frame import Frame
 from textual_vision.group import TVViewMixin
+from textual_vision.list_box import ListBox
 from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
@@ -82,12 +83,6 @@ class _TVWindow(Window):
 class EditorView(DivEditor, TVViewMixin):
     """The Div editor as a selectable Turbo Vision view."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.tv_options = OptionFlag.SELECTABLE
-
-
-class EditorWindow(_TVWindow):
     DEFAULT_CSS = """
     EditorView, EditorView:focus {
         border: none; padding: 0; width: 1fr; height: 1fr;
@@ -101,6 +96,13 @@ class EditorWindow(_TVWindow):
         scrollbar-corner-color: $secondary;
     }
     """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.tv_options = OptionFlag.SELECTABLE
+
+
+class EditorWindow(_TVWindow):
 
     def __init__(self, path: Path | None, text: str, *, roots: list[Path], untitled: int = 0, number: int = 0) -> None:
         self.path = path
@@ -186,3 +188,45 @@ class ProjectWindow(_TVWindow):
             message.stop()
             message.prevent_default()  # Window.close() would skip the unsaved-changes check
             self.app.close_window(self)  # type: ignore[attr-defined]
+
+
+class OutputWindow(_TVWindow):
+    """Rendered output of a template (read only; leftover Div tags stay highlighted)."""
+
+    def __init__(self, number: int = 0) -> None:
+        super().__init__("Output", number=number)
+        self.view = EditorView("", read_only=True)
+        self.template: Path | None = None
+        self.summary = ""
+
+    def compose_content(self) -> ComposeResult:
+        yield self.view
+
+    def show(self, template: Path, output: str, summary: str) -> None:
+        self.template = template
+        self.summary = summary
+        self.title = f"Output: {template.name}"
+        self.view.load_text(output)
+
+
+
+class MessageList(ListBox):
+    DEFAULT_CSS = """
+    MessageList { background: $panel; }
+    MessageList > .list-viewer--normal { color: $text; background: $panel; }
+    MessageList > .list-viewer--focused { color: $foreground; background: $background; }
+    """
+
+
+class MessagesWindow(_TVWindow):
+    """Turbo Pascal style message window (render warnings and errors)."""
+
+    def __init__(self, number: int = 0) -> None:
+        super().__init__("Messages", number=number)
+        self.list = MessageList([])
+
+    def compose_content(self) -> ComposeResult:
+        yield self.list
+
+    def show(self, lines: list[str]) -> None:
+        self.list.set_list(lines or ["(no messages)"])

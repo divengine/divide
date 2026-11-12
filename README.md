@@ -32,7 +32,27 @@ down; what is underneath stays readable in dark gray on black).
 | `Ctrl+F` / `Ctrl+R` | find / replace (case, whole words, regex with `\1` groups, direction, origin, prompt) |
 | `Ctrl+L` | search again (repeats the last find or replace) |
 | `Ctrl+G` | go to line number |
+| `Ctrl+F9` | Run > Render: template + data through PHP and Div (unsaved edits included) |
+| `Alt+F5` | show the Output window |
 | `Alt+X` / `Ctrl+Q` | exit |
+
+## Rendering
+
+Run > Render renders a template with its data: by Div's convention `page.tpl`
+takes `page.json` (Run > Data file picks another one, Run > Edit data opens
+or creates it). The editor buffers are used, saved or not, and the template's
+real path is passed so relative includes work. Output goes to an Output
+window; Div's warnings, PHP notices and data problems to a Messages window.
+While the Output window is open, saving the template or its data re-renders.
+
+It needs `php` and Div. divide looks for Div in `$DIVIDE_DIV_PHP`, then the
+path set in Options > Div engine (stored in `~/.config/divide/config.json`),
+then `vendor/autoload.php` (with `vendor/divengine/div`) above the template or
+the project. Data is decoded by Div's own `jsonDecode`, so the warnings match
+what the template sees.
+
+Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
+`src/div.php` with its `vendor/` installed); they are skipped otherwise.
 
 ## Layout
 
@@ -42,6 +62,7 @@ down; what is underneath stays readable in dark gray on black).
 - `src/divide/editor/` — `DivEditor` (Textual `TextArea` fed by the lexer instead of tree-sitter) and theme
 - `src/divide/ui/` — Turbo Vision pieces on [textual-vision](https://pypi.org/project/textual-vision/):
   editor / project windows, message boxes, file dialog
+- `src/divide/run/` — rendering: `bridge.php` (runs Div, replies JSON) and `render.py`
 - `src/divide/app.py` — the application: menus, status line, commands, window management
 - `docs/div-language.md` — notes on Div as understood by the editor
 

@@ -36,7 +36,9 @@ from divide.ui.dialogs import (
     replace_prompt,
 )
 from divide.ui.shadow import ShadowScreen
-from divide.ui.windows import EditorWindow, ProjectTree, ProjectWindow
+from divide import config
+from divide.run.render import RenderError, default_data_file, find_engine, render
+from divide.ui.windows import EditorWindow, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
 PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
 DEFAULT_PALETTE = "turbo-pascal"
@@ -50,6 +52,11 @@ CM_FIND = Command.USER + 5
 CM_REPLACE = Command.USER + 6
 CM_SEARCH_AGAIN = Command.USER + 7
 CM_GOTO_LINE = Command.USER + 8
+CM_RENDER = Command.USER + 9
+CM_OUTPUT = Command.USER + 10
+CM_DATA_FILE = Command.USER + 11
+CM_EDIT_DATA = Command.USER + 12
+CM_DIV_ENGINE = Command.USER + 13
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -58,6 +65,8 @@ COMMANDS: dict[str, int] = {
     "REPLACE": CM_REPLACE,
     "SEARCH_AGAIN": CM_SEARCH_AGAIN,
     "GOTO_LINE": CM_GOTO_LINE,
+    "RENDER": CM_RENDER,
+    "OUTPUT": CM_OUTPUT,
 }
 
 
@@ -104,6 +113,8 @@ class Divide(Application):
         Binding("ctrl+r", "command('REPLACE')", "Replace", show=False),
         Binding("ctrl+l", "command('SEARCH_AGAIN')", "Search again", show=False),
         Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
+        Binding("ctrl+f9", "command('RENDER')", "Render", show=False, priority=True),
+        Binding("alt+f5", "command('OUTPUT')", "Output", show=False, priority=True),
         Binding("alt+x,ctrl+q", "command('QUIT')", "Exit", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
@@ -116,6 +127,8 @@ class Divide(Application):
         self.search_replacement = ""
         self.search_options = SearchOptions()
         self.last_search: str | None = None  # "find" | "replace"
+        self.data_files: dict[Path, Path] = {}  # template -> data file chosen in Run > Data file
+        self.last_template: Path | None = None
 
     # --------------------------------------------------------------- shell
     def get_default_screen(self) -> ShadowScreen:
@@ -155,6 +168,14 @@ class Divide(Application):
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
                 ),
                 SubMenu(
+                    "~R~un",
+                    MenuItem("~R~ender", CM_RENDER, "Ctrl+F9"),
+                    MenuItem("~O~utput", CM_OUTPUT, "Alt+F5"),
+                    Separator(),
+                    MenuItem("~D~ata file...", CM_DATA_FILE),
+                    MenuItem("~E~dit data", CM_EDIT_DATA),
+                ),
+                SubMenu(
                     "~W~indow",
                     MenuItem("~P~roject", CM_PROJECT, "Ctrl+B"),
                     Separator(),
@@ -168,7 +189,7 @@ class Divide(Application):
                     MenuItem("Close a~l~l", Command.CLOSE_ALL),
                 ),
                 # Flat: textual-vision 0.0.1 does not move keyboard focus into nested sub-menus.
-                SubMenu("~O~ptions", *palette_items),
+                SubMenu("~O~ptions", *palette_items, Separator(), MenuItem("~D~iv engine...", CM_DIV_ENGINE)),
                 SubMenu("~H~elp", MenuItem("~A~bout...", CM_ABOUT)),
             ]
         )
@@ -308,6 +329,7 @@ class Divide(Application):
         win.refresh_indicator()
         self.update_status()
         self.notify(f"Saved {win.path.name}", timeout=1.5)
+        self._rerender_after_save(win.path)
         return True
 
     async def save(self, win: EditorWindow, *, ask_name: bool = False) -> bool:
@@ -437,6 +459,20 @@ class Divide(Application):
                     await self.search_dialog(editor, replace=False)
                 else:
                     await self.search(editor, first=False)
+            case _ if command == CM_RENDER:
+                await self.render_template()
+            case _ if command == CM_OUTPUT:
+                output = self.output_window()
+                if output is not None:
+                    self.raise_window(output)
+                else:
+                    await self.render_template()
+            case _ if command == CM_DATA_FILE:
+                await self.choose_data_file()
+            case _ if command == CM_EDIT_DATA:
+                self.edit_data()
+            case _ if command == CM_DIV_ENGINE:
+                await self.choose_engine()
             case _ if command == CM_GOTO_LINE and editor:
                 ed = editor.editor
                 dialog = GotoLineDialog(ed.cursor_location[0] + 1)
@@ -550,6 +586,166 @@ class Divide(Application):
                 break
         return count, found
 
+    # ---------------------------------------------------------------- run
+    def output_window(self) -> OutputWindow | None:
+        return next((w for w in self.windows() if isinstance(w, OutputWindow)), None)
+
+    def messages_window(self) -> MessagesWindow | None:
+        return next((w for w in self.windows() if isinstance(w, MessagesWindow)), None)
+
+    def window_for(self, path: Path) -> EditorWindow | None:
+        return next((w for w in self.editor_windows() if w.path == path), None)
+
+    def data_file_for(self, template: Path) -> Path:
+        return self.data_files.get(template) or default_data_file(template)
+
+    def template_for_data(self, data: Path) -> Path | None:
+        for template, chosen in self.data_files.items():
+            if chosen == data:
+                return template
+        sibling = data.with_suffix(".tpl")
+        return sibling if sibling.exists() or self.window_for(sibling) else None
+
+    def render_target(self) -> Path | None:
+        """The template to render: the active one, the one whose data is active, or the last one."""
+        win = self.active_editor()
+        if win is not None and win.path is not None:
+            if win.editor.div_enabled:
+                return win.path
+            if win.path.suffix == ".json" and (template := self.template_for_data(win.path)):
+                return template
+        return self.last_template
+
+    def _text_of(self, path: Path) -> str | None:
+        """Editor buffer when the file is open (unsaved changes count), else the file."""
+        if (win := self.window_for(path)) is not None:
+            return win.editor.text
+        try:
+            return path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return None
+
+    def _render_layout(self, template: Path, output: OutputWindow, messages: MessagesWindow | None) -> None:
+        """First render: template on the left, output on the right, messages below."""
+        desktop = self.desktop
+        if desktop is None:
+            return
+        project = self.project_window()
+        left = ProjectWindow.WIDTH if project is not None and not project.zoomed else 0
+        width, height = (desktop.size.width or 80) - left, desktop.size.height or 24
+        top_height = height - 8 if messages is not None else height
+        half = width // 2
+        source = self.window_for(template)
+        if source is not None:
+            source.styles.offset = (left, 0)
+            source.styles.width, source.styles.height = half, top_height
+        output.styles.offset = (left + half, 0)
+        output.styles.width, output.styles.height = width - half, top_height
+        if messages is not None:
+            messages.styles.offset = (left, top_height)
+            messages.styles.width, messages.styles.height = width, 8
+
+    async def render_template(self, *, keep_focus: bool = False) -> None:
+        """Render the target template. ``keep_focus`` (re-render after a save) leaves the active window on top."""
+        previous = self.active_window()
+        template = self.render_target()
+        if template is None:
+            await self.run_dialog(information("Render", "Open a Div template (.tpl) to render it."))
+            return
+        engine = find_engine([template.parent, self.root], config.load().get("div_engine"))
+        if engine is None:
+            await self.run_dialog(
+                information(
+                    "Render",
+                    "Div was not found.\n\nInstall it in the project (composer require divengine/div) "
+                    "or set its path in Options > Div engine.",
+                )
+            )
+            return
+        code = self._text_of(template)
+        if code is None:
+            await self.run_dialog(information("Render", f"Cannot read {template.name}."))
+            return
+        data_path = self.data_file_for(template)
+        data = self._text_of(data_path) if data_path.exists() or self.window_for(data_path) else None
+        try:
+            result = await render(engine, template, code, data, cwd=self.root)
+        except RenderError as exc:
+            await self.run_dialog(information("Render", str(exc)))
+            return
+        self.last_template = template
+        data_note = data_path.name if data is not None else "no data"
+        summary = f"{template.name} + {data_note} · Div {result.version or '?'} · {result.seconds:.2f}s"
+        output = self.output_window()
+        first = output is None
+        if output is None:
+            output = OutputWindow(number=self._free_number())
+            self.insert_window(output)
+        output.show(template, result.output, summary)
+        messages = self.messages_window()
+        serious = result.serious
+        if serious or (messages is not None):
+            order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3}
+            ranked = sorted(result.messages, key=lambda m: order.get(m.level, 9))
+            lines = [f"{m.level}: {m.text}" for m in ranked] or ["Rendered without messages."]
+            if messages is None:
+                messages = MessagesWindow(number=self._free_number())
+                self.insert_window(messages)
+            messages.show(lines)
+        if first:
+            self._render_layout(template, output, messages if serious else None)
+        if keep_focus and previous is not None and previous.is_attached:
+            self.raise_window(previous)
+        else:
+            self.raise_window(output)
+            if serious and messages is not None:
+                self.raise_window(messages)
+        self.notify(("Render failed: " if result.fatal else "Rendered ") + summary, timeout=3,
+                    severity="error" if result.fatal else "information")
+        self.update_status()
+
+    def _rerender_after_save(self, path: Path) -> None:
+        template = self.last_template
+        if self.output_window() is None or template is None:
+            return
+        if path == template or path == self.data_file_for(template):
+            self.rerender()
+
+    @work(group="render")
+    async def rerender(self) -> None:
+        await self.render_template(keep_focus=True)
+
+    async def choose_data_file(self) -> None:
+        template = self.render_target()
+        if template is None:
+            await self.run_dialog(information("Data file", "Open a Div template first."))
+            return
+        current = self.data_file_for(template)
+        dialog = FileDialog(f"Data for {template.name}", current.parent, name=current.name, pattern="*.json", ok_label="~O~K")
+        if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
+            self.data_files[template] = dialog.chosen
+            self.notify(f"{template.name} renders with {dialog.chosen.name}", timeout=2)
+
+    def edit_data(self) -> None:
+        """Open the template's data file (a new one if it does not exist yet)."""
+        template = self.render_target()
+        if template is None:
+            self.notify("Open a Div template first", severity="warning")
+            return
+        win = self.open_file(self.data_file_for(template))
+        if win is not None and not win.path.exists() and not win.editor.text:
+            win.editor.load_text("{\n    \n}\n")
+            win.saved_text = ""
+            win.editor.move_cursor((1, 4))
+
+    async def choose_engine(self) -> None:
+        current = find_engine([self.root], config.load().get("div_engine"))
+        start = current.parent if current else self.root
+        dialog = FileDialog("Div engine (autoload.php or div.php)", start, name=current.name if current else "", pattern="*.php", ok_label="~O~K")
+        if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
+            config.set_value("div_engine", str(dialog.chosen))
+            self.notify(f"Div engine: {dialog.chosen}", timeout=3)
+
     def _cycle(self, *, forward: bool) -> None:
         """F6 brings the bottom window up; Shift+F6 sends the top one down."""
         desktop = self.desktop
@@ -587,6 +783,10 @@ class Divide(Application):
     def update_status(self) -> None:
         status = self.status_line
         if not isinstance(status, HintStatusLine):
+            return
+        active = self.active_window()
+        if isinstance(active, OutputWindow):
+            status.set_hint(active.summary)
             return
         win = self.active_editor()
         if win is None:
