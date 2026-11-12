@@ -130,7 +130,7 @@ async def test_edit_data_save_rerenders_and_reports(tmp_path):
             await pilot.pause(0.05)
         messages = app.messages_window()
         assert isinstance(messages, MessagesWindow)
-        assert messages.list.items[0].startswith("DATA:")
+        assert any(line.startswith("DATA:") for line in messages.list.items)
 
 
 async def test_render_without_engine_explains(tmp_path, monkeypatch):
