@@ -8,16 +8,21 @@ from pathlib import Path
 from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal
+from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Static
 from textual_vision.button import Button
+from textual_vision.cluster import CheckBoxes, RadioButtons
 from textual_vision.constants import Command
 from textual_vision.dialogs import Dialog
 from textual_vision.frame import Frame
 from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 from textual_vision.list_box import ListBox
+
+from divide.editor.search import SearchOptions
+
+CM_CHANGE_ALL = Command.USER + 100
 
 
 # Textual runs the handler of every class in the MRO unless prevent_default()
@@ -68,6 +73,15 @@ class _Dialog(Dialog):
         yield Frame(title=self._title, flags=self._window_flags, active=True)
         with Container(classes="tv-window-content"):
             yield from self.compose_content()
+
+    def on_key(self, event: events.Key) -> None:
+        # Enter in an input line presses the default button, as in Turbo Vision.
+        if event.key == "enter" and isinstance(self.current, InputLine):
+            default = next((b for b in self.query(Button) if b.is_default), None)
+            if default is not None:
+                event.stop()
+                event.prevent_default()
+                default.press()
 
 
 class MessageBox(_Dialog):
@@ -250,3 +264,133 @@ class FileDialog(_Dialog):
             event.stop()
             event.prevent_default()
             self.accept(self.input.data)
+
+
+class SearchDialog(_Dialog):
+    """Find (``replace=False``) or Replace dialog, laid out like Turbo Pascal's.
+
+    After OK / Change all: ``search_text``, ``replacement`` and ``options`` hold the input.
+    """
+
+    DEFAULT_CSS = """
+    SearchDialog { width: 62; }
+    SearchDialog InputLine { width: 1fr; margin-bottom: 1; }
+    SearchDialog .sd-row { height: auto; }
+    SearchDialog .sd-col { width: 1fr; height: auto; }
+    SearchDialog Cluster { margin-bottom: 1; width: 1fr; }
+    """
+
+    def __init__(self, *, replace: bool, query: str, replacement: str, options: SearchOptions) -> None:
+        super().__init__(title="Replace" if replace else "Find")
+        self.replace = replace
+        self.styles.height = 19 if replace else 16
+        self.query_input = InputLine(max_len=1024)
+        self.query_input.data = query
+        self.replace_input = InputLine(max_len=1024)
+        self.replace_input.data = replacement
+        flags = ["~C~ase sensitive", "~W~hole words only", "~R~egular expression"]
+        if replace:
+            flags.append("~P~rompt on replace")
+        self.flags = CheckBoxes(flags)
+        self.flags.value = (
+            int(options.case_sensitive) | int(options.whole_words) << 1 | int(options.regex) << 2 | int(options.prompt) << 3
+        ) & ((1 << len(flags)) - 1)
+        self.direction = RadioButtons(["Forwar~d~", "~B~ackward"])
+        self.direction.value = 2 if options.backward else 1
+        self.origin = RadioButtons(["~F~rom cursor", "~E~ntire scope"])
+        self.origin.value = 2 if options.entire_scope else 1
+        self.search_text = query
+        self.replacement = replacement
+        self.options = options
+
+    def compose_content(self) -> ComposeResult:
+        yield Label("~T~ext to find", link=self.query_input)
+        yield self.query_input
+        if self.replace:
+            yield Label("~N~ew text", link=self.replace_input)
+            yield self.replace_input
+        with Horizontal(classes="sd-row"):
+            with Vertical(classes="sd-col"):
+                yield Label("Options", link=self.flags)
+                yield self.flags
+            with Vertical(classes="sd-col"):
+                yield Label("Direction", link=self.direction)
+                yield self.direction
+                yield Label("Origin", link=self.origin)
+                yield self.origin
+        with Horizontal(classes="dlg-buttons"):
+            yield Button("O~K~", Command.OK, is_default=True, id="ok")
+            if self.replace:
+                yield Button("Change ~a~ll", CM_CHANGE_ALL, id="all")
+            yield Button("Cancel", Command.CANCEL, id="cancel")
+
+    def on_mount(self) -> None:
+        self.call_after_refresh(self.query_input.select_all)
+
+    def _collect(self) -> None:
+        bits = self.flags.value
+        self.search_text = self.query_input.data
+        self.replacement = self.replace_input.data
+        self.options = SearchOptions(
+            case_sensitive=bool(bits & 1),
+            whole_words=bool(bits & 2),
+            regex=bool(bits & 4),
+            prompt=bool(bits & 8) if self.replace else self.options.prompt,
+            backward=self.direction.value == 2,
+            entire_scope=self.origin.value == 2,
+        )
+
+    def on_command_message(self, message) -> None:
+        if message.command == Command.OK:
+            self._collect()  # Dialog's own handler then ends the modal
+        elif message.command == CM_CHANGE_ALL:
+            message.stop()
+            message.prevent_default()
+            self._collect()
+            self.end_modal(CM_CHANGE_ALL)
+
+
+def replace_prompt() -> MessageBox:
+    return MessageBox(
+        "Replace",
+        "Replace this occurrence?",
+        [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no"), ("~A~ll", CM_CHANGE_ALL, "all"), ("Cancel", Command.CANCEL, "cancel")],
+        width=50,
+    )
+
+
+def information(title: str, text: str) -> MessageBox:
+    return MessageBox(title, text, [("O~K~", Command.OK, "ok")], width=max(36, min(70, len(text) + 8)))
+
+
+class GotoLineDialog(_Dialog):
+    DEFAULT_CSS = """
+    GotoLineDialog { width: 40; height: 10; }
+    GotoLineDialog InputLine { width: 12; }
+    """
+
+    def __init__(self, line: int) -> None:
+        super().__init__(title="Go to Line Number")
+        self.input = InputLine(max_len=9)
+        self.input.data = str(line)
+        self.line: int | None = None
+
+    def compose_content(self) -> ComposeResult:
+        yield Label("Enter new line ~n~umber", link=self.input)
+        yield self.input
+        with Horizontal(classes="dlg-buttons"):
+            yield Button("O~K~", Command.OK, is_default=True, id="ok")
+            yield Button("Cancel", Command.CANCEL, id="cancel")
+
+    def on_mount(self) -> None:
+        self.call_after_refresh(self.input.select_all)
+
+    def valid(self, command: Command) -> bool:
+        if command != Command.OK:
+            return True
+        try:
+            self.line = int(self.input.data.strip())
+        except ValueError:
+            self.app.notify("Not a line number", severity="error")
+            return False
+        return self.line >= 1

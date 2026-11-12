@@ -27,6 +27,9 @@ bottom border (`*` = modified) and their number on the top border.
 | `F6` / `Shift+F6`, `Ctrl+PgDn/PgUp` | next / previous window |
 | `Alt+1`…`Alt+9` | go to window *n* |
 | `Ctrl+B` | project window (open, raise, close) |
+| `Ctrl+F` / `Ctrl+R` | find / replace (case, whole words, regex with `\1` groups, direction, origin, prompt) |
+| `Ctrl+L` | search again (repeats the last find or replace) |
+| `Ctrl+G` | go to line number |
 | `Alt+X` / `Ctrl+Q` | exit |
 
 ## Layout

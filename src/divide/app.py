@@ -8,6 +8,7 @@ textual-vision, with first-class support for Div templates
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 from textual import events, on, work
@@ -17,11 +18,23 @@ from textual_vision.constants import Command
 from textual_vision.events import CommandMessage
 from textual_vision.menus import Menu, MenuItem, Separator, SubMenu
 from textual_vision.status_line import StatusDef, StatusItem, StatusLine
+from textual.widgets.text_area import Selection
 from textual_vision.window import Window
 
 from divide import __version__
 from divide.editor.div_editor import DivEditor, is_div_file
-from divide.ui.dialogs import DialogScreen, FileDialog, about_box, confirm_save
+from divide.editor.search import SearchError, SearchOptions, compile_pattern, expand, find, replace_all
+from divide.ui.dialogs import (
+    CM_CHANGE_ALL,
+    DialogScreen,
+    FileDialog,
+    GotoLineDialog,
+    SearchDialog,
+    about_box,
+    confirm_save,
+    information,
+    replace_prompt,
+)
 from divide.ui.windows import EditorWindow, ProjectTree, ProjectWindow
 
 PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
@@ -32,6 +45,19 @@ CM_PROJECT = Command.USER + 1
 CM_ABOUT = Command.USER + 2
 CM_SELECT_ALL = Command.USER + 3
 CM_PALETTE = Command.USER + 4  # info: palette name
+CM_FIND = Command.USER + 5
+CM_REPLACE = Command.USER + 6
+CM_SEARCH_AGAIN = Command.USER + 7
+CM_GOTO_LINE = Command.USER + 8
+
+# Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
+COMMANDS: dict[str, int] = {
+    **Command.__members__,
+    "FIND": CM_FIND,
+    "REPLACE": CM_REPLACE,
+    "SEARCH_AGAIN": CM_SEARCH_AGAIN,
+    "GOTO_LINE": CM_GOTO_LINE,
+}
 
 
 class HintStatusLine(StatusLine):
@@ -59,6 +85,10 @@ class Divide(Application):
         Binding("f6,ctrl+pagedown", "command('NEXT')", "Next", show=False, priority=True),
         Binding("shift+f6,ctrl+pageup", "command('PREV')", "Prev", show=False, priority=True),
         Binding("ctrl+b", "project", "Project", show=False),
+        Binding("ctrl+f", "command('FIND')", "Find", show=False),
+        Binding("ctrl+r", "command('REPLACE')", "Replace", show=False),
+        Binding("ctrl+l", "command('SEARCH_AGAIN')", "Search again", show=False),
+        Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
         Binding("alt+x,ctrl+q", "command('QUIT')", "Exit", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
@@ -67,6 +97,10 @@ class Divide(Application):
         self.root = root
         self.initial_files = files
         self._untitled = 0
+        self.search_query = ""
+        self.search_replacement = ""
+        self.search_options = SearchOptions()
+        self.last_search: str | None = None  # "find" | "replace"
 
     # --------------------------------------------------------------- shell
     def init_menu_bar(self) -> Menu:
@@ -93,6 +127,14 @@ class Divide(Application):
                     MenuItem("~P~aste", Command.PASTE, "Ctrl+V"),
                     Separator(),
                     MenuItem("Select ~a~ll", CM_SELECT_ALL, "F7"),
+                ),
+                SubMenu(
+                    "~S~earch",
+                    MenuItem("~F~ind...", CM_FIND, "Ctrl+F"),
+                    MenuItem("~R~eplace...", CM_REPLACE, "Ctrl+R"),
+                    MenuItem("~S~earch again", CM_SEARCH_AGAIN, "Ctrl+L"),
+                    Separator(),
+                    MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
                 ),
                 SubMenu(
                     "~W~indow",
@@ -286,7 +328,7 @@ class Divide(Application):
     def action_command(self, name: str) -> None:
         # Priority bindings fire even under a dialog; the dialog owns the keyboard then.
         if not isinstance(self.screen, DialogScreen):
-            self.post_message(CommandMessage(Command[name]))
+            self.post_message(CommandMessage(COMMANDS[name]))  # type: ignore[arg-type]
 
     def action_project(self) -> None:
         self.toggle_project()
@@ -367,7 +409,125 @@ class Divide(Application):
                 self.theme = info
             case _ if command == CM_ABOUT:
                 await self.run_dialog(about_box(f"v{__version__}"))
+            case _ if command in (CM_FIND, CM_REPLACE) and editor:
+                await self.search_dialog(editor, replace=command == CM_REPLACE)
+            case _ if command == CM_SEARCH_AGAIN and editor:
+                if self.last_search is None:
+                    await self.search_dialog(editor, replace=False)
+                else:
+                    await self.search(editor, first=False)
+            case _ if command == CM_GOTO_LINE and editor:
+                ed = editor.editor
+                dialog = GotoLineDialog(ed.cursor_location[0] + 1)
+                if await self.run_dialog(dialog) == Command.OK and dialog.line:
+                    row = min(dialog.line, ed.document.line_count) - 1
+                    ed.move_cursor((row, 0), center=True)
         self.update_status()
+
+    # ------------------------------------------------------------ search
+    def _initial_query(self, ed: DivEditor) -> str:
+        """Selected text (one line) or the word at the cursor, else the last query."""
+        selected = ed.selected_text
+        if selected and "\n" not in selected:
+            return selected
+        row, col = ed.cursor_location
+        for m in re.finditer(r"\w+", ed.document.get_line(row)):
+            if m.start() <= col <= m.end():
+                return m.group()
+        return self.search_query
+
+    async def search_dialog(self, win: EditorWindow, *, replace: bool) -> None:
+        dialog = SearchDialog(
+            replace=replace,
+            query=self._initial_query(win.editor),
+            replacement=self.search_replacement,
+            options=self.search_options,
+        )
+        result = await self.run_dialog(dialog)
+        if result not in (Command.OK, CM_CHANGE_ALL):
+            return
+        self.search_query = dialog.search_text
+        self.search_options = dialog.options
+        if replace:
+            self.search_replacement = dialog.replacement
+        self.last_search = "replace" if replace else "find"
+        await self.search(win, first=True, change_all=result == CM_CHANGE_ALL)
+
+    @staticmethod
+    def _select(ed: DivEditor, start: int, end: int) -> None:
+        doc = ed.document
+        ed.selection = Selection(doc.get_location_from_index(start), doc.get_location_from_index(end))
+        ed.scroll_cursor_visible(center=True)
+
+    async def search(self, win: EditorWindow, *, first: bool, change_all: bool = False) -> None:
+        """Run the stored find / replace from the cursor (or the scope edge on the first run)."""
+        ed, opts = win.editor, self.search_options
+        try:
+            pattern = compile_pattern(self.search_query, opts)
+        except SearchError as exc:
+            await self.run_dialog(information("Error", str(exc)))
+            return
+        doc, text = ed.document, ed.text
+        if first and opts.entire_scope:
+            pos = len(text) if opts.backward else 0
+        else:
+            sel_start, sel_end = sorted((ed.selection.start, ed.selection.end))
+            pos = doc.get_index_from_location(sel_start if opts.backward else sel_end)
+        try:
+            if self.last_search == "replace":
+                count, found = await self._replace(ed, pattern, pos, change_all)
+            else:
+                m = find(text, pattern, pos, backward=opts.backward)
+                found, count = m is not None, 0
+                if m:
+                    self._select(ed, m.start(), m.end())
+        except SearchError as exc:
+            await self.run_dialog(information("Error", str(exc)))
+            return
+        if not found:
+            await self.run_dialog(information("Information", "Search string not found."))
+        elif count > 1:
+            self.notify(f"{count} occurrences replaced", timeout=2)
+
+    async def _replace(self, ed: DivEditor, pattern: re.Pattern[str], pos: int, change_all: bool) -> tuple[int, bool]:
+        """Replace one occurrence, or all of them with ``change_all``. Returns (replaced, found)."""
+        opts, repl, doc = self.search_options, self.search_replacement, ed.document
+        loc = doc.get_location_from_index
+        if change_all and not opts.prompt:
+            # One edit, so a single undo restores everything.
+            text = ed.text
+            if opts.backward:
+                new, count = replace_all(text[:pos], pattern, repl, opts)
+                if count:
+                    ed.replace(new, (0, 0), loc(pos), maintain_selection_offset=False)
+            else:
+                new, count = replace_all(text, pattern, repl, opts, start=pos)
+                if count:
+                    ed.replace(new[pos:], loc(pos), doc.end, maintain_selection_offset=False)
+            return count, count > 0
+        count, found, ask = 0, False, opts.prompt
+        while (m := find(ed.text, pattern, pos, backward=opts.backward)) is not None:
+            found = True
+            self._select(ed, m.start(), m.end())
+            if ask:
+                answer = await self.run_dialog(replace_prompt())
+                if answer == Command.CANCEL:
+                    break
+                if answer == CM_CHANGE_ALL:
+                    ask, change_all = False, True
+                elif answer == Command.NO:
+                    pos = m.start() if opts.backward else m.end()
+                    if change_all:
+                        continue
+                    break
+            new = expand(m, repl, opts)
+            result = ed.replace(new, loc(m.start()), loc(m.end()), maintain_selection_offset=False)
+            ed.selection = Selection(loc(m.start()), result.end_location)
+            count += 1
+            pos = m.start() if opts.backward else m.start() + len(new)
+            if not change_all:
+                break
+        return count, found
 
     def _cycle(self, *, forward: bool) -> None:
         """F6 brings the bottom window up; Shift+F6 sends the top one down."""
