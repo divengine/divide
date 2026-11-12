@@ -20,6 +20,11 @@ from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
 
+# Textual runs the handler of every class in the MRO unless prevent_default()
+# is called, so handlers here never call super(): they prevent_default() when
+# they replace the base behaviour and simply return when they extend it.
+
+
 class DialogScreen(ModalScreen[Command]):
     """Runs one Dialog modally over the desktop (no dimming, centred)."""
 
@@ -31,6 +36,7 @@ class DialogScreen(ModalScreen[Command]):
     def __init__(self, dialog: Dialog) -> None:
         super().__init__()
         self.dialog = dialog
+        self._dismissed = False
 
     def compose(self) -> ComposeResult:
         yield self.dialog
@@ -40,7 +46,9 @@ class DialogScreen(ModalScreen[Command]):
 
     def on_dialog_dialog_closed(self, message: Dialog.DialogClosed) -> None:
         message.stop()
-        self.dismiss(message.result)
+        if not self._dismissed:
+            self._dismissed = True
+            self.dismiss(message.result)
 
 
 class _Dialog(Dialog):
@@ -85,9 +93,9 @@ class MessageBox(_Dialog):
             for child in self.query(Button):
                 if child.hotkey == letter:
                     event.stop()
+                    event.prevent_default()
                     child.press()
                     return
-        super().on_key(event)
 
 
 def confirm_save(name: str) -> MessageBox:
@@ -165,7 +173,6 @@ class FileDialog(_Dialog):
             yield Button("Cancel", Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
-        super().on_mount()
         self.call_after_refresh(self._load)
 
     # ------------------------------------------------------------ entries
@@ -230,18 +237,16 @@ class FileDialog(_Dialog):
     def on_command_message(self, message) -> None:
         if message.command == Command.OK:
             message.stop()
+            message.prevent_default()  # Dialog would end_modal(OK) without a chosen path
             if self.current is self.list and 0 <= self.list.focused < len(self._entries):
                 entry = self._entries[self.list.focused]
                 if entry.endswith("/") or entry == "..":
                     self.accept(entry)
                     return
             self.accept(self.input.data)
-            return
-        super().on_command_message(message)
 
     def on_key(self, event: events.Key) -> None:
         if event.key == "enter" and self.current is self.input:
             event.stop()
+            event.prevent_default()
             self.accept(self.input.data)
-            return
-        super().on_key(event)

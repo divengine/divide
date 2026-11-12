@@ -158,3 +158,59 @@ async def test_new_and_save_as(tmp_path):
         await settle(pilot)
         assert (tmp_path / "hello.tpl").read_text() == "Hi"
         assert win.path == (tmp_path / "hello.tpl").resolve() and win.title == "hello.tpl"
+
+
+# Regressions: Textual runs every handler in the MRO unless prevent_default() is called.
+
+
+async def test_save_as_with_ok_button(tmp_path):
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+f", "n")
+        await settle(pilot)
+        await pilot.press("A", "f2")
+        await settle(pilot)
+        dialog = app.screen.query_one(FileDialog)
+        dialog.input.data = "new.tpl"
+        await pilot.click("#ok")
+        await settle(pilot)
+        assert not isinstance(app.screen, DialogScreen)
+        assert (tmp_path / "new.tpl").read_text() == "A"
+
+
+async def test_exit_asks_about_unsaved(tmp_path):
+    f = tmp_path / "x.tpl"
+    f.write_text("")
+    app = Divide(tmp_path, [f])
+    async with app.run_test() as pilot:
+        await settle(pilot)
+        await pilot.press("Z", "alt+x")
+        await settle(pilot)
+        assert isinstance(app.screen, DialogScreen)
+        assert app.is_running
+        await pilot.press("c")
+        await settle(pilot)
+        assert app.is_running and len(app.editor_windows()) == 1
+
+
+async def test_frame_close_and_zoom_icons(tmp_path):
+    from textual_vision.constants import Command
+    from textual_vision.events import CommandMessage
+
+    f = tmp_path / "x.tpl"
+    f.write_text("")
+    app = Divide(tmp_path, [f])
+    async with app.run_test() as pilot:
+        await settle(pilot)
+        win = app.editor_windows()[0]
+        win.frame.post_message(CommandMessage(Command.ZOOM))
+        await settle(pilot)
+        assert win.zoomed
+        await pilot.press("Z")
+        win.frame.post_message(CommandMessage(Command.CLOSE))  # the [■] icon
+        await settle(pilot)
+        assert isinstance(app.screen, DialogScreen)
+        await pilot.press("escape")
+        await settle(pilot)
+        assert app.editor_windows() == [win]

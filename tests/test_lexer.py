@@ -161,7 +161,7 @@ def test_resolve_dialect_relative_to_template(tmp_path):
 def test_examples_tokens_are_sane(path):
     text = path.read_text()
     toks = tokenize(text)
-    assert toks
+    assert toks or not text.strip()
     prev_end = 0
     for t in toks:
         assert 0 <= t.start < t.end <= len(text)

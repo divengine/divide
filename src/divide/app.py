@@ -92,7 +92,7 @@ class Divide(Application):
                     MenuItem("~C~opy", Command.COPY, "Ctrl+C"),
                     MenuItem("~P~aste", Command.PASTE, "Ctrl+V"),
                     Separator(),
-                    MenuItem("Select ~a~ll", CM_SELECT_ALL, "Ctrl+A"),
+                    MenuItem("Select ~a~ll", CM_SELECT_ALL, "F7"),
                 ),
                 SubMenu(
                     "~W~indow",
@@ -299,6 +299,8 @@ class Divide(Application):
 
     def on_command_message(self, message: CommandMessage) -> None:
         message.stop()
+        # Program.on_command_message would exit on QUIT without asking about unsaved changes.
+        message.prevent_default()
         if message.command != Command.VALID:
             self.run_command(message.command, message.info)
 

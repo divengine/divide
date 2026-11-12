@@ -29,6 +29,11 @@ def _overlay(strip: Strip, x: int, text: str, style: Style) -> Strip:
     return Strip.join([strip.crop(0, x), Strip([Segment(text, style)]), strip.crop(x + len(text), width)])
 
 
+# Textual runs the handler of every class in the MRO unless prevent_default()
+# is called, so handlers here never call super(): they prevent_default() when
+# they replace the base behaviour and simply return when they extend it.
+
+
 class IndicatorFrame(Frame):
     """Frame with the window number on the top border and a Borland-style
     ``* 12:5`` indicator (modified flag, line:column) on the bottom border."""
@@ -129,9 +134,8 @@ class EditorWindow(_TVWindow):
         # The close icon must go through the app, which asks about unsaved changes.
         if message.command == Command.CLOSE:
             message.stop()
+            message.prevent_default()  # Window.close() would skip the unsaved-changes check
             self.app.close_window(self)  # type: ignore[attr-defined]
-            return
-        super().on_command_message(message)
 
 
 class ProjectTree(DirectoryTree, TVViewMixin):
@@ -180,6 +184,5 @@ class ProjectWindow(_TVWindow):
     def on_command_message(self, message: CommandMessage) -> None:
         if message.command == Command.CLOSE:
             message.stop()
+            message.prevent_default()  # Window.close() would skip the unsaved-changes check
             self.app.close_window(self)  # type: ignore[attr-defined]
-            return
-        super().on_command_message(message)
