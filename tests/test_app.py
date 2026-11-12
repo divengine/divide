@@ -214,3 +214,21 @@ async def test_frame_close_and_zoom_icons(tmp_path):
         await pilot.press("escape")
         await settle(pilot)
         assert app.editor_windows() == [win]
+
+
+async def test_f10_opens_menu_and_arrows_navigate(tmp_path):
+    from textual_vision.menus import MenuBox
+
+    f = tmp_path / "x.tpl"
+    f.write_text("abc")
+    app = Divide(tmp_path, [f])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        ed = app.editor_windows()[0].editor
+        await pilot.press("f10")
+        await settle(pilot)
+        assert isinstance(app.focused, MenuBox)
+        await pilot.press("right", "down", "enter")  # Edit > second item... must not reach the editor
+        await settle(pilot)
+        assert ed.text == "abc"
+        assert not app.menu_bar.active

@@ -15,11 +15,13 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 The interface is a Turbo Vision desktop (menu bar, overlapping windows, dialogs,
 status line) in the Turbo Pascal colours by default; `--palette turbo-c` or
 the Options menu switches to Turbo C. Editor windows show `* line:col` on the
-bottom border (`*` = modified) and their number on the top border.
+bottom border (`*` = modified) and their number on the top border. Windows,
+dialogs and menus cast the Turbo Vision drop shadow (2 columns right, 1 row
+down; what is underneath stays readable in dark gray on black).
 
 | Key | Action |
 |---|---|
-| `F10`, `Alt+letter` | menu |
+| `F10`, `Alt+letter` | menu (F10 opens the first one; ←/→ walk the bar) |
 | `F2` / `Ctrl+S` | save (untitled files ask for a name) |
 | `F3` | open file dialog (wildcards, `Enter` on a folder enters it) |
 | `Alt+F3` / `Ctrl+W` | close window (asks about unsaved changes) |
@@ -50,6 +52,9 @@ works around, to revisit on upgrades:
 
 - nested sub-menus get no keyboard focus → menus are kept one level deep;
 - `DeskTop` has no API to reorder windows → `Divide._cycle` uses `_z_order`;
-- `TextArea` binds `F6` (select line) and `Ctrl+W` → those bindings are `priority`.
+- `TextArea` binds `F6` (select line) and `Ctrl+W` → those bindings are `priority`;
+- `F10` only highlights the bar, leaving focus in the editor → `DropMenuBar` opens the menu;
+- handlers of every class in the MRO run unless `prevent_default()` → overrides never call `super()`;
+- no shadows → `divide.ui.shadow` restyles the composited lines (Textual compositor subclass).
 
 If the project stalls, its code (Apache-2.0, ~4.7k lines) can be vendored.

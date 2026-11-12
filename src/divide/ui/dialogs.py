@@ -21,6 +21,7 @@ from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
 from divide.editor.search import SearchOptions
+from divide.ui.shadow import install_shadows
 
 CM_CHANGE_ALL = Command.USER + 100
 
@@ -40,6 +41,7 @@ class DialogScreen(ModalScreen[Command]):
 
     def __init__(self, dialog: Dialog) -> None:
         super().__init__()
+        install_shadows(self)
         self.dialog = dialog
         self._dismissed = False
 

@@ -16,7 +16,7 @@ from textual.binding import Binding
 from textual_vision.app import Application
 from textual_vision.constants import Command
 from textual_vision.events import CommandMessage
-from textual_vision.menus import Menu, MenuItem, Separator, SubMenu
+from textual_vision.menus import Menu, MenuBar, MenuItem, Separator, SubMenu
 from textual_vision.status_line import StatusDef, StatusItem, StatusLine
 from textual.widgets.text_area import Selection
 from textual_vision.window import Window
@@ -35,6 +35,7 @@ from divide.ui.dialogs import (
     information,
     replace_prompt,
 )
+from divide.ui.shadow import ShadowScreen
 from divide.ui.windows import EditorWindow, ProjectTree, ProjectWindow
 
 PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
@@ -58,6 +59,20 @@ COMMANDS: dict[str, int] = {
     "SEARCH_AGAIN": CM_SEARCH_AGAIN,
     "GOTO_LINE": CM_GOTO_LINE,
 }
+
+
+class DropMenuBar(MenuBar):
+    """F10 opens the first menu right away.
+
+    textual-vision only highlights the bar, leaving keyboard focus in the editor,
+    which then eats Enter and the arrows. With the drop-down open, focus is in
+    the menu and Left/Right still walk the bar.
+    """
+
+    def activate(self) -> None:
+        super().activate()
+        if self._menu_box is None:
+            self._open_menu_box()
 
 
 class HintStatusLine(StatusLine):
@@ -103,6 +118,9 @@ class Divide(Application):
         self.last_search: str | None = None  # "find" | "replace"
 
     # --------------------------------------------------------------- shell
+    def get_default_screen(self) -> ShadowScreen:
+        return ShadowScreen(id="_default")
+
     def init_menu_bar(self) -> Menu:
         palette_items = [MenuItem(label, CM_PALETTE, param=name) for name, label in PALETTES.items()]
         return Menu(
@@ -173,6 +191,9 @@ class Divide(Application):
             if isinstance(widget, StatusLine) and not isinstance(widget, HintStatusLine):
                 widget = HintStatusLine(defs=self.init_status_line())
                 self._status_line = widget
+            elif isinstance(widget, MenuBar) and not isinstance(widget, DropMenuBar):
+                widget = DropMenuBar(menu=widget.menu)
+                self._menu_bar = widget
             yield widget
 
     def on_mount(self) -> None:
