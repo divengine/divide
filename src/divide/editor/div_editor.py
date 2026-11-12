@@ -12,6 +12,7 @@ import bisect
 import dataclasses
 from pathlib import Path
 
+from rich.style import Style
 from textual._text_area_theme import TextAreaTheme
 from textual.message import Message
 from textual.widgets import TextArea
@@ -19,15 +20,33 @@ from textual.widgets import TextArea
 from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect, resolve_dialect, template_properties
 from divide.lang.div.lexer import Lexer
 
-from .theme import DIV_STYLES
+from .theme import CGA, DIV_STYLES, TURBO_STYLES
 
 DIV_EXTENSIONS = {".tpl", ".div"}
 
 
 def divide_theme() -> TextAreaTheme:
+    """Dark, Monokai-based theme."""
     base = TextAreaTheme.get_builtin_theme("monokai")
     assert base is not None
     return dataclasses.replace(base, name="divide", syntax_styles={**base.syntax_styles, **DIV_STYLES})
+
+
+def turbo_theme() -> TextAreaTheme:
+    """Yellow on blue, like the Borland editors (selection: blue on light gray)."""
+    return TextAreaTheme(
+        name="turbo",
+        base_style=Style(color=CGA["yellow"], bgcolor=CGA["blue"]),
+        gutter_style=Style(color=CGA["cyan"], bgcolor=CGA["blue"]),
+        cursor_style=Style(color=CGA["blue"], bgcolor=CGA["yellow"]),
+        cursor_line_gutter_style=Style(color=CGA["yellow"], bgcolor=CGA["blue"]),
+        bracket_matching_style=Style(color=CGA["white"], bgcolor=CGA["cyan"], bold=True),
+        selection_style=Style(color=CGA["blue"], bgcolor=CGA["lightgray"]),
+        syntax_styles=dict(TURBO_STYLES),
+    )
+
+
+EDITOR_THEMES = {"turbo": turbo_theme, "divide": divide_theme}
 
 
 def is_div_file(path: Path) -> bool:
@@ -67,7 +86,15 @@ class DivEditor(TextArea):
             self.editor = editor
             self.dialect = dialect
 
-    def __init__(self, text: str = "", *, path: Path | None = None, roots: list[Path] | None = None, **kwargs) -> None:
+    def __init__(
+        self,
+        text: str = "",
+        *,
+        path: Path | None = None,
+        roots: list[Path] | None = None,
+        editor_theme: str = "turbo",
+        **kwargs,
+    ) -> None:
         self.path = path
         self.roots = roots or []
         self.div_enabled = path is None or is_div_file(path)
@@ -80,8 +107,9 @@ class DivEditor(TextArea):
             show_line_numbers=True,
             **kwargs,
         )
-        self.register_theme(divide_theme())
-        self.theme = "divide"
+        for factory in EDITOR_THEMES.values():
+            self.register_theme(factory())
+        self.theme = editor_theme
 
     # Textual calls this after every edit and when the document is replaced.
     def _build_highlight_map(self) -> None:

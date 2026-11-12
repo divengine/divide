@@ -7,7 +7,7 @@ name = "divide"
 version = "0.1.0"
 description = "A terminal IDE for the Divengine projects, starting with the Div template language."
 requires-python = ">=3.11"
-dependencies = ["textual>=8.2,<9"]
+dependencies = ["textual>=8.2,<9", "textual-vision==0.0.1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.23"]
