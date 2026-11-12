@@ -18,6 +18,8 @@ from textual.message import Message
 from textual.widgets import TextArea
 
 from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect, resolve_dialect, template_properties
+from divide.lang import divjson
+from divide.lang.divjson import DivJsonError
 from divide.lang.div.lexer import Lexer
 
 from .theme import CGA, DIV_STYLES, TURBO_STYLES
@@ -49,8 +51,20 @@ def turbo_theme() -> TextAreaTheme:
 EDITOR_THEMES = {"turbo": turbo_theme, "divide": divide_theme}
 
 
+JSON_EXTENSIONS = {".json", ".dialect"}
+
+
 def is_div_file(path: Path) -> bool:
     return path.suffix.lower() in DIV_EXTENSIONS
+
+
+def language_of(path: Path | None) -> str | None:
+    """``"div"`` for templates (and untitled buffers), ``"json"`` for Div JSON data / dialects."""
+    if path is None or is_div_file(path):
+        return "div"
+    if path.suffix.lower() in JSON_EXTENSIONS:
+        return "json"
+    return None
 
 
 class _LexerCache:
@@ -78,7 +92,7 @@ _LEXERS = _LexerCache()
 
 
 class DivEditor(TextArea):
-    """Editor for one file. Div highlighting is on for Div templates."""
+    """Editor for one file: Div templates and Div JSON are highlighted (and JSON validated)."""
 
     class DialectChanged(Message):
         def __init__(self, editor: "DivEditor", dialect: Dialect) -> None:
@@ -97,7 +111,9 @@ class DivEditor(TextArea):
     ) -> None:
         self.path = path
         self.roots = roots or []
-        self.div_enabled = path is None or is_div_file(path)
+        self.lang = language_of(path)
+        self.json_error: DivJsonError | None = None
+        self.json_refs: list[str] = []
         self.dialect: Dialect = DEFAULT_DIALECT
         self._dialect_ref: str | None = None
         super().__init__(
@@ -111,16 +127,31 @@ class DivEditor(TextArea):
             self.register_theme(factory())
         self.theme = editor_theme
 
+    @property
+    def div_enabled(self) -> bool:
+        return self.lang == "div"
+
+    def set_path(self, path: Path | None) -> None:
+        """The file changed name (Save as): pick the language again and re-highlight."""
+        self.path = path
+        self.lang = language_of(path)
+        self._build_highlight_map()
+        self.refresh()
+
     # Textual calls this after every edit and when the document is replaced.
     def _build_highlight_map(self) -> None:
         self._line_cache.clear()
         highlights = self._highlights
         highlights.clear()
-        if not self.div_enabled:
-            return
         text = self.text
-        self._update_dialect(text)
-        tokens = _LEXERS.get(self.dialect).tokenize(text)
+        if self.lang == "div":
+            self._update_dialect(text)
+            tokens = _LEXERS.get(self.dialect).tokenize(text)
+        elif self.lang == "json":
+            tokens = divjson.tokenize(text)
+            self._check_json(text, tokens)
+        else:
+            return
         if not tokens:
             return
         lines = self.document.lines
@@ -145,6 +176,26 @@ class DivEditor(TextArea):
                 highlights[row].append((to_byte(row, col), None, tok.kind))
                 row += 1
                 start = line_end + 1
+
+    def _check_json(self, text: str, tokens: list) -> None:
+        error = None
+        if text.strip():
+            try:
+                divjson.loads(text)
+            except divjson.DivJsonError as exc:
+                error = exc
+        changed = (error and str(error)) != (self.json_error and str(self.json_error))
+        self.json_error = error
+        self.json_refs = [text[t.start + 1 : t.end] for t in tokens if t.kind == "json.ref"]
+        if changed and self.is_mounted:
+            self.post_message(self.JsonChecked(self))
+
+    class JsonChecked(Message):
+        """The JSON validity of the buffer changed."""
+
+        def __init__(self, editor: "DivEditor") -> None:
+            super().__init__()
+            self.editor = editor
 
     def _update_dialect(self, text: str) -> None:
         prop = template_properties(text).get("DIALECT")

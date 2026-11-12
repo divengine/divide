@@ -339,14 +339,9 @@ class Divide(Application):
             if await self.run_dialog(dialog) != Command.OK or dialog.chosen is None:
                 return False
             win.path = dialog.chosen
-            win.editor.path = dialog.chosen
-            win.editor.div_enabled = is_div_file(dialog.chosen)
+            win.editor.set_path(dialog.chosen)
             self._relabel(win)
-        ok = self._write(win)
-        if ok and ask_name:
-            win.editor._build_highlight_map()
-            win.editor.refresh()
-        return ok
+        return self._write(win)
 
     async def confirm_close(self, win: EditorWindow) -> bool:
         """Ask about unsaved changes. True when the window may close."""
@@ -774,6 +769,7 @@ class Divide(Application):
         self.update_status()
 
     @on(DivEditor.DialectChanged)
+    @on(DivEditor.JsonChecked)
     def _dialect_changed(self) -> None:
         self.update_status()
 
@@ -793,6 +789,15 @@ class Divide(Application):
             status.set_hint(str(self.root))
             return
         ed = win.editor
+        if ed.lang == "json":
+            if ed.json_error is not None:
+                hint = f"JSON [!] {ed.json_error}"
+            else:
+                hint = "JSON ok"
+            if ed.json_refs:
+                hint += f" · {len(ed.json_refs)} $ref" + ("s" if len(ed.json_refs) > 1 else "")
+            status.set_hint(hint)
+            return
         if ed.div_enabled:
             d = ed.dialect
             hint = "Div" + ("" if d.name == "default" else f" · {d.name}")

@@ -45,6 +45,14 @@ DIV_STYLES: dict[str, Style] = {
     "html.string": Style(color="#C8B88A"),
     "html.comment": Style(color="#75715E", italic=True),
     "html.entity": Style(color="#AE81FF"),
+    "json.key": Style(color="#F8F8F2", bold=True),
+    "json.string": Style(color="#E6DB74"),
+    "json.number": Style(color="#AE81FF"),
+    "json.constant": Style(color="#AE81FF"),
+    "json.ref": Style(color="#66D9EF", bold=True),
+    "json.punct": Style(color="#C0C0B8"),
+    "json.comment": Style(color="#75715E", italic=True),
+    "json.error": Style(color="#FFFFFF", bgcolor="#8B1E3F", bold=True),
 }
 
 
@@ -104,4 +112,13 @@ TURBO_STYLES: dict[str, Style] = {
     "html.string": _c("lightgreen"),
     "html.comment": _c("lightgray"),
     "html.entity": _c("lightmagenta"),
+    # Div JSON (data files, dialects): keys like reserved words, $refs like Div variables.
+    "json.key": _c("white", bold=True),
+    "json.string": _c("lightgreen"),
+    "json.number": _c("lightmagenta"),
+    "json.constant": _c("lightmagenta"),
+    "json.ref": _c("lightcyan", bold=True),
+    "json.punct": _c("yellow"),
+    "json.comment": _c("lightgray"),
+    "json.error": Style(color=CGA["white"], bgcolor=CGA["red"], bold=True),
 }

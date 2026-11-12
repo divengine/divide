@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from divide.lang.div.dialect import lenient_json
+from divide.lang.divjson import references
 
 BRIDGE = Path(__file__).with_name("bridge.php")
 ENV_ENGINE = "DIVIDE_DIV_PHP"
@@ -147,4 +148,13 @@ async def render(
         version=reply.get("version"),
         seconds=time.monotonic() - started,
     )
+    if data and (refs := references(data)):
+        names = ", ".join("$" + r for r in dict.fromkeys(refs))
+        result.messages.append(
+            RenderMessage(
+                "NOTE",
+                f"the data uses {names}: Div decodes a data file before any variable exists, "
+                "so these come out empty (they work in {= var: {...} =} inside templates)",
+            )
+        )
     return result
