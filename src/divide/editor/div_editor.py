@@ -20,6 +20,7 @@ from textual.widgets import TextArea
 from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect, resolve_dialect, template_properties
 from divide.lang import divjson
 from divide.lang.divjson import DivJsonError
+from divide.lang.div.diagnostics import Diagnostic, check
 from divide.lang.div.lexer import Lexer
 
 from .theme import CGA, DIV_STYLES, TURBO_STYLES
@@ -91,6 +92,15 @@ class _LexerCache:
 _LEXERS = _LexerCache()
 
 
+class _Mark:
+    """A highlight span that is not a token (diagnostic overlay)."""
+
+    __slots__ = ("start", "end", "kind")
+
+    def __init__(self, start: int, end: int, kind: str) -> None:
+        self.start, self.end, self.kind = start, end, kind
+
+
 class DivEditor(TextArea):
     """Editor for one file: Div templates and Div JSON are highlighted (and JSON validated)."""
 
@@ -114,6 +124,7 @@ class DivEditor(TextArea):
         self.lang = language_of(path)
         self.json_error: DivJsonError | None = None
         self.json_refs: list[str] = []
+        self.diagnostics: list[Diagnostic] = []
         self.dialect: Dialect = DEFAULT_DIALECT
         self._dialect_ref: str | None = None
         super().__init__(
@@ -147,6 +158,9 @@ class DivEditor(TextArea):
         if self.lang == "div":
             self._update_dialect(text)
             tokens = _LEXERS.get(self.dialect).tokenize(text)
+            self._set_diagnostics(check(text, tokens, self.dialect, self.path, self.roots))
+            # Overlays after the syntax colours: errors on red, warnings underlined.
+            tokens = tokens + [_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics]
         elif self.lang == "json":
             tokens = divjson.tokenize(text)
             self._check_json(text, tokens)
@@ -176,6 +190,23 @@ class DivEditor(TextArea):
                 highlights[row].append((to_byte(row, col), None, tok.kind))
                 row += 1
                 start = line_end + 1
+
+    def _set_diagnostics(self, diagnostics: list[Diagnostic]) -> None:
+        if diagnostics != self.diagnostics:
+            self.diagnostics = diagnostics
+            if self.is_mounted:
+                self.post_message(self.DiagnosticsChanged(self))
+
+    def diagnostic_at(self, offset: int) -> Diagnostic | None:
+        for d in self.diagnostics:
+            if d.start <= offset < d.end or (d.start == offset):
+                return d
+        return None
+
+    class DiagnosticsChanged(Message):
+        def __init__(self, editor: "DivEditor") -> None:
+            super().__init__()
+            self.editor = editor
 
     def _check_json(self, text: str, tokens: list) -> None:
         error = None

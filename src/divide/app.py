@@ -39,7 +39,9 @@ from divide.ui.shadow import ShadowScreen
 from divide import config
 from divide.run.render import RenderError, default_data_file, find_engine, render
 from divide.ui.jsontree import JsonTreeWindow
-from divide.ui.windows import EditorWindow, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
+from divide.lang.div.diagnostics import line_col
+from divide.run.render import RenderMessage
+from divide.ui.windows import EditorWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
 PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
 DEFAULT_PALETTE = "turbo-pascal"
@@ -59,6 +61,10 @@ CM_DATA_FILE = Command.USER + 11
 CM_EDIT_DATA = Command.USER + 12
 CM_DIV_ENGINE = Command.USER + 13
 CM_DATA_TREE = Command.USER + 14
+CM_CHECK = Command.USER + 15
+CM_NEXT_ERROR = Command.USER + 16
+CM_PREV_ERROR = Command.USER + 17
+CM_MESSAGES = Command.USER + 18
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -70,6 +76,9 @@ COMMANDS: dict[str, int] = {
     "RENDER": CM_RENDER,
     "OUTPUT": CM_OUTPUT,
     "DATA_TREE": CM_DATA_TREE,
+    "CHECK": CM_CHECK,
+    "NEXT_ERROR": CM_NEXT_ERROR,
+    "PREV_ERROR": CM_PREV_ERROR,
 }
 
 
@@ -119,6 +128,10 @@ class Divide(Application):
         Binding("ctrl+f9", "command('RENDER')", "Render", show=False, priority=True),
         Binding("alt+f5", "command('OUTPUT')", "Output", show=False, priority=True),
         Binding("ctrl+t", "command('DATA_TREE')", "Data tree", show=False, priority=True),
+        # Turbo Pascal: Alt+F9 compile, Alt+F8 / Alt+F7 next / previous message.
+        Binding("alt+f9", "command('CHECK')", "Check", show=False, priority=True),
+        Binding("alt+f8", "command('NEXT_ERROR')", "Next error", show=False, priority=True),
+        Binding("alt+f7", "command('PREV_ERROR')", "Previous error", show=False, priority=True),
         Binding("alt+x,ctrl+q", "command('QUIT')", "Exit", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
@@ -133,6 +146,8 @@ class Divide(Application):
         self.last_search: str | None = None  # "find" | "replace"
         self.data_files: dict[Path, Path] = {}  # template -> data file chosen in Run > Data file
         self.last_template: Path | None = None
+        self.render_messages: list[RenderMessage] = []  # of last_template's last render
+        self._focused_template: EditorWindow | None = None  # last template window that had focus
 
     # --------------------------------------------------------------- shell
     def get_default_screen(self) -> ShadowScreen:
@@ -170,10 +185,14 @@ class Divide(Application):
                     MenuItem("~S~earch again", CM_SEARCH_AGAIN, "Ctrl+L"),
                     Separator(),
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
+                    Separator(),
+                    MenuItem("~P~revious error", CM_PREV_ERROR, "Alt+F7"),
+                    MenuItem("~N~ext error", CM_NEXT_ERROR, "Alt+F8"),
                 ),
                 SubMenu(
                     "~R~un",
                     MenuItem("~R~ender", CM_RENDER, "Ctrl+F9"),
+                    MenuItem("~C~heck", CM_CHECK, "Alt+F9"),
                     MenuItem("~O~utput", CM_OUTPUT, "Alt+F5"),
                     Separator(),
                     MenuItem("~D~ata file...", CM_DATA_FILE),
@@ -183,6 +202,7 @@ class Divide(Application):
                 SubMenu(
                     "~W~indow",
                     MenuItem("~P~roject", CM_PROJECT, "Ctrl+B"),
+                    MenuItem("~M~essages", CM_MESSAGES),
                     Separator(),
                     MenuItem("~T~ile", Command.TILE),
                     MenuItem("C~a~scade", Command.CASCADE),
@@ -475,6 +495,12 @@ class Divide(Application):
                 await self.choose_data_file()
             case _ if command == CM_EDIT_DATA:
                 self.edit_data()
+            case _ if command == CM_CHECK:
+                self.show_messages(announce=True)
+            case _ if command == CM_MESSAGES:
+                self.show_messages()
+            case _ if command in (CM_NEXT_ERROR, CM_PREV_ERROR):
+                self.jump_to_diagnostic(forward=command == CM_NEXT_ERROR)
             case _ if command == CM_DATA_TREE:
                 self.toggle_data_tree()
             case _ if command == CM_DIV_ENGINE:
@@ -688,16 +714,12 @@ class Divide(Application):
             output = OutputWindow(number=self._free_number())
             self.insert_window(output)
         output.show(template, result.output, summary)
+        self.render_messages = result.messages
         messages = self.messages_window()
         serious = result.serious
-        if serious or (messages is not None):
-            order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3}
-            ranked = sorted(result.messages, key=lambda m: order.get(m.level, 9))
-            lines = [f"{m.level}: {m.text}" for m in ranked] or ["Rendered without messages."]
-            if messages is None:
-                messages = MessagesWindow(number=self._free_number())
-                self.insert_window(messages)
-            messages.show(lines)
+        if serious and messages is None:
+            messages = self._open_messages_window(layout=False)
+        self.refresh_messages(template)
         if first:
             self._render_layout(template, output, messages if serious else None)
         if keep_focus and previous is not None and previous.is_attached:
@@ -709,6 +731,118 @@ class Divide(Application):
         self.notify(("Render failed: " if result.fatal else "Rendered ") + summary, timeout=3,
                     severity="error" if result.fatal else "information")
         self.update_status()
+
+    # ---------------------------------------------------------- messages
+    def _check_target(self) -> EditorWindow | None:
+        """The template the Messages window talks about: the active one, else the last rendered."""
+        win = self.active_editor()
+        if win is not None and win.editor.div_enabled:
+            return win
+        if self._focused_template is not None and self._focused_template.is_attached:
+            return self._focused_template
+        if self.last_template is not None:
+            return self.window_for(self.last_template)
+        return None
+
+    def message_items(self, template: Path | None = None) -> list[MessageItem]:
+        win = self.window_for(template) if template is not None else self._check_target()
+        items: list[MessageItem] = []
+        if win is not None and win.editor.div_enabled:
+            name = win.display_name
+            text = win.editor.text
+            for d in win.editor.diagnostics:
+                line, col = line_col(text, d.start)
+                label = "Error" if d.severity == "error" else "Warning"
+                items.append(MessageItem(f"{name}({line},{col}): {label}: {d.message}", win.path, d.start, d.end))
+            if not win.editor.diagnostics:
+                items.append(MessageItem(f"{name}: no Div errors"))
+        rendered = win.path if win is not None else template
+        if self.render_messages and rendered is not None and rendered == self.last_template:
+            order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3, "NOTE": 4}
+            items.append(MessageItem(f"── render of {rendered.name} ──"))
+            for m in sorted(self.render_messages, key=lambda m: order.get(m.level, 9)):
+                items.append(MessageItem(f"{m.level}: {m.text}"))
+        return items
+
+    def refresh_messages(self, template: Path | None = None) -> None:
+        window = self.messages_window()
+        if window is not None:
+            window.show(self.message_items(template))
+
+    def _open_messages_window(self, *, layout: bool = True) -> MessagesWindow:
+        window = MessagesWindow(number=self._free_number())
+        if layout and self.desktop is not None:
+            project = self.project_window()
+            left = ProjectWindow.WIDTH if project is not None and not project.zoomed else 0
+            width, height = (self.desktop.size.width or 80) - left, self.desktop.size.height or 24
+            top = max(0, height - 8)
+            window.styles.offset = (left, top)
+            window.styles.width, window.styles.height = width, min(8, height)
+            # Like Turbo Pascal: the editors end where the message window starts.
+            for other in self.windows():
+                if other is window or other.zoomed:
+                    continue
+                y = int(other.styles.offset.y.value) if other.styles.offset.y else 0
+                bottom = y + (other.size.height or height)
+                if bottom > top and top - y >= 5:
+                    other.styles.height = top - y
+        self.insert_window(window)
+        return window
+
+    def show_messages(self, *, announce: bool = False) -> None:
+        """Run > Check / Window > Messages: open (or raise) the Messages window."""
+        target = self._check_target()
+        window = self.messages_window() or self._open_messages_window()
+        window.show(self.message_items())
+        self.raise_window(window)
+        self.call_after_refresh(window.list.tv_select_self)
+        if announce and target is not None:
+            errors = sum(d.severity == "error" for d in target.editor.diagnostics)
+            warnings = len(target.editor.diagnostics) - errors
+            self.notify(
+                f"{target.display_name}: {errors} error(s), {warnings} warning(s)" if errors or warnings else f"{target.display_name}: no Div errors",
+                timeout=2,
+                severity="error" if errors else "information",
+            )
+
+    def goto_location(self, path: Path | None, start: int, end: int | None = None) -> None:
+        win = self.window_for(path) if path is not None else None
+        if win is None and path is not None:
+            win = self.open_file(path)
+        if win is not None:
+            self._select_in(win, start, end)
+
+    def _select_in(self, win: EditorWindow, start: int, end: int | None = None) -> None:
+        """Raise ``win`` and select [start, end) in it."""
+        self.raise_window(win)
+        ed = win.editor
+        doc = ed.document
+        ed.selection = Selection(doc.get_location_from_index(start), doc.get_location_from_index(end if end is not None else start))
+        ed.scroll_cursor_visible(center=True)
+        ed.focus()
+        messages = self.messages_window()
+        if messages is not None:
+            for index, item in enumerate(messages.items):
+                if item.path == win.path and item.start == start:
+                    messages.list.focus_item(index)
+                    break
+        self.update_status()
+
+    def jump_to_diagnostic(self, *, forward: bool) -> None:
+        win = self.active_editor()
+        if win is None or not win.editor.div_enabled:
+            win = self._check_target()
+        if win is None or not win.editor.diagnostics:
+            self.notify("No Div errors", timeout=1.5)
+            return
+        ed = win.editor
+        here = ed.document.get_index_from_location(ed.selection.start)
+        diags = win.editor.diagnostics
+        if forward:
+            target = next((d for d in diags if d.start > here), diags[0])
+        else:
+            target = next((d for d in reversed(diags) if d.start < here), diags[-1])
+        self._select_in(win, target.start, target.end)
 
     def _rerender_after_save(self, path: Path) -> None:
         template = self.last_template
@@ -819,6 +953,18 @@ class Divide(Application):
         self.update_status()
 
     def on_descendant_focus(self, event: events.DescendantFocus) -> None:
+        win = self.active_editor()
+        if win is not None and win.editor.div_enabled:
+            self._focused_template = win
+        if not isinstance(self.active_window(), MessagesWindow):
+            self.refresh_messages()  # the Messages window follows the active template
+        self.update_status()
+
+    @on(DivEditor.DiagnosticsChanged)
+    def _diagnostics_changed(self, event: DivEditor.DiagnosticsChanged) -> None:
+        target = self._check_target()
+        if target is not None and target.editor is event.editor:
+            self.refresh_messages()
         self.update_status()
 
     def update_status(self) -> None:
@@ -849,10 +995,16 @@ class Divide(Application):
             status.set_hint(hint)
             return
         if ed.div_enabled:
+            here = ed.document.get_index_from_location(min(ed.selection.start, ed.selection.end))
+            if (diag := ed.diagnostic_at(here)) is not None:
+                status.set_hint(("Error: " if diag.severity == "error" else "Warning: ") + diag.message)
+                return
             d = ed.dialect
             hint = "Div" + ("" if d.name == "default" else f" · {d.name}")
-            if d.error:
-                hint += f" [!] {d.error}"
+            errors = sum(x.severity == "error" for x in ed.diagnostics)
+            warnings = len(ed.diagnostics) - errors
+            if errors or warnings:
+                hint += f" · {errors} error{'s' if errors != 1 else ''}, {warnings} warning{'s' if warnings != 1 else ''} (Alt+F8)"
         else:
             hint = "plain text"
         status.set_hint(hint)

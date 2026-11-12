@@ -34,8 +34,23 @@ down; what is underneath stays readable in dark gray on black).
 | `Ctrl+G` | go to line number |
 | `Ctrl+F9` | Run > Render: template + data through PHP and Div (unsaved edits included) |
 | `Alt+F5` | show the Output window |
+| `Alt+F9` | Run > Check: Messages window with the template's Div errors |
+| `Alt+F8` / `Alt+F7` | next / previous Div error (Turbo Pascal's next / previous message) |
 | `Ctrl+T` | data tree ⇄ code: visual editor of the JSON data (from a template: its data) |
 | `Alt+X` / `Ctrl+Q` | exit |
+
+## Div errors while you type
+
+Templates are checked on every edit (`divide.lang.div.diagnostics`, with the
+template's dialect): unclosed loops and orphan `[/$x]`, `{?( )?}` without
+`{/?}` (and orphan `{/?}`), begin tags that Div would leave as text because
+their end is missing (`<!--{`, `{=`, `{@`, `{?(`, `(#`, `{#`, `{% `, `{%% `,
+`[:`, `(( `, `{txt}`, `{strip}`, `<!--|`), includes that do not exist, a broken
+`@_DIALECT`, and malformed JSON in `{= x: {...} =}`. Errors are painted red and
+warnings brown in the editor; the status line shows the message under the
+cursor or the counts. The Messages window (Alt+F9, or Window > Messages) lists
+them as `page.tpl(12,5): Error: ...`, follows the active template live, and
+Enter jumps to the place; render messages follow below.
 
 ## Rendering
 
@@ -77,7 +92,7 @@ inside templates, e.g. `{= card: {"who": $person.name} =}`.
 ## Layout
 
 - `src/divide/lang/divjson.py` — Div JSON: tokens, parser with positions, writer, tree edits
-- `src/divide/lang/div/` — the language, UI-independent
+- `src/divide/lang/div/` — the language, UI-independent (lexer, dialects, diagnostics)
   - `dialect.py` — `DIV_TAG_*` defaults (mirrors `div.php`), lenient dialect JSON, `@_DIALECT` resolution
   - `lexer.py` — dialect-aware lexer → `Token(start, end, kind)`
 - `src/divide/editor/` — `DivEditor` (Textual `TextArea` fed by the lexer instead of tree-sitter) and theme

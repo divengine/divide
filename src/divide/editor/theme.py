@@ -53,6 +53,8 @@ DIV_STYLES: dict[str, Style] = {
     "json.punct": Style(color="#C0C0B8"),
     "json.comment": Style(color="#75715E", italic=True),
     "json.error": Style(color="#FFFFFF", bgcolor="#8B1E3F", bold=True),
+    "diag.error": Style(color="#FFFFFF", bgcolor="#8B1E3F"),
+    "diag.warning": Style(underline=True),
 }
 
 
@@ -121,4 +123,7 @@ TURBO_STYLES: dict[str, Style] = {
     "json.punct": _c("yellow"),
     "json.comment": _c("lightgray"),
     "json.error": Style(color=CGA["white"], bgcolor=CGA["red"], bold=True),
+    # Diagnostics, drawn over the syntax colours (Run > Check, Alt+F7/F8).
+    "diag.error": Style(color=CGA["white"], bgcolor=CGA["red"]),
+    "diag.warning": Style(bgcolor=CGA["brown"]),
 }
