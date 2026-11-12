@@ -63,3 +63,28 @@ async def test_json_editor_highlights_and_validates(tmp_path):
             await pilot.pause()
         assert ed.json_error is not None
         assert app.status_line._hint_text.startswith("JSON [!] line 1, col 10")
+
+
+def test_tree_edits():
+    from divide.lang.divjson import delete_at, get_at, insert_after, make_value, move, rename_key, set_at, type_name
+
+    doc = loads('{"a": 1, "b": [10, 20], "c": {"x": $y}}')
+    assert get_at(doc, ("c", "x")) == Ref("y")
+    assert rename_key(doc, ("b",), "list") == ("list",)
+    assert list(doc) == ["a", "list", "c"]
+    assert insert_after(doc, (), "a", "new", "v") == ("new",)
+    assert list(doc) == ["a", "new", "list", "c"]
+    assert insert_after(doc, ("list",), 0, None, 15) == ("list", 1)
+    assert doc["list"] == [10, 15, 20]
+    assert move(doc, ("list", 2), -1) == ("list", 1) and doc["list"] == [10, 20, 15]
+    assert move(doc, ("a",), 1) == ("a",) and list(doc) == ["new", "a", "list", "c"]
+    delete_at(doc, ("new",))
+    set_at(doc, ("a",), make_value("Reference", "$person.name"))
+    assert doc["a"] == Ref("person.name") and type_name(doc["a"]) == "Reference"
+    assert make_value("Number", "2.5") == 2.5 and make_value("Number", "-3") == -3
+    with pytest.raises(ValueError):
+        make_value("Number", "abc")
+    with pytest.raises(ValueError):
+        rename_key(doc, ("a",), "list")
+    assert make_value("Object", "", {"k": 1}) == {"k": 1}
+    assert dumps(doc).startswith('{\n  "a": $person.name,')

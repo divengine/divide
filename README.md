@@ -34,6 +34,7 @@ down; what is underneath stays readable in dark gray on black).
 | `Ctrl+G` | go to line number |
 | `Ctrl+F9` | Run > Render: template + data through PHP and Div (unsaved edits included) |
 | `Alt+F5` | show the Output window |
+| `Ctrl+T` | data tree ⇄ code: visual editor of the JSON data (from a template: its data) |
 | `Alt+X` / `Ctrl+Q` | exit |
 
 ## Rendering
@@ -54,8 +55,28 @@ what the template sees.
 Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 `src/div.php` with its `vendor/` installed); they are skipped otherwise.
 
+## Data: Div JSON, as code or as a tree
+
+Data files (`.json`, also `.dialect`) are Div JSON: what Div's `jsonDecode`
+accepts, i.e. JSON plus `$name` / `$person.name` references as values, single
+quotes, unquoted keys and comments. The code editor highlights and validates
+it as you type (the status line shows the error's line and column).
+
+`Ctrl+T` opens the same buffer as a tree. Enter edits an item (key, type:
+String, Number, True, False, Null, Reference, Object, Array, and value), Ins
+adds (inside an object / array, or after a plain value), Del deletes,
+Ctrl+↑/↓ moves, Ctrl+Z / Ctrl+Y undo through the code editor, F2 saves.
+Every tree edit rewrites the buffer as standard JSON (references stay bare);
+divide asks first when that would drop comments, single quotes or unquoted
+keys. Typing in the code rebuilds the tree.
+
+Note on references: Div decodes a data file before any variable exists, so
+`$refs` in `page.json` come out empty (rendering says so). They work in JSON
+inside templates, e.g. `{= card: {"who": $person.name} =}`.
+
 ## Layout
 
+- `src/divide/lang/divjson.py` — Div JSON: tokens, parser with positions, writer, tree edits
 - `src/divide/lang/div/` — the language, UI-independent
   - `dialect.py` — `DIV_TAG_*` defaults (mirrors `div.php`), lenient dialect JSON, `@_DIALECT` resolution
   - `lexer.py` — dialect-aware lexer → `Token(start, end, kind)`

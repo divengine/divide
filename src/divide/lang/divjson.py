@@ -259,3 +259,144 @@ def has_extensions(text: str) -> bool:
         if tok.kind == "json.key" and text[tok.start] not in "\"'":
             return True
     return False
+
+
+# ------------------------------------------------------------- tree edits
+# A path is a tuple of keys (objects) and indexes (arrays) from the root.
+Path_ = tuple
+
+
+def get_at(root: Any, path: Path_) -> Any:
+    node = root
+    for step in path:
+        node = node[step]
+    return node
+
+
+def _parent(root: Any, path: Path_) -> tuple[Any, Any]:
+    if not path:
+        raise ValueError("the root has no parent")
+    return get_at(root, path[:-1]), path[-1]
+
+
+def set_at(root: Any, path: Path_, value: Any) -> Any:
+    """Replace the value at ``path``; returns the (possibly new) root."""
+    if not path:
+        return value
+    parent, step = _parent(root, path)
+    parent[step] = value
+    return root
+
+
+def delete_at(root: Any, path: Path_) -> None:
+    parent, step = _parent(root, path)
+    del parent[step]
+
+
+def rename_key(root: Any, path: Path_, new_key: str) -> Path_:
+    """Rename an object member keeping its position. Returns the new path."""
+    parent, old = _parent(root, path)
+    if new_key == old:
+        return path
+    if new_key in parent:
+        raise ValueError(f"key {new_key!r} already exists")
+    items = [(new_key if k == old else k, v) for k, v in parent.items()]
+    parent.clear()
+    parent.update(items)
+    return path[:-1] + (new_key,)
+
+
+def insert_after(root: Any, container_path: Path_, after: Any, key: str | None, value: Any) -> Path_:
+    """Insert into the container at ``container_path`` after member/index ``after``
+    (``None``: at the end). ``key`` is required for objects. Returns the new path."""
+    container = get_at(root, container_path)
+    if isinstance(container, list):
+        index = len(container) if after is None else after + 1
+        container.insert(index, value)
+        return container_path + (index,)
+    if not isinstance(container, dict):
+        raise ValueError("can only insert into an object or an array")
+    if not key:
+        raise ValueError("an object member needs a key")
+    if key in container:
+        raise ValueError(f"key {key!r} already exists")
+    items = list(container.items())
+    index = len(items) if after is None else [k for k, _ in items].index(after) + 1
+    items.insert(index, (key, value))
+    container.clear()
+    container.update(items)
+    return container_path + (key,)
+
+
+def move(root: Any, path: Path_, delta: int) -> Path_:
+    """Move a member/item up (-1) or down (+1) inside its container. Returns the new path."""
+    parent, step = _parent(root, path)
+    if isinstance(parent, list):
+        new = step + delta
+        if not 0 <= new < len(parent):
+            return path
+        parent[step], parent[new] = parent[new], parent[step]
+        return path[:-1] + (new,)
+    items = list(parent.items())
+    index = [k for k, _ in items].index(step)
+    new = index + delta
+    if not 0 <= new < len(items):
+        return path
+    items[index], items[new] = items[new], items[index]
+    parent.clear()
+    parent.update(items)
+    return path
+
+
+def type_name(value: Any) -> str:
+    """One of: String, Number, True, False, Null, Reference, Object, Array."""
+    if isinstance(value, Ref):
+        return "Reference"
+    if isinstance(value, bool):
+        return "True" if value else "False"
+    if value is None:
+        return "Null"
+    if isinstance(value, (int, float)):
+        return "Number"
+    if isinstance(value, dict):
+        return "Object"
+    if isinstance(value, list):
+        return "Array"
+    return "String"
+
+
+TYPES = ["String", "Number", "True", "False", "Null", "Reference", "Object", "Array"]
+
+
+def make_value(type_: str, text: str, current: Any = None) -> Any:
+    """Build a value of ``type_`` from the dialog's text. Containers keep ``current`` when it already is one."""
+    if type_ == "String":
+        return text
+    if type_ == "Number":
+        try:
+            return int(text) if re.fullmatch(r"-?\d+", text.strip()) else float(text)
+        except ValueError:
+            raise ValueError(f"{text!r} is not a number") from None
+    if type_ in ("True", "False", "Null"):
+        return {"True": True, "False": False, "Null": None}[type_]
+    if type_ == "Reference":
+        path = text.strip().lstrip("$")
+        if not _REF.fullmatch("$" + path):
+            raise ValueError("a reference looks like name or person.name")
+        return Ref(path)
+    if type_ == "Object":
+        return current if isinstance(current, dict) else {}
+    if type_ == "Array":
+        return current if isinstance(current, list) else []
+    raise ValueError(f"unknown type {type_}")
+
+
+def value_text(value: Any) -> str:
+    """The text shown in the dialog's value field for ``value``."""
+    if isinstance(value, Ref):
+        return value.path
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (dict, list)) or value is None or isinstance(value, bool):
+        return ""
+    return json.dumps(value)

@@ -38,6 +38,7 @@ from divide.ui.dialogs import (
 from divide.ui.shadow import ShadowScreen
 from divide import config
 from divide.run.render import RenderError, default_data_file, find_engine, render
+from divide.ui.jsontree import JsonTreeWindow
 from divide.ui.windows import EditorWindow, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
 PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
@@ -57,6 +58,7 @@ CM_OUTPUT = Command.USER + 10
 CM_DATA_FILE = Command.USER + 11
 CM_EDIT_DATA = Command.USER + 12
 CM_DIV_ENGINE = Command.USER + 13
+CM_DATA_TREE = Command.USER + 14
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -67,6 +69,7 @@ COMMANDS: dict[str, int] = {
     "GOTO_LINE": CM_GOTO_LINE,
     "RENDER": CM_RENDER,
     "OUTPUT": CM_OUTPUT,
+    "DATA_TREE": CM_DATA_TREE,
 }
 
 
@@ -115,6 +118,7 @@ class Divide(Application):
         Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
         Binding("ctrl+f9", "command('RENDER')", "Render", show=False, priority=True),
         Binding("alt+f5", "command('OUTPUT')", "Output", show=False, priority=True),
+        Binding("ctrl+t", "command('DATA_TREE')", "Data tree", show=False, priority=True),
         Binding("alt+x,ctrl+q", "command('QUIT')", "Exit", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
@@ -174,6 +178,7 @@ class Divide(Application):
                     Separator(),
                     MenuItem("~D~ata file...", CM_DATA_FILE),
                     MenuItem("~E~dit data", CM_EDIT_DATA),
+                    MenuItem("Data ~t~ree", CM_DATA_TREE, "Ctrl+T"),
                 ),
                 SubMenu(
                     "~W~indow",
@@ -314,6 +319,10 @@ class Divide(Application):
 
     def _remove_window(self, window: Window) -> None:
         if self.desktop is not None:
+            # A data tree is a view of its code window: they close together.
+            for tree in self.tree_windows():
+                if tree.source is window:
+                    self.desktop.remove_window(tree)
             self.desktop.remove_window(window)
         self.call_after_refresh(self.update_status)
 
@@ -401,10 +410,10 @@ class Divide(Application):
                 dialog = FileDialog("Open a file", start)
                 if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
                     self.open_file(dialog.chosen)
-            case Command.SAVE if editor:
-                await self.save(editor)
-            case Command.SAVE_AS if editor:
-                await self.save(editor, ask_name=True)
+            case Command.SAVE if editor or isinstance(win, JsonTreeWindow):
+                await self.save(editor or win.source)  # type: ignore[union-attr]
+            case Command.SAVE_AS if editor or isinstance(win, JsonTreeWindow):
+                await self.save(editor or win.source, ask_name=True)  # type: ignore[union-attr]
             case Command.SAVE_ALL:
                 for w in self.editor_windows():
                     if w.dirty and not await self.save(w):
@@ -466,6 +475,8 @@ class Divide(Application):
                 await self.choose_data_file()
             case _ if command == CM_EDIT_DATA:
                 self.edit_data()
+            case _ if command == CM_DATA_TREE:
+                self.toggle_data_tree()
             case _ if command == CM_DIV_ENGINE:
                 await self.choose_engine()
             case _ if command == CM_GOTO_LINE and editor:
@@ -733,6 +744,36 @@ class Divide(Application):
             win.saved_text = ""
             win.editor.move_cursor((1, 4))
 
+    def tree_windows(self) -> list[JsonTreeWindow]:
+        return [w for w in self.windows() if isinstance(w, JsonTreeWindow)]
+
+    def toggle_data_tree(self) -> None:
+        """Code <-> tree: from a tree go to its code; from JSON code (or a template's data) open its tree."""
+        active = self.active_window()
+        if isinstance(active, JsonTreeWindow):
+            self.raise_window(active.source)
+            return
+        source = active if isinstance(active, EditorWindow) and active.editor.lang == "json" else None
+        if source is None:
+            template_window = active if isinstance(active, EditorWindow) else None
+            self.edit_data()
+            source = self.active_editor()
+            if source is None or source.editor.lang != "json":
+                return
+            if template_window is not None and source is not template_window:
+                # The data takes the template's place (next to the Output after a render).
+                for attr in ("offset", "width", "height"):
+                    setattr(source.styles, attr, getattr(template_window.styles, attr))
+        tree = next((t for t in self.tree_windows() if t.source is source), None)
+        if tree is None:
+            tree = JsonTreeWindow(source, number=self._free_number())
+            # Same place as the code window: Ctrl+T flips between the two views.
+            for attr in ("offset", "width", "height"):
+                setattr(tree.styles, attr, getattr(source.styles, attr))
+            self.insert_window(tree)
+        else:
+            self.raise_window(tree)
+
     async def choose_engine(self) -> None:
         current = find_engine([self.root], config.load().get("div_engine"))
         start = current.parent if current else self.root
@@ -766,6 +807,10 @@ class Divide(Application):
         for win in self.editor_windows():
             if win.editor is event.text_area:
                 win.refresh_indicator()
+        if isinstance(event, DivEditor.Changed):
+            for tree in self.tree_windows():
+                if tree.source.editor is event.text_area:
+                    tree.reload()
         self.update_status()
 
     @on(DivEditor.DialectChanged)
@@ -783,6 +828,11 @@ class Divide(Application):
         active = self.active_window()
         if isinstance(active, OutputWindow):
             status.set_hint(active.summary)
+            return
+        if isinstance(active, JsonTreeWindow):
+            dirty = " *" if active.source.dirty else ""
+            error = f"JSON [!] {active.error} · Ctrl+T code" if active.error else JsonTreeWindow.HINT
+            status.set_hint(f"{active.source.display_name}{dirty} · {error}")
             return
         win = self.active_editor()
         if win is None:
