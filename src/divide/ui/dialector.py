@@ -368,13 +368,17 @@ class _TagRow(Horizontal):
 class SectionDialog(_Dialog):
     """The tags of one section, with Div's defaults and a live preview."""
 
+    # The content spans the frame (margin 1: inside the frame) so that the rules
+    # between the tags, the preview and the verdict meet it in Ts.
     DEFAULT_CSS = """
     SectionDialog { width: 78; }
-    SectionDialog .sd-about { height: 1; color: $text-muted; background: $surface; }
-    SectionDialog .sd-rows { height: auto; max-height: 12; background: $surface; margin-bottom: 1; }
-    SectionDialog .sd-preview { height: 8; border: none; }
-    SectionDialog .sd-verdict { height: 1; color: $text; background: $surface; }
+    SectionDialog > .tv-window-content { margin: 1; }
+    SectionDialog .sd-about { height: 1; color: $text-muted; background: $surface; padding: 0 1; }
+    SectionDialog .sd-rows { height: auto; max-height: 12; background: $surface; padding: 0 1; }
+    SectionDialog .sd-preview { height: 8; border: none; padding: 0 1; }
+    SectionDialog .sd-verdict { height: 1; color: $text; background: $surface; padding: 0 1; }
     SectionDialog .sd-verdict.-bad { color: $error; }
+    SectionDialog .dlg-buttons { margin-top: 0; }
     """
 
     def __init__(self, section: dx.Section, tags: dict[str, str], window: DialectorWindow) -> None:
@@ -394,7 +398,7 @@ class SectionDialog(_Dialog):
         self.focused_key = section.keys[0]
         self._timer = None
         rows = min(12, len(section.keys))
-        self.styles.height = rows + 15
+        self.styles.height = rows + 16
 
     def compose_content(self) -> ComposeResult:
         yield Static(self.section.about, classes="sd-about", markup=False)
@@ -405,8 +409,11 @@ class SectionDialog(_Dialog):
                     yield self.inputs[key]
                     default = DEFAULT_TAGS[key]
                     yield Static(f"default: {default}" if default else "default: (empty)", classes="tr-default", markup=False)
+        yield HRule()
         yield self.preview
+        yield HRule()
         yield self.verdict
+        yield HRule()
         with Horizontal(classes="dlg-buttons"):
             yield Button("O~K~", Command.OK, is_default=True, id="ok")
             yield Button("~D~efaults", CM_DEFAULTS, id="defaults")

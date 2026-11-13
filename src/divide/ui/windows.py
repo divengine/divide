@@ -42,32 +42,15 @@ def _overlay(strip: Strip, x: int, text: str, style: Style) -> Strip:
 # they replace the base behaviour and simply return when they extend it.
 
 
-class IndicatorFrame(Frame):
-    """Frame with the window number on the top border and a Borland-style
-    ``* 12:5`` indicator (modified flag, line:column) on the bottom border."""
-
-    def __init__(self, *args, number: int = 0, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.number = number
-        self.indicator = ""
-
-    def set_indicator(self, text: str) -> None:
-        if text != self.indicator:
-            self.indicator = text
-            self.refresh()
+class RuleFrame(Frame):
+    """A frame that joins the inner rules of its window (VRule / HRule) in Ts."""
 
     def render_line(self, y: int) -> Strip:
         strip = super().render_line(y)
         width, height = self.size
-        if width < 12 or height < 2:
+        if width < 2 or height < 2:
             return strip
         style = self.get_component_rich_style("frame--active" if self.active else "frame--passive")
-        if y == 0 and 0 < self.number < 10:
-            zoom = self._zoom_icon_range(width)
-            x = (zoom[0] if zoom else width - 1) - 2
-            strip = _overlay(strip, x, str(self.number), style)
-        elif y == height - 1 and self.indicator:
-            strip = _overlay(strip, 2, f" {self.indicator} ", style)
         return self._junctions(strip, y, width, height, style)
 
     # Inner rules (VRule / HRule) meet the border in a T: ╤ ╧ ╟ ╢ (┬ ┴ ├ ┤ when passive).
@@ -99,6 +82,35 @@ class IndicatorFrame(Frame):
         if self.parent is not None:
             for rule in self.parent.query(Rule):
                 rule.refresh()
+
+
+class IndicatorFrame(RuleFrame):
+    """Frame with the window number on the top border and a Borland-style
+    ``* 12:5`` indicator (modified flag, line:column) on the bottom border."""
+
+    def __init__(self, *args, number: int = 0, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.number = number
+        self.indicator = ""
+
+    def set_indicator(self, text: str) -> None:
+        if text != self.indicator:
+            self.indicator = text
+            self.refresh()
+
+    def render_line(self, y: int) -> Strip:
+        strip = super().render_line(y)
+        width, height = self.size
+        if width < 12 or height < 2:
+            return strip
+        style = self.get_component_rich_style("frame--active" if self.active else "frame--passive")
+        if y == 0 and 0 < self.number < 10:
+            zoom = self._zoom_icon_range(width)
+            x = (zoom[0] if zoom else width - 1) - 2
+            strip = _overlay(strip, x, str(self.number), style)
+        elif y == height - 1 and self.indicator:
+            strip = _overlay(strip, 2, f" {self.indicator} ", style)
+        return strip
 
 
 def _put(strip: Strip, x: int, char: str, over: str, style: Style) -> Strip:

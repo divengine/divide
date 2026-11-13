@@ -15,13 +15,13 @@ from textual_vision.button import Button
 from textual_vision.cluster import CheckBoxes, RadioButtons
 from textual_vision.constants import Command
 from textual_vision.dialogs import Dialog
-from textual_vision.frame import Frame
 from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
 from divide.editor.search import SearchOptions
 from divide.ui.shadow import install_shadows
+from divide.ui.windows import RuleFrame
 
 CM_CHANGE_ALL = Command.USER + 100
 
@@ -72,7 +72,7 @@ class _Dialog(Dialog):
         yield from ()
 
     def compose(self) -> ComposeResult:
-        yield Frame(title=self._title, flags=self._window_flags, active=True)
+        yield RuleFrame(title=self._title, flags=self._window_flags, active=True)
         with Container(classes="tv-window-content"):
             yield from self.compose_content()
 

@@ -438,7 +438,7 @@ def test_rewrite_loses():
 
 
 async def test_dialector_rules_meet_the_frame(tmp_path):
-    from divide.ui.windows import IndicatorFrame
+    from divide.ui.windows import IndicatorFrame, RuleFrame
 
     (tmp_path / "x.dialect").write_text("{}")
     app = Divide(tmp_path, [tmp_path / "x.dialect"])
@@ -454,3 +454,13 @@ async def test_dialector_rules_meet_the_frame(tmp_path):
         top, bottom = frame.render_line(0).text, frame.render_line(frame.size.height - 1).text
         assert "╤" in top and "╧" in bottom
         assert screen.count("╟") == 2 and screen.count("┤") == 2
+
+        # the section dialog: rules between the tags, the preview and the verdict
+        await pilot.press("enter")
+        await settle(pilot)
+        dialog = app.screen.dialog
+        assert isinstance(dialog, SectionDialog)
+        await settle(pilot)
+        frame = dialog.query_one(RuleFrame)
+        sides = [frame.render_line(y).text for y in range(frame.size.height)]
+        assert sum(line.startswith("╟") and line.endswith("╢") for line in sides) == 3
