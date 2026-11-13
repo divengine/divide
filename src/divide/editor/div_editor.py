@@ -125,6 +125,7 @@ class DivEditor(TextArea):
         self.json_error: DivJsonError | None = None
         self.json_refs: list[str] = []
         self.diagnostics: list[Diagnostic] = []
+        self.tokens: list = []  # lexer tokens of the template (Div only)
         self.dialect: Dialect = DEFAULT_DIALECT
         self._dialect_ref: str | None = None
         super().__init__(
@@ -157,7 +158,7 @@ class DivEditor(TextArea):
         text = self.text
         if self.lang == "div":
             self._update_dialect(text)
-            tokens = _LEXERS.get(self.dialect).tokenize(text)
+            tokens = self.tokens = _LEXERS.get(self.dialect).tokenize(text)
             self._set_diagnostics(check(text, tokens, self.dialect, self.path, self.roots))
             # Overlays after the syntax colours: errors on red, warnings underlined.
             tokens = tokens + [_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics]

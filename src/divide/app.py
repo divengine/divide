@@ -38,7 +38,9 @@ from divide.ui.dialogs import (
 from divide.ui.shadow import ShadowScreen
 from divide import config
 from divide.run.render import RenderError, default_data_file, find_engine, render
+from divide.ui.explorer import TREE_HINT, ExplorerMixin
 from divide.ui.jsontree import JsonTreeWindow
+from divide.lang import divjson
 from divide.lang.div.diagnostics import line_col
 from divide.run.render import RenderMessage
 from divide.ui.windows import EditorWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
@@ -65,6 +67,7 @@ CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
 CM_PREV_ERROR = Command.USER + 17
 CM_MESSAGES = Command.USER + 18
+CM_COMPLETE = Command.USER + 19
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -105,7 +108,7 @@ class HintStatusLine(StatusLine):
             self.refresh()
 
 
-class Divide(Application):
+class Divide(ExplorerMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
@@ -148,6 +151,7 @@ class Divide(Application):
         self.last_template: Path | None = None
         self.render_messages: list[RenderMessage] = []  # of last_template's last render
         self._focused_template: EditorWindow | None = None  # last template window that had focus
+        self._completion_cache: dict[Path, tuple[str, object]] = {}  # data file -> (text, value)
 
     # --------------------------------------------------------------- shell
     def get_default_screen(self) -> ShadowScreen:
@@ -177,6 +181,7 @@ class Divide(Application):
                     MenuItem("~P~aste", Command.PASTE, "Ctrl+V"),
                     Separator(),
                     MenuItem("Select ~a~ll", CM_SELECT_ALL, "F7"),
+                    MenuItem("Co~m~plete", CM_COMPLETE, "Ctrl+Space"),
                 ),
                 SubMenu(
                     "~S~earch",
@@ -370,7 +375,17 @@ class Divide(Application):
             win.path = dialog.chosen
             win.editor.set_path(dialog.chosen)
             self._relabel(win)
+            if self._write(win):
+                self.refresh_project()
+                return True
+            return False
         return self._write(win)
+
+    def refresh_project(self) -> None:
+        """Show files created outside the project window (Save as)."""
+        project = self.project_window()
+        if project is not None:
+            project.project_tree.reload()
 
     async def confirm_close(self, win: EditorWindow) -> bool:
         """Ask about unsaved changes. True when the window may close."""
@@ -470,6 +485,9 @@ class Divide(Application):
                 editor.editor.action_paste()
             case _ if command == CM_SELECT_ALL and editor:
                 editor.editor.select_all()
+            case _ if command == CM_COMPLETE and editor:
+                editor.editor.focus()
+                self.call_after_refresh(editor.editor.update_completion, True)
             case _ if command == CM_PROJECT:
                 self.toggle_project()
             case _ if command == CM_PALETTE and isinstance(info, str):
@@ -656,6 +674,24 @@ class Divide(Application):
             return path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             return None
+
+    def completion_data_for(self, editor: DivEditor) -> object:
+        """The data JSON of the template in ``editor`` (decoded; the last good one while it is broken)."""
+        if editor.path is None:
+            return None
+        data_path = self.data_file_for(editor.path)
+        text = self._text_of(data_path)
+        if text is None:
+            return None
+        cached = self._completion_cache.get(data_path)
+        if cached is not None and cached[0] == text:
+            return cached[1]
+        try:
+            value = divjson.loads(text)
+        except divjson.DivJsonError:
+            return cached[1] if cached is not None else None
+        self._completion_cache[data_path] = (text, value)
+        return value
 
     def _render_layout(self, template: Path, output: OutputWindow, messages: MessagesWindow | None) -> None:
         """First render: template on the left, output on the right, messages below."""
@@ -979,6 +1015,9 @@ class Divide(Application):
             dirty = " *" if active.source.dirty else ""
             error = f"JSON [!] {active.error} · Ctrl+T code" if active.error else JsonTreeWindow.HINT
             status.set_hint(f"{active.source.display_name}{dirty} · {error}")
+            return
+        if isinstance(active, ProjectWindow):
+            status.set_hint(TREE_HINT)
             return
         win = self.active_editor()
         if win is None:

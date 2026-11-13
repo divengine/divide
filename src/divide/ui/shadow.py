@@ -158,7 +158,7 @@ def casts_tv_shadow(widget: Widget) -> bool:
     from textual_vision.menus import MenuBox
     from textual_vision.window import Window
 
-    return isinstance(widget, (Window, MenuBox))
+    return isinstance(widget, (Window, MenuBox)) or getattr(widget, "tv_shadow", False)
 
 
 def install_shadows(screen: Screen, casts_shadow: Callable[[Widget], bool] = casts_tv_shadow) -> None:

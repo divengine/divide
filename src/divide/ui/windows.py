@@ -7,8 +7,11 @@ from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
+from textual import events
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container
+from textual.message import Message
 from textual.strip import Strip
 from textual.widgets import DirectoryTree
 from textual_vision.constants import Command, OptionFlag, WindowFlag
@@ -19,6 +22,8 @@ from textual_vision.list_box import ListBox
 from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
+from divide.lang.div.complete import CARET, CompletionResult, complete
+from divide.ui.completion import CompletionPopup
 
 UNTITLED = "NONAME{:02d}.TPL"
 
@@ -98,9 +103,130 @@ class EditorView(DivEditor, TVViewMixin):
     }
     """
 
+    BINDINGS = [Binding("ctrl+space,ctrl+@", "complete", "Complete", show=False)]
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.tv_options = OptionFlag.SELECTABLE
+        self._popup: CompletionPopup | None = None
+        self._typed = False  # the last change came from a key typed here
+        self._completion_pending = False
+
+    # ------------------------------------------------------------ completion
+    @property
+    def completing(self) -> bool:
+        return self._popup is not None and self._popup.display and self._popup.result is not None
+
+    def action_complete(self) -> None:
+        self.update_completion(explicit=True)
+
+    def _caret_index(self) -> int | None:
+        sel = self.selection
+        if sel.start != sel.end:
+            return None
+        return self.document.get_index_from_location(sel.end)
+
+    def _complete_at_cursor(self, explicit: bool) -> CompletionResult | None:
+        if not self.div_enabled or self.read_only:
+            return None
+        offset = self._caret_index()
+        if offset is None:
+            return None
+        provider = getattr(self.app, "completion_data_for", None)
+        data = provider(self) if provider is not None else None
+        return complete(
+            self.text, offset, self.tokens, self.dialect,
+            data=data, template=self.path, roots=self.roots, explicit=explicit,
+        )
+
+    def update_completion(self, explicit: bool = False) -> None:
+        result = self._complete_at_cursor(explicit)
+        if result is None or not result.items:
+            self.hide_completion()
+            return
+        if self._popup is None or not self._popup.is_attached:
+            self._popup = CompletionPopup(self)
+            self.screen.mount(self._popup)
+        x, y = self.cursor_screen_offset
+        self._popup.show(result, explicit=explicit, at=(x - len(result.prefix), y), screen_size=tuple(self.screen.size))
+
+    def hide_completion(self) -> None:
+        if self._popup is not None:
+            self._popup.result = None
+            self._popup.display = False
+
+    def accept_completion(self) -> None:
+        popup = self._popup
+        item = popup.selected if popup is not None else None
+        result = popup.result if popup is not None else None
+        self.hide_completion()
+        offset = self._caret_index()
+        if item is None or result is None or offset is None or result.start > offset:
+            return
+        insert = item.insert
+        caret = insert.find(CARET)
+        insert = insert.replace(CARET, "")
+        after = item.after if item.after and not self.text.startswith(item.after, offset) else ""
+        doc = self.document
+        self.replace(insert + after, doc.get_location_from_index(result.start), doc.get_location_from_index(offset))
+        self.move_cursor(doc.get_location_from_index(result.start + (caret if caret >= 0 else len(insert))))
+        self._typed = False
+        if item.retrigger:
+            self.call_after_refresh(self.update_completion, True)
+
+    def _refresh_completion(self) -> None:
+        self._completion_pending = False
+        typed, self._typed = self._typed, False
+        if self.completing:
+            assert self._popup is not None and self._popup.result is not None
+            start = self._popup.result.start
+            result = self._complete_at_cursor(self._popup.explicit)
+            if result is None or not result.items or (result.start != start and not typed):
+                self.hide_completion()
+            else:
+                self.update_completion(self._popup.explicit)
+        elif typed:
+            self.update_completion(explicit=False)
+
+    def _schedule_completion(self) -> None:
+        if not self._completion_pending and (self._typed or self.completing):
+            self._completion_pending = True
+            self.call_after_refresh(self._refresh_completion)
+
+    async def _on_key(self, event: events.Key) -> None:
+        if self.completing:
+            assert self._popup is not None
+            key = event.key
+            handled = True
+            if key == "up":
+                self._popup.move(-1)
+            elif key == "down":
+                self._popup.move(1)
+            elif key == "pageup":
+                self._popup.page(-1)
+            elif key == "pagedown":
+                self._popup.page(1)
+            elif key in ("enter", "tab"):
+                self.accept_completion()
+            elif key == "escape":
+                self.hide_completion()
+            else:
+                handled = False
+            if handled:
+                event.stop()
+                event.prevent_default()
+                return
+        if event.is_printable or event.key == "backspace":
+            self._typed = True
+
+    def on_text_area_changed(self) -> None:
+        self._schedule_completion()
+
+    def on_text_area_selection_changed(self) -> None:
+        self._schedule_completion()
+
+    def on_blur(self) -> None:
+        self.hide_completion()
 
 
 class EditorWindow(_TVWindow):
@@ -141,11 +267,26 @@ class EditorWindow(_TVWindow):
             self.app.close_window(self)  # type: ignore[attr-defined]
 
 
+# Folders that are never worth browsing in the project window.
+HIDDEN_NAMES = {".git", ".hg", ".svn", "__pycache__", ".venv", "node_modules", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".idea"}
+
+
 class ProjectTree(DirectoryTree, TVViewMixin):
+    """Project explorer: Ins new file, F7 new folder, F2 rename, Del delete,
+    Ctrl+R refresh, Alt+F10 (or a right click) the local menu."""
+
     # Single-width glyphs: the default emoji icons are double width and not in the TV style.
     ICON_NODE = "▸ "
     ICON_NODE_EXPANDED = "▾ "
     ICON_FILE = "  "
+    BINDINGS = [
+        Binding("insert", "request('new_file')", "New file", show=False),
+        Binding("f7", "request('new_folder')", "New folder", show=False),
+        Binding("f2", "request('rename')", "Rename", show=False),
+        Binding("delete", "request('delete')", "Delete", show=False),
+        Binding("ctrl+r", "request('refresh')", "Refresh", show=False),
+        Binding("alt+f10,shift+f10", "request('menu')", "Local menu", show=False),
+    ]
     DEFAULT_CSS = """
     ProjectTree {
         background: $window-content-background;
@@ -168,9 +309,86 @@ class ProjectTree(DirectoryTree, TVViewMixin):
     ProjectTree > .tree--highlight, ProjectTree > .tree--highlight-line { background: $window-content-background; }
     """
 
+    class Request(Message):
+        """The user asked for a file operation (handled by the app)."""
+
+        def __init__(self, tree: "ProjectTree", action: str, screen_at: tuple[int, int] | None = None) -> None:
+            super().__init__()
+            self.tree = tree
+            self.action = action
+            self.screen_at = screen_at
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.tv_options = OptionFlag.SELECTABLE
+
+    def filter_paths(self, paths):
+        return [p for p in paths if p.name not in HIDDEN_NAMES and not p.name.endswith(".egg-info")]
+
+    def action_request(self, action: str) -> None:
+        self.post_message(self.Request(self, action, self.cursor_screen_at() if action == "menu" else None))
+
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        if event.button == 3:
+            event.stop()
+            line = event.y + self.scroll_offset.y
+            if 0 <= line < self.last_line + 1:
+                self.cursor_line = line
+            self.post_message(self.Request(self, "menu", (event.screen_x, event.screen_y)))
+
+    async def _on_click(self, event: events.Click) -> None:
+        if event.button == 3:  # the right button opens the local menu (on mouse down), not the file
+            event.stop()
+            event.prevent_default()
+
+    def cursor_screen_at(self) -> tuple[int, int]:
+        region = self.content_region
+        y = region.y + max(0, self.cursor_line - self.scroll_offset.y)
+        return region.x + 2, min(y, region.bottom - 1)
+
+    @property
+    def selected_path(self) -> Path | None:
+        node = self.cursor_node
+        return node.data.path if node is not None and node.data is not None and node is not self.root else None
+
+    @property
+    def target_folder(self) -> Path:
+        """Where new files go: the folder under the cursor, or the folder of the file under it."""
+        path = self.selected_path
+        if path is None:
+            return Path(self.path)
+        return path if path.is_dir() else path.parent
+
+    def _node_for(self, path: Path):
+        stack = [self.root]
+        while stack:
+            node = stack.pop()
+            if node.data is not None and node.data.path == path:
+                return node
+            stack.extend(node.children)
+        return None
+
+    async def reveal(self, path: Path) -> None:
+        """Reload the folders on the way to ``path`` and put the cursor on it."""
+        root = Path(self.path).resolve()
+        path = path.resolve()
+        try:
+            parts = path.relative_to(root).parts
+        except ValueError:
+            return
+        node = self.root
+        await self.reload_node(node)
+        current = root
+        for part in parts:
+            current = current / part
+            child = next((c for c in node.children if c.data is not None and c.data.path == current), None)
+            if child is None:
+                return
+            node = child
+            if current != path and node.allow_expand:
+                await self.reload_node(node)
+        _ = self._tree_lines  # lines are rebuilt lazily: node.line is -1 until then
+        self.move_cursor(node, animate=False)
 
 
 class ProjectWindow(_TVWindow):

@@ -29,6 +29,7 @@ down; what is underneath stays readable in dark gray on black).
 | `F6` / `Shift+F6`, `Ctrl+PgDn/PgUp` | next / previous window |
 | `Alt+1`…`Alt+9` | go to window *n* |
 | `Ctrl+B` | project window (open, raise, close) |
+| `Ctrl+Space` | complete: variables, loop names, include paths, Div tags |
 | `Ctrl+F` / `Ctrl+R` | find / replace (case, whole words, regex with `\1` groups, direction, origin, prompt) |
 | `Ctrl+L` | search again (repeats the last find or replace) |
 | `Ctrl+G` | go to line number |
@@ -51,6 +52,41 @@ warnings brown in the editor; the status line shows the message under the
 cursor or the counts. The Messages window (Alt+F9, or Window > Messages) lists
 them as `page.tpl(12,5): Error: ...`, follows the active template live, and
 Enter jumps to the place; render messages follow below.
+
+## Completion
+
+Typing `{$`, `[$`, `[/$`, `?$` / `!$`, a `$` inside `{?( )?}`, `(# #)` or
+`{= =}`, or `{% ` opens a completion list under the cursor (Turbo Vision menu
+colours); typing narrows it, ↑/↓ and PgUp/PgDn move, Enter or Tab inserts,
+Esc closes. `Ctrl+Space` (Edit > Complete) opens it anywhere: with nothing
+more specific it lists the Div tags of the template's dialect (what is typed
+before the cursor, such as `{?` or `loop`, narrows them).
+
+- Variables come from the data JSON (the editor buffer if it is open, so
+  unsaved keys count), with dotted members (`site.name`); inside a loop, the
+  fields of its items, the item name (`value`, or `p` in `[$list] p => ...`)
+  and Div's `_index`, `_key`, `_is_last`...; then template variables
+  (`{= x: ... =}`) and the variables already used in the template.
+- `[$` offers lists first and inserts `products]` plus the closing
+  `[/$products]` (unless the loop is already closed further down); `[/$`
+  offers the open loops; `?$x` adds the matching `$x?`.
+- `{% ` / `{%% ` list folders and `.tpl` files (without the extension, as Div
+  writes includes), relative to the template and the project.
+
+## Project window
+
+`Ctrl+B` opens the project tree (version-control and cache folders such as
+`.git`, `__pycache__`, `.venv`, `node_modules` are hidden). Enter opens a file
+or folds a folder; on the tree:
+
+| Key | Action |
+|---|---|
+| `Ins` | new file in the folder under the cursor (`parts/menu.tpl` creates `parts/` too); it opens |
+| `F7` | new folder (nested paths are fine) |
+| `F2` | rename (the name without its extension is selected); open windows follow |
+| `Del` | delete, after confirming (folders with everything in them); windows of deleted files close unless they hold unsaved changes |
+| `Ctrl+R` | refresh from disk |
+| `Alt+F10`, `Shift+F10`, right click | local menu with all of the above |
 
 ## Rendering
 
@@ -95,9 +131,11 @@ inside templates, e.g. `{= card: {"who": $person.name} =}`.
 - `src/divide/lang/div/` — the language, UI-independent (lexer, dialects, diagnostics)
   - `dialect.py` — `DIV_TAG_*` defaults (mirrors `div.php`), lenient dialect JSON, `@_DIALECT` resolution
   - `lexer.py` — dialect-aware lexer → `Token(start, end, kind)`
+  - `diagnostics.py` — Div errors and warnings for the editor and the Messages window
+  - `complete.py` — completion of variables, loops, include paths and tags
 - `src/divide/editor/` — `DivEditor` (Textual `TextArea` fed by the lexer instead of tree-sitter) and theme
 - `src/divide/ui/` — Turbo Vision pieces on [textual-vision](https://pypi.org/project/textual-vision/):
-  editor / project windows, message boxes, file dialog
+  editor / project windows, message boxes, file dialog, completion list, project file operations
 - `src/divide/run/` — rendering: `bridge.php` (runs Div, replies JSON) and `render.py`
 - `src/divide/app.py` — the application: menus, status line, commands, window management
 - `docs/div-language.md` — notes on Div as understood by the editor

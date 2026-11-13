@@ -396,3 +396,52 @@ class GotoLineDialog(_Dialog):
             self.app.notify("Not a line number", severity="error")
             return False
         return self.line >= 1
+
+
+class InputDialog(_Dialog):
+    """One line of text (a name): ``value`` holds it after OK."""
+
+    DEFAULT_CSS = """
+    InputDialog { width: 56; height: 9; }
+    InputDialog InputLine { width: 1fr; }
+    InputDialog .dlg-hint { color: $text-muted; background: $surface; height: 1; }
+    """
+
+    def __init__(self, title: str, label: str, text: str = "", *, hint: str = "", select: tuple[int, int] | None = None) -> None:
+        super().__init__(title=title)
+        self.input = InputLine(max_len=1024)
+        self.input.data = text
+        self.label = label
+        self.hint = hint
+        self.select = select
+        self.value: str | None = None
+
+    def compose_content(self) -> ComposeResult:
+        yield Label(self.label, link=self.input)
+        yield self.input
+        yield Static(self.hint, classes="dlg-hint")
+        with Horizontal(classes="dlg-buttons"):
+            yield Button("O~K~", Command.OK, is_default=True, id="ok")
+            yield Button("Cancel", Command.CANCEL, id="cancel")
+
+    def on_mount(self) -> None:
+        self.call_after_refresh(self._place_cursor)
+
+    def _place_cursor(self) -> None:
+        if self.select is None:
+            self.input.select_all()
+            return
+        start, end = self.select
+        line = self.input
+        line._sel_start, line._sel_end, line._cursor_pos = start, end, end
+        line.refresh()
+
+    def valid(self, command: Command) -> bool:
+        if command != Command.OK:
+            return True
+        self.value = self.input.data.strip()
+        return bool(self.value)
+
+
+def confirm(title: str, text: str) -> MessageBox:
+    return MessageBox(title, text, [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no")], width=max(40, min(64, len(text) + 8)))
