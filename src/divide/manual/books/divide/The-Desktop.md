@@ -18,7 +18,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Run** | Render (Ctrl+F9), Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | colour palette, plain symbols or Nerd Font icons, Div engine |
+| **Options** | colour palette, plain symbols or Nerd Font icons, language servers, Div engine |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows

@@ -130,6 +130,8 @@ class DivEditor(TextArea):
         self.engine_dialects: dict[str, Dialect] = {}  # @_DIALECT value -> the dialect as Div loads it
         self._guess: tuple[str, Dialect] | None = None
         self._text_cache: str | None = None  # PHP: the text last sent to be checked
+        self.lint_diagnostics: list[Diagnostic] = []  # from php -l
+        self.server_diagnostics: list = []  # from the language server
         super().__init__(
             text,
             soft_wrap=False,
@@ -164,8 +166,27 @@ class DivEditor(TextArea):
 
     def set_lint(self, diagnostics: list[Diagnostic]) -> None:
         """The errors a checker outside the editor found (PHP's ``php -l``)."""
-        if diagnostics != self.diagnostics:
-            self._set_diagnostics(diagnostics)
+        self.lint_diagnostics = list(diagnostics)
+        self._merge_outside_diagnostics()
+
+    def set_server_diagnostics(self, diagnostics: list) -> None:
+        """What the language server says about the text (``divide.lsp``)."""
+        self.server_diagnostics = list(diagnostics)
+        self._merge_outside_diagnostics()
+
+    def _merge_outside_diagnostics(self) -> None:
+        # The language's own checker first; the server adds what is not on the same line.
+        merged = list(self.lint_diagnostics)
+        lines = {self.text.count("\n", 0, d.start) for d in merged}
+        for d in self.server_diagnostics:
+            if d.end > len(self.text):
+                continue
+            if d.severity == "error" and self.text.count("\n", 0, d.start) in lines:
+                continue
+            merged.append(Diagnostic(d.start, d.end, d.severity, " ".join(d.message.split())))
+        merged.sort(key=lambda d: (d.start, d.end))
+        if merged != self.diagnostics:
+            self._set_diagnostics(merged)
             self._build_highlight_map()
             self.refresh()
 
@@ -187,6 +208,7 @@ class DivEditor(TextArea):
         if lang != self.lang:
             self.lang = lang
             self.diagnostics = []
+            self.lint_diagnostics, self.server_diagnostics = [], []
             self._set_language()
             if lang == "php" and self.is_mounted:
                 self.post_message(self.CheckRequested(self))

@@ -12,7 +12,7 @@ divide carries its documentation with it, as books: this manual, and Div's own d
 | | Help > Contents | the table of contents of the book on show (divide's when the help is closed) |
 | | Help > Books | the list of books |
 | **Shift+F1** | Help > Index | every topic and every section of the book on show, alphabetically |
-| **Ctrl+F1** | Help > Topic search | the topic of the word under the editor's cursor, in any book (for example *dialect*, *render*, *loops*); the index when no topic matches |
+| **Ctrl+F1** | Help > Topic search | the topic of the word under the editor's cursor, in any book (for example *dialect*, *render*, *loops*); the index when no topic matches. In a PHP file with a [[language server|Language Servers]], what the server knows about the symbol instead |
 | **Alt+F1** | Help > Previous topic | back to the topic you came from |
 
 F1 in the help window itself shows this page.

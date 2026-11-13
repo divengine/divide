@@ -22,8 +22,8 @@ PHP stops at the first syntax error, so there is one at a time. `php` must be in
 
 Put the cursor on a string that names a file and press **Ctrl+Enter** (or Ctrl+click): `new div('index.tpl', $data)` opens the template, `require 'menu.php'` opens `menu.php`. divide looks next to the PHP file, then in the project folder, and tries the name with `.tpl` too.
 
-## What is not there yet
+## With a language server
 
-Completion of PHP (classes, functions, methods) and checks beyond syntax will come later.
+With [phpactor](https://phpactor.readthedocs.io) or [intelephense](https://intelephense.com) installed, the PHP editor completes functions, classes and methods, shows what a symbol is (**Ctrl+F1**), goes to its definition (**Ctrl+Enter**) and adds the server's warnings to PHP's errors. See [[Language Servers]].
 
 Everything else is the same editor as for templates: find and replace, the editing keys, undo (see [[Editing Templates]]).

@@ -252,6 +252,45 @@ async def php():
         save(app, "php")
 
 
+@shot
+async def lsp():
+    """Completion from a real language server: DIVIDE_SHOT_LSP="name command…"
+    (for example "intelephense /path/intelephense --stdio"); skipped without it."""
+    spec = os.environ.get("DIVIDE_SHOT_LSP", "").split()
+    if len(spec) < 2:
+        print("skipped lsp: set DIVIDE_SHOT_LSP")
+        return
+    name, command = spec[0], spec[1:]
+    import json
+    config_home = Path(tempfile.mkdtemp())
+    (config_home / "divide").mkdir()
+    (config_home / "divide" / "config.json").write_text(json.dumps({"lsp": {"php": name}, "lsp_commands": {name: command}}))
+    old = os.environ.get("XDG_CONFIG_HOME")
+    os.environ["XDG_CONFIG_HOME"] = str(config_home)
+    try:
+        app = Divide(DEMO, [DEMO / "index.php"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            await until(pilot, lambda: app.lsp_session("php") is not None, tries=600)
+            await settle(pilot, 10)
+            await until(pilot, lambda: not app.lsp_working, tries=1200)  # indexing
+            ed = app.active_editor().editor
+            ed.move_cursor((14, 0))
+            ed.insert("$data['total'] = array_")
+            await settle(pilot, 4)
+            await pilot.press("s")
+            await until(pilot, lambda: ed.completing, tries=400)
+            await pilot.press("down", "down")
+            await settle(pilot, 6)
+            save(app, "lsp")
+            await app.lsp_stop_all()
+    finally:
+        if old is None:
+            os.environ.pop("XDG_CONFIG_HOME", None)
+        else:
+            os.environ["XDG_CONFIG_HOME"] = old
+
+
 async def run(names: set[str]) -> None:
     for fn in SHOTS:
         if not names or fn.__name__ in names:

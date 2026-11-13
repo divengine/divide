@@ -38,6 +38,10 @@ through the real Div engine, side by side with the code.
 - **PHP next to the templates.** `.php` files are highlighted with
   tree-sitter's PHP grammar and checked by PHP itself (`php -l`) as you type.
   Ctrl+Enter on `new div('page.tpl')` opens the template.
+- **Language servers.** With phpactor or intelephense (in the project or the
+  PATH), PHP gets completion, hover (Ctrl+F1), go to definition (Ctrl+Enter)
+  and the server's diagnostics. divide is a generic LSP client (pygls), so
+  other languages are one entry away.
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
@@ -137,6 +141,8 @@ file only to colour, and reports nothing about it.
 ### Layout
 
 - `src/divide/lang/__init__.py` — the languages divide edits, by extension (name, help topic, checked or not)
+- `src/divide/lsp/` — the Language Server Protocol client: known servers, positions, the session (pygls)
+- `src/divide/ui/lsp.py` — language servers in the IDE: lifecycle, completion, hover, definitions, Options dialog
 - `src/divide/lang/php.py` — PHP: tree-sitter-php's grammar for colours, `php -l` for errors
 - `src/divide/lang/divjson.py` — Div JSON: tokens, parser with positions, writer, tree edits
 - `src/divide/lang/div/` — the language, UI-independent (lexer, dialects, diagnostics)

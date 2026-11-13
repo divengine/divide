@@ -19,7 +19,7 @@
 | **Alt+F8** / **Alt+F7** | next / previous error |
 | **Ctrl+T** | data tree ⇄ code |
 | **F1** | help on the active window |
-| **Shift+F1** / **Ctrl+F1** / **Alt+F1** | help index / topic search / previous topic |
+| **Shift+F1** / **Ctrl+F1** / **Alt+F1** | help index / topic search (in PHP with a language server: what the symbol is) / previous topic |
 | **Alt+X** / **Ctrl+Q** | exit |
 
 ## Editor
@@ -27,7 +27,7 @@
 | Key | Action |
 |---|---|
 | **Ctrl+Space** | completion |
-| **Ctrl+Enter** / **Ctrl+J** / Ctrl+click | go to the included template; in PHP, open the file a string names |
+| **Ctrl+Enter** / **Ctrl+J** / Ctrl+click | go to the included template; in PHP, open the file a string names, or go to the definition (with a language server) |
 | **Ctrl+F** / **Ctrl+R** | find / replace |
 | **Ctrl+L** | search again |
 | **Ctrl+G** | go to line |

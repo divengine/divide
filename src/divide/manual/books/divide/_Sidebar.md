@@ -8,6 +8,7 @@
 * [[The Desktop]]
 * [[Editing Templates]]
 * [[Editing PHP]]
+* [[Language Servers]]
 * [[Completion]]
 * [[Checking Templates]]
 * [[Rendering]]

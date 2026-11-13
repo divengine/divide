@@ -72,6 +72,8 @@ from divide import manual
 from divide.lang import divjson
 from divide import lang as languages
 from divide.ui import icons as icons_mod
+from divide.ui.lsp import LspMixin
+from divide import lsp
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
@@ -115,6 +117,7 @@ CM_HELP_SEARCH = Command.USER + 26
 CM_HELP_BACK = Command.USER + 27
 CM_HELP_BOOKS = Command.USER + 28
 CM_ICONS = Command.USER + 29  # info: icons mode
+CM_LSP_SERVERS = Command.USER + 30
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -232,7 +235,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ExplorerMixin, Application):
+class Divide(ExplorerMixin, LspMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
@@ -270,6 +273,7 @@ class Divide(ExplorerMixin, Application):
 
     def __init__(self, root: Path, files: list[Path], *, palette: str = DEFAULT_PALETTE) -> None:
         super().__init__(theme=palette)
+        self._lsp_init()
         self.root = root
         self.initial_files = files
         self._untitled = 0
@@ -364,6 +368,7 @@ class Divide(ExplorerMixin, Application):
                     MenuItem("Plain ~s~ymbols", CM_ICONS, param=icons_mod.PLAIN),
                     MenuItem("~N~erd Font icons", CM_ICONS, param=icons_mod.NERD),
                     Separator(),
+                    MenuItem("~L~anguage servers...", CM_LSP_SERVERS),
                     MenuItem("~D~iv engine...", CM_DIV_ENGINE),
                 ),
                 SubMenu(
@@ -525,6 +530,7 @@ class Divide(ExplorerMixin, Application):
         self.notify(f"Saved {win.path.name}", timeout=1.5)
         self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
+        self.lsp_saved(win.path, win.editor.lang)
         return True
 
     async def save(self, win: EditorWindow, *, ask_name: bool = False) -> bool:
@@ -565,6 +571,8 @@ class Divide(ExplorerMixin, Application):
     async def close_window(self, window: Window) -> None:
         if isinstance(window, EditorWindow) and not await self.confirm_close(window):
             return
+        if isinstance(window, EditorWindow):
+            self.lsp_closed(window.path, window.editor.lang)
         self._remove_window(window)
 
     # ---------------------------------------------------------- commands
@@ -598,6 +606,7 @@ class Divide(ExplorerMixin, Application):
                 for w in self.editor_windows():
                     if not await self.confirm_close(w):
                         return
+                await self.lsp_stop_all()
                 self.exit()
             case Command.NEW:
                 self.new_file()
@@ -661,6 +670,8 @@ class Divide(ExplorerMixin, Application):
                 self.theme = info
             case _ if command == CM_ICONS and info in icons_mod.MODES:
                 self.set_icons(info)
+            case _ if command == CM_LSP_SERVERS:
+                await self.choose_servers("php")
             case _ if command == CM_HELP:
                 self.open_help(self.context_topic())
             case _ if command == CM_HELP_CONTENTS:
@@ -670,6 +681,9 @@ class Divide(ExplorerMixin, Application):
             case _ if command == CM_HELP_BOOKS:
                 self.open_help(manual.LIBRARY)
             case _ if command == CM_HELP_SEARCH:
+                if editor is not None and lsp.servers_for(editor.editor.lang or "") and editor.path is not None:
+                    if await self.lsp_hover(editor.editor):  # what the language server knows
+                        return
                 self.help_search()
             case _ if command == CM_HELP_BACK:
                 help_win = self.help_window()
@@ -896,6 +910,7 @@ class Divide(ExplorerMixin, Application):
     def _check_requested(self, event: DivEditor.CheckRequested) -> None:
         """PHP changed: ask PHP (``php -l``) once the typing pauses."""
         ed = event.editor
+        self.lsp_changed(ed)
         timer = self._include_timers.pop(("lint", id(ed)), None)
         if timer is not None:
             timer.stop()  # type: ignore[attr-defined]
@@ -1030,7 +1045,8 @@ class Divide(ExplorerMixin, Application):
                 name = m.group(1) if m.group(1) is not None else m.group(2)
                 break
         if not name:
-            self.notify("Put the cursor on a string with a file name", timeout=2)
+            if not await self.lsp_definition(win):
+                self.notify("Put the cursor on a symbol or on a string with a file name (no language server: Options > Language servers)", timeout=3)
             return
         bases = ([win.path.parent] if win.path is not None else []) + [self.root]
         for base in bases:
@@ -1830,8 +1846,8 @@ class Divide(ExplorerMixin, Application):
             elif ed.diagnostics:
                 hint = f"PHP · {ed.diagnostics[0].message} (Alt+F8)"
             else:
-                hint = "PHP · no syntax errors"
-            status.set_hint(hint)
+                hint = "PHP · no errors"
+            status.set_hint(f"{hint} · {self.lsp_status('php')}")
             return
         if ed.div_enabled:
             here = ed.document.get_index_from_location(min(ed.selection.start, ed.selection.end))

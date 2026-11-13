@@ -250,7 +250,17 @@ class EditorView(DivEditor, TVViewMixin):
         )
 
     def update_completion(self, explicit: bool = False) -> None:
-        result = self._complete_at_cursor(explicit)
+        if self.lang == "php":
+            # asked to the language server; the answer comes back in show_completion
+            provider = getattr(self.app, "lsp_complete", None)
+            if provider is None or self.read_only or self._caret_index() is None:
+                self.hide_completion()
+            else:
+                provider(self, explicit)
+            return
+        self.show_completion(self._complete_at_cursor(explicit), explicit)
+
+    def show_completion(self, result: CompletionResult | None, explicit: bool) -> None:
         if result is None or not result.items:
             self.hide_completion()
             return
@@ -287,6 +297,12 @@ class EditorView(DivEditor, TVViewMixin):
     def _refresh_completion(self) -> None:
         self._completion_pending = False
         typed, self._typed = self._typed, False
+        if self.lang == "php":
+            if self.completing:
+                self.update_completion(self._popup.explicit)  # type: ignore[union-attr]
+            elif typed:
+                self.update_completion(explicit=False)
+            return
         if self.completing:
             assert self._popup is not None and self._popup.result is not None
             start = self._popup.result.start
@@ -340,7 +356,7 @@ class EditorView(DivEditor, TVViewMixin):
 
     def on_click(self, event: events.Click) -> None:
         # Ctrl+click on an include opens it (after the click has placed the cursor).
-        if event.ctrl and self.div_enabled and hasattr(self.app, "action_command"):
+        if event.ctrl and (self.div_enabled or self.lang == "php") and hasattr(self.app, "action_command"):
             self.call_after_refresh(self.app.action_command, "GOTO_INCLUDE")
 
 
