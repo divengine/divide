@@ -314,3 +314,53 @@ async def test_div_tags_in_texts_are_not_markup(tmp_path):
         await settle(pilot)
         assert isinstance(app.screen.dialog, SectionDialog)
         assert any("default: [/]" in str(w.render()) for w in app.screen.dialog.query(".tr-default"))
+
+
+@needs_div
+async def test_translate_browse_puts_absolute_paths(tmp_path):
+    (tmp_path / "dialects").mkdir()
+    (tmp_path / "dialects" / "erb.dialect").write_text(json.dumps(ERB))
+    page = tmp_path / "page.tpl"
+    page.write_text("Hi {$name}\n")
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "t")
+        await settle(pilot)
+        dialog = app.screen.dialog
+        await until(pilot, lambda: dialog.text is not None)
+        await pilot.click("#browse-2")  # the target dialect's "..."
+        await settle(pilot)
+        chooser = app.screen.dialog
+        assert chooser.title == "Target dialect" and chooser.pattern == "*.dialect"
+        chooser.input.data = "dialects/erb.dialect"
+        await pilot.click("#ok")
+        await settle(pilot)
+        assert app.screen.dialog is dialog
+        chosen = (tmp_path / "dialects" / "erb.dialect").resolve()
+        assert dialog.target_input.data == str(chosen)  # absolute; the user may shorten it
+        await until(pilot, lambda: "<%$name%>" in (dialog.text or ""))
+        assert dialog.text.startswith("@_DIALECT = dialects/erb.dialect\n")
+
+
+async def test_new_dialect_name_can_be_browsed(tmp_path):
+    (tmp_path / "d").mkdir()
+    (tmp_path / "d" / "old.dialect").write_text('{"DIV_TAG_EMPTY": "@none@"}')
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(120, 36)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d")
+        await settle(pilot)
+        await pilot.click("#browse")
+        await settle(pilot)
+        chooser = app.screen.dialog
+        assert chooser.pattern == "*.dialect"
+        chooser.input.data = "d/old.dialect"
+        await pilot.click("#ok")
+        await settle(pilot)
+        name = app.screen.dialog
+        assert name.input.data == str((tmp_path / "d" / "old.dialect").resolve())
+        await pilot.click("#ok")
+        await settle(pilot)
+        win = app.active_window()
+        assert isinstance(win, DialectorWindow) and win.tags["DIV_TAG_EMPTY"] == "@none@"

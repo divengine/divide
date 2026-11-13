@@ -398,17 +398,55 @@ class GotoLineDialog(_Dialog):
         return self.line >= 1
 
 
+CM_BROWSE = Command.USER + 101
+
+
+async def browse_into(dialog: _Dialog, line: InputLine, title: str, pattern: str, start: Path) -> bool:
+    """File dialog over ``dialog``; the chosen file's absolute path goes into ``line``.
+
+    Call from a worker. ``start``: the folder to begin in, unless ``line`` already
+    names a file or folder that exists (relative paths are taken from ``start``)."""
+    current = line.data.strip()
+    if current:
+        here = Path(current).expanduser()
+        here = here if here.is_absolute() else start / here
+        if here.is_dir():
+            start = here
+        elif here.parent.is_dir():
+            start = here.parent
+    chooser = FileDialog(title, start, pattern=pattern, ok_label="~O~K")
+    if await dialog.app.push_screen_wait(DialogScreen(chooser)) != Command.OK or chooser.chosen is None:
+        return False
+    line.data = str(chooser.chosen)
+    line._cursor_pos = len(line.data)
+    line.refresh()
+    return True
+
+
 class InputDialog(_Dialog):
-    """One line of text (a name): ``value`` holds it after OK."""
+    """One line of text (a name or a path): ``value`` holds it after OK.
+
+    With ``browse=(pattern, folder)`` a Browse button picks a file with the file
+    dialog and writes its absolute path (relative paths stay welcome)."""
 
     DEFAULT_CSS = """
-    InputDialog { width: 56; height: 9; }
+    InputDialog { width: 64; height: 9; }
     InputDialog InputLine { width: 1fr; }
     InputDialog .dlg-hint { color: $text-muted; background: $surface; height: 1; }
     """
 
-    def __init__(self, title: str, label: str, text: str = "", *, hint: str = "", select: tuple[int, int] | None = None) -> None:
+    def __init__(
+        self,
+        title: str,
+        label: str,
+        text: str = "",
+        *,
+        hint: str = "",
+        select: tuple[int, int] | None = None,
+        browse: tuple[str, Path] | None = None,
+    ) -> None:
         super().__init__(title=title)
+        self.browse = browse
         self.input = InputLine(max_len=1024)
         self.input.data = text
         self.label = label
@@ -422,10 +460,22 @@ class InputDialog(_Dialog):
         yield Static(self.hint, classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
             yield Button("O~K~", Command.OK, is_default=True, id="ok")
+            if self.browse is not None:
+                yield Button("~B~rowse...", CM_BROWSE, id="browse")
             yield Button("Cancel", Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self._place_cursor)
+
+    def on_command_message(self, message) -> None:
+        if message.command == CM_BROWSE and self.browse is not None:
+            message.stop()
+            message.prevent_default()
+            pattern, folder = self.browse
+            self.run_worker(browse_into(self, self.input, self.title_text(), pattern, folder), exclusive=True)
+
+    def title_text(self) -> str:
+        return f"{self._title}: browse"
 
     def _place_cursor(self) -> None:
         if self.select is None:

@@ -1105,6 +1105,7 @@ class Divide(ExplorerMixin, Application):
             dialog = InputDialog(
                 "New dialect", "Dialect ~f~ile", "my.dialect",
                 hint="Relative to the project; an existing file is opened", select=(0, 2),
+                browse=("*.dialect", self.root),
             )
             if await self.run_dialog(dialog) != Command.OK or not dialog.value:
                 return
@@ -1226,7 +1227,10 @@ class Divide(ExplorerMixin, Application):
         if source.dirty and not await self.save(source):
             return
         default = source.path.stem + ".example.tpl"
-        dialog = InputDialog("Example template", "~F~ile", default, hint=f"Next to {source.path.name}", select=(0, len(source.path.stem)))
+        dialog = InputDialog(
+            "Example template", "~F~ile", default, hint=f"Relative to {source.path.parent.name}/",
+            select=(0, len(source.path.stem)), browse=("*.tpl", source.path.parent),
+        )
         if await self.run_dialog(dialog) != Command.OK or not dialog.value:
             return
         target = (source.path.parent / dialog.value).resolve()
@@ -1342,7 +1346,7 @@ class Divide(ExplorerMixin, Application):
         if not template and active is not None and active.editor.div_enabled and active.path is not None:
             template = self._project_relative(active.path)
         # The source dialect is suggested by the dialog from the template itself.
-        dialog = TranslateDialog(template, source, target)
+        dialog = TranslateDialog(template, source, target, root=self.root)
         choice = await self.run_dialog(dialog)
         if dialog.text is None or choice not in (CM_SAVE_TRANSLATION, CM_OPEN_TRANSLATION):
             return
@@ -1353,7 +1357,10 @@ class Divide(ExplorerMixin, Application):
         assert tpl is not None
         suffix = dialog.target_dialect.source.stem if dialog.target_dialect and dialog.target_dialect.source else "div"
         default = f"{tpl.stem}.{suffix}{tpl.suffix or '.tpl'}"
-        name = InputDialog("Save translation as", "~F~ile", default, hint=f"Next to {tpl.name}", select=(0, len(default) - 4))
+        name = InputDialog(
+            "Save translation as", "~F~ile", default, hint=f"Relative to {tpl.parent.name}/", select=(0, len(default) - 4),
+            browse=("*.tpl", tpl.parent),
+        )
         if await self.run_dialog(name) != Command.OK or not name.value:
             return
         out = (tpl.parent / name.value).resolve()

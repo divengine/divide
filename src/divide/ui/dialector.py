@@ -16,6 +16,8 @@ source of truth, so F2, undo and the unsaved-changes checks work as usual.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from textual import events, work
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -30,7 +32,7 @@ from textual_vision.list_box import ListBox
 from divide.lang import divjson
 from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
-from divide.ui.dialogs import _Dialog
+from divide.ui.dialogs import _Dialog, browse_into
 from divide.ui.windows import EditorView, EditorWindow, _TVWindow
 
 CM_DEFAULTS = Command.USER + 60
@@ -447,6 +449,9 @@ class TransformDialog(_Dialog):
 CM_PREVIEW = Command.USER + 61
 CM_SAVE_TRANSLATION = Command.USER + 62
 CM_OPEN_TRANSLATION = Command.USER + 63
+CM_BROWSE_TEMPLATE = Command.USER + 64
+CM_BROWSE_SOURCE = Command.USER + 65
+CM_BROWSE_TARGET = Command.USER + 66
 
 
 class TranslateDialog(_Dialog):
@@ -463,14 +468,16 @@ class TranslateDialog(_Dialog):
     TranslateDialog .tr-row { height: 1; margin-top: 1; }
     TranslateDialog .tr-row Label { width: 18; }
     TranslateDialog .tr-row InputLine { width: 1fr; }
+    TranslateDialog .tr-row Button { margin-left: 1; min-width: 5; }
     TranslateDialog .tr-note { height: 1; color: $text-muted; background: $surface; }
     TranslateDialog .tr-preview { height: 1fr; }
     TranslateDialog .tr-status { height: 1; color: $text; background: $surface; }
     TranslateDialog .tr-status.-bad { color: $error; }
     """
 
-    def __init__(self, template: str = "", source: str = "", target: str = "") -> None:
+    def __init__(self, template: str = "", source: str = "", target: str = "", *, root: Path | None = None) -> None:
         super().__init__(title="Translate a template")
+        self.root = root or Path.cwd()
         self.template_input = InputLine(max_len=1024)
         self.template_input.data = template
         self.source_input = InputLine(max_len=1024)
@@ -488,17 +495,19 @@ class TranslateDialog(_Dialog):
         self._last = self.fields()
 
     def compose_content(self) -> ComposeResult:
-        for label, line in (
-            ("~T~emplate", self.template_input),
-            ("~F~rom dialect", self.source_input),
+        for label, line, command in (
+            ("~T~emplate", self.template_input, CM_BROWSE_TEMPLATE),
+            ("~F~rom dialect", self.source_input, CM_BROWSE_SOURCE),
         ):
             with Horizontal(classes="tr-row"):
                 yield Label(label, link=line)
                 yield line
+                yield Button("...", command, id=f"browse-{command - CM_BROWSE_TEMPLATE}")
         yield self.source_note
         with Horizontal(classes="tr-row"):
             yield Label("T~o~ dialect", link=self.target_input)
             yield self.target_input
+            yield Button("...", CM_BROWSE_TARGET, id="browse-2")
         yield Static("Paths relative to the project · an empty dialect is Div's default", classes="tr-note", markup=False)
         yield self.preview
         yield self.status
@@ -562,7 +571,33 @@ class TranslateDialog(_Dialog):
         if self._asked is not None and now != self._asked:
             self.status.update("Changed: Preview again (Enter)")
 
+    @work(exclusive=True, group="translate-browse")
+    async def browse(self, command: int) -> None:
+        line, title, pattern = {
+            CM_BROWSE_TEMPLATE: (self.template_input, "Template to translate", "*.tpl"),
+            CM_BROWSE_SOURCE: (self.source_input, "Source dialect", "*.dialect"),
+            CM_BROWSE_TARGET: (self.target_input, "Target dialect", "*.dialect"),
+        }[command]
+        if not await browse_into(self, line, title, pattern, self.root):
+            return
+        line.tv_select_self()  # back in the field (the TV focus, not only Textual's)
+        line.focus()
+        if line is self.source_input:
+            self._suggested = None
+            self.source_note.update("Your choice (the template's own @_DIALECT is ignored)")
+        self._last = self.fields()
+        # a chosen file is a clear intent: preview right away (a new template: its dialect first)
+        if line is self.template_input:
+            self.suggest(translate=True)
+        else:
+            self.run_translation()
+
     def on_command_message(self, message) -> None:
+        if message.command in (CM_BROWSE_TEMPLATE, CM_BROWSE_SOURCE, CM_BROWSE_TARGET):
+            message.stop()
+            message.prevent_default()
+            self.browse(message.command)
+            return
         if message.command in (CM_PREVIEW, CM_SAVE_TRANSLATION, CM_OPEN_TRANSLATION):
             message.stop()
             message.prevent_default()
