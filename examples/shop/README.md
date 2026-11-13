@@ -8,6 +8,8 @@ and to generate its screenshots (`tools/wiki_shots.py`).
   product, and includes the header and footer layouts.
 - `components/card.tpl`, `layout/header.tpl`, `layout/footer.tpl`: the
   included templates.
+- `index.php`: the same page rendered from PHP (`new div('index.tpl', …)`);
+  in divide, Ctrl+Enter on `'index.tpl'` opens the template.
 - `checkout.tpl` is **broken on purpose**: an unclosed loop, an unclosed
   condition, an include Div cannot find, bad JSON in a template variable and
   an orphan loop closing. Open it and press Alt+F9.

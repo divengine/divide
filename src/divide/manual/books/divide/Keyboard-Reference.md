@@ -27,7 +27,7 @@
 | Key | Action |
 |---|---|
 | **Ctrl+Space** | completion |
-| **Ctrl+Enter** / **Ctrl+J** / Ctrl+click | go to the included template |
+| **Ctrl+Enter** / **Ctrl+J** / Ctrl+click | go to the included template; in PHP, open the file a string names |
 | **Ctrl+F** / **Ctrl+R** | find / replace |
 | **Ctrl+L** | search again |
 | **Ctrl+G** | go to line |

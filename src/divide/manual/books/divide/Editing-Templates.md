@@ -31,4 +31,4 @@ The usual ones work: arrows, Home/End, PgUp/PgDn, Shift to select, **Ctrl+Z** / 
 
 ## Other files
 
-Data files (`.json`, `.dialect`) are Div JSON: see [[Data Files]]. Any other file opens as plain text.
+Data files (`.json`, `.dialect`) are Div JSON: see [[Data Files]]. PHP files have their own editor: see [[Editing PHP]]. Any other file opens as plain text.

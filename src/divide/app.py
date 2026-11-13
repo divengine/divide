@@ -69,6 +69,8 @@ from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS
 from divide import manual
 from divide.lang import divjson
+from divide import lang as languages
+from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
 from divide.ui.windows import EditorWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
@@ -226,7 +228,7 @@ class Divide(ExplorerMixin, Application):
         self.render_messages: list[RenderMessage] = []  # of last_template's last render
         self._focused_template: EditorWindow | None = None  # last template window that had focus
         self._completion_cache: dict[Path, tuple[str, object]] = {}  # data file -> (text, value)
-        self._include_timers: dict[int, object] = {}  # editor id -> pending include resolution
+        self._include_timers: dict[object, object] = {}  # editor id -> pending include resolution
         self._include_gen: dict[int, int] = {}  # editor id -> latest resolution asked
 
     # --------------------------------------------------------------- shell
@@ -826,6 +828,26 @@ class Divide(ExplorerMixin, Application):
             timer.stop()  # type: ignore[attr-defined]
         self._include_timers[id(ed)] = self.set_timer(0.4, lambda: self.resolve_includes_of(ed))
 
+    @on(DivEditor.CheckRequested)
+    def _check_requested(self, event: DivEditor.CheckRequested) -> None:
+        """PHP changed: ask PHP (``php -l``) once the typing pauses."""
+        ed = event.editor
+        timer = self._include_timers.pop(("lint", id(ed)), None)
+        if timer is not None:
+            timer.stop()  # type: ignore[attr-defined]
+        self._include_timers[("lint", id(ed))] = self.set_timer(0.5, lambda: self.lint_php(ed))
+
+    @work(group="lint")
+    async def lint_php(self, ed: DivEditor) -> None:
+        self._include_timers.pop(("lint", id(ed)), None)
+        if ed.lang != "php":
+            return
+        text = ed.text
+        found = await php.lint(text)
+        if found is not None and ed.text == text:
+            ed.set_lint(found)
+        self.update_status()
+
     def recheck_includes(self) -> None:
         """Files changed: ask Div again about every open template's dialect and includes."""
         for win in self.editor_windows():
@@ -892,6 +914,9 @@ class Divide(ExplorerMixin, Application):
     async def goto_include(self, win: EditorWindow) -> None:
         """Open the template that the include under the cursor leads to (Div decides which)."""
         ed = win.editor
+        if ed.lang == "php":
+            await self.goto_file_named(win)
+            return
         if not ed.div_enabled:
             return
         offset = ed.document.get_index_from_location(ed.selection.end)
@@ -928,6 +953,29 @@ class Divide(ExplorerMixin, Application):
         self.refresh_project()
         self.recheck_includes()
         self.open_file(new)
+
+    async def goto_file_named(self, win: EditorWindow) -> None:
+        """PHP: open the file a string under the cursor names (``new div('page.tpl')``,
+        ``include 'menu.php'``), next to the file or in the project."""
+        ed = win.editor
+        row, col = ed.selection.end
+        line = ed.document.get_line(row)
+        name = None
+        for m in re.finditer(r"'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"", line):
+            if m.start() <= col <= m.end():
+                name = m.group(1) if m.group(1) is not None else m.group(2)
+                break
+        if not name:
+            self.notify("Put the cursor on a string with a file name", timeout=2)
+            return
+        bases = ([win.path.parent] if win.path is not None else []) + [self.root]
+        for base in bases:
+            for candidate in (name, name + ".tpl"):
+                path = (base / candidate).resolve()
+                if path.is_file():
+                    self.open_file(path)
+                    return
+        self.notify(f"{name}: no such file next to {win.display_name} or in the project", timeout=3)
 
     def _render_layout(self, template: Path, output: OutputWindow, messages: MessagesWindow | None) -> None:
         """First render: template on the left, output on the right, messages below."""
@@ -1014,7 +1062,7 @@ class Divide(ExplorerMixin, Application):
     def _check_target(self) -> EditorWindow | None:
         """The template the Messages window talks about: the active one, else the last rendered."""
         win = self.active_editor()
-        if win is not None and win.editor.div_enabled:
+        if win is not None and win.editor.checked:
             return win
         if self._focused_template is not None and self._focused_template.is_attached:
             return self._focused_template
@@ -1022,10 +1070,15 @@ class Divide(ExplorerMixin, Application):
             return self.window_for(self.last_template)
         return None
 
+    @staticmethod
+    def _lang_title(editor: DivEditor) -> str:
+        info = languages.language(editor.lang)
+        return info.title if info else "plain text"
+
     def message_items(self, template: Path | None = None) -> list[MessageItem]:
         win = self.window_for(template) if template is not None else self._check_target()
         items: list[MessageItem] = []
-        if win is not None and win.editor.div_enabled:
+        if win is not None and win.editor.checked:
             name = win.display_name
             text = win.editor.text
             for d in win.editor.diagnostics:
@@ -1033,7 +1086,7 @@ class Divide(ExplorerMixin, Application):
                 label = "Error" if d.severity == "error" else "Warning"
                 items.append(MessageItem(f"{name}({line},{col}): {label}: {d.message}", win.path, d.start, d.end))
             if not win.editor.diagnostics:
-                items.append(MessageItem(f"{name}: no Div errors"))
+                items.append(MessageItem(f"{name}: no {self._lang_title(win.editor)} errors"))
         rendered = win.path if win is not None else template
         if self.render_messages and rendered is not None and rendered == self.last_template:
             order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3, "NOTE": 4}
@@ -1078,7 +1131,7 @@ class Divide(ExplorerMixin, Application):
             errors = sum(d.severity == "error" for d in target.editor.diagnostics)
             warnings = len(target.editor.diagnostics) - errors
             self.notify(
-                f"{target.display_name}: {errors} error(s), {warnings} warning(s)" if errors or warnings else f"{target.display_name}: no Div errors",
+                f"{target.display_name}: {errors} error(s), {warnings} warning(s)" if errors or warnings else f"{target.display_name}: no {self._lang_title(target.editor)} errors",
                 timeout=2,
                 severity="error" if errors else "information",
             )
@@ -1108,10 +1161,10 @@ class Divide(ExplorerMixin, Application):
 
     def jump_to_diagnostic(self, *, forward: bool) -> None:
         win = self.active_editor()
-        if win is None or not win.editor.div_enabled:
+        if win is None or not win.editor.checked:
             win = self._check_target()
         if win is None or not win.editor.diagnostics:
-            self.notify("No Div errors", timeout=1.5)
+            self.notify(f"No {self._lang_title(win.editor) if win else 'Div'} errors", timeout=1.5)
             return
         ed = win.editor
         here = ed.document.get_index_from_location(ed.selection.start)
@@ -1200,7 +1253,8 @@ class Divide(ExplorerMixin, Application):
         if isinstance(active, MessagesWindow):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):
-            return "Data-Files" if active.editor.lang == "json" else "Editing-Templates"
+            info = languages.language(active.editor.lang)
+            return info.help_topic if info else "Editing-Templates"
         return manual.contents_of(manual.DEFAULT)
 
     def help_search(self) -> None:
@@ -1623,8 +1677,8 @@ class Divide(ExplorerMixin, Application):
 
     def on_descendant_focus(self, event: events.DescendantFocus) -> None:
         win = self.active_editor()
-        if win is not None and win.editor.div_enabled:
-            if self._focused_template is not win:
+        if win is not None and win.editor.checked:
+            if self._focused_template is not win and win.editor.div_enabled:
                 self.resolve_includes_of(win.editor)  # files may have changed meanwhile
             self._focused_template = win
         if not isinstance(self.active_window(), MessagesWindow):
@@ -1674,6 +1728,19 @@ class Divide(ExplorerMixin, Application):
                 hint = "JSON ok"
             if ed.json_refs:
                 hint += f" · {len(ed.json_refs)} $ref" + ("s" if len(ed.json_refs) > 1 else "")
+            status.set_hint(hint)
+            return
+        if ed.lang == "php":
+            here = ed.document.get_index_from_location(min(ed.selection.start, ed.selection.end))
+            if (diag := ed.diagnostic_at(here)) is not None:
+                status.set_hint(diag.message)
+                return
+            if not shutil.which("php"):
+                hint = "PHP · php not found in PATH: not checked"
+            elif ed.diagnostics:
+                hint = f"PHP · {ed.diagnostics[0].message} (Alt+F8)"
+            else:
+                hint = "PHP · no syntax errors"
             status.set_hint(hint)
             return
         if ed.div_enabled:

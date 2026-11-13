@@ -1,9 +1,11 @@
-"""A TextArea that highlights Div templates with the divide lexer.
+"""The editor: Div templates, Div JSON and PHP.
 
 Textual's TextArea highlights through tree-sitter queries. Div has no
-tree-sitter grammar (and its dialects change the tags at runtime), so we
-replace the highlight map builder with the dialect-aware lexer. The map
-format is Textual's: ``{line: [(start_byte, end_byte | None, name)]}``.
+tree-sitter grammar (and its dialects change the tags at runtime), so for
+templates and JSON the highlight map builder is replaced by divide's lexers.
+PHP keeps Textual's own builder, with tree-sitter's PHP grammar. The map
+format is Textual's: ``{line: [(start_byte, end_byte | None, name)]}``;
+diagnostics are drawn over it.
 """
 
 from __future__ import annotations
@@ -22,10 +24,12 @@ from divide.lang import divjson
 from divide.lang.divjson import DivJsonError
 from divide.lang.div.diagnostics import Diagnostic, check, include_paths
 from divide.lang.div.lexer import Lexer
+from divide import lang as languages
+from divide.lang import php
 
 from .theme import CGA, DIV_STYLES, TURBO_STYLES
 
-DIV_EXTENSIONS = {".tpl", ".div"}
+DIV_EXTENSIONS = set(languages.DIV.extensions)
 
 
 def divide_theme() -> TextAreaTheme:
@@ -52,20 +56,12 @@ def turbo_theme() -> TextAreaTheme:
 EDITOR_THEMES = {"turbo": turbo_theme, "divide": divide_theme}
 
 
-JSON_EXTENSIONS = {".json", ".dialect"}
+JSON_EXTENSIONS = set(languages.JSON.extensions)
+language_of = languages.language_of
 
 
 def is_div_file(path: Path) -> bool:
     return path.suffix.lower() in DIV_EXTENSIONS
-
-
-def language_of(path: Path | None) -> str | None:
-    """``"div"`` for templates (and untitled buffers), ``"json"`` for Div JSON data / dialects."""
-    if path is None or is_div_file(path):
-        return "div"
-    if path.suffix.lower() in JSON_EXTENSIONS:
-        return "json"
-    return None
 
 
 class _LexerCache:
@@ -133,6 +129,7 @@ class DivEditor(TextArea):
         self._dialect_ref: str | None = None
         self.engine_dialects: dict[str, Dialect] = {}  # @_DIALECT value -> the dialect as Div loads it
         self._guess: tuple[str, Dialect] | None = None
+        self._text_cache: str | None = None  # PHP: the text last sent to be checked
         super().__init__(
             text,
             soft_wrap=False,
@@ -143,6 +140,41 @@ class DivEditor(TextArea):
         for factory in EDITOR_THEMES.values():
             self.register_theme(factory())
         self.theme = editor_theme
+        self._set_language()
+
+    def _set_language(self) -> None:
+        """PHP is parsed by tree-sitter (Textual's own highlighting); the others by divide."""
+        if self.lang == "php" and (found := php.grammar()) is not None:
+            if "php" not in self._languages:
+                self.register_language("php", *found)
+            if self.language != "php":
+                self.language = "php"
+        elif self.language is not None:
+            self.language = None
+
+    def on_mount(self) -> None:
+        if self.lang == "php":
+            self.post_message(self.CheckRequested(self))
+
+    @property
+    def checked(self) -> bool:
+        """Its errors are listed in the Messages window (Div, PHP)."""
+        info = languages.language(self.lang)
+        return bool(info and info.checked)
+
+    def set_lint(self, diagnostics: list[Diagnostic]) -> None:
+        """The errors a checker outside the editor found (PHP's ``php -l``)."""
+        if diagnostics != self.diagnostics:
+            self._set_diagnostics(diagnostics)
+            self._build_highlight_map()
+            self.refresh()
+
+    class CheckRequested(Message):
+        """The text changed: a checker outside the editor (php -l) should look again."""
+
+        def __init__(self, editor: "DivEditor") -> None:
+            super().__init__()
+            self.editor = editor
 
     @property
     def div_enabled(self) -> bool:
@@ -151,12 +183,26 @@ class DivEditor(TextArea):
     def set_path(self, path: Path | None) -> None:
         """The file changed name (Save as): pick the language again and re-highlight."""
         self.path = path
-        self.lang = language_of(path)
+        lang = language_of(path)
+        if lang != self.lang:
+            self.lang = lang
+            self.diagnostics = []
+            self._set_language()
+            if lang == "php" and self.is_mounted:
+                self.post_message(self.CheckRequested(self))
         self._build_highlight_map()
         self.refresh()
 
     # Textual calls this after every edit and when the document is replaced.
     def _build_highlight_map(self) -> None:
+        if self.lang == "php":
+            super()._build_highlight_map()  # tree-sitter's colours
+            if self._text_cache != self.text:
+                self._text_cache = self.text
+                if self.is_mounted:
+                    self.post_message(self.CheckRequested(self))
+            self._overlay([_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics])
+            return
         self._line_cache.clear()
         highlights = self._highlights
         highlights.clear()
@@ -178,8 +224,13 @@ class DivEditor(TextArea):
             self._check_json(text, tokens)
         else:
             return
+        self._overlay(tokens)
+
+    def _overlay(self, tokens: list) -> None:
+        """Add spans (by text offset) to the highlight map."""
         if not tokens:
             return
+        highlights = self._highlights
         lines = self.document.lines
         starts = [0]
         for line in lines[:-1]:

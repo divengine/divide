@@ -236,6 +236,22 @@ async def help():
         save(app, "help-books")
 
 
+@shot
+async def php():
+    app = Divide(DEMO, [DEMO / "index.php"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.active_editor().editor
+        ed.move_cursor((13, 0))
+        ed.insert("$data['cart'] = ['items' => count($data['products'])\n")
+        await until(pilot, lambda: bool(ed.diagnostics))
+        await pilot.press("alt+f9"); await settle(pilot, 10)
+        app.raise_window(app.window_for(DEMO / "index.php"))
+        app.window_for(DEMO / "index.php").editor.move_cursor((13, 20))
+        await settle(pilot, 6)
+        save(app, "php")
+
+
 async def run(names: set[str]) -> None:
     for fn in SHOTS:
         if not names or fn.__name__ in names:
