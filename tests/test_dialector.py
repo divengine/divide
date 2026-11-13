@@ -406,3 +406,51 @@ async def test_editor_dialect_without_div_only_colours(tmp_path, monkeypatch):
         ed.load_text("@_DIALECT = nope.dialect\nHi\n")
         await settle(pilot)
         assert not ed.engine_dialects and not ed.diagnostics  # not found? only Div can say
+
+
+@needs_div
+async def test_dialector_buffer_is_decoded_by_div(tmp_path):
+    # unquoted keys and single quotes: what Div's jsonDecode() accepts
+    (tmp_path / "x.dialect").write_text("{DIV_TAG_EMPTY: '@nada@', 'DIV_TAG_ELSE': '@si-no@'}")
+    app = Divide(tmp_path, [tmp_path / "x.dialect"])
+    async with app.run_test(size=(120, 36)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d")
+        await settle(pilot)
+        win = app.active_window()
+        assert isinstance(win, DialectorWindow)
+        await until(pilot, lambda: win.tags["DIV_TAG_EMPTY"] == "@nada@")
+        assert win.tags["DIV_TAG_ELSE"] == "@si-no@" and win.error is None
+        # what Div cannot decode is reported in Div's words
+        ed = win.source.editor
+        ed.replace("[1, 2]", (0, 0), ed.document.end)
+        await until(pilot, lambda: win.error is not None)
+        assert "Div cannot decode it" in win.error and "invalid" in win.title
+
+
+def test_rewrite_loses():
+    from divide.ui.dialector import _rewrite_loses
+
+    assert not _rewrite_loses("")
+    assert not _rewrite_loses('{"DIV_TAG_EMPTY": "@x@"}')
+    assert _rewrite_loses("{'DIV_TAG_EMPTY': '@x@'}")  # not standard JSON
+    assert _rewrite_loses('{"DIV_TAG_EMPTY": "@x@", "author": "me"}')  # not a Div tag
+
+
+async def test_dialector_rules_meet_the_frame(tmp_path):
+    from divide.ui.windows import IndicatorFrame
+
+    (tmp_path / "x.dialect").write_text("{}")
+    app = Divide(tmp_path, [tmp_path / "x.dialect"])
+    async with app.run_test(size=(120, 36)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d")
+        await settle(pilot)
+        win = app.active_window()
+        assert isinstance(win, DialectorWindow)
+        await settle(pilot)
+        screen = app.export_screenshot()
+        frame = win.query_one(IndicatorFrame)
+        top, bottom = frame.render_line(0).text, frame.render_line(frame.size.height - 1).text
+        assert "╤" in top and "╧" in bottom
+        assert screen.count("╟") == 2 and screen.count("┤") == 2

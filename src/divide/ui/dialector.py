@@ -16,11 +16,14 @@ source of truth, so F2, undo and the unsaved-changes checks work as usual.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from textual import events, work
 from textual.app import ComposeResult
 from textual.binding import Binding
+from rich.style import Style
+from textual.color import Color
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Static
 from textual_vision.button import Button
@@ -29,11 +32,11 @@ from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
-from divide.lang import divjson
+from divide.editor.theme import CGA
 from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
 from divide.ui.dialogs import _Dialog, browse_into
-from divide.ui.windows import EditorView, EditorWindow, _TVWindow
+from divide.ui.windows import EditorView, EditorWindow, HRule, VRule, _TVWindow
 
 CM_DEFAULTS = Command.USER + 60
 
@@ -85,12 +88,18 @@ def _verdict_text(verdict, tags: dict[str, str], section: dx.Section | None = No
 
 
 # ------------------------------------------------------------------ window
+def _editor_styles(view: EditorView) -> tuple[Style, Style]:
+    """The editor's colours (text, and the dialector's mark) for the panels beside it."""
+    theme = getattr(view, "_theme", None)
+    if theme is None or theme.base_style is None:
+        return Style(), Style(reverse=True)
+    return theme.base_style, theme.syntax_styles.get("dialector.focus", Style(reverse=True))
+
+
 class SectionList(ListBox):
-    DEFAULT_CSS = """
-    SectionList { width: 1fr; height: 1fr; background: $surface; }
-    SectionList > .list-viewer--normal { color: $text; background: $surface; }
-    SectionList > .list-viewer--focused { color: $foreground; background: $background; }
-    """
+    """The sections, in the editor's colours; the focused one as its tags in the preview."""
+
+    DEFAULT_CSS = "SectionList { width: 1fr; height: 1fr; }"
     can_focus = True
 
     def __init__(self, window: "DialectorWindow") -> None:
@@ -111,6 +120,14 @@ class SectionList(ListBox):
         if event.chain >= 2:
             self.select_item(self.focused)
 
+    def get_component_rich_style(self, *names: str, partial: bool = False) -> Style:
+        normal, focused = _editor_styles(self._window.preview)
+        if names == ("list-viewer--normal",):
+            return normal
+        if names == ("list-viewer--focused",):
+            return normal + focused
+        return super().get_component_rich_style(*names, partial=partial)
+
 
 class DialectorWindow(_TVWindow):
     """Sections | preview, with Div's verdict below the sections."""
@@ -123,10 +140,9 @@ class DialectorWindow(_TVWindow):
         Binding("alt+f10,shift+f10", "local_menu", show=False),
     ]
     DEFAULT_CSS = """
-    DialectorWindow .dx-left { width: 40; height: 1fr; }
-    DialectorWindow .dx-about { height: 3; color: $text; background: $surface; padding: 0 1; }
-    DialectorWindow .dx-verdict { height: 5; color: $text; background: $surface; padding: 0 1; }
-    DialectorWindow .dx-verdict.-bad { color: $error; }
+    DialectorWindow .dx-left { width: 39; height: 1fr; }
+    DialectorWindow .dx-about { height: 3; padding: 0 1; }
+    DialectorWindow .dx-verdict { height: 5; padding: 0 1; }
     """
 
     def __init__(self, source: EditorWindow, number: int = 0) -> None:
@@ -151,13 +167,29 @@ class DialectorWindow(_TVWindow):
         with Horizontal():
             with Vertical(classes="dx-left"):
                 yield self.sections
+                yield HRule()
                 yield self.about
+                yield HRule()
                 yield self.verdict_box
+            yield VRule()
             yield self.preview
 
     def on_mount(self) -> None:
+        self.call_after_refresh(self.paint)
         self.call_after_refresh(self.reload)
         self.call_after_refresh(self.sections.focus)
+
+    def paint(self) -> None:
+        """The panels take the editor's colours (Options > Editor theme included)."""
+        normal, _ = _editor_styles(self.preview)
+        bg = Color.from_rich_color(normal.bgcolor) if normal.bgcolor else None
+        fg = Color.from_rich_color(normal.color) if normal.color else None
+        for box in (self.about, self.verdict_box, self.query_one(".dx-left")):
+            box.styles.background = bg
+            box.styles.color = fg
+        if self.verdict_box.has_class("-bad"):
+            self.verdict_box.styles.color = Color.parse(CGA["lightred"])
+        self.sections.refresh()
 
     # ------------------------------------------------------------- sync
     def reload(self) -> None:
@@ -165,20 +197,32 @@ class DialectorWindow(_TVWindow):
         text = self.source.editor.text
         if text == self._written and self.error is None:
             return
-        try:
-            value = divjson.loads(text) if text.strip() else {}
-            if not isinstance(value, dict):
-                raise ValueError("a dialect is a JSON object: { \"DIV_TAG_...\": \"...\" }")
-        except (divjson.DivJsonError, ValueError) as exc:
-            self.error = str(exc)
+        self._decode(text)
+
+    @work(exclusive=True, group="dialector-decode")
+    async def _decode(self, text: str) -> None:
+        """Div decodes the buffer with its ``jsonDecode()``, as when it loads the file."""
+        if text.strip():
+            value, problem = await self.app.decode_dialect_text(text)  # type: ignore[attr-defined]
+        else:
+            value, problem = {}, None
+        if self.source.editor.text != text:
+            return  # changed meanwhile: a newer reload follows
+        if value is None:
+            self.error = problem or "Div cannot decode it as a JSON object"
             self.title = self._make_title(invalid=True)
-            self.verdict_box.update(f"[!] The dialect file is not valid JSON:\n{exc}\nFix it in the code (Ctrl+T on the file shows it as a tree).")
+            self._set_verdict(f"[!] {self.error}\nFix it in the code (Ctrl+T on the file shows it as a tree).", True)
             return
         self.error = None
         self.title = self._make_title()
-        self.tags = {**DEFAULT_TAGS, **{k: str(v) for k, v in value.items() if isinstance(k, str) and k in DEFAULT_TAGS}}
+        self.tags = {**DEFAULT_TAGS, **{k: v for k, v in value.items() if k in DEFAULT_TAGS}}
         self.refresh_view()
         self.schedule_check()
+
+    def _set_verdict(self, text: str, bad: bool) -> None:
+        self.verdict_box.set_class(bad, "-bad")
+        self.verdict_box.update(text)
+        self.paint()
 
     def apply(self, changes: dict[str, str]) -> None:
         """Change tags, write the dialect file's buffer (one undoable edit) and refresh."""
@@ -197,7 +241,7 @@ class DialectorWindow(_TVWindow):
         if self.error is not None:
             await self.app.run_dialog(_message("Dialector", f"Fix the dialect file first:\n{self.error}"))  # type: ignore[attr-defined]
             return False
-        if not self._rewrite_ok and divjson.has_extensions(self.source.editor.text):
+        if not self._rewrite_ok and _rewrite_loses(self.source.editor.text):
             from divide.ui.dialogs import confirm
 
             text = (
@@ -268,9 +312,7 @@ class DialectorWindow(_TVWindow):
         if self.error is not None:
             return
         self.verdict = verdict
-        text, bad = _verdict_text(verdict, self.tags)
-        self.verdict_box.set_class(bad, "-bad")
-        self.verdict_box.update(text)
+        self._set_verdict(*_verdict_text(verdict, self.tags))
         self.sections._syncing = True
         self.sections.set_list(self._section_rows())
         self.sections.focus_item(self.section_index)
@@ -293,6 +335,18 @@ class DialectorWindow(_TVWindow):
 
     def action_local_menu(self) -> None:
         self.app.dialector_action(self, "menu")  # type: ignore[attr-defined]
+
+
+def _rewrite_loses(text: str) -> bool:
+    """Would rewriting the file as standard JSON lose something (comments, single
+    quotes, keys that are not Div tags...)? Plain JSON of tags loses nothing."""
+    if not text.strip():
+        return False
+    try:
+        value = json.loads(text)
+    except ValueError:
+        return True
+    return not isinstance(value, dict) or any(k not in DEFAULT_TAGS or not isinstance(v, str) for k, v in value.items())
 
 
 def _message(title: str, text: str):

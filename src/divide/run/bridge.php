@@ -141,14 +141,18 @@ if ($op === 'dialect_load') {
             }
             $ref = trim((string) $request['ref']);
             $file = $ref === '' ? null : $tpl->getTplPath($ref);
-        } else {
+        } elseif (!isset($request['code'])) {
             $file = (string) ($request['file'] ?? '');
         }
-        if ($file === null || $file === '' || !$divClass::fileExists($file)) {
+        if (isset($request['code'])) {
+            $json = (string) $request['code'];  // an unsaved buffer: only jsonDecode()
+        } elseif ($file === null || $file === '' || !$divClass::fileExists($file)) {
             $problem = 'not found';
             $file = null;
         } else {
             $json = $divClass::getFileContents($file);
+        }
+        if ($problem === null) {
             $decoded = $json === null ? null : $divClass::jsonDecode($json);
             if (is_object($decoded)) {
                 $decoded = get_object_vars($decoded);
@@ -163,7 +167,9 @@ if ($op === 'dialect_load') {
                     }
                 }
             }
-            $file = realpath($file) ?: $file;
+            if ($file !== null) {
+                $file = realpath($file) ?: $file;
+            }
         }
     } catch (Throwable $e) {
         $problem = get_class($e) . ': ' . $e->getMessage();

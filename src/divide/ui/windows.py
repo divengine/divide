@@ -13,6 +13,7 @@ from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
 from textual.strip import Strip
+from textual.widget import Widget
 from textual.widgets import DirectoryTree
 from textual_vision.constants import Command, OptionFlag, WindowFlag
 from textual_vision.events import CommandMessage
@@ -67,7 +68,101 @@ class IndicatorFrame(Frame):
             strip = _overlay(strip, x, str(self.number), style)
         elif y == height - 1 and self.indicator:
             strip = _overlay(strip, 2, f" {self.indicator} ", style)
+        return self._junctions(strip, y, width, height, style)
+
+    # Inner rules (VRule / HRule) meet the border in a T: ╤ ╧ ╟ ╢ (┬ ┴ ├ ┤ when passive).
+    def _junctions(self, strip: Strip, y: int, width: int, height: int, style: Style) -> Strip:
+        window = self.parent
+        if window is None or not self.region.width:
+            return strip
+        ox, oy = self.region.x, self.region.y
+        h, v = self._chars["h"], self._chars["v"]
+        top, bottom, left, right = ("╤", "╧", "╟", "╢") if self.active else ("┬", "┴", "├", "┤")
+        for rule in window.query(Rule):
+            r = rule.region
+            if not r.width or not r.height:
+                continue
+            if isinstance(rule, VRule):
+                x = r.x - ox
+                if y == 0 and r.y - oy == 1:
+                    strip = _put(strip, x, top, h, style)
+                elif y == height - 1 and r.bottom - oy == height - 1:
+                    strip = _put(strip, x, bottom, h, style)
+            elif r.y - oy == y:
+                if r.x - ox == 1:
+                    strip = _put(strip, 0, left, v, style)
+                if r.right - ox == width - 1:
+                    strip = _put(strip, width - 1, right, v, style)
         return strip
+
+    def watch_active(self, active: bool) -> None:
+        if self.parent is not None:
+            for rule in self.parent.query(Rule):
+                rule.refresh()
+
+
+def _put(strip: Strip, x: int, char: str, over: str, style: Style) -> Strip:
+    """``char`` at ``x`` only where the border shows its plain line (not a title or icon)."""
+    if 0 <= x < strip.cell_length and strip.crop(x, x + 1).text == over:
+        return _overlay(strip, x, char, style)
+    return strip
+
+
+class Rule(Widget):
+    """An inner dividing line of a window, drawn like its frame (single line).
+
+    Where a rule meets the frame, the frame draws the T (see IndicatorFrame);
+    where an HRule meets a VRule, the VRule draws it."""
+
+    def _frame(self) -> Frame | None:
+        node = self.parent
+        while node is not None and not isinstance(node, Window):
+            node = node.parent
+        return node.query_one(Frame) if node is not None else None
+
+    def _line_style(self) -> Style:
+        frame = self._frame()
+        base = self.rich_style
+        if frame is None:
+            return base
+        color = frame.get_component_rich_style("frame--active" if frame.active else "frame--passive").color
+        return base + Style(color=color)
+
+    def on_resize(self) -> None:
+        # the regions settle after this event: redraw the Ts once they have
+        self.call_after_refresh(self._refresh_joins)
+
+    def _refresh_joins(self) -> None:
+        frame = self._frame()
+        if frame is not None:
+            frame.refresh()
+            frame.parent.query(VRule).refresh()
+
+
+class VRule(Rule):
+    DEFAULT_CSS = "VRule { width: 1; height: 1fr; }"
+
+    def render_line(self, y: int) -> Strip:
+        r = self.region
+        row = r.y + y
+        left = right = False
+        node = self.parent
+        while node is not None and not isinstance(node, Window):
+            node = node.parent
+        for rule in node.query(HRule) if node is not None else ():
+            hr = rule.region
+            if hr.height and hr.y == row:
+                left |= hr.right == r.x
+                right |= hr.x == r.right
+        char = "┼" if left and right else "┤" if left else "├" if right else "│"
+        return Strip([Segment(char, self._line_style())])
+
+
+class HRule(Rule):
+    DEFAULT_CSS = "HRule { height: 1; width: 1fr; }"
+
+    def render_line(self, y: int) -> Strip:
+        return Strip([Segment("─" * self.size.width, self._line_style())])
 
 
 class _TVWindow(Window):

@@ -1164,6 +1164,26 @@ class Divide(ExplorerMixin, Application):
         else:
             self.raise_window(view)
 
+    async def decode_dialect_text(self, text: str) -> tuple[dict[str, str] | None, str | None]:
+        """The tags of a dialect buffer, decoded by Div's ``jsonDecode()`` as when Div
+        loads the file; ``(None, why)`` when it cannot. Without Div, divide's reader."""
+        engine = self._include_engine(self.root / "x")
+        if engine is None:
+            try:
+                value = divjson.loads(text)
+            except divjson.DivJsonError as exc:
+                return None, f"The dialect file is not valid JSON: {exc}"
+            if not isinstance(value, dict):
+                return None, 'A dialect is a JSON object: { "DIV_TAG_...": "..." }'
+            return {k: str(v) for k, v in value.items() if isinstance(k, str)}, None
+        try:
+            loaded = await load_dialect(engine, cwd=self.root, code=text)
+        except RenderError as exc:
+            return None, f"Could not ask Div: {exc}"
+        if loaded.tags is None:
+            return None, loaded.problem or "Div cannot decode it as a JSON object"
+        return loaded.tags, None
+
     async def dialector_verdict(self, tags: dict[str, str]) -> DialectVerdict | None:
         """Div's verdict on a dialect: valid? and does it read the dialector's example back?"""
         engine = self._include_engine(self.root / "x")

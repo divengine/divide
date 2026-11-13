@@ -292,14 +292,17 @@ async def load_dialect(
     ref: str | None = None,
     file: Path | None = None,
     history: list[Path] | None = None,
+    code: str | None = None,
     php: str | None = None,
     timeout: float = 10.0,
 ) -> DialectFile:
     """Load a dialect the way Div does for ``@_DIALECT = ref`` in ``template``
     (``prepareDialect()``: ``getTplPath()``, ``getFileContents()``, ``jsonDecode()``),
-    or decode a given dialect ``file`` with Div's ``jsonDecode()``."""
+    or decode a given dialect ``file`` (or the text ``code``) with Div's ``jsonDecode()``."""
     request: dict = {"engine": str(engine), "op": "dialect_load"}
-    if ref is not None:
+    if code is not None:
+        request["code"] = code
+    elif ref is not None:
         request.update(path=str(template or ""), ref=ref, history=[str(h) for h in history or []])
     else:
         request["file"] = str(file or "")
