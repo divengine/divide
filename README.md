@@ -40,7 +40,8 @@ through the real Div engine, side by side with the code.
   Ctrl+Enter on `new div('page.tpl')` opens the template.
 - **Language servers.** With phpactor or intelephense (in the project or the
   PATH), PHP gets completion (with the classes of `vendor/`, like Div's, and
-  their `use` lines added for you), hover (Ctrl+F1), go to definition
+  their `use` lines added for you, and the documentation of each item),
+  the signature of the call you type, hover (Ctrl+F1), go to definition
   (Ctrl+Enter) and the server's diagnostics. divide is a generic LSP client (pygls), so
   other languages are one entry away.
 - **A project window that does things.** You can create, rename and delete

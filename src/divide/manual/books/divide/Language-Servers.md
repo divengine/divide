@@ -2,18 +2,21 @@
 
 A language server is a program that knows a language deeply: it reads the whole project and answers an editor's questions about the code under the cursor. divide speaks the Language Server Protocol, so the work of those tools comes into the Turbo Vision desktop. For PHP it uses [phpactor](https://phpactor.readthedocs.io) or [intelephense](https://intelephense.com).
 
-![completion from intelephense in a PHP file](images/lsp.png)
+![completion of a Div method, with its documentation beside the list](images/lsp.png)
 
 ## What it gives
 
 | Key | |
 |---|---|
-| typing, or **Ctrl+Space** | completion: the server's functions, classes, methods and variables, with their types; after `->`, `::`, `$` and `\` it opens by itself; a class from another namespace brings its `use` line |
+| typing, or **Ctrl+Space** | completion: the server's functions, classes, methods and variables, with their types; after `->`, `::`, `$` and `\` it opens by itself; a class from another namespace brings its `use` line. The documentation of the selected item shows beside the list |
+| typing `(` or `,` | the signature of the call, over the line, with the parameter you are typing marked; it follows the cursor inside the parentheses and goes when they close (or with **Esc**) |
 | **Ctrl+F1** | what the server knows about the word under the cursor (its signature, its documentation), in a dialog |
 | **Ctrl+Enter** / Ctrl+click | the definition of the symbol under the cursor, in its file; on a string with a file name, that file (see [[Editing PHP]]) |
 | | the server's errors and warnings join PHP's in the editor and in the Messages window (**Alt+F9**) |
 
 The server is started when the first PHP file opens. A spinner turns in the status line while it starts and while it indexes the project; the status line then names the server. It is stopped when divide exits.
+
+![the signature of div::parse while typing its arguments](images/lsp-signature.png)
 
 ## Composer projects
 

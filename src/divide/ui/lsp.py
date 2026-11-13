@@ -28,8 +28,10 @@ from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 
 from divide import config, lsp
+from divide.lang import php as php_lang
 from divide.lang.div.complete import CARET, Completion, CompletionResult
 from divide.lsp.client import LspSession, diagnostics_in
+from divide.ui.completion import InfoPopup, signature_lines
 from divide.ui.dialogs import _Dialog, browse_into, information
 
 CM_LSP_BROWSE = Command.USER + 101
@@ -57,6 +59,9 @@ class LspMixin:
         self._lsp_timers: dict[int, object] = {}
         self._lsp_completion_gen: dict[int, int] = {}
         self._lsp_progress: dict[tuple[str, str], int] = {}  # (server, token) -> status line busy token
+        self._lsp_signature_gen: dict[int, int] = {}
+        self._lsp_doc_gen: dict[int, int] = {}
+        self._lsp_docs: dict[int, list[str]] = {}  # id(server item) -> its documentation, laid out
 
     # ------------------------------------------------------------ which server
     def lsp_server_for(self, language: str) -> tuple[lsp.ServerSpec, list[str]] | None:
@@ -217,6 +222,62 @@ class LspMixin:
             return  # typed meanwhile: a newer question is on its way
         view.show_completion(completion_result(text, offset, prefix, items), explicit)
 
+    # ------------------------------------------------------------ signature, documentation
+    def lsp_signature_changed(self, view) -> None:
+        """Typed in a call (``(`` or ``,``), or moved while its signature shows: ask again."""
+        session = self.lsp_session(view.lang)
+        offset = view._caret_index()
+        if session is None or view.path is None or offset is None:
+            view.hide_signature()
+            return
+        before = view.text[max(0, offset - 1):offset]
+        if not view.signature_shown and before not in [c for c in session.signature_characters if c in "(,"]:
+            return
+        gen = self._lsp_signature_gen[id(view)] = self._lsp_signature_gen.get(id(view), 0) + 1
+        self._lsp_signature(view, session, view.text, offset, gen)
+
+    @work(group="lsp-signature")
+    async def _lsp_signature(self, view, session: LspSession, text: str, offset: int, gen: int) -> None:
+        session.open(view.path, text, view.lang)
+        found = await session.signature(view.path, offset)
+        if self._lsp_signature_gen.get(id(view)) != gen or view.text != text or view._caret_index() != offset:
+            return
+        if not php_lang.in_parentheses(text, offset):
+            found = None  # the call is closed, whatever the server says
+        laid = signature_layout(found, max(30, self.screen.size.width - 8))  # type: ignore[attr-defined]
+        if laid is None:
+            view.hide_signature()
+        else:
+            view.show_signature(*laid)
+
+    def lsp_document(self, view, item: Completion) -> None:
+        """The documentation of the selected completion, beside the list."""
+        laid = self._lsp_docs.get(id(item.data))
+        if laid is not None:
+            view.show_doc(laid)
+            return
+        view.hide_doc()
+        gen = self._lsp_doc_gen[id(view)] = self._lsp_doc_gen.get(id(view), 0) + 1
+        self._lsp_document(view, item, gen)
+
+    @work(group="lsp-doc")
+    async def _lsp_document(self, view, item: Completion, gen: int) -> None:
+        await asyncio.sleep(0.15)  # scrolling through the list: only where it stops
+        session = self.lsp_session(view.lang)
+        if session is None or self._lsp_doc_gen.get(id(view)) != gen:
+            return
+        resolved = await session.resolve(item.data)  # type: ignore[arg-type]
+        text = clean_hover(lsp.plain_markup(resolved.documentation))
+        if not text and resolved.detail and resolved.detail != item.detail:
+            text = resolved.detail
+        laid = InfoPopup.wrap(text, 60, 12) if text else []
+        if len(self._lsp_docs) > 500:
+            self._lsp_docs.clear()
+        self._lsp_docs[id(item.data)] = laid
+        selected = view._popup.selected if view._popup is not None and view.completing else None
+        if self._lsp_doc_gen.get(id(view)) == gen and selected is item:
+            view.show_doc(laid)
+
     # ------------------------------------------------------------ hover, definition
     async def lsp_hover(self, ed) -> bool:
         """Ctrl+F1 in a file with a server: what the server knows about the word."""
@@ -306,10 +367,45 @@ class LspMixin:
         self.update_status()  # type: ignore[attr-defined]
 
 
+def signature_layout(found: types.SignatureHelp | None, width: int):
+    """``(lines, mark)`` for the signature box, or None (not in a call)."""
+    if found is None or not found.signatures:
+        return None
+    index = found.active_signature or 0
+    sig = found.signatures[index if index < len(found.signatures) else 0]
+    label = " ".join(sig.label.split())
+    active = sig.active_parameter if sig.active_parameter is not None else found.active_parameter
+    start = end = 0
+    param_doc = ""
+    params = list(sig.parameters or [])
+    if active is not None and 0 <= active < len(params):
+        param = params[active]
+        if isinstance(param.label, str):
+            name = " ".join(param.label.split())
+            # after the opening parenthesis, and after the parameters before it
+            at = label.find("(") + 1
+            for before in params[:active]:
+                if isinstance(before.label, str):
+                    found_at = label.find(" ".join(before.label.split()), at)
+                    if found_at >= 0:
+                        at = found_at + len(" ".join(before.label.split()))
+            start = label.find(name, at)
+            end = start + len(name) if start >= 0 else 0
+            start = max(start, 0)
+        else:
+            start, end = param.label[0], param.label[1]
+        param_doc = clean_hover(lsp.plain_markup(param.documentation))
+        if " ".join(param_doc.split()) in label:
+            param_doc = ""  # it only repeats the parameter as the signature shows it
+    doc = "\n".join(t for t in (param_doc, clean_hover(lsp.plain_markup(sig.documentation))) if t)
+    return signature_lines(label, start, end, doc, width)
+
+
 def clean_hover(text: str) -> str:
-    """Markdown fences and PHP open tags out of a hover, blank runs squeezed."""
+    """Markdown fences, headings marks and PHP open tags out of a hover, blank runs squeezed."""
     text = re.sub(r"```\w*\n?", "", text)
     text = re.sub(r"<\?php\s*", "", text)
+    text = re.sub(r"(?m)^#{1,6}\s+", "", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
@@ -341,7 +437,7 @@ def completion_result(text: str, offset: int, prefix: str, items: list[types.Com
              lsp.to_offset(text, e.range.end.line, e.range.end.character), e.new_text)
             for e in (item.additional_text_edits or ())
         )
-        out.append((item.sort_text or item.label, Completion(item.label, insert, detail, extra=extra)))
+        out.append((item.sort_text or item.label, Completion(item.label, insert, detail, extra=extra, data=item)))
     out.sort(key=lambda pair: pair[0])
     return CompletionResult(start, prefix, [c for _, c in out[:200]], context="lsp")
 

@@ -24,6 +24,6 @@ Put the cursor on a string that names a file and press **Ctrl+Enter** (or Ctrl+c
 
 ## With a language server
 
-With [phpactor](https://phpactor.readthedocs.io) or [intelephense](https://intelephense.com) installed, the PHP editor completes functions, classes and methods, shows what a symbol is (**Ctrl+F1**), goes to its definition (**Ctrl+Enter**) and adds the server's warnings to PHP's errors. See [[Language Servers]].
+With [phpactor](https://phpactor.readthedocs.io) or [intelephense](https://intelephense.com) installed, the PHP editor completes functions, classes and methods with their documentation, shows the signature of the call you are typing, shows what a symbol is (**Ctrl+F1**), goes to its definition (**Ctrl+Enter**) and adds the server's warnings to PHP's errors. See [[Language Servers]].
 
 Everything else is the same editor as for templates: find and replace, the editing keys, undo (see [[Editing Templates]]).

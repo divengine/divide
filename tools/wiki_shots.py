@@ -254,8 +254,9 @@ async def php():
 
 @shot
 async def lsp():
-    """Completion from a real language server: DIVIDE_SHOT_LSP="name command…"
-    (for example "intelephense /path/intelephense --stdio"); skipped without it."""
+    """Completion and signatures from a real language server, on Div's classes:
+    DIVIDE_SHOT_LSP="name command…" (for example "phpactor phpactor language-server"),
+    with `composer install` done in examples/shop; skipped without it."""
     spec = os.environ.get("DIVIDE_SHOT_LSP", "").split()
     if len(spec) < 2:
         print("skipped lsp: set DIVIDE_SHOT_LSP")
@@ -275,14 +276,22 @@ async def lsp():
             await settle(pilot, 10)
             await until(pilot, lambda: not app.lsp_working, tries=1200)  # indexing
             ed = app.active_editor().editor
-            ed.move_cursor((14, 0))
-            ed.insert("$data['total'] = array_")
+            # completion of a Div method, with its documentation beside the list
+            ed.move_cursor((16, len("echo new div('index.tpl', $data);")))
+            ed.insert("\n$tpl = new div('index.tpl', $data);\n$tpl->")
             await settle(pilot, 4)
-            await pilot.press("s")
-            await until(pilot, lambda: ed.completing, tries=400)
-            await pilot.press("down", "down")
+            await pilot.press("p", "a", "r")
+            await until(pilot, lambda: ed.completing and ed._doc is not None and ed._doc.display, tries=400)
             await settle(pilot, 6)
             save(app, "lsp")
+            # the signature over the line, the parameter being typed marked
+            await pilot.press("escape")
+            ed.insert("se(")
+            await until(pilot, lambda: ed.signature_shown, tries=200)
+            await pilot.press("t", "r", "u", "e", ",", "space")
+            await until(pilot, lambda: ed.signature_shown and ed._signature.mark is not None and ed._signature.mark[1] > 20, tries=200)
+            await settle(pilot, 6)
+            save(app, "lsp-signature")
             await app.lsp_stop_all()
     finally:
         if old is None:

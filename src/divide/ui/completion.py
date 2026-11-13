@@ -138,3 +138,128 @@ class CompletionPopup(Widget):
         if 0 <= row < len(self.items):
             self.index = row
             self.owner.accept_completion()
+
+
+class InfoPopup(Widget):
+    """A box of text next to the cursor: a call's signature, or the documentation
+    of the selected completion. Like the completion list it never takes the focus.
+
+    ``show(lines, at, mark=(line, start, end))``: ``mark`` is drawn highlighted
+    (the parameter being typed)."""
+
+    MAX_WIDTH = 72
+    MAX_ROWS = 12
+    tv_shadow = True
+    can_focus = False
+
+    COMPONENT_CLASSES = {"info--text", "info--mark", "info--border"}
+    DEFAULT_CSS = """
+    InfoPopup {
+        overlay: screen;
+        position: absolute;
+        width: auto; height: auto;
+        background: $surface;
+    }
+    InfoPopup .info--border { color: $text; }
+    InfoPopup .info--text { color: $text; }
+    InfoPopup .info--mark { color: $text; background: $accent; text-style: bold; }
+    """
+
+    def __init__(self, kind: str) -> None:
+        super().__init__()
+        self.kind = kind  # "signature" | "doc"
+        self.lines: list[str] = []
+        self.mark: tuple[int, int, int] | None = None
+
+    @staticmethod
+    def wrap(text: str, width: int, rows: int) -> list[str]:
+        out: list[str] = []
+        for para in text.splitlines() or [""]:
+            if not para.strip():
+                if out and out[-1]:
+                    out.append("")
+                continue
+            line = ""
+            for word in para.split():
+                while len(word) > width:
+                    if line:
+                        out.append(line)
+                        line = ""
+                    out.append(word[:width])
+                    word = word[width:]
+                if line and len(line) + 1 + len(word) > width:
+                    out.append(line)
+                    line = word
+                else:
+                    line = f"{line} {word}" if line else word
+            if line:
+                out.append(line)
+        while out and not out[-1]:
+            out.pop()
+        if len(out) > rows:
+            out = out[:rows]
+            out[-1] = (out[-1][: width - 1] + "…") if len(out[-1]) >= width else out[-1] + " …"
+        return out
+
+    def show(self, lines: list[str], *, x: int, y: int, mark: tuple[int, int, int] | None = None) -> None:
+        self.lines = lines
+        self.mark = mark
+        width = max((len(line) for line in lines), default=0) + 4
+        self.styles.width = width
+        self.styles.height = len(lines) + 2
+        self.styles.offset = (max(0, x), max(0, y))
+        self.display = True
+        self.refresh(layout=True)
+
+    @property
+    def box_size(self) -> tuple[int, int]:
+        return max((len(line) for line in self.lines), default=0) + 4, len(self.lines) + 2
+
+    def hide(self) -> None:
+        self.display = False
+        self.lines = []
+
+    def render_line(self, y: int) -> Strip:
+        width, height = self.size
+        if width < 4:
+            return Strip.blank(width)
+        border = self.get_component_rich_style("info--border")
+        text = self.get_component_rich_style("info--text")
+        inner = width - 2
+        if y == 0:
+            return Strip([Segment("┌" + "─" * inner + "┐", border)])
+        if y == height - 1:
+            return Strip([Segment("└" + "─" * inner + "┘", border)])
+        row = y - 1
+        line = self.lines[row] if row < len(self.lines) else ""
+        body = (" " + line).ljust(inner)[:inner]
+        segments = [Segment("│", border)]
+        if self.mark is not None and self.mark[0] == row:
+            _, start, end = self.mark
+            start, end = start + 1, end + 1  # the margin
+            segments += [Segment(body[:start], text), Segment(body[start:end], self.get_component_rich_style("info--mark")), Segment(body[end:], text)]
+        else:
+            segments.append(Segment(body, text))
+        segments.append(Segment("│", border))
+        return Strip(segments)
+
+
+def signature_lines(label: str, start: int, end: int, doc: str, width: int) -> tuple[list[str], tuple[int, int, int] | None]:
+    """A signature in a box ``width`` wide: the label on one line (cut around the
+    parameter being typed when too long) and the documentation under it."""
+    width = max(20, width)
+    mark = (0, start, end) if end > start else None
+    if len(label) > width:
+        left = max(0, min(start - width // 3, len(label) - width))
+        cut = list(label[left:left + width])
+        if left > 0:
+            cut[0] = "…"
+        if left + width < len(label):
+            cut[-1] = "…"
+        label = "".join(cut)
+        if mark is not None:
+            mark = (0, max(0, start - left), min(width, end - left))
+    lines = [label]
+    if doc.strip():
+        lines += [""] + InfoPopup.wrap(doc, width, 6)
+    return lines, mark

@@ -25,7 +25,7 @@ from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
 from divide.lang.div.complete import CARET, CompletionResult, complete
-from divide.ui.completion import CompletionPopup
+from divide.ui.completion import CompletionPopup, InfoPopup
 from divide.ui import icons as icons_mod
 
 UNTITLED = "NONAME{:02d}.TPL"
@@ -219,6 +219,8 @@ class EditorView(DivEditor, TVViewMixin):
         super().__init__(*args, **kwargs)
         self.tv_options = OptionFlag.SELECTABLE
         self._popup: CompletionPopup | None = None
+        self._signature: InfoPopup | None = None  # the call's signature, over the line
+        self._doc: InfoPopup | None = None  # the documentation of the selected completion
         self._typed = False  # the last change came from a key typed here
         self._completion_pending = False
 
@@ -269,11 +271,70 @@ class EditorView(DivEditor, TVViewMixin):
             self.screen.mount(self._popup)
         x, y = self.cursor_screen_offset
         self._popup.show(result, explicit=explicit, at=(x - len(result.prefix), y), screen_size=tuple(self.screen.size))
+        self._ask_doc()
 
     def hide_completion(self) -> None:
         if self._popup is not None:
             self._popup.result = None
             self._popup.display = False
+        self.hide_doc()
+
+    # ------------------------------------------------------------ signature and documentation
+    def _info(self, which: str) -> InfoPopup:
+        popup = getattr(self, "_" + which)
+        if popup is None or not popup.is_attached:
+            popup = InfoPopup(which)
+            setattr(self, "_" + which, popup)
+            self.screen.mount(popup)
+        return popup
+
+    @property
+    def signature_shown(self) -> bool:
+        return self._signature is not None and self._signature.display and bool(self._signature.lines)
+
+    def show_signature(self, lines: list[str], mark: tuple[int, int, int] | None) -> None:
+        """Over the cursor's line (under it when there is no room above)."""
+        popup = self._info("signature")
+        x, y = self.cursor_screen_offset
+        width, height = len(max(lines, key=len)) + 4, len(lines) + 2
+        sw, sh = self.screen.size
+        top = y - height if y - height >= 1 else y + 1
+        popup.show(lines, x=min(max(0, x - 2), max(0, sw - width - 2)), y=min(top, max(0, sh - height - 1)), mark=mark)
+
+    def hide_signature(self) -> None:
+        if self._signature is not None:
+            self._signature.hide()
+
+    def show_doc(self, lines: list[str]) -> None:
+        """Beside the completion list (on its left when there is no room on its right)."""
+        if not self.completing or not lines:
+            self.hide_doc()
+            return
+        popup = self._info("doc")
+        assert self._popup is not None
+        px, py = int(self._popup.styles.offset.x.value), int(self._popup.styles.offset.y.value)
+        pw = int(self._popup.styles.width.value)
+        width = len(max(lines, key=len)) + 4
+        sw, sh = self.screen.size
+        x = px + pw + 2
+        if x + width > sw:
+            x = px - width - 1
+        if x < 0:
+            x = max(0, sw - width - 2)
+        popup.show(lines, x=x, y=min(py, max(0, sh - len(lines) - 3)))
+
+    def hide_doc(self) -> None:
+        if self._doc is not None:
+            self._doc.hide()
+
+    def _ask_doc(self) -> None:
+        """The selected completion changed: its documentation, when someone knows it."""
+        item = self._popup.selected if self._popup is not None and self.completing else None
+        provider = getattr(self.app, "lsp_document", None)
+        if item is None or item.data is None or provider is None:
+            self.hide_doc()
+            return
+        provider(self, item)
 
     def accept_completion(self) -> None:
         popup = self._popup
@@ -333,12 +394,16 @@ class EditorView(DivEditor, TVViewMixin):
             handled = True
             if key == "up":
                 self._popup.move(-1)
+                self._ask_doc()
             elif key == "down":
                 self._popup.move(1)
+                self._ask_doc()
             elif key == "pageup":
                 self._popup.page(-1)
+                self._ask_doc()
             elif key == "pagedown":
                 self._popup.page(1)
+                self._ask_doc()
             elif key in ("enter", "tab"):
                 self.accept_completion()
             elif key == "escape":
@@ -349,17 +414,31 @@ class EditorView(DivEditor, TVViewMixin):
                 event.stop()
                 event.prevent_default()
                 return
+        if event.key == "escape" and self.signature_shown:
+            self.hide_signature()
+            event.stop()
+            event.prevent_default()
+            return
         if event.is_printable or event.key == "backspace":
             self._typed = True
 
     def on_text_area_changed(self) -> None:
         self._schedule_completion()
+        self._signature_follow()
 
     def on_text_area_selection_changed(self) -> None:
         self._schedule_completion()
+        if self.signature_shown:
+            self._signature_follow()
+
+    def _signature_follow(self) -> None:
+        hook = getattr(self.app, "lsp_signature_changed", None)
+        if hook is not None and self.lang == "php":
+            hook(self)
 
     def on_blur(self) -> None:
         self.hide_completion()
+        self.hide_signature()
 
     def on_click(self, event: events.Click) -> None:
         # Ctrl+click on an include opens it (after the click has placed the cursor).

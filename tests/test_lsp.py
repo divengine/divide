@@ -120,8 +120,30 @@ async def test_language_server_in_the_editor(tmp_path, fake_server):
         assert await until(pilot, lambda: ed.selection.start == (1, 6))
         assert ed.selection.end == (1, 10)
 
+        # the documentation of the selected completion, beside the list
+        ed.move_cursor((6, len("echo $shop->total()")))
+        ed.insert(";\n$shop->")
+        await pilot.press("t", "o")
+        assert await until(pilot, lambda: ed.completing and ed._doc is not None and ed._doc.display)
+        assert ed._doc.lines == ["Shop::total", "", "Adds it all up."]
+        await pilot.press("escape")
+        await settle(pilot)
+        assert not ed._doc.display
+
+        # the signature over the line while typing the arguments, the parameter marked
+        ed.insert("tal(")
+        assert await until(pilot, lambda: ed.signature_shown)
+        lines, mark = ed._signature.lines, ed._signature.mark
+        assert lines[0] == "total(int $a, string $b): float" and lines[0][mark[1]:mark[2]] == "int $a"
+        assert "Adds it all up." in lines
+        await pilot.press("1", ",")
+        assert await until(pilot, lambda: ed.signature_shown and ed._signature.lines[0][ed._signature.mark[1]:ed._signature.mark[2]] == "string $b")
+        await pilot.press(")")
+        assert await until(pilot, lambda: not ed.signature_shown)
+        ed.insert(";")
+
         # a class: inserted by its name, with the `use` line the server sends
-        ed.move_cursor((7, 0))
+        ed.move_cursor((ed.document.line_count - 1, 0))
         ed.insert("$t = new ")
         await pilot.press("T", "p")
         assert await until(pilot, lambda: ed.completing and [c.label for c in ed._popup.items] == ["Tpl (Engine)"])

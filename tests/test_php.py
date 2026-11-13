@@ -99,3 +99,11 @@ async def test_php_editor(tmp_path: Path):
         await pilot.press("ctrl+enter")
         await settle(pilot)
         assert app.active_editor().path == tmp_path / "page.tpl"
+
+
+def test_in_parentheses():
+    assert php.in_parentheses("<?php f(1, ", 11)
+    assert not php.in_parentheses("<?php f(1);", 11)
+    assert php.in_parentheses("<?php f(')', ", 13)  # a parenthesis in a string does not close
+    assert not php.in_parentheses("<?php // f(\n$x", 14)
+    assert php.in_parentheses("<?php f(g(2), ", 14) and not php.in_parentheses("<?php f(g(2))", 13)

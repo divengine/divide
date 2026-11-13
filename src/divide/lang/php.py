@@ -71,3 +71,34 @@ async def lint(text: str, php: str | None = None, timeout: float = 10.0) -> list
     if proc.returncode == 0:
         return []
     return parse_lint(err.decode("utf-8", "replace") + out.decode("utf-8", "replace"), text)
+
+
+def in_parentheses(text: str, offset: int, window: int = 4000) -> bool:
+    """Is ``offset`` inside a parenthesis still open (a call's arguments)? Strings
+    and comments are skipped. Language servers may answer a signature for the
+    call next to the cursor even after it is closed: this tells them apart."""
+    start = max(0, offset - window)
+    if start:
+        start = text.find("\n", start) + 1 or start
+    depth = 0
+    i = start
+    while i < offset:
+        ch = text[i]
+        if ch in "'\"":
+            i += 1
+            while i < offset and text[i] != ch:
+                i += 2 if text[i] == "\\" else 1
+        elif ch == "#" or (ch == "/" and text.startswith("//", i)):
+            end = text.find("\n", i)
+            i = offset if end < 0 or end >= offset else end
+            continue
+        elif ch == "/" and text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = offset if end < 0 or end >= offset else end + 2
+            continue
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth = max(0, depth - 1)
+        i += 1
+    return depth > 0

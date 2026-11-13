@@ -297,6 +297,34 @@ class LspSession:
                 found.append(Location(Path(fs), rng.start.line, rng.start.character))
         return found
 
+    async def signature(self, path: Path, offset: int, timeout: float = 5.0) -> types.SignatureHelp | None:
+        """The signature of the call the cursor is in (None: not in a call)."""
+        if not self.running or path not in self.versions or not (self.capabilities and self.capabilities.signature_help_provider):
+            return None
+        where = self._where(path, offset)
+        try:
+            return await asyncio.wait_for(self.client.text_document_signature_help_async(
+                types.SignatureHelpParams(text_document=where.text_document, position=where.position)), timeout)
+        except Exception:
+            return None
+
+    async def resolve(self, item: types.CompletionItem, timeout: float = 5.0) -> types.CompletionItem:
+        """The item with its documentation (servers send it only when asked)."""
+        provider = self.capabilities.completion_provider if self.capabilities else None
+        if not self.running or item.documentation or not (provider and provider.resolve_provider):
+            return item
+        try:
+            return await asyncio.wait_for(self.client.completion_item_resolve_async(item), timeout) or item
+        except Exception:
+            return item
+
+    @property
+    def signature_characters(self) -> list[str]:
+        provider = self.capabilities.signature_help_provider if self.capabilities else None
+        if not provider:
+            return []
+        return list(provider.trigger_characters or []) + list(provider.retrigger_characters or [])
+
     @property
     def trigger_characters(self) -> list[str]:
         provider = self.capabilities.completion_provider if self.capabilities else None
