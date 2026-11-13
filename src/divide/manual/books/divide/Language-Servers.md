@@ -8,12 +8,22 @@ A language server is a program that knows a language deeply: it reads the whole 
 
 | Key | |
 |---|---|
-| typing, or **Ctrl+Space** | completion: the server's functions, classes, methods and variables, with their types; after `->`, `::`, `$` and `\` it opens by itself |
+| typing, or **Ctrl+Space** | completion: the server's functions, classes, methods and variables, with their types; after `->`, `::`, `$` and `\` it opens by itself; a class from another namespace brings its `use` line |
 | **Ctrl+F1** | what the server knows about the word under the cursor (its signature, its documentation), in a dialog |
 | **Ctrl+Enter** / Ctrl+click | the definition of the symbol under the cursor, in its file; on a string with a file name, that file (see [[Editing PHP]]) |
 | | the server's errors and warnings join PHP's in the editor and in the Messages window (**Alt+F9**) |
 
 The server is started when the first PHP file opens. A spinner turns in the status line while it starts and while it indexes the project; the status line then names the server. It is stopped when divide exits.
+
+## Composer projects
+
+In a project with a `composer.json` and its `vendor/` installed (`composer install`), the server reads the classes of the packages too. With Div (`composer require divengine/div`):
+
+- `new di` offers `div (divengine)`; choosing it writes `div` and adds `use divengine\div;` at the top of the file;
+- `div::` lists Div's static methods, `$tpl->` the methods of a `div` object;
+- `\divengine\` lists what the namespace holds.
+
+The first questions after the server starts may take a moment while it reads `vendor/`.
 
 ## Installing a server
 

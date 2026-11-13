@@ -39,8 +39,9 @@ through the real Div engine, side by side with the code.
   tree-sitter's PHP grammar and checked by PHP itself (`php -l`) as you type.
   Ctrl+Enter on `new div('page.tpl')` opens the template.
 - **Language servers.** With phpactor or intelephense (in the project or the
-  PATH), PHP gets completion, hover (Ctrl+F1), go to definition (Ctrl+Enter)
-  and the server's diagnostics. divide is a generic LSP client (pygls), so
+  PATH), PHP gets completion (with the classes of `vendor/`, like Div's, and
+  their `use` lines added for you), hover (Ctrl+F1), go to definition
+  (Ctrl+Enter) and the server's diagnostics. divide is a generic LSP client (pygls), so
   other languages are one entry away.
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
@@ -51,9 +52,13 @@ through the real Div engine, side by side with the code.
 
 ```bash
 git clone https://github.com/divengine/divide.git && cd divide
-python3 -m venv .venv && .venv/bin/pip install -e .
-.venv/bin/divide ~/sites/my-project        # or: divide page.tpl
+tools/install.sh                           # the `divide` command, in ~/.local/bin
+cd ~/sites/my-project && divide            # any folder; or: divide page.tpl
 ```
+
+`tools/install.sh` installs divide in the checkout's `.venv` (editable) and
+links the command, so `git pull` updates it. Or, isolated:
+`pipx install git+https://github.com/divengine/divide.git`.
 
 Rendering and include checks need `php` and Div in your project
 (`composer require divengine/div`). divide finds the engine there, in

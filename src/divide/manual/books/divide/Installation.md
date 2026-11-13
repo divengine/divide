@@ -12,15 +12,23 @@ Editing, highlighting, completion and most checks work with Python alone. Everyt
 
 ## Install divide
 
-From the repository:
+From the repository, as a command for your user:
 
 ```bash
 git clone https://github.com/divengine/divide.git
 cd divide
-python3 -m venv .venv
-.venv/bin/pip install -e .
-.venv/bin/divide --help
+tools/install.sh
 ```
+
+`tools/install.sh` creates the checkout's `.venv` if needed, installs divide there (editable) and links the `divide` command in `~/.local/bin` (or the folder you give it: `tools/install.sh /usr/local/bin`). Then, in any folder:
+
+```bash
+cd ~/sites/my-project
+divide              # the folder is the project
+divide page.tpl     # a file: its folder is the project
+```
+
+`git pull` in the checkout updates the command. To remove it, delete the link.
 
 Or as an isolated command with [pipx](https://pipx.pypa.io/):
 

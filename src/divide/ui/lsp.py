@@ -36,6 +36,7 @@ CM_LSP_BROWSE = Command.USER + 101
 
 KIND = {k.value: k.name.lower() for k in types.CompletionItemKind}
 _WORD = re.compile(r"[A-Za-z0-9_$\\]*$")
+_NAME = re.compile(r"[A-Za-z0-9_$]*$")  # what a completion replaces: the name after the last \\
 
 
 def lsp_settings() -> tuple[dict[str, str], dict[str, list[str]]]:
@@ -193,11 +194,11 @@ class LspMixin:
             return
         session = self.lsp_session(view.lang)
         before = text[max(0, offset - 1):offset]
-        prefix = _WORD.search(text[:offset]).group(0)  # type: ignore[union-attr]
+        prefix = _NAME.search(text[:offset]).group(0)  # type: ignore[union-attr]
         trigger = None
         if session is not None and before and before in session.trigger_characters and before in "$>:\\":
             trigger = before
-        if not explicit and not trigger and not re.fullmatch(r"[A-Za-z_]\w*", prefix.lstrip("$\\")):
+        if not explicit and not trigger and not re.fullmatch(r"[A-Za-z_]\w*", prefix.lstrip("$")):
             view.hide_completion()
             return
         gen = self._lsp_completion_gen[id(view)] = self._lsp_completion_gen.get(id(view), 0) + 1
@@ -330,12 +331,17 @@ def completion_result(text: str, offset: int, prefix: str, items: list[types.Com
                     insert = insert[start - edit_start:] if text[edit_start:start] == insert[:start - edit_start] else insert
         if item.insert_text_format == types.InsertTextFormat.Snippet:
             insert = lsp.from_snippet(insert, CARET)
-        name = (item.filter_text or item.label).lower()
+        name = (item.filter_text or item.insert_text or item.label).lower()
         if key and not (name.startswith(key) or name.lstrip("$").startswith(key.lstrip("$"))):
             continue
         detail = item.detail or KIND.get(item.kind or 0, "")
         detail = " ".join(detail.split())[:40]
-        out.append((item.sort_text or item.label, Completion(item.label, insert, detail)))
+        extra = tuple(
+            (lsp.to_offset(text, e.range.start.line, e.range.start.character),
+             lsp.to_offset(text, e.range.end.line, e.range.end.character), e.new_text)
+            for e in (item.additional_text_edits or ())
+        )
+        out.append((item.sort_text or item.label, Completion(item.label, insert, detail, extra=extra)))
     out.sort(key=lambda pair: pair[0])
     return CompletionResult(start, prefix, [c for _, c in out[:200]], context="lsp")
 

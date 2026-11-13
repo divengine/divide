@@ -9,7 +9,9 @@ and to generate its screenshots (`tools/wiki_shots.py`).
 - `components/card.tpl`, `layout/header.tpl`, `layout/footer.tpl`: the
   included templates.
 - `index.php`: the same page rendered from PHP (`new div('index.tpl', …)`);
-  in divide, Ctrl+Enter on `'index.tpl'` opens the template.
+  in divide, Ctrl+Enter on `'index.tpl'` opens the template. Run
+  `composer install` here and, with phpactor installed, the PHP editor
+  completes Div's classes from `vendor/`.
 - `checkout.tpl` is **broken on purpose**: an unclosed loop, an unclosed
   condition, an include Div cannot find, bad JSON in a template variable and
   an orphan loop closing. Open it and press Alt+F9.

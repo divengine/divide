@@ -53,6 +53,9 @@ def test_completion_filtered_by_what_is_typed():
     result = completion_result("$a->t", 5, "t", items)
     assert [c.label for c in result.items] == ["taxes", "total"] and result.start == 4
     assert clean_hover("```php\n<?php class A\n```\n\n\n\nDoc") == "class A\n\nDoc"
+    # after a namespace only the name is replaced
+    result = completion_result("\\divengine\\d", 12, "d", [types.CompletionItem(label="div"), types.CompletionItem(label="is_url")])
+    assert [c.label for c in result.items] == ["div"] and result.start == 11
 
 
 def test_find_command(tmp_path):
@@ -97,7 +100,7 @@ async def test_language_server_in_the_editor(tmp_path, fake_server):
         ed.move_cursor((6, len("echo $shop->")))
         await pilot.press("t")
         assert await until(pilot, lambda: ed.completing)
-        assert [c.label for c in ed._popup.items] == ["total", "taxes"]
+        assert [c.label for c in ed._popup.items] == ["total", "taxes", "Tpl (Engine)"]
         await pilot.press("o")
         assert await until(pilot, lambda: ed.completing and [c.label for c in ed._popup.items] == ["total"])
         await pilot.press("enter")
@@ -116,6 +119,16 @@ async def test_language_server_in_the_editor(tmp_path, fake_server):
         await pilot.press("ctrl+enter")
         assert await until(pilot, lambda: ed.selection.start == (1, 6))
         assert ed.selection.end == (1, 10)
+
+        # a class: inserted by its name, with the `use` line the server sends
+        ed.move_cursor((7, 0))
+        ed.insert("$t = new ")
+        await pilot.press("T", "p")
+        assert await until(pilot, lambda: ed.completing and [c.label for c in ed._popup.items] == ["Tpl (Engine)"])
+        await pilot.press("enter")
+        await settle(pilot)
+        assert ed.text.startswith("<?php\n\nuse Engine\\Tpl;\nclass Shop {")  # the edits in the server's order
+        assert ed.document.get_line(ed.cursor_location[0]) == "$t = new Tpl" and ed.cursor_location[1] == len("$t = new Tpl")
 
         await app.lsp_stop_all()
 

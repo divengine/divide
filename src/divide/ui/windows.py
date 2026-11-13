@@ -289,7 +289,14 @@ class EditorView(DivEditor, TVViewMixin):
         after = item.after if item.after and not self.text.startswith(item.after, offset) else ""
         doc = self.document
         self.replace(insert + after, doc.get_location_from_index(result.start), doc.get_location_from_index(offset))
-        self.move_cursor(doc.get_location_from_index(result.start + (caret if caret >= 0 else len(insert))))
+        cursor = result.start + (caret if caret >= 0 else len(insert))
+        # other edits that come with the item (a language server's `use` line): before the
+        # word only, from the last to the first, inserts at one place in the server's order
+        extra = [(i, e) for i, e in enumerate(item.extra) if e[1] <= result.start]
+        for _, (start, end, text) in sorted(extra, key=lambda pair: (-pair[1][0], -pair[0])):
+            self.replace(text, doc.get_location_from_index(start), doc.get_location_from_index(end))
+            cursor += len(text) - (end - start)
+        self.move_cursor(doc.get_location_from_index(cursor))
         self._typed = False
         if item.retrigger:
             self.call_after_refresh(self.update_completion, True)

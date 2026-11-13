@@ -37,6 +37,7 @@ class Completion:
     detail: str = ""
     after: str = ""  # inserted after the cursor unless already there
     retrigger: bool = False  # complete again right after inserting (snippet that opens a context)
+    extra: tuple = ()  # other edits (start, end, text) in the text as it was, e.g. a `use` line to import a class
 
 
 @dataclass

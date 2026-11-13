@@ -37,6 +37,12 @@ def completion(params: types.CompletionParams) -> types.CompletionList:
                              insert_text="total($0)", insert_text_format=types.InsertTextFormat.Snippet, sort_text="1"),
         types.CompletionItem(label="taxes", kind=types.CompletionItemKind.Method, sort_text="2"),
         types.CompletionItem(label="name", kind=types.CompletionItemKind.Property, sort_text="3"),
+        # a class from another namespace: the server adds its `use` line (phpactor's way)
+        types.CompletionItem(label="Tpl (Engine)", insert_text="Tpl", kind=types.CompletionItemKind.Class, sort_text="4",
+                             additional_text_edits=[
+                                 types.TextEdit(range=types.Range(start=types.Position(line=1, character=0), end=types.Position(line=1, character=0)), new_text="\nuse Engine\\Tpl;"),
+                                 types.TextEdit(range=types.Range(start=types.Position(line=1, character=0), end=types.Position(line=1, character=0)), new_text="\n"),
+                             ]),
     ])
 
 

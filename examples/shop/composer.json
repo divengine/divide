@@ -1,0 +1,8 @@
+{
+    "name": "divengine/divide-shop-example",
+    "description": "The shop example of divide: Div templates rendered from PHP.",
+    "type": "project",
+    "require": {
+        "divengine/div": "^6.1"
+    }
+}

@@ -248,7 +248,7 @@ class LspSession:
             position=types.Position(line=line, character=character))
 
     async def completion(self, path: Path, offset: int, trigger: str | None = None,
-                         timeout: float = 5.0) -> tuple[list[types.CompletionItem], bool]:
+                         timeout: float = 10.0) -> tuple[list[types.CompletionItem], bool]:
         """``(items, incomplete)`` at ``offset`` of the document as last sent."""
         if not self.running or path not in self.versions:
             return [], False
