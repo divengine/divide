@@ -232,3 +232,22 @@ async def test_f10_opens_menu_and_arrows_navigate(tmp_path):
         await settle(pilot)
         assert ed.text == "abc"
         assert not app.menu_bar.active
+
+
+async def test_alt_letter_opens_only_its_menu(tmp_path):
+    from textual_vision.menus import MenuBox
+
+    f = tmp_path / "x.tpl"
+    f.write_text("abc")
+    app = Divide(tmp_path, [f])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+w")
+        await settle(pilot)
+        boxes = list(app.screen.query(MenuBox))
+        assert len(boxes) == 1 and "Tile" in [i.plain_name for i in boxes[0].menu.items if hasattr(i, "plain_name")]
+        await pilot.press("escape")
+        await settle(pilot)
+        await pilot.press("f10")
+        await settle(pilot)
+        assert len(app.screen.query(MenuBox)) == 1 and isinstance(app.focused, MenuBox)

@@ -1,146 +1,111 @@
 # divide
 
-Terminal IDE (TUI) for the Divengine projects. First milestone: the official
-editor for [Div](https://github.com/divengine/div) templates.
+**The Div template IDE that lives in your terminal.**
 
-## Run
+divide is a full-screen, keyboard-first IDE for [Div](https://github.com/divengine/div)
+templates, in the spirit of the Borland IDEs: overlapping windows, drop-down
+menus, dialogs with shadows and a status line that always tells you the next
+key. It understands Div the way Div does: it reads your dialect, checks your
+templates as you type, completes variables from your real data, and renders
+through the real Div engine, side by side with the code.
+
+![divide: project, template and rendered output side by side](https://raw.githubusercontent.com/wiki/divengine/divide/images/hero.png)
+
+## What it does
+
+- **Speaks Div.** Every construct of the language is highlighted, in the
+  template's own dialect (`@_DIALECT`).
+- **Errors before you render.** Unclosed loops, orphan `[/$x]`, conditions
+  without `{/?}`, tags Div would leave as text, broken JSON in `{= x: … =}`,
+  includes Div cannot resolve. They are painted in the editor and listed in a
+  Turbo Pascal–style Messages window, and Alt+F8 walks through them.
+- **Completion from your data.** `{$` offers the keys of `page.json`. Inside
+  `[$products]` you get a product's fields, the item name and Div's `_index`,
+  `_is_last`… `[$` closes the loop for you, `{% ` lists your templates, and
+  Ctrl+Space offers every Div construct as a snippet.
+- **The real engine.** Ctrl+F9 renders through PHP and Div, unsaved edits
+  included. Includes are resolved by Div's own `getTplPath()` and data is
+  decoded by Div's own `jsonDecode()`. Ctrl+Enter opens the template an
+  include points to.
+- **Data as code or as a tree.** Div JSON (references, comments, single
+  quotes) is highlighted and validated, and Ctrl+T edits the same buffer as a
+  tree.
+- **A project window that does things.** You can create, rename and delete
+  files and folders without leaving the IDE.
+- **Works in any terminal.** It runs over SSH, inside tmux, and on the server
+  where the templates live.
+
+## Quick start
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-.venv/bin/divide [--palette turbo-pascal|turbo-c] [folder] [files...]
-.venv/bin/python -m divide.lang.div.preview [--kinds] file.tpl   # highlighted dump / token list
-.venv/bin/pytest
+git clone https://github.com/divengine/divide.git && cd divide
+python3 -m venv .venv && .venv/bin/pip install -e .
+.venv/bin/divide ~/sites/my-project        # or: divide page.tpl
 ```
 
-The interface is a Turbo Vision desktop (menu bar, overlapping windows, dialogs,
-status line) in the Turbo Pascal colours by default; `--palette turbo-c` or
-the Options menu switches to Turbo C. Editor windows show `* line:col` on the
-bottom border (`*` = modified) and their number on the top border. Windows,
-dialogs and menus cast the Turbo Vision drop shadow (2 columns right, 1 row
-down; what is underneath stays readable in dark gray on black).
+Rendering and include checks need `php` and Div in your project
+(`composer require divengine/div`). divide finds the engine there, in
+`$DIVIDE_DIV_PHP`, or in Options > Div engine.
 
-| Key | Action |
+| | |
 |---|---|
-| `F10`, `Alt+letter` | menu (F10 opens the first one; ←/→ walk the bar) |
-| `F2` / `Ctrl+S` | save (untitled files ask for a name) |
-| `F3` | open file dialog (wildcards, `Enter` on a folder enters it) |
-| `Alt+F3` / `Ctrl+W` | close window (asks about unsaved changes) |
-| `F5` | zoom window |
-| `F6` / `Shift+F6`, `Ctrl+PgDn/PgUp` | next / previous window |
-| `Alt+1`…`Alt+9` | go to window *n* |
-| `Ctrl+B` | project window (open, raise, close) |
-| `Ctrl+Enter`, `Ctrl+click` | go to the template included by the `{% %}` / `{%% %%}` under the cursor |
-| `Ctrl+Space` | complete: variables, loop names, include paths, Div tags |
-| `Ctrl+F` / `Ctrl+R` | find / replace (case, whole words, regex with `\1` groups, direction, origin, prompt) |
-| `Ctrl+L` | search again (repeats the last find or replace) |
-| `Ctrl+G` | go to line number |
-| `Ctrl+F9` | Run > Render: template + data through PHP and Div (unsaved edits included) |
-| `Alt+F5` | show the Output window |
-| `Alt+F9` | Run > Check: Messages window with the template's Div errors |
-| `Alt+F8` / `Alt+F7` | next / previous Div error (Turbo Pascal's next / previous message) |
-| `Ctrl+T` | data tree ⇄ code: visual editor of the JSON data (from a template: its data) |
-| `Alt+X` / `Ctrl+Q` | exit |
+| `F10` / `Alt+letter` | menus |
+| `Ctrl+B` | project window: `Ins` new file, `F7` new folder, `F2` rename, `Del` delete |
+| `Ctrl+Space` | completion |
+| `Alt+F9` · `Alt+F8` | check the template · next error |
+| `Ctrl+F9` | render with its data (`page.tpl` + `page.json`) |
+| `Ctrl+T` | data tree ⇄ code |
+| `Ctrl+Enter` | go to the included template |
+| `F2` · `F3` · `Alt+X` | save · open · exit |
 
-## Div errors while you type
+## Manual
 
-Templates are checked on every edit (`divide.lang.div.diagnostics`, with the
-template's dialect): unclosed loops and orphan `[/$x]`, `{?( )?}` without
-`{/?}` (and orphan `{/?}`), begin tags that Div would leave as text because
-their end is missing (`<!--{`, `{=`, `{@`, `{?(`, `(#`, `{#`, `{% `, `{%% `,
-`[:`, `(( `, `{txt}`, `{strip}`, `<!--|`), includes that Div cannot resolve, a broken
-`@_DIALECT`, and malformed JSON in `{= x: {...} =}`. Errors are painted red and
-warnings brown in the editor; the status line shows the message under the
-cursor or the counts. The Messages window (Alt+F9, or Window > Messages) lists
-them as `page.tpl(12,5): Error: ...`, follows the active template live, and
-Enter jumps to the place; render messages follow below.
+The **[wiki](https://github.com/divengine/divide/wiki)** is the user manual,
+with screenshots:
 
-## Includes
+- [Installation](https://github.com/divengine/divide/wiki/Installation)
+- [Getting Started](https://github.com/divengine/divide/wiki/Getting-Started)
+- [The Desktop](https://github.com/divengine/divide/wiki/The-Desktop)
+- [Editing Templates](https://github.com/divengine/divide/wiki/Editing-Templates)
+- [Completion](https://github.com/divengine/divide/wiki/Completion)
+- [Checking Templates](https://github.com/divengine/divide/wiki/Checking-Templates)
+- [Rendering](https://github.com/divengine/divide/wiki/Rendering)
+- [Data Files](https://github.com/divengine/divide/wiki/Data-Files)
+- [Project Window](https://github.com/divengine/divide/wiki/Project-Window)
+- [Keyboard Reference](https://github.com/divengine/divide/wiki/Keyboard-Reference)
+- [Troubleshooting](https://github.com/divengine/divide/wiki/Troubleshooting)
 
-divide does not look for included templates on its own: Div's resolution
-(relative to the working directory, to the template's folder, then to the
-include history, adding `.tpl`) is Div's business. The PHP bridge asks the
-engine's own `getTplPath()`, with the template's path and the same working
-directory as a render (the project folder), and seeds the include history
-with the last rendered template. The answers drive the "cannot find" warnings
-(re-asked when the includes change, on focus, after saving and after file
-operations in the project window) and `Ctrl+Enter` (Search > Go to included
-template), which opens what Div resolves, or offers to create the template
-next to the current one. Without php and Div there are no include warnings.
-Terminals that send Ctrl+Enter as a newline give `Ctrl+J`, which works too.
+### One convention: save first
 
-## Completion
+Div can take a template as a string, without a file, but then it has no folder.
+Its includes would not resolve the way they will in production, and divide
+would not know its data file. So **templates are saved before Div sees them**.
+An untitled template is still highlighted, completed and checked, but its
+includes are not resolved, and Render and Go to include ask you to save it
+first. Once a template has a file, its unsaved edits are always what Div gets.
 
-Typing `{$`, `[$`, `[/$`, `?$` / `!$`, a `$` inside `{?( )?}`, `(# #)` or
-`{= =}`, or `{% ` opens a completion list under the cursor (Turbo Vision menu
-colours); typing narrows it, ↑/↓ and PgUp/PgDn move, Enter or Tab inserts,
-Esc closes. `Ctrl+Space` (Edit > Complete) opens it anywhere: with nothing
-more specific it lists the Div tags of the template's dialect (what is typed
-before the cursor, such as `{?` or `loop`, narrows them).
+## Development
 
-- Variables come from the data JSON (the editor buffer if it is open, so
-  unsaved keys count), with dotted members (`site.name`); inside a loop, the
-  fields of its items, the item name (`value`, or `p` in `[$list] p => ...`)
-  and Div's `_index`, `_key`, `_is_last`...; then template variables
-  (`{= x: ... =}`) and the variables already used in the template.
-- `[$` offers lists first and inserts `products]` plus the closing
-  `[/$products]` (unless the loop is already closed further down); `[/$`
-  offers the open loops; `?$x` adds the matching `$x?`.
-- `{% ` / `{%% ` list folders and `.tpl` files (without the extension, as Div
-  writes includes), relative to the template and the project.
-
-## Project window
-
-`Ctrl+B` opens the project tree (version-control and cache folders such as
-`.git`, `__pycache__`, `.venv`, `node_modules` are hidden). Enter opens a file
-or folds a folder; on the tree:
-
-| Key | Action |
-|---|---|
-| `Ins` | new file in the folder under the cursor (`parts/menu.tpl` creates `parts/` too); it opens |
-| `F7` | new folder (nested paths are fine) |
-| `F2` | rename (the name without its extension is selected); open windows follow |
-| `Del` | delete, after confirming (folders with everything in them); windows of deleted files close unless they hold unsaved changes |
-| `Ctrl+R` | refresh from disk |
-| `Alt+F10`, `Shift+F10`, right click | local menu with all of the above |
-
-## Rendering
-
-Run > Render renders a template with its data: by Div's convention `page.tpl`
-takes `page.json` (Run > Data file picks another one, Run > Edit data opens
-or creates it). The editor buffers are used, saved or not, and the template's
-real path is passed so relative includes work. Output goes to an Output
-window; Div's warnings, PHP notices and data problems to a Messages window.
-While the Output window is open, saving the template or its data re-renders.
-
-It needs `php` and Div. divide looks for Div in `$DIVIDE_DIV_PHP`, then the
-path set in Options > Div engine (stored in `~/.config/divide/config.json`),
-then `vendor/autoload.php` (with `vendor/divengine/div`) above the template or
-the project. Data is decoded by Div's own `jsonDecode`, so the warnings match
-what the template sees.
+```bash
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pytest                                                  # render tests need DIVIDE_DIV_PHP
+.venv/bin/python -m divide.lang.div.preview [--kinds] file.tpl    # highlighted dump / token list
+```
 
 Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 `src/div.php` with its `vendor/` installed); they are skipped otherwise.
 
-## Data: Div JSON, as code or as a tree
+### How divide relies on Div
 
-Data files (`.json`, also `.dialect`) are Div JSON: what Div's `jsonDecode`
-accepts, i.e. JSON plus `$name` / `$person.name` references as values, single
-quotes, unquoted keys and comments. The code editor highlights and validates
-it as you type (the status line shows the error's line and column).
+What the engine decides is asked to the engine. The PHP bridge
+(`src/divide/run/bridge.php`) runs Div for renders and answers questions
+about it, such as where an include leads (`getTplPath()` with the template's
+path, the render's working directory and the include history). The Python
+side highlights, completes and checks the syntax the lexer sees. One lookup
+is still done in Python and should move to the bridge: finding the
+`@_DIALECT` file.
 
-`Ctrl+T` opens the same buffer as a tree. Enter edits an item (key, type:
-String, Number, True, False, Null, Reference, Object, Array, and value), Ins
-adds (inside an object / array, or after a plain value), Del deletes,
-Ctrl+↑/↓ moves, Ctrl+Z / Ctrl+Y undo through the code editor, F2 saves.
-Every tree edit rewrites the buffer as standard JSON (references stay bare);
-divide asks first when that would drop comments, single quotes or unquoted
-keys. Typing in the code rebuilds the tree.
-
-Note on references: Div decodes a data file before any variable exists, so
-`$refs` in `page.json` come out empty (rendering says so). They work in JSON
-inside templates, e.g. `{= card: {"who": $person.name} =}`.
-
-## Layout
+### Layout
 
 - `src/divide/lang/divjson.py` — Div JSON: tokens, parser with positions, writer, tree edits
 - `src/divide/lang/div/` — the language, UI-independent (lexer, dialects, diagnostics)
@@ -155,7 +120,7 @@ inside templates, e.g. `{= card: {"who": $person.name} =}`.
 - `src/divide/app.py` — the application: menus, status line, commands, window management
 - `docs/div-language.md` — notes on Div as understood by the editor
 
-## textual-vision
+### textual-vision
 
 `textual-vision` is pinned to `0.0.1` (young, single maintainer). Things divide
 works around, to revisit on upgrades:

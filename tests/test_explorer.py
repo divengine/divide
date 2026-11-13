@@ -1,5 +1,8 @@
 from pathlib import Path
 
+from textual_vision.constants import Command
+from textual_vision.events import CommandMessage
+
 from divide.app import Divide
 from divide.ui.dialogs import DialogScreen, InputDialog, MessageBox
 from divide.ui.explorer import LocalMenu
@@ -114,3 +117,17 @@ async def test_right_click_opens_local_menu_not_the_file(tmp_path):
         await pilot.press("o")  # Open
         await settle(pilot)
         assert [w.path for w in app.editor_windows()] == [root / "page.tpl"]
+
+
+async def test_window_tile_arranges_every_window(tmp_path):
+    root = project(tmp_path)
+    app = Divide(root, [root / "page.tpl", root / "parts" / "a.tpl"])
+    async with app.run_test(size=(120, 34)) as pilot:
+        await settle(pilot)
+        app.toggle_project()
+        await settle(pilot)
+        app.post_message(CommandMessage(Command.TILE))
+        await settle(pilot)
+        regions = [w.region for w in app.windows()]
+        assert len({r.x for r in regions} | {r.y for r in regions}) > 2  # not all stacked at (0, 1)
+        assert all(not a.overlaps(b) for i, a in enumerate(regions) for b in regions[i + 1 :])

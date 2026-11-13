@@ -47,6 +47,11 @@ from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
 from divide.ui.windows import EditorWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
+SAVE_FIRST = (
+    "Save the template first (F2). divide hands Div templates that live in a file: "
+    "Div finds the includes and the data file from the template's folder."
+)
+
 PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
 DEFAULT_PALETTE = "turbo-pascal"
 
@@ -97,10 +102,21 @@ class DropMenuBar(MenuBar):
     the menu and Left/Right still walk the bar.
     """
 
-    def activate(self) -> None:
-        super().activate()
+    # Only F10 (or the status line) opens the first menu: Alt+letter activates the
+    # bar and opens its own menu right after, and a box opened by activate() would
+    # not be mounted yet when that second open tries to close it, staying behind.
+    def open_first(self) -> None:
+        if not self.active:
+            self.activate()
         if self._menu_box is None:
             self._open_menu_box()
+
+    def tv_handle_key(self, event: events.Key) -> bool:
+        opening = event.key == "f10" and not self.active
+        handled = super().tv_handle_key(event)
+        if opening and self.active and self._menu_box is None:
+            self._open_menu_box()
+        return handled
 
 
 class HintStatusLine(StatusLine):
@@ -482,8 +498,8 @@ class Divide(ExplorerMixin, Application):
                 self.desktop.tile()
             case Command.CASCADE if self.desktop:
                 self.desktop.cascade()
-            case Command.MENU if self.menu_bar:
-                self.menu_bar.activate()
+            case Command.MENU if isinstance(self.menu_bar, DropMenuBar):
+                self.menu_bar.open_first()
             case Command.UNDO if editor:
                 editor.editor.action_undo()
             case Command.REDO if editor:
@@ -764,7 +780,7 @@ class Divide(ExplorerMixin, Application):
             return
         raw = hit[2]
         if win.path is None:
-            await self.run_dialog(information("Go to include", "Save the template first: Div resolves includes from its folder."))
+            await self.run_dialog(information("Go to include", SAVE_FIRST))
             return
         if self._include_engine(win.path) is None:
             await self.run_dialog(information("Go to include", "Div was not found (see Options > Div engine): only Div knows where an include leads."))
@@ -815,6 +831,12 @@ class Divide(ExplorerMixin, Application):
     async def render_template(self, *, keep_focus: bool = False) -> None:
         """Render the target template. ``keep_focus`` (re-render after a save) leaves the active window on top."""
         previous = self.active_window()
+        active = self.active_editor()
+        if not keep_focus and active is not None and active.path is None and active.editor.div_enabled:
+            # Convention: templates are saved before Div sees them. Div could take the
+            # code alone, but its includes and data file are found from where it lives.
+            await self.run_dialog(information("Render", SAVE_FIRST))
+            return
         template = self.render_target()
         if template is None:
             await self.run_dialog(information("Render", "Open a Div template (.tpl) to render it."))

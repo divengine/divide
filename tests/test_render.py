@@ -215,3 +215,14 @@ async def test_include_warnings_and_goto_include(tmp_path):
         assert (tmp_path / "examples" / "layout.tpl").is_file()
         assert app.active_editor().path == (tmp_path / "examples" / "layout.tpl").resolve()
         assert win.editor.diagnostics == []  # Div finds it now
+
+
+async def test_untitled_template_asks_to_save_first(tmp_path):
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        app.new_file()
+        await settle(pilot)
+        await pilot.press("ctrl+f9")
+        await settle(pilot)
+        assert isinstance(app.screen, DialogScreen) and "Save the template first" in app.screen.dialog._text

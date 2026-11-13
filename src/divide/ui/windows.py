@@ -76,6 +76,7 @@ class _TVWindow(Window):
     def __init__(self, title: str = "", *, number: int = 0, **kwargs) -> None:
         super().__init__(title=title, **kwargs)
         self.number = number
+        self.tv_options |= OptionFlag.TILEABLE  # Window > Tile only arranges tileable windows
 
     def compose_content(self) -> ComposeResult:
         yield from ()
