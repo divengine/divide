@@ -98,7 +98,7 @@ class MessageBox(_Dialog):
         self.styles.height = lines + 7
 
     def compose_content(self) -> ComposeResult:
-        yield Static(self._text, classes="dlg-text")
+        yield Static(self._text, classes="dlg-text", markup=False)
         with Horizontal(classes="dlg-buttons"):
             for i, (label, command, bid) in enumerate(self._buttons):
                 yield Button(label, command, is_default=(i == 0), id=bid)
@@ -174,7 +174,7 @@ class FileDialog(_Dialog):
         self.input = InputLine(max_len=1024)
         self.input.data = name or pattern
         self.list = FileList(self)
-        self.dir_label = Static("", classes="dlg-dir")
+        self.dir_label = Static("", classes="dlg-dir", markup=False)
         self._entries: list[str] = []
         self._syncing = False
 
@@ -419,7 +419,7 @@ class InputDialog(_Dialog):
     def compose_content(self) -> ComposeResult:
         yield Label(self.label, link=self.input)
         yield self.input
-        yield Static(self.hint, classes="dlg-hint")
+        yield Static(self.hint, classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
             yield Button("O~K~", Command.OK, is_default=True, id="ok")
             yield Button("Cancel", Command.CANCEL, id="cancel")

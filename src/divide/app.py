@@ -8,6 +8,7 @@ textual-vision, with first-class support for Div templates
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 from pathlib import Path
@@ -49,10 +50,19 @@ from divide.run.render import (
     find_engine,
     render,
     resolve_includes,
+    translate_template,
 )
 from divide.ui.explorer import TREE_HINT, ExplorerMixin
 from divide.ui.jsontree import JsonTreeWindow
-from divide.ui.dialector import DialectorWindow, SectionDialog, TransformDialog
+from divide.ui.dialector import (
+    CM_OPEN_TRANSLATION,
+    CM_SAVE_TRANSLATION,
+    DialectorWindow,
+    SectionDialog,
+    TransformDialog,
+    TranslateDialog,
+)
+from divide.lang.div.dialect import Dialect, template_properties
 from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS
 from divide.lang import divjson
@@ -90,6 +100,7 @@ CM_MESSAGES = Command.USER + 18
 CM_COMPLETE = Command.USER + 19
 CM_GOTO_INCLUDE = Command.USER + 20
 CM_DIALECTOR = Command.USER + 21
+CM_TRANSLATE = Command.USER + 22
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -98,6 +109,8 @@ CM_DX_ALL_DEFAULTS = Command.USER + 73
 CM_DX_PHP = Command.USER + 74
 CM_DX_EXAMPLE = Command.USER + 75
 CM_DX_CHECK = Command.USER + 76
+CM_DX_IMPORT = Command.USER + 77
+CM_DX_TRANSLATE = Command.USER + 78
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -266,7 +279,11 @@ class Divide(ExplorerMixin, Application):
                     MenuItem("Close a~l~l", Command.CLOSE_ALL),
                 ),
                 # Flat: textual-vision 0.0.1 does not move keyboard focus into nested sub-menus.
-                SubMenu("~T~ools", MenuItem("~D~ialector...", CM_DIALECTOR)),
+                SubMenu(
+                    "~T~ools",
+                    MenuItem("~D~ialector...", CM_DIALECTOR),
+                    MenuItem("~T~ranslate a template...", CM_TRANSLATE),
+                ),
                 SubMenu("~O~ptions", *palette_items, Separator(), MenuItem("~D~iv engine...", CM_DIV_ENGINE)),
                 SubMenu("~H~elp", MenuItem("~A~bout...", CM_ABOUT)),
             ]
@@ -540,6 +557,8 @@ class Divide(ExplorerMixin, Application):
                 editor.editor.select_all()
             case _ if command == CM_DIALECTOR:
                 await self.open_dialector()
+            case _ if command == CM_TRANSLATE:
+                await self.translate_wizard()
             case _ if command == CM_GOTO_INCLUDE and editor:
                 await self.goto_include(editor)
             case _ if command == CM_COMPLETE and editor:
@@ -1143,8 +1162,11 @@ class Divide(ExplorerMixin, Application):
                 Item("~T~ransform all tags...", CM_DX_TRANSFORM),
                 Item("Restore ~a~ll defaults", CM_DX_ALL_DEFAULTS),
                 Sep(),
-                Item("Generate ~P~HP code", CM_DX_PHP),
+                Item("~I~mport tags...", CM_DX_IMPORT),
+                Item("Export as ~P~HP code", CM_DX_PHP),
+                Sep(),
                 Item("Save e~x~ample template...", CM_DX_EXAMPLE),
+                Item("Trans~l~ate a template...", CM_DX_TRANSLATE),
                 Item("~C~heck with Div", CM_DX_CHECK),
             ])
             region = win.sections.content_region
@@ -1153,6 +1175,7 @@ class Divide(ExplorerMixin, Application):
             action = {
                 CM_DX_EDIT: "edit", CM_DX_RESTORE: "restore_section", CM_DX_TRANSFORM: "transform",
                 CM_DX_ALL_DEFAULTS: "all_defaults", CM_DX_PHP: "php", CM_DX_EXAMPLE: "example", CM_DX_CHECK: "check",
+                CM_DX_IMPORT: "import", CM_DX_TRANSLATE: "translate",
             }.get(command, "")
         section = win.section
         match action:
@@ -1180,6 +1203,16 @@ class Divide(ExplorerMixin, Application):
                 self.new_file(dx.php_code(win.tags, win.source.display_name), plain=True)
             case "example":
                 await self.save_dialect_example(win)
+            case "import":
+                await self.import_dialect(win)
+            case "translate":
+                if win.source.dirty and not await self.save(win.source):
+                    return
+                template = self._focused_template.path if self._focused_template and self._focused_template.path else None
+                await self.translate_wizard(
+                    template=self._project_relative(template) if template else "",
+                    target=self._project_relative(win.source.path) if win.source.path else "",
+                )
             case "check":
                 win.check_now()
         if win.is_attached:
@@ -1215,6 +1248,128 @@ class Divide(ExplorerMixin, Application):
             existing.editor.load_text(text)
             existing.saved_text = text
         self.open_file(target)
+
+    async def import_dialect(self, win: DialectorWindow) -> None:
+        """Take the tags of another dialect file, or of PHP define() lines."""
+        start = win.source.path.parent if win.source.path else self.root
+        dialog = FileDialog("Import tags", start, pattern="*.dialect")
+        if await self.run_dialog(dialog) != Command.OK or dialog.chosen is None:
+            return
+        try:
+            text = dialog.chosen.read_text(encoding="utf-8")
+            tags, unknown = dx.parse_import(text, php=dialog.chosen.suffix.lower() == ".php")
+        except (OSError, UnicodeDecodeError, ValueError) as exc:
+            await self.run_dialog(information("Import tags", f"Cannot read {dialog.chosen.name}: {exc}"))
+            return
+        if not tags:
+            await self.run_dialog(information("Import tags", f"{dialog.chosen.name} has no Div tags."))
+            return
+        note = f" ({len(unknown)} names that are not Div tags are left out)" if unknown else ""
+        text = f"Take {len(tags)} tags from {dialog.chosen.name}{note}? Tags it does not mention go back to Div's defaults."
+        if await self.run_dialog(confirm("Import tags", text)) != Command.YES or not await win.can_rewrite():
+            return
+        win.apply({**DEFAULT_TAGS, **tags})
+
+    def _project_path(self, text: str) -> Path | None:
+        if not text:
+            return None
+        path = Path(text).expanduser()
+        return (path if path.is_absolute() else self.root / path).resolve()
+
+    async def translate_for_dialog(self, template: str, source: str, target: str) -> tuple[str, Dialect]:
+        """Div's translation of a template between two dialect files (empty: Div's default).
+
+        The ``@_DIALECT`` property of the result points at the target dialect."""
+        tpl = self._project_path(template)
+        if tpl is None:
+            raise ValueError("Which template? Type its path.")
+        code = self._text_of(tpl)
+        if code is None:
+            raise ValueError(f"Cannot read the template {template}")
+        texts: list[str] = []
+        for label, raw in (("source", source), ("target", target)):
+            path = self._project_path(raw)
+            text = "" if path is None else self._text_of(path)
+            if text is None:
+                raise ValueError(f"Cannot read the {label} dialect {raw}")
+            texts.append(text)
+        engine = self._include_engine(tpl)
+        if engine is None:
+            raise ValueError("Div was not found: Div translates the template (Options > Div engine).")
+        try:
+            translated = await translate_template(engine, code, texts[0], texts[1], cwd=self.root)
+        except RenderError as exc:
+            raise ValueError(str(exc)) from None
+        target_path = self._project_path(target)
+        ref = None
+        if target_path is not None:
+            ref = os.path.relpath(target_path, tpl.parent)
+        try:
+            tags, _ = dx.parse_import(texts[1]) if texts[1] else ({}, [])
+        except ValueError:
+            tags = {}
+        dialect = Dialect.from_overrides(tags, name=target_path.stem if target_path else "default", source=target_path)
+        return dx.set_dialect_property(translated, ref), dialect
+
+    async def suggest_source_dialect(self, template: str) -> tuple[str, str]:
+        """The source dialect a template declares: (path for the field, a note).
+
+        A template in another dialect says so with ``@_DIALECT``; without it, it
+        is in Div's default dialect. Div resolves the property's path the way it
+        does when it renders (``getTplPath()``, as ``prepareDialect()`` does)."""
+        tpl = self._project_path(template)
+        text = self._text_of(tpl) if tpl is not None else None
+        if tpl is None or text is None:
+            return "", ""
+        prop = template_properties(text).get("DIALECT")
+        if prop is None or not prop[0].strip():
+            return "", "Suggested: Div's default dialect (the template has no @_DIALECT)"
+        ref = prop[0].strip()
+        engine = self._include_engine(tpl)
+        if engine is None:
+            return ref, f"Suggested: the template's @_DIALECT = {ref} (Div not found to resolve it)"
+        try:
+            found = (await resolve_includes(engine, tpl, [ref], cwd=self.root)).get(ref)
+        except RenderError:
+            found = None
+        if found is None or found.file is None:
+            return ref, f"[!] The template says @_DIALECT = {ref}, but Div cannot find that file"
+        return self._project_relative(found.file), f"Suggested: the template's @_DIALECT = {ref}"
+
+    async def translate_wizard(self, *, template: str = "", source: str = "", target: str = "") -> None:
+        """Tools > Translate a template: choose, preview, save as or open."""
+        active = self.active_editor()
+        if not template and active is not None and active.editor.div_enabled and active.path is not None:
+            template = self._project_relative(active.path)
+        # The source dialect is suggested by the dialog from the template itself.
+        dialog = TranslateDialog(template, source, target)
+        choice = await self.run_dialog(dialog)
+        if dialog.text is None or choice not in (CM_SAVE_TRANSLATION, CM_OPEN_TRANSLATION):
+            return
+        if choice == CM_OPEN_TRANSLATION:
+            self.new_file(dialog.text)
+            return
+        tpl = self._project_path(dialog.fields()[0])
+        assert tpl is not None
+        suffix = dialog.target_dialect.source.stem if dialog.target_dialect and dialog.target_dialect.source else "div"
+        default = f"{tpl.stem}.{suffix}{tpl.suffix or '.tpl'}"
+        name = InputDialog("Save translation as", "~F~ile", default, hint=f"Next to {tpl.name}", select=(0, len(default) - 4))
+        if await self.run_dialog(name) != Command.OK or not name.value:
+            return
+        out = (tpl.parent / name.value).resolve()
+        if out.exists() and await self.run_dialog(confirm("Save translation", f"{out.name} exists. Replace it?")) != Command.YES:
+            return
+        text = dialog.text
+        if dialog.target_dialect and dialog.target_dialect.source is not None:
+            text = dx.set_dialect_property(text, os.path.relpath(dialog.target_dialect.source, out.parent))
+        try:
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(text, encoding="utf-8")
+        except OSError as exc:
+            await self.run_dialog(information("Save translation", f"Cannot write {out.name}: {exc.strerror or exc}"))
+            return
+        self.refresh_project()
+        self.open_file(out)
 
     def toggle_data_tree(self) -> None:
         """Code <-> tree: from a tree go to its code; from JSON code (or a template's data) open its tree."""

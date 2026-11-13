@@ -472,3 +472,33 @@ def differences(tags: dict[str, str], translated: str) -> list[Difference]:
         pick = lambda lines: lines[n] if n < len(lines) else ""  # noqa: E731
         out.append(Difference(section.title, n + 1, pick(sl), pick(wl), pick(gl)))
     return out
+
+
+# ------------------------------------------------------ import / translate
+_DIALECT_PROPERTY = re.compile(r"^[ \t]*@_DIALECT[ \t]*=[^\n]*\n?", re.M)
+_DEFINE = re.compile(r"""define\(\s*(['"])(DIV_TAG_\w+)\1\s*,\s*(['"])((?:\\.|(?!\3).)*)\3\s*\)""")
+
+
+def set_dialect_property(text: str, ref: str | None) -> str:
+    """Point the template's ``@_DIALECT`` at ``ref`` (None: Div's default, no property)."""
+    line = f"@_DIALECT = {ref}\n" if ref else ""
+    if _DIALECT_PROPERTY.search(text):
+        return _DIALECT_PROPERTY.sub(lambda m: line, text, count=1)
+    return line + text if line else text
+
+
+def parse_import(text: str, php: bool = False) -> tuple[dict[str, str], list[str]]:
+    """Tags from a dialect file (JSON as Div accepts it) or from PHP ``define()`` lines.
+
+    Returns the known DIV_TAG_* values and the names that are not Div tags."""
+    from divide.lang.div.dialect import lenient_json
+
+    if php:
+        raw = {m.group(2): re.sub(r"\\(.)", r"\1", m.group(4)) for m in _DEFINE.finditer(text)}
+    else:
+        value = lenient_json(text) if text.strip() else {}
+        if not isinstance(value, dict):
+            raise ValueError("a dialect is a JSON object: { \"DIV_TAG_...\": \"...\" }")
+        raw = {str(k): "" if v is None else str(v) for k, v in value.items()}
+    known = {k: v for k, v in raw.items() if k in DEFAULT_TAGS}
+    return known, [k for k in raw if k not in DEFAULT_TAGS]

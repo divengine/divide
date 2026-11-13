@@ -10,7 +10,7 @@ from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
 from divide.lang.div.lexer import Lexer
 from divide.run.render import ENV_ENGINE, check_dialect
-from divide.ui.dialector import DialectorWindow, SectionDialog, TransformDialog
+from divide.ui.dialector import DialectorWindow, SectionDialog, TransformDialog, TranslateDialog
 from divide.ui.dialogs import DialogScreen
 from divide.ui.explorer import LocalMenu
 
@@ -202,3 +202,115 @@ async def test_dialector_without_div_says_so(tmp_path, monkeypatch):
         await settle(pilot)
         assert "Div was not found" in str(win.verdict_box.render())
         assert win.sections.items[4].startswith("•")  # Loops and iterations: changed
+
+
+def test_dialect_property_and_import():
+    assert dx.set_dialect_property("@_DIALECT = a.dialect\nHi\n", "b.dialect") == "@_DIALECT = b.dialect\nHi\n"
+    assert dx.set_dialect_property("@_DIALECT = a.dialect\nHi\n", None) == "Hi\n"
+    assert dx.set_dialect_property("Hi\n", "b.dialect") == "@_DIALECT = b.dialect\nHi\n"
+    php = "<?php\ndefine('DIV_TAG_EMPTY', 'it\\'s');\ndefine(\"DIV_TAG_ELSE\", \"@or@\");\ndefine('OTHER', 1);\n"
+    assert dx.parse_import(php, php=True) == ({"DIV_TAG_EMPTY": "it's", "DIV_TAG_ELSE": "@or@"}, [])
+    # the original web dialector saved single-quoted keys
+    assert dx.parse_import("{ 'DIV_TAG_EMPTY': '@none@', 'DIV_TAG_X': 'y' }") == ({"DIV_TAG_EMPTY": "@none@"}, ["DIV_TAG_X"])
+
+
+@needs_div
+async def test_translate_a_template_between_dialects(tmp_path):
+    (tmp_path / "erb.dialect").write_text(json.dumps(ERB))
+    (tmp_path / "views").mkdir()
+    (tmp_path / "mustache.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "{{", "DIV_TAG_REPLACEMENT_SUFFIX": "}}"}')
+    page = tmp_path / "views" / "page.tpl"
+    page.write_text("@_DIALECT = ../erb.dialect\nHi <%$name%>\n[$items]<li><%$value%></li>[/$items]\n")
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "t")  # Tools > Translate a template
+        await settle(pilot)
+        dialog = app.screen.dialog
+        assert isinstance(dialog, TranslateDialog)
+        await until(pilot, lambda: dialog.text is not None)
+        # the active template, and the dialect its @_DIALECT names (resolved by Div)
+        assert dialog.fields() == ("views/page.tpl", "erb.dialect", "")
+        assert "@_DIALECT = ../erb.dialect" in str(dialog.source_note.render())
+        assert "Hi {$name}" in dialog.text and "@_DIALECT" not in dialog.text  # to Div's default
+        dialog.target_input.data = "mustache.dialect"
+        await pilot.click("#preview")
+        await until(pilot, lambda: "{{$name}}" in (dialog.text or ""))
+        assert dialog.text.startswith("@_DIALECT = ../mustache.dialect\n")
+        assert dialog.preview.dialect["DIV_TAG_REPLACEMENT_PREFIX"] == "{{"
+        await pilot.click("#save")
+        await settle(pilot)
+        await pilot.press("enter")  # the proposed name: page.mustache.tpl
+        await settle(pilot)
+        out = tmp_path / "views" / "page.mustache.tpl"
+        assert out.read_text() == "@_DIALECT = ../mustache.dialect\nHi {{$name}}\n[$items]<li>{{$value}}</li>[/$items]\n"
+        opened = app.active_editor()
+        assert opened.path == out.resolve() and opened.editor.dialect.name == "mustache"
+        assert page.read_text().startswith("@_DIALECT = ../erb.dialect")  # the original is untouched
+
+
+@needs_div
+async def test_dialector_imports_php_defines(tmp_path):
+    (tmp_path / "x.dialect").write_text("{}")
+    (tmp_path / "old.php").write_text("<?php define('DIV_TAG_EMPTY', '@none@'); define('DIV_TAG_ELSE', '@or@');")
+    app = Divide(tmp_path, [tmp_path / "x.dialect"])
+    async with app.run_test(size=(120, 36)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d")
+        await settle(pilot)
+        win = app.active_window()
+        await pilot.press("alt+f10", "i")
+        await settle(pilot)
+        app.screen.dialog.input.data = "old.php"
+        await pilot.click("#ok")
+        await settle(pilot)
+        assert "Take 2 tags from old.php" in app.screen.dialog._text
+        await pilot.press("y")
+        await settle(pilot)
+        assert json.loads(win.source.editor.text) == {"DIV_TAG_EMPTY": "@none@", "DIV_TAG_ELSE": "@or@"}
+
+
+@needs_div
+async def test_translate_suggests_the_default_dialect_and_respects_a_choice(tmp_path):
+    (tmp_path / "erb.dialect").write_text(json.dumps(ERB))
+    plain = tmp_path / "plain.tpl"
+    plain.write_text("Hi {$name}\n")
+    erb = tmp_path / "erb.tpl"
+    erb.write_text("Hi <%$name%>\n")  # in ERB, but it does not say so
+    app = Divide(tmp_path, [plain])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "t")
+        await settle(pilot)
+        dialog = app.screen.dialog
+        await until(pilot, lambda: dialog.text is not None)
+        assert dialog.fields()[1] == "" and "Div's default" in str(dialog.source_note.render())
+        dialog.template_input.data = ""
+        await pilot.click(dialog.template_input)
+        await pilot.press(*"erb.tpl")  # another template: suggested again (no @_DIALECT: default)
+        await settle(pilot)
+        await until(pilot, lambda: dialog._last[0] == "erb.tpl" and "Div's default" in str(dialog.source_note.render()))
+        await pilot.click(dialog.source_input)
+        await pilot.press(*"erb.dialect")  # the user knows better
+        await settle(pilot)
+        assert dialog.fields()[:2] == ("erb.tpl", "erb.dialect"), dialog.fields()
+        assert "Your choice" in str(dialog.source_note.render())
+        await pilot.press("enter")  # Preview
+        await until(pilot, lambda: "Hi {$name}" in (dialog.text or "") and dialog._asked and dialog._asked[0] == "erb.tpl")
+        assert dialog.fields()[1] == "erb.dialect"
+
+
+async def test_div_tags_in_texts_are_not_markup(tmp_path):
+    # "[/]" and "[/$x]" are Div tags, not Textual markup: shown as they are
+    (tmp_path / "x.dialect").write_text('{"DIV_TAG_EMPTY": "[/$none]"}')
+    app = Divide(tmp_path, [tmp_path / "x.dialect"])
+    async with app.run_test(size=(120, 36)) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d")
+        await settle(pilot)
+        for _ in range(4):
+            await pilot.press("down")
+        await pilot.press("enter")  # Loops and iterations: its defaults include [/]
+        await settle(pilot)
+        assert isinstance(app.screen.dialog, SectionDialog)
+        assert any("default: [/]" in str(w.render()) for w in app.screen.dialog.query(".tr-default"))

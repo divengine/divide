@@ -155,6 +155,7 @@ class ExplorerMixin:
         tree.focus()
 
     def _project_relative(self, path: Path) -> str:
+        path = path.resolve()
         try:
             return str(path.relative_to(self.root)) or "."  # type: ignore[attr-defined]
         except ValueError:

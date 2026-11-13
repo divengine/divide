@@ -20,8 +20,9 @@
  *   {"op": "dialect_validate", "tags": {"DIV_TAG_...": "..."}}
  *     -> {"valid": true | "<Div's reason>"}: the tags are defined before Div
  *        loads, then div::isValidCurrentDialect() judges them;
- *   {"op": "dialect_translate", "tags": {...}, "code": "<template in that dialect>"}
- *     -> {"translated": "<the same template in Div's default dialect>"}: translateFrom().
+ *   {"op": "translate", "from": {...} | "<dialect JSON>", "to": {...} | "<dialect JSON>", "code": "..."}
+ *     -> {"translated": "..."}: div::translate(); an empty "from" / "to" is Div's
+ *        default dialect, and dialect files are given as text for Div to decode.
  *
  * Div prints its errors into the output ("[[]]LEVEL: message" in CLI) and
  * dies on fatal ones, so everything is buffered and the reply is written
@@ -119,11 +120,25 @@ if ($op === 'dialect_validate') {
     reply_now(['valid' => $valid, 'messages' => $messages, 'version' => $version]);
 }
 
-if ($op === 'dialect_translate') {
+if ($op === 'translate') {
     $translated = null;
+    $dialect = static function ($d) use ($divClass) {
+        if (is_string($d)) {
+            $d = trim($d) === '' ? [] : $divClass::jsonDecode($d);
+        }
+        if (is_object($d)) {
+            $d = get_object_vars($d);
+        }
+        return is_array($d) ? $d : null;
+    };
     try {
+        $from = $dialect($request['from'] ?? []);
+        $to = $dialect($request['to'] ?? []);
+        if ($from === null || $to === null) {
+            throw new RuntimeException('Div could not decode the ' . ($from === null ? 'source' : 'target') . ' dialect');
+        }
         $tpl = new $divClass('', []);
-        $translated = $tpl->translateFrom((array) ($request['tags'] ?? []), (string) ($request['code'] ?? ''));
+        $translated = $tpl->translate($from, $to, (string) ($request['code'] ?? ''));
     } catch (Throwable $e) {
         $messages[] = ['level' => 'FATAL', 'text' => get_class($e) . ': ' . $e->getMessage()];
     }

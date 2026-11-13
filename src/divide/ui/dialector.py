@@ -135,8 +135,8 @@ class DialectorWindow(_TVWindow):
         self.verdict = None
         self.section_index = 0
         self.sections = SectionList(self)
-        self.about = Static("", classes="dx-about")
-        self.verdict_box = Static("Asking Div...", classes="dx-verdict")
+        self.about = Static("", classes="dx-about", markup=False)
+        self.verdict_box = Static("Asking Div...", classes="dx-verdict", markup=False)
         self.preview = _preview_view()
         self._written: str | None = None
         self._rewrite_ok = False
@@ -333,7 +333,7 @@ class SectionDialog(_Dialog):
             self.inputs[key] = line
         self.preview = _preview_view("8")
         self.preview.add_class("sd-preview")
-        self.verdict = Static("", classes="sd-verdict")
+        self.verdict = Static("", classes="sd-verdict", markup=False)
         self.values: dict[str, str] = {}
         self.focused_key = section.keys[0]
         self._timer = None
@@ -341,14 +341,14 @@ class SectionDialog(_Dialog):
         self.styles.height = rows + 15
 
     def compose_content(self) -> ComposeResult:
-        yield Static(self.section.about, classes="sd-about")
+        yield Static(self.section.about, classes="sd-about", markup=False)
         with VerticalScroll(classes="sd-rows"):
             for key, label in self.section.fields:
                 with _TagRow():
                     yield Label(label, link=self.inputs[key], classes="tr-label")
                     yield self.inputs[key]
                     default = DEFAULT_TAGS[key]
-                    yield Static(f"default: {default}" if default else "default: (empty)", classes="tr-default")
+                    yield Static(f"default: {default}" if default else "default: (empty)", classes="tr-default", markup=False)
         yield self.preview
         yield self.verdict
         with Horizontal(classes="dlg-buttons"):
@@ -417,7 +417,7 @@ class TransformDialog(_Dialog):
         self.tags = tags
         self.find_input = InputLine(max_len=32)
         self.replace_input = InputLine(max_len=32)
-        self.summary = Static("Type what to find in the tags, and what to write instead.", classes="tf-summary")
+        self.summary = Static("Type what to find in the tags, and what to write instead.", classes="tf-summary", markup=False)
         self.changes: dict[str, str] = {}
 
     def compose_content(self) -> ComposeResult:
@@ -444,4 +444,134 @@ class TransformDialog(_Dialog):
         self.summary.update("\n".join(lines))
 
 
-__all__ = ["DialectorWindow", "SectionDialog", "TransformDialog"]
+CM_PREVIEW = Command.USER + 61
+CM_SAVE_TRANSLATION = Command.USER + 62
+CM_OPEN_TRANSLATION = Command.USER + 63
+
+
+class TranslateDialog(_Dialog):
+    """Translate a template from one dialect to another, as Div does it.
+
+    Paths are relative to the project; an empty dialect is Div's default. The
+    template's editor buffer is used when it is open. Preview shows Div's
+    translation highlighted in the target dialect; Save as / Open end the
+    dialog with ``text`` holding it.
+    """
+
+    DEFAULT_CSS = """
+    TranslateDialog { width: 92; }
+    TranslateDialog .tr-row { height: 1; margin-top: 1; }
+    TranslateDialog .tr-row Label { width: 18; }
+    TranslateDialog .tr-row InputLine { width: 1fr; }
+    TranslateDialog .tr-note { height: 1; color: $text-muted; background: $surface; }
+    TranslateDialog .tr-preview { height: 1fr; }
+    TranslateDialog .tr-status { height: 1; color: $text; background: $surface; }
+    TranslateDialog .tr-status.-bad { color: $error; }
+    """
+
+    def __init__(self, template: str = "", source: str = "", target: str = "") -> None:
+        super().__init__(title="Translate a template")
+        self.template_input = InputLine(max_len=1024)
+        self.template_input.data = template
+        self.source_input = InputLine(max_len=1024)
+        self.source_input.data = source
+        self.target_input = InputLine(max_len=1024)
+        self.target_input.data = target
+        self.preview = _preview_view()
+        self.preview.add_class("tr-preview")
+        self.status = Static("Preview shows the template as Div translates it.", classes="tr-status", markup=False)
+        self.source_note = Static("", classes="tr-note", markup=False)
+        self.text: str | None = None
+        self.target_dialect: Dialect | None = None
+        self._asked: tuple[str, str, str] | None = None
+        self._suggested: str | None = None  # the source field as last suggested (None: typed by the user)
+        self._last = self.fields()
+
+    def compose_content(self) -> ComposeResult:
+        for label, line in (
+            ("~T~emplate", self.template_input),
+            ("~F~rom dialect", self.source_input),
+        ):
+            with Horizontal(classes="tr-row"):
+                yield Label(label, link=line)
+                yield line
+        yield self.source_note
+        with Horizontal(classes="tr-row"):
+            yield Label("T~o~ dialect", link=self.target_input)
+            yield self.target_input
+        yield Static("Paths relative to the project · an empty dialect is Div's default", classes="tr-note", markup=False)
+        yield self.preview
+        yield self.status
+        with Horizontal(classes="dlg-buttons"):
+            yield Button("~P~review", CM_PREVIEW, is_default=True, id="preview")
+            yield Button("~S~ave as...", CM_SAVE_TRANSLATION, id="save")
+            yield Button("Op~e~n", CM_OPEN_TRANSLATION, id="open")
+            yield Button("Cancel", Command.CANCEL, id="cancel")
+
+    def on_mount(self) -> None:
+        self.styles.height = max(20, min(36, self.app.size.height - 2))
+        if self.template_input.data:
+            self.suggest(translate=True)
+
+    @work(exclusive=True, group="translate-suggest")
+    async def suggest(self, translate: bool = False) -> None:
+        """Suggest the source dialect from the template's @_DIALECT (or Div's default)."""
+        source, note = await self.app.suggest_source_dialect(self.template_input.data.strip())  # type: ignore[attr-defined]
+        if self._suggested is not None or not self.source_input.data:
+            self.source_input.data = source
+            self.source_input._cursor_pos = len(source)
+            self.source_input.refresh()
+            self._suggested = source
+            self.source_note.update(note)
+        self._last = self.fields()
+        if translate:
+            self.run_translation()
+
+    def fields(self) -> tuple[str, str, str]:
+        return self.template_input.data.strip(), self.source_input.data.strip(), self.target_input.data.strip()
+
+    @work(exclusive=True, group="translate-dialog")
+    async def run_translation(self, then: Command | None = None) -> None:
+        asked = self.fields()
+        self.status.set_class(False, "-bad")
+        self.status.update("Asking Div...")
+        try:
+            text, dialect = await self.app.translate_for_dialog(*asked)  # type: ignore[attr-defined]
+        except ValueError as exc:
+            self.text = None
+            self.status.set_class(True, "-bad")
+            self.status.update(f"[!] {exc}")
+            return
+        self.text, self.target_dialect, self._asked = text, dialect, asked
+        self.preview.forced_dialect = dialect
+        self.preview.load_text(text)
+        lines = text.count("\n") + 1
+        self.status.update(f"Div translated {lines} lines · shown in the target dialect")
+        if then is not None:
+            self.end_modal(then)
+
+    def on_input_line_changed(self, message) -> None:
+        message.stop()
+        now = self.fields()
+        if now[1] != self._last[1] and now[1] != self._suggested:
+            self._suggested = None  # the user chose the source: no more suggestions
+            self.source_note.update("Your choice (the template's own @_DIALECT is ignored)")
+        if now[0] != self._last[0]:
+            self.suggest()
+        self._last = now
+        if self._asked is not None and now != self._asked:
+            self.status.update("Changed: Preview again (Enter)")
+
+    def on_command_message(self, message) -> None:
+        if message.command in (CM_PREVIEW, CM_SAVE_TRANSLATION, CM_OPEN_TRANSLATION):
+            message.stop()
+            message.prevent_default()
+            if message.command == CM_PREVIEW:
+                self.run_translation()
+            elif self.text is not None and self.fields() == self._asked:
+                self.end_modal(message.command)
+            else:
+                self.run_translation(then=message.command)
+
+
+__all__ = ["DialectorWindow", "SectionDialog", "TransformDialog", "TranslateDialog"]

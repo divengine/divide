@@ -183,6 +183,39 @@ async def turbo_c():
         await pilot.press("alt+w"); await settle(pilot)
         save(app, "palette-turbo-c")
 
+@shot
+async def dialector():
+    app = Divide(DEMO, [DEMO / "erb.dialect"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d"); await settle(pilot)
+        win = app.active_window()
+        await until(pilot, lambda: win.verdict is not None)
+        await pilot.press("down", "down", "down", "down"); await settle(pilot)  # Loops and iterations
+        save(app, "dialector")
+        await pilot.press("enter"); await settle(pilot, 10)
+        await pilot.pause(1.2); await settle(pilot)
+        save(app, "dialector-section")
+        await pilot.press("escape"); await settle(pilot)
+        await pilot.press("alt+f10"); await settle(pilot)
+        save(app, "dialector-menu")
+
+
+@shot
+async def translate():
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "t"); await settle(pilot)
+        dialog = app.screen.dialog
+        await until(pilot, lambda: dialog.text is not None)
+        await pilot.click(dialog.target_input)
+        await pilot.press(*"erb.dialect", "enter")
+        await until(pilot, lambda: "<% each" in (dialog.text or ""))
+        await settle(pilot)
+        save(app, "translate")
+
+
 async def run(names: set[str]) -> None:
     for fn in SHOTS:
         if not names or fn.__name__ in names:

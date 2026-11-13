@@ -244,9 +244,32 @@ async def check_dialect(
         return DialectVerdict(str(valid or "Div gave no answer"), version=version)
     if sample is None or expected is None:
         return DialectVerdict(None, version=version)
-    request = {"engine": str(engine), "op": "dialect_translate", "tags": tags, "code": sample}
+    try:
+        translated = await translate_template(engine, sample, tags, {}, cwd=cwd, php=php, timeout=timeout)
+    except RenderError:
+        return DialectVerdict(None, None, version=version)
+    return DialectVerdict(None, translated == expected, translated, version=version)
+
+
+async def translate_template(
+    engine: Path,
+    code: str,
+    source: dict[str, str] | str,
+    target: dict[str, str] | str,
+    *,
+    cwd: Path,
+    php: str | None = None,
+    timeout: float = 20.0,
+) -> str:
+    """Div's own ``translate()``: ``code`` written in ``source`` rewritten in ``target``.
+
+    Dialects are DIV_TAG_* overrides, or a dialect file's text (Div decodes it);
+    empty means Div's default dialect.
+    """
+    request = {"engine": str(engine), "op": "translate", "from": source, "to": target, "code": code}
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     translated = reply.get("translated")
     if not isinstance(translated, str):
-        return DialectVerdict(None, None, version=version)
-    return DialectVerdict(None, translated == expected, translated, version=version)
+        problems = [m.get("text", "") for m in reply.get("messages", []) if m.get("level") in ("FATAL", "PHP")]
+        raise RenderError(problems[0] if problems else "Div did not translate the template")
+    return translated
