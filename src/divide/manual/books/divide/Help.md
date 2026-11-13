@@ -24,7 +24,7 @@ F1 in the help window itself shows this page.
 | Key | |
 |---|---|
 | **Tab** / **Shift+Tab** | next / previous cross reference |
-| **Enter** or a click | follow the cross reference |
+| **Enter** or a click | follow the cross reference, or open the web page in the browser |
 | **Alt+F1** / **Backspace** | previous topic |
 | **↑ ↓ PgUp PgDn Home End** | scroll |
 | **Esc** | close the help window |
@@ -42,7 +42,7 @@ The help window is a window like the others: **F5** zooms it, **F6** moves to th
 
 ![Div's documentation in the help window](images/help-div.png)
 
-A book is a copy of the place where it is written, so each documentation is written once. Pictures are left out. Links to other topics are cross references, also between books. Links to web sites are underlined and open nothing.
+A book is a copy of the place where it is written, so each documentation is written once. Pictures are left out. Links to other topics are cross references, also between books. Links to web pages are underlined: **Tab** reaches them too, and **Enter** or a click opens them in the browser. They are also the terminal's own hyperlinks, so Ctrl+click (or the terminal's gesture for links) opens them as well, even over SSH when the terminal is local.
 
 ![the list of books](images/help-books.png)
 

@@ -6,6 +6,12 @@
 
 **Enter** opens a file, or folds and unfolds a folder. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
 
+## Icons
+
+The tree shows folders with Turbo Vision's `▸` and `▾`. **Options > Nerd Font icons** adds an icon for each folder and file type: Div templates, dialects, PHP, JSON, Markdown, HTML, `composer.json`… **Options > Plain symbols** goes back. divide remembers the choice.
+
+The icons are glyphs of the [Nerd Fonts](https://www.nerdfonts.com/), fonts patched with icons. The terminal must use one of them (JetBrains Mono Nerd Font, FiraCode Nerd Font…); with an ordinary font they show as boxes, which is why they are off by default.
+
 ## Working with files
 
 | Key | |

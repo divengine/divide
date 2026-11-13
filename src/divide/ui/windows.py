@@ -7,6 +7,7 @@ from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
+from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -25,6 +26,7 @@ from textual_vision.window import Window
 from divide.editor.div_editor import DivEditor
 from divide.lang.div.complete import CARET, CompletionResult, complete
 from divide.ui.completion import CompletionPopup
+from divide.ui import icons as icons_mod
 
 UNTITLED = "NONAME{:02d}.TPL"
 
@@ -431,9 +433,29 @@ class ProjectTree(DirectoryTree, TVViewMixin):
             self.action = action
             self.screen_at = screen_at
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, icons: str = icons_mod.PLAIN, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.tv_options = OptionFlag.SELECTABLE
+        self.icons = icons
+
+    def set_icons(self, mode: str) -> None:
+        if mode != self.icons:
+            self.icons = mode
+            self._invalidate()
+            self.refresh()
+
+    def render_label(self, node, base_style, style):
+        text = super().render_label(node, base_style, style)
+        if self.icons != icons_mod.NERD or node.data is None or not self.is_mounted:
+            return text
+        folder = node._allow_expand
+        glyph, colour = icons_mod.icon_for(node.data.path, folder=folder, expanded=node.is_expanded)
+        if folder:
+            look = base_style + self.get_component_rich_style("directory-tree--folder", partial=True)
+        else:
+            look = base_style + (Style(color=colour) if colour else self.get_component_rich_style("directory-tree--file", partial=True))
+        prefix = len(self.ICON_NODE)
+        return Text.assemble(text[:prefix], (glyph + " ", look + style), text[prefix:])
 
     def filter_paths(self, paths):
         return [p for p in paths if p.name not in HIDDEN_NAMES and not p.name.endswith(".egg-info")]
@@ -507,10 +529,10 @@ class ProjectTree(DirectoryTree, TVViewMixin):
 class ProjectWindow(_TVWindow):
     WIDTH = 32
 
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, icons: str = icons_mod.PLAIN) -> None:
         self.root = root
         super().__init__(root.name or str(root), flags=WindowFlag.MOVE | WindowFlag.CLOSE | WindowFlag.GROW)
-        self.project_tree = ProjectTree(root)
+        self.project_tree = ProjectTree(root, icons=icons)
 
     def compose_content(self) -> ComposeResult:
         yield self.project_tree

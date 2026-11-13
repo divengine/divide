@@ -3,7 +3,9 @@
 Black on cyan, cross references in yellow, the selected one yellow on blue,
 as in Turbo Pascal and Borland Pascal. Tab and Shift+Tab move between the
 cross references, Enter (or a click) follows one, Alt+F1 goes back,
-Esc closes the window.
+Esc closes the window. Links to web pages are underlined: Enter or a click
+opens them in the browser, and they are the terminal's own hyperlinks too
+(Ctrl+click in most terminals).
 """
 
 from __future__ import annotations
@@ -134,6 +136,8 @@ class HelpView(ScrollView, TVViewMixin):
             style = STYLES.get(span.style, base)
             if span.link is not None and span.link == self.selected:
                 style = STYLES["selected"]
+            if span.link is not None and self.topic.links[span.link].external:
+                style = style + Style(link=self.topic.links[span.link].target)
             segments.append(Segment(span.text, style))
             used += len(span.text)
         if used < width:
@@ -168,7 +172,12 @@ class HelpView(ScrollView, TVViewMixin):
 
     def action_follow(self) -> None:
         if self.topic is not None and self.selected is not None:
-            self.post_message(self.Follow(self.topic.links[self.selected].target))
+            link = self.topic.links[self.selected]
+            if link.external:
+                self.app.open_url(link.target)
+                self.app.notify(f"Opening {link.target}", timeout=2)
+            else:
+                self.post_message(self.Follow(link.target))
 
     def action_scroll_up(self) -> None:
         self.scroll_relative(y=-1, animate=False)

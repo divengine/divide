@@ -1,6 +1,6 @@
 # Rendering
 
-**Ctrl+F9** (Run > Render) renders the template through PHP and the real Div engine, and shows the result next to the code.
+**Ctrl+F9** (Run > Render) renders the template through PHP and the real Div engine, and shows the result next to the code. While PHP works, a spinner turns in the status line.
 
 ![template and output side by side](images/hero.png)
 

@@ -58,8 +58,9 @@ class Span:
 
 @dataclass
 class Link:
-    target: str  # "book:Page" or "book:Page#anchor"
+    target: str  # "book:Page", "book:Page#anchor", or a web address (external)
     places: list[tuple[int, int, int]] = field(default_factory=list)  # (line, x0, x1)
+    external: bool = False  # a web page: opened by the browser, not by the help
 
 
 @dataclass
@@ -292,6 +293,7 @@ _INLINE = re.compile(
     r"!\[[^\]]*\]\([^)]*\)"  # image: left out
     r"|\[\[(?P<wiki>[^\]]+)\]\]"
     r"|\[(?P<ltext>[^\]]+)\]\((?P<lurl>[^)\s]+)\)"
+    r"|(?P<bare>https?://[^\s<>)\]]*[^\s<>)\].,;:!?'\"])"
     r"|\*\*(?P<bold>.+?)\*\*"
     r"|`(?P<code>[^`]+)`"
     r"|(?<![\w*])\*(?P<em>[^*\s][^*]*?)\*(?![\w*])"
@@ -307,6 +309,13 @@ def _inline(text: str, links: list[Link], base: str = "text", here: str | None =
     appended to ``links``; without ``here``, or leading nowhere, they are text."""
     spans: list[Span] = []
     pos = 0
+
+    def web(label: str, url: str) -> None:
+        if here is None:
+            spans.append(Span(label, base))
+        else:
+            links.append(Link(url, external=True))
+            spans.append(Span(label, "url", len(links) - 1))
 
     def link(label: str, target: str) -> None:
         found = resolve_target(here, target) if here is not None else None
@@ -326,9 +335,11 @@ def _inline(text: str, links: list[Link], base: str = "text", here: str | None =
         elif m.group("ltext"):
             label, url = m.group("ltext"), m.group("lurl")
             if "://" in url or url.startswith("mailto:"):
-                spans.append(Span(_plain(label), "url"))
+                web(_plain(label), url)
             else:
                 link(_plain(label), url)
+        elif m.group("bare"):
+            web(m.group("bare"), m.group("bare"))
         elif m.group("bold"):
             spans.extend(_inline(m.group("bold"), links, "bold", here))
         elif m.group("code"):

@@ -251,3 +251,24 @@ async def test_alt_letter_opens_only_its_menu(tmp_path):
         await pilot.press("f10")
         await settle(pilot)
         assert len(app.screen.query(MenuBox)) == 1 and isinstance(app.focused, MenuBox)
+
+
+async def test_status_line_spinner(tmp_path):
+    from divide.app import SPINNER, HintStatusLine
+
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        status = app.status_line
+        assert isinstance(status, HintStatusLine)
+        app.update_status()
+        plain = status._hint_text
+        with app.busy("Rendering page.tpl…"):
+            first = status._hint_text
+            assert first[0] in SPINNER and first.endswith("Rendering page.tpl…")
+            await pilot.pause(0.3)
+            assert status._hint_text != first  # it turns
+            with app.busy("Starting phpactor…"):
+                assert status._hint_text.endswith("Starting phpactor…")
+            assert status._hint_text.endswith("Rendering page.tpl…")
+        assert status._hint_text == plain and status._timer is None

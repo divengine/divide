@@ -141,3 +141,31 @@ async def test_window_tile_arranges_every_window(tmp_path):
         regions = [w.region for w in app.windows()]
         assert len({r.x for r in regions} | {r.y for r in regions}) > 2  # not all stacked at (0, 1)
         assert all(not a.overlaps(b) for i, a in enumerate(regions) for b in regions[i + 1 :])
+
+
+async def test_nerd_font_icons_are_an_option(tmp_path, monkeypatch):
+    from divide.ui import icons
+
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    project = tmp_path / "p"
+    (project / "sub").mkdir(parents=True)
+    (project / "a.php").write_text("<?php\n")
+    (project / "b.tpl").write_text("x\n")
+    app = Divide(project, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await pilot.pause()
+        if app.project_window() is None:
+            app.toggle_project()
+        for _ in range(6):
+            await pilot.pause()
+        tree = app.project_window().project_tree
+        lines = lambda: [tree.render_line(y).text for y in range(4)]
+        assert tree.icons == icons.PLAIN and not any(icons.BY_EXTENSION[".php"][0] in l for l in lines())
+        app.set_icons(icons.NERD)
+        await pilot.pause()
+        text = "\n".join(lines())
+        assert icons.FOLDER in text and icons.BY_EXTENSION[".php"][0] in text and icons.BY_EXTENSION[".tpl"][0] in text
+        assert app.icons == icons.NERD  # remembered
+        app.set_icons(icons.PLAIN)
+        await pilot.pause()
+        assert icons.FOLDER not in "\n".join(lines())

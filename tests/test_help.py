@@ -20,6 +20,9 @@ def test_every_cross_reference_leads_somewhere():
         for line in topic.lines:
             assert sum(len(s.text) for s in line) <= 76 or any(s.style == "code" for s in line), (name, line)
         for link in topic.links:
+            if link.external:
+                assert "://" in link.target or link.target.startswith("mailto:"), (name, link.target)
+                continue
             page, _, anchor = link.target.partition("#")
             target = manual.layout(page, 76)
             assert target is not None, (name, link.target)
@@ -59,6 +62,8 @@ def test_markdown_is_laid_out():
     # external links are text; links to topics are cross references
     styles = {s.style for line in topic.lines for s in line}
     assert {"url", "bold", "heading", "title"} <= styles and "link" not in styles
+    # web pages are links too, opened by the browser
+    assert all(link.external for link in topic.links) and topic.links
     assert any(s.style == "link" for line in manual.layout("Dialector", 60).lines for s in line)
 
 
@@ -118,3 +123,25 @@ async def test_help_window(tmp_path: Path):
         await pilot.press("ctrl+f1")
         await settle(pilot)
         assert app.help_window().view.name_ == "divide:Dialector"
+
+
+async def test_web_links_open_in_the_browser(tmp_path: Path):
+    app = Divide(tmp_path, [])
+    opened = []
+    app.open_url = lambda url, **kw: opened.append(url)  # type: ignore[method-assign]
+    async with app.run_test(size=(120, 36)) as pilot:
+        await settle(pilot)
+        app.open_help("Home")
+        await settle(pilot)
+        view = app.help_window().view
+        web = next(i for i, link in enumerate(view.topic.links) if link.external)
+        view.selected = web
+        await pilot.press("enter")
+        await settle(pilot)
+        assert opened == [view.topic.links[web].target] and view.name_ == "divide:Home"
+        # drawn as the terminal's own hyperlink (OSC 8)
+        y = view.topic.links[web].places[0][0]
+        view.scroll_to(y=y, animate=False)
+        await settle(pilot)
+        strip = view.render_line(y - view.scroll_offset.y)
+        assert any(seg.style and seg.style.link == opened[0] for seg in strip)

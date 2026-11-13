@@ -90,6 +90,6 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 | Key | Action |
 |---|---|
 | **Tab** / **Shift+Tab** | next / previous cross reference |
-| **Enter** / click | follow it |
+| **Enter** / click | follow it (a web page opens in the browser) |
 | **Alt+F1** / **Backspace** | previous topic |
 | **Esc** | close |

@@ -11,6 +11,7 @@ import argparse
 import os
 import re
 import shutil
+from contextlib import contextmanager
 from pathlib import Path
 
 from textual import events, on, work
@@ -70,6 +71,7 @@ from divide.lang.div.dialect import DEFAULT_TAGS
 from divide import manual
 from divide.lang import divjson
 from divide import lang as languages
+from divide.ui import icons as icons_mod
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
@@ -112,6 +114,7 @@ CM_HELP_INDEX = Command.USER + 25
 CM_HELP_SEARCH = Command.USER + 26
 CM_HELP_BACK = Command.USER + 27
 CM_HELP_BOOKS = Command.USER + 28
+CM_ICONS = Command.USER + 29  # info: icons mode
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -169,13 +172,64 @@ class DropMenuBar(MenuBar):
         return handled
 
 
-class HintStatusLine(StatusLine):
-    """Status line with a free-form hint on the right (language / dialect)."""
+SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"  # braille: a turning dot, one cell wide
 
-    def set_hint(self, text: str) -> None:
+
+class HintStatusLine(StatusLine):
+    """Status line with a free-form hint on the right (language / dialect).
+
+    While something runs in the background (a render, a language server
+    starting) a spinner and what is running take the hint's place."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._plain = ""
+        self._busy: dict[int, str] = {}  # token -> what runs
+        self._next_token = 0
+        self._frame = 0
+        self._timer = None
+
+    def hint(self, help_ctx: int) -> str:
+        return self._shown()
+
+    def _shown(self) -> str:
+        if self._busy:
+            label = list(self._busy.values())[-1]
+            return f"{SPINNER[self._frame % len(SPINNER)]} {label}"
+        return self._plain
+
+    def _show(self) -> None:
+        text = self._shown()
         if text != self._hint_text:
             self._hint_text = text
             self.refresh()
+
+    def set_hint(self, text: str) -> None:
+        self._plain = text
+        self._show()
+
+    def start_busy(self, label: str) -> int:
+        self._next_token += 1
+        self._busy[self._next_token] = label
+        if self._timer is None:
+            self._timer = self.set_interval(0.08, self._spin)
+        self._show()
+        return self._next_token
+
+    def stop_busy(self, token: int) -> None:
+        self._busy.pop(token, None)
+        if not self._busy and self._timer is not None:
+            self._timer.stop()
+            self._timer = None
+        self._show()
+
+    @property
+    def busy_label(self) -> str | None:
+        return list(self._busy.values())[-1] if self._busy else None
+
+    def _spin(self) -> None:
+        self._frame += 1
+        self._show()
 
 
 class Divide(ExplorerMixin, Application):
@@ -303,7 +357,15 @@ class Divide(ExplorerMixin, Application):
                     MenuItem("~D~ialector...", CM_DIALECTOR),
                     MenuItem("~T~ranslate a template...", CM_TRANSLATE),
                 ),
-                SubMenu("~O~ptions", *palette_items, Separator(), MenuItem("~D~iv engine...", CM_DIV_ENGINE)),
+                SubMenu(
+                    "~O~ptions",
+                    *palette_items,
+                    Separator(),
+                    MenuItem("Plain ~s~ymbols", CM_ICONS, param=icons_mod.PLAIN),
+                    MenuItem("~N~erd Font icons", CM_ICONS, param=icons_mod.NERD),
+                    Separator(),
+                    MenuItem("~D~iv engine...", CM_DIV_ENGINE),
+                ),
                 SubMenu(
                     "~H~elp",
                     MenuItem("~C~ontents", CM_HELP_CONTENTS),
@@ -430,7 +492,7 @@ class Divide(ExplorerMixin, Application):
         """Open the project window, raise it, or close it when it is on top."""
         project = self.project_window()
         if project is None:
-            project = ProjectWindow(self.root)
+            project = ProjectWindow(self.root, icons=self.icons)
             project.styles.offset = (0, 0)
             project.styles.width = ProjectWindow.WIDTH
             project.styles.height = "100%"
@@ -597,6 +659,8 @@ class Divide(ExplorerMixin, Application):
                 self.toggle_project()
             case _ if command == CM_PALETTE and isinstance(info, str):
                 self.theme = info
+            case _ if command == CM_ICONS and info in icons_mod.MODES:
+                self.set_icons(info)
             case _ if command == CM_HELP:
                 self.open_help(self.context_topic())
             case _ if command == CM_HELP_CONTENTS:
@@ -1027,7 +1091,8 @@ class Divide(ExplorerMixin, Application):
         data_path = self.data_file_for(template)
         data = self._text_of(data_path) if data_path.exists() or self.window_for(data_path) else None
         try:
-            result = await render(engine, template, code, data, cwd=self.root)
+            with self.busy(f"Rendering {template.name}…"):
+                result = await render(engine, template, code, data, cwd=self.root)
         except RenderError as exc:
             await self.run_dialog(information("Render", str(exc)))
             return
@@ -1691,6 +1756,31 @@ class Divide(ExplorerMixin, Application):
         if target is not None and target.editor is event.editor:
             self.refresh_messages()
         self.update_status()
+
+    @property
+    def icons(self) -> str:
+        mode = config.load().get("icons", icons_mod.PLAIN)
+        return mode if mode in icons_mod.MODES else icons_mod.PLAIN
+
+    def set_icons(self, mode: str) -> None:
+        """Options > Plain symbols / Nerd Font icons (remembered)."""
+        config.set_value("icons", mode)
+        project = self.project_window()
+        if project is not None:
+            project.project_tree.set_icons(mode)
+        if mode == icons_mod.NERD:
+            self.notify("Nerd Font icons: the terminal needs a Nerd Font (nerdfonts.com), or they show as boxes", timeout=4)
+
+    @contextmanager
+    def busy(self, label: str):
+        """A spinner and ``label`` in the status line while the block runs."""
+        status = self.status_line
+        token = status.start_busy(label) if isinstance(status, HintStatusLine) else None
+        try:
+            yield
+        finally:
+            if token is not None and isinstance(status, HintStatusLine):
+                status.stop_busy(token)
 
     def update_status(self) -> None:
         status = self.status_line
