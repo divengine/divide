@@ -49,6 +49,7 @@ from divide.run.render import (
     default_data_file,
     find_engine,
     render,
+    load_dialect,
     resolve_includes,
     translate_template,
 )
@@ -769,11 +770,13 @@ class Divide(ExplorerMixin, Application):
         self._completion_cache[data_path] = (text, value)
         return value
 
-    # ---------------------------------------------------------- includes
-    # divide never looks for included templates itself: Div's getTplPath does
-    # (through the PHP bridge, with the template's path and the render cwd).
+    # ------------------------------------------------- dialect and includes
+    # divide never looks for a template's dialect file or its included templates
+    # itself: Div does (getTplPath, getFileContents, jsonDecode, through the PHP
+    # bridge, with the template's path and the render's cwd).
     @on(DivEditor.IncludesChanged)
-    def _includes_changed(self, event: DivEditor.IncludesChanged) -> None:
+    @on(DivEditor.DialectRefChanged)
+    def _includes_changed(self, event: DivEditor.IncludesChanged | DivEditor.DialectRefChanged) -> None:
         ed = event.editor
         timer = self._include_timers.pop(id(ed), None)
         if timer is not None:
@@ -781,8 +784,9 @@ class Divide(ExplorerMixin, Application):
         self._include_timers[id(ed)] = self.set_timer(0.4, lambda: self.resolve_includes_of(ed))
 
     def recheck_includes(self) -> None:
+        """Files changed: ask Div again about every open template's dialect and includes."""
         for win in self.editor_windows():
-            if win.editor.div_enabled and win.editor.include_set:
+            if win.editor.div_enabled and (win.editor.include_set or win.editor._dialect_ref):
                 self.resolve_includes_of(win.editor)
 
     def _include_engine(self, template: Path) -> Path | None:
@@ -795,19 +799,46 @@ class Divide(ExplorerMixin, Application):
         engine = self._include_engine(ed.path)
         if engine is None:
             return None
-        history = [self.last_template] if self.last_template and self.last_template != ed.path else []
         try:
             return await resolve_includes(
-                engine, ed.path, includes, cwd=self.root, history=history,
+                engine, ed.path, includes, cwd=self.root, history=self._history_for(ed.path),
                 separator=ed.dialect["DIV_TAG_PREPROCESSED_SEPARATOR"],
             )
         except RenderError:
             return None
 
+    def _history_for(self, template: Path) -> list[Path]:
+        return [self.last_template] if self.last_template and self.last_template != template else []
+
+    async def _dialect_from_div(self, ed: DivEditor, ref: str) -> Dialect | None:
+        """The dialect Div loads for ``@_DIALECT = ref`` (None: no Div to ask)."""
+        assert ed.path is not None
+        engine = self._include_engine(ed.path)
+        if engine is None:
+            return None
+        try:
+            loaded = await load_dialect(engine, cwd=self.root, template=ed.path, ref=ref, history=self._history_for(ed.path))
+        except RenderError:
+            return None
+        if loaded.file is None:
+            return Dialect(name=ref, error=f"Div cannot find the dialect file {ref}")
+        if loaded.tags is None:
+            return Dialect(name=ref, source=loaded.file, error=f"{loaded.problem}: {self._project_relative(loaded.file)}")
+        return Dialect.from_overrides(loaded.tags, name=loaded.file.stem, source=loaded.file)
+
     @work(group="includes")
     async def resolve_includes_of(self, ed: DivEditor) -> None:
+        """Ask Div about the template: which dialect its @_DIALECT loads, where its includes lead."""
         self._include_timers.pop(id(ed), None)
-        if not ed.div_enabled or ed.path is None or not ed.include_set:
+        if not ed.div_enabled or ed.path is None:
+            ed.set_include_targets({})
+            return
+        ref = ed._dialect_ref
+        if ref:
+            dialect = await self._dialect_from_div(ed, ref)
+            if dialect is not None:
+                ed.set_engine_dialect(ref, dialect)
+        if not ed.include_set:
             ed.set_include_targets({})
             return
         gen = self._include_gen[id(ed)] = self._include_gen.get(id(ed), 0) + 1
@@ -1259,10 +1290,20 @@ class Divide(ExplorerMixin, Application):
         dialog = FileDialog("Import tags", start, pattern="*.dialect")
         if await self.run_dialog(dialog) != Command.OK or dialog.chosen is None:
             return
+        php_file = dialog.chosen.suffix.lower() == ".php"
+        engine = None if php_file else self._include_engine(dialog.chosen)
         try:
-            text = dialog.chosen.read_text(encoding="utf-8")
-            tags, unknown = dx.parse_import(text, php=dialog.chosen.suffix.lower() == ".php")
-        except (OSError, UnicodeDecodeError, ValueError) as exc:
+            if engine is not None:
+                # A dialect file is decoded by Div's own jsonDecode(), as when Div loads it.
+                loaded = await load_dialect(engine, cwd=self.root, file=dialog.chosen)
+                if loaded.tags is None:
+                    raise ValueError(loaded.problem or "Div cannot decode it")
+                tags = {k: v for k, v in loaded.tags.items() if k in DEFAULT_TAGS}
+                unknown = [k for k in loaded.tags if k not in DEFAULT_TAGS]
+            else:  # PHP define() lines (Div does not read those), or no Div at hand
+                text = dialog.chosen.read_text(encoding="utf-8")
+                tags, unknown = dx.parse_import(text, php=php_file)
+        except (OSError, UnicodeDecodeError, ValueError, RenderError) as exc:
             await self.run_dialog(information("Import tags", f"Cannot read {dialog.chosen.name}: {exc}"))
             return
         if not tags:
@@ -1308,10 +1349,15 @@ class Divide(ExplorerMixin, Application):
         ref = None
         if target_path is not None:
             ref = os.path.relpath(target_path, tpl.parent)
-        try:
-            tags, _ = dx.parse_import(texts[1]) if texts[1] else ({}, [])
-        except ValueError:
-            tags = {}
+        tags: dict[str, str] = {}
+        if target_path is not None:  # to show the result: the target as Div decodes it
+            try:
+                loaded = await load_dialect(engine, cwd=self.root, file=target_path)
+            except RenderError:
+                loaded = None
+            if loaded is not None and loaded.tags is None:
+                raise ValueError(f"Div cannot decode the target dialect {target}: {loaded.problem}")
+            tags = loaded.tags if loaded is not None else {}
         dialect = Dialect.from_overrides(tags, name=target_path.stem if target_path else "default", source=target_path)
         return dx.set_dialect_property(translated, ref), dialect
 

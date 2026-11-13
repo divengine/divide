@@ -13,6 +13,14 @@ async def settle(pilot, n=12):
         await pilot.pause()
 
 
+async def until(pilot, check, tries=100):
+    for _ in range(tries):
+        if check():
+            return
+        await pilot.pause(0.05)
+    raise AssertionError("timed out")
+
+
 def project(tmp_path: Path) -> Path:
     (tmp_path / "page.tpl").write_text("x")
     (tmp_path / "parts").mkdir()
@@ -38,7 +46,7 @@ async def test_new_file_rename_delete(tmp_path):
         menu = root / "parts" / "menu.tpl"
         assert menu.is_file()
         assert [w.path for w in app.editor_windows()] == [menu]  # opened
-        assert tree.selected_path == menu  # and shown in the tree
+        await until(pilot, lambda: tree.selected_path == menu)  # and shown in the tree
 
         app.raise_window(app.project_window())
         tree.focus()
@@ -48,6 +56,7 @@ async def test_new_file_rename_delete(tmp_path):
         await pilot.press(*"nav", "enter")
         await settle(pilot)
         nav = root / "parts" / "nav.tpl"
+        await until(pilot, lambda: tree.selected_path == nav)  # the tree is reloaded in the background
         assert nav.is_file() and not menu.exists()
         win = app.editor_windows()[0]
         assert win.path == nav and win.title == "parts/nav.tpl" and tree.selected_path == nav
@@ -73,7 +82,8 @@ async def test_local_menu_new_folder_and_bad_names(tmp_path):
         await settle(pilot, 4)
         await pilot.press(*"assets/css", "enter")
         await settle(pilot)
-        assert (root / "assets" / "css").is_dir() and tree.selected_path == root / "assets" / "css"
+        await until(pilot, lambda: tree.selected_path == root / "assets" / "css")
+        assert (root / "assets" / "css").is_dir()
 
         await pilot.press("insert")
         await settle(pilot, 4)

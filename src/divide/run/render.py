@@ -273,3 +273,41 @@ async def translate_template(
         problems = [m.get("text", "") for m in reply.get("messages", []) if m.get("level") in ("FATAL", "PHP")]
         raise RenderError(problems[0] if problems else "Div did not translate the template")
     return translated
+
+
+@dataclass(frozen=True)
+class DialectFile:
+    """A dialect as Div loads it: the file Div finds and the tags Div decodes."""
+
+    file: Path | None
+    tags: dict[str, str] | None
+    problem: str | None = None  # "not found", or why Div could not decode it
+
+
+async def load_dialect(
+    engine: Path,
+    *,
+    cwd: Path,
+    template: Path | None = None,
+    ref: str | None = None,
+    file: Path | None = None,
+    history: list[Path] | None = None,
+    php: str | None = None,
+    timeout: float = 10.0,
+) -> DialectFile:
+    """Load a dialect the way Div does for ``@_DIALECT = ref`` in ``template``
+    (``prepareDialect()``: ``getTplPath()``, ``getFileContents()``, ``jsonDecode()``),
+    or decode a given dialect ``file`` with Div's ``jsonDecode()``."""
+    request: dict = {"engine": str(engine), "op": "dialect_load"}
+    if ref is not None:
+        request.update(path=str(template or ""), ref=ref, history=[str(h) for h in history or []])
+    else:
+        request["file"] = str(file or "")
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    found = reply.get("file")
+    tags = reply.get("tags")
+    return DialectFile(
+        (cwd / found).resolve() if found else None,
+        {str(k): str(v) for k, v in tags.items()} if isinstance(tags, dict) else None,
+        reply.get("problem"),
+    )

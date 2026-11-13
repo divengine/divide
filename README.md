@@ -113,12 +113,13 @@ Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 What the engine decides is asked to the engine. The PHP bridge
 (`src/divide/run/bridge.php`) runs Div for renders and answers questions
 about it, such as where an include leads (`getTplPath()` with the template's
-path, the render's working directory and the include history), whether a
-dialect is valid (`isValidCurrentDialect()`) and how a template reads in
-another dialect (`translate()`). The Python
-side highlights, completes and checks the syntax the lexer sees. One lookup
-is still done in Python and should move to the bridge: finding the
-`@_DIALECT` file.
+path, the render's working directory and the include history), which
+dialect a template's `@_DIALECT` loads (`getTplPath()`, `getFileContents()`,
+`jsonDecode()`, as `prepareDialect()` does), whether a dialect is valid
+(`isValidCurrentDialect()`) and how a template reads in another dialect
+(`translate()`). The Python side highlights, completes and checks the syntax
+the lexer sees; until Div answers (or without Div) it guesses the dialect
+file only to colour, and reports nothing about it.
 
 ### Layout
 

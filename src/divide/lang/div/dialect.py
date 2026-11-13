@@ -231,10 +231,13 @@ def template_properties(text: str) -> dict[str, tuple[str, int]]:
 
 
 def resolve_dialect(text: str, template_path: Path | None = None, roots: list[Path] | None = None) -> Dialect:
-    """Pick the dialect for a template from its ``@_DIALECT`` property.
+    """divide's quick guess of a template's dialect, from its ``@_DIALECT`` property.
 
-    The engine resolves the path relative to the process cwd; an editor does
-    not know it, so we try the template folder, then each project root.
+    Only to colour the template until Div answers, or when there is no Div: the
+    dialect a template really uses is the one Div loads (``prepareDialect()``:
+    ``getTplPath()``, ``getFileContents()``, ``jsonDecode()``), which the app asks
+    through the bridge (``divide.run.render.load_dialect``). Here: the template
+    folder, then each project root, then the cwd, decoded leniently.
     """
     prop = template_properties(text).get("DIALECT")
     if not prop:

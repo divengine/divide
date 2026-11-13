@@ -364,3 +364,45 @@ async def test_new_dialect_name_can_be_browsed(tmp_path):
         await settle(pilot)
         win = app.active_window()
         assert isinstance(win, DialectorWindow) and win.tags["DIV_TAG_EMPTY"] == "@none@"
+
+
+@needs_div
+async def test_editor_dialect_is_the_one_div_loads(tmp_path):
+    # single quotes and unquoted keys: decoded by Div's jsonDecode()
+    (tmp_path / "erb.dialect").write_text("{ 'DIV_TAG_REPLACEMENT_PREFIX': '<%', DIV_TAG_REPLACEMENT_SUFFIX: '%>' }")
+    (tmp_path / "views").mkdir()
+    (tmp_path / "views" / "bad.dialect").write_text('{"DIV_TAG_EMPTY": ')
+    page = tmp_path / "views" / "page.tpl"
+    page.write_text("@_DIALECT = ../erb.dialect\nHi <%$name%>\n")
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        ed = app.window_for(page.resolve()).editor
+        await until(pilot, lambda: "../erb.dialect" in ed.engine_dialects)
+        assert ed.dialect.source == (tmp_path / "erb.dialect").resolve()
+        assert ed.dialect["DIV_TAG_REPLACEMENT_SUFFIX"] == "%>" and not ed.diagnostics
+
+        ed.load_text("@_DIALECT = nope.dialect\nHi\n")
+        await until(pilot, lambda: "nope.dialect" in ed.engine_dialects)
+        await settle(pilot)
+        assert [d.message for d in ed.diagnostics] == ["dialect: Div cannot find the dialect file nope.dialect"]
+
+        ed.load_text("@_DIALECT = bad.dialect\nHi\n")  # relative to the template, as Div looks
+        await until(pilot, lambda: "bad.dialect" in ed.engine_dialects)
+        await settle(pilot)
+        assert [d.message for d in ed.diagnostics] == ["dialect: Div cannot decode it as a JSON object: views/bad.dialect"]
+
+
+async def test_editor_dialect_without_div_only_colours(tmp_path, monkeypatch):
+    monkeypatch.setenv(ENV_ENGINE, str(tmp_path / "missing.php"))
+    (tmp_path / "erb.dialect").write_text(json.dumps(ERB))
+    page = tmp_path / "page.tpl"
+    page.write_text("@_DIALECT = erb.dialect\n@_X = 1\nHi <%$name%>\n")
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        ed = app.window_for(page.resolve()).editor
+        assert ed.dialect["DIV_TAG_REPLACEMENT_PREFIX"] == "<%"  # divide's guess, to colour
+        ed.load_text("@_DIALECT = nope.dialect\nHi\n")
+        await settle(pilot)
+        assert not ed.engine_dialects and not ed.diagnostics  # not found? only Div can say

@@ -69,8 +69,7 @@ def language_of(path: Path | None) -> str | None:
 
 
 class _LexerCache:
-    """One Lexer per dialect: dialect files keyed by path + mtime, dialects built in
-    memory (the dialector's previews) by their tags. Least recently used go first."""
+    """One Lexer per dialect, keyed by its tags. Least recently used go first."""
 
     LIMIT = 32
 
@@ -78,14 +77,8 @@ class _LexerCache:
         self._lexers: dict[object, Lexer] = {}
 
     def get(self, dialect: Dialect) -> Lexer:
-        key: object = "default"
-        if dialect.source is not None:
-            try:
-                key = (str(dialect.source), dialect.source.stat().st_mtime_ns)
-            except OSError:
-                key = str(dialect.source)
-        elif dialect is not DEFAULT_DIALECT:
-            key = ("tags", frozenset(dialect.tags.items()), dialect.error)
+        # By the tags themselves: the same file may be read by Div or guessed by divide.
+        key: object = "default" if dialect is DEFAULT_DIALECT else ("tags", frozenset(dialect.tags.items()))
         lexer = self._lexers.pop(key, None)
         if lexer is None:
             lexer = Lexer(dialect)
@@ -138,6 +131,8 @@ class DivEditor(TextArea):
         self.marks: list[tuple[int, int, str]] = []  # extra highlights: (start, end, style name)
         self.dialect: Dialect = DEFAULT_DIALECT
         self._dialect_ref: str | None = None
+        self.engine_dialects: dict[str, Dialect] = {}  # @_DIALECT value -> the dialect as Div loads it
+        self._guess: tuple[str, Dialect] | None = None
         super().__init__(
             text,
             soft_wrap=False,
@@ -267,16 +262,50 @@ class DivEditor(TextArea):
             self.refresh()
 
     def _update_dialect(self, text: str) -> None:
+        """The template's dialect: Div's answer for its ``@_DIALECT`` when the app has
+        one (``set_engine_dialect``), else a quick guess that only colours (no errors)."""
         if self.forced_dialect is not None:
             self.dialect = self.forced_dialect
             return
         prop = template_properties(text).get("DIALECT")
-        ref = prop[0] if prop else None
-        if ref == self._dialect_ref and (ref is None or self.dialect.error is None):
-            return
-        self._dialect_ref = ref
-        new = resolve_dialect(text, self.path, self.roots) if ref else DEFAULT_DIALECT
-        changed = new.name != self.dialect.name or new.error != self.dialect.error
+        ref = prop[0].strip() if prop and prop[0].strip() else None
+        if ref != self._dialect_ref:
+            self._dialect_ref = ref
+            if ref is not None and self.is_mounted:
+                self.post_message(self.DialectRefChanged(self))
+        if ref is None:
+            new = DEFAULT_DIALECT
+        elif ref in self.engine_dialects:
+            new = self.engine_dialects[ref]
+        else:
+            new = self._guess_dialect(ref, text)
+        changed = new is not self.dialect and (new.name, new.error, new.tags) != (self.dialect.name, self.dialect.error, self.dialect.tags)
         self.dialect = new
         if changed and self.is_mounted:
             self.post_message(self.DialectChanged(self, new))
+
+    def _guess_dialect(self, ref: str, text: str) -> Dialect:
+        """Until Div answers (or without Div): look for the file in Python, to colour."""
+        if self._guess is not None and self._guess[0] == ref:
+            return self._guess[1]
+        guess = resolve_dialect(text, self.path, self.roots)
+        if guess.error is not None:
+            guess = Dialect(name=ref)  # Div's defaults; whether the file is fine is Div's to say
+        self._guess = (ref, guess)
+        return guess
+
+    def set_engine_dialect(self, ref: str, dialect: Dialect) -> None:
+        """Div's answer for ``@_DIALECT = ref`` (from the app); re-highlights."""
+        if self.engine_dialects.get(ref) == dialect:
+            return
+        self.engine_dialects[ref] = dialect
+        if ref == self._dialect_ref:
+            self._build_highlight_map()
+            self.refresh()
+
+    class DialectRefChanged(Message):
+        """The template's ``@_DIALECT`` value changed: ask Div which dialect it is."""
+
+        def __init__(self, editor: "DivEditor") -> None:
+            super().__init__()
+            self.editor = editor

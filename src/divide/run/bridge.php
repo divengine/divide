@@ -20,6 +20,11 @@
  *   {"op": "dialect_validate", "tags": {"DIV_TAG_...": "..."}}
  *     -> {"valid": true | "<Div's reason>"}: the tags are defined before Div
  *        loads, then div::isValidCurrentDialect() judges them;
+ *   {"op": "dialect_load", "path": "/abs/page.tpl", "ref": "<@_DIALECT value>", "history": [...]}
+ *   {"op": "dialect_load", "file": "/abs/x.dialect"}
+ *     -> {"file": "/abs/x.dialect" | null, "tags": {"DIV_TAG_...": "..."} | null, "problem": "..." | null}:
+ *        as prepareDialect() does: getTplPath() finds the file, getFileContents()
+ *        reads it and jsonDecode() decodes it;
  *   {"op": "translate", "from": {...} | "<dialect JSON>", "to": {...} | "<dialect JSON>", "code": "..."}
  *     -> {"translated": "..."}: div::translate(); an empty "from" / "to" is Div's
  *        default dialect, and dialect files are given as text for Div to decode.
@@ -118,6 +123,52 @@ if ($op === 'dialect_validate') {
         $valid = get_class($e) . ': ' . $e->getMessage();
     }
     reply_now(['valid' => $valid, 'messages' => $messages, 'version' => $version]);
+}
+
+if ($op === 'dialect_load') {
+    $file = null;
+    $tags = null;
+    $problem = null;
+    try {
+        if (isset($request['ref'])) {
+            $tpl = new $divClass('', []);
+            $tpl->__path = $request['path'] ?? '';
+            $history = array_values(array_filter((array) ($request['history'] ?? []), 'is_string'));
+            if ($history) {
+                $prop = new ReflectionProperty($divClass, '__includes_history');
+                $prop->setAccessible(true);
+                $prop->setValue(null, $history);
+            }
+            $ref = trim((string) $request['ref']);
+            $file = $ref === '' ? null : $tpl->getTplPath($ref);
+        } else {
+            $file = (string) ($request['file'] ?? '');
+        }
+        if ($file === null || $file === '' || !$divClass::fileExists($file)) {
+            $problem = 'not found';
+            $file = null;
+        } else {
+            $json = $divClass::getFileContents($file);
+            $decoded = $json === null ? null : $divClass::jsonDecode($json);
+            if (is_object($decoded)) {
+                $decoded = get_object_vars($decoded);
+            }
+            if (!is_array($decoded) || ($decoded !== [] && array_keys($decoded) === range(0, count($decoded) - 1))) {
+                $problem = 'Div cannot decode it as a JSON object';
+            } else {
+                $tags = [];
+                foreach ($decoded as $name => $value) {
+                    if (is_string($name) && strpos($name, 'DIV_TAG_') === 0 && is_scalar($value)) {
+                        $tags[$name] = (string) $value;
+                    }
+                }
+            }
+            $file = realpath($file) ?: $file;
+        }
+    } catch (Throwable $e) {
+        $problem = get_class($e) . ': ' . $e->getMessage();
+    }
+    reply_now(['file' => $file, 'tags' => $tags === null ? null : (object) $tags, 'problem' => $problem, 'messages' => $messages, 'version' => $version]);
 }
 
 if ($op === 'translate') {
