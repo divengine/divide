@@ -30,6 +30,11 @@ through the real Div engine, side by side with the code.
 - **Data as code or as a tree.** Div JSON (references, comments, single
   quotes) is highlighted and validated, and Ctrl+T edits the same buffer as a
   tree.
+- **Your own dialects.** Tools > Dialector builds a Div dialect section by
+  section, with a live preview and Div's verdict on every change: Div's
+  `isValidCurrentDialect()` validates it and Div's translator reads it back.
+  It can import and export dialects, and a wizard translates templates from
+  one dialect to another with Div's own `translate()`.
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
@@ -56,6 +61,7 @@ Rendering and include checks need `php` and Div in your project
 | `Ctrl+F9` | render with its data (`page.tpl` + `page.json`) |
 | `Ctrl+T` | data tree ⇄ code |
 | `Ctrl+Enter` | go to the included template |
+| `Alt+T` | Tools: Dialector, Translate a template |
 | `F2` · `F3` · `Alt+X` | save · open · exit |
 
 ## Manual
@@ -72,6 +78,8 @@ with screenshots:
 - [Rendering](https://github.com/divengine/divide/wiki/Rendering)
 - [Data Files](https://github.com/divengine/divide/wiki/Data-Files)
 - [Project Window](https://github.com/divengine/divide/wiki/Project-Window)
+- [Dialector](https://github.com/divengine/divide/wiki/Dialector)
+- [Translating Templates](https://github.com/divengine/divide/wiki/Translating-Templates)
 - [Keyboard Reference](https://github.com/divengine/divide/wiki/Keyboard-Reference)
 - [Troubleshooting](https://github.com/divengine/divide/wiki/Troubleshooting)
 
@@ -92,7 +100,8 @@ first. Once a template has a file, its unsaved edits are always what Div gets.
 .venv/bin/python -m divide.lang.div.preview [--kinds] file.tpl    # highlighted dump / token list
 ```
 
-`examples/shop` is a small Div project (one template broken on purpose) used by
+`examples/shop` is a small Div project (one template broken on purpose, and an
+ERB-like `erb.dialect`) used by
 the manual. `tools/wiki_shots.py --out <wiki clone>/images` retakes the
 manual's screenshots from the real app on it, so they follow UI changes.
 
@@ -104,7 +113,9 @@ Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 What the engine decides is asked to the engine. The PHP bridge
 (`src/divide/run/bridge.php`) runs Div for renders and answers questions
 about it, such as where an include leads (`getTplPath()` with the template's
-path, the render's working directory and the include history). The Python
+path, the render's working directory and the include history), whether a
+dialect is valid (`isValidCurrentDialect()`) and how a template reads in
+another dialect (`translate()`). The Python
 side highlights, completes and checks the syntax the lexer sees. One lookup
 is still done in Python and should move to the bridge: finding the
 `@_DIALECT` file.
