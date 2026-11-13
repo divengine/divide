@@ -68,9 +68,11 @@ Rendering and include checks need `php` and Div in your project
 ## Manual
 
 The **[wiki](https://github.com/divengine/divide/wiki)** is the user manual,
-with screenshots. The same manual is inside divide: `F1` opens it at the topic
-of the window you are in, in a help window with Borland's help colours, its
-contents, an index and cross references.
+with screenshots. divide carries its documentation as books: this manual and
+[Div's documentation](https://github.com/divengine/div/tree/master/docs).
+`F1` opens the help at the topic of the window you are in, in a help window
+with Borland's help colours; each book has its contents, an index and cross
+references.
 
 - [Installation](https://github.com/divengine/divide/wiki/Installation)
 - [Getting Started](https://github.com/divengine/divide/wiki/Getting-Started)
@@ -108,9 +110,10 @@ first. Once a template has a file, its unsaved edits are always what Div gets.
 ERB-like `erb.dialect`) used by
 the manual. `tools/wiki_shots.py --out <wiki clone>/images` retakes the
 manual's screenshots from the real app on it, so they follow UI changes.
-`tools/sync_manual.py <wiki clone>` copies the wiki's pages into
-`src/divide/manual/pages/`, which the help window reads: run it after
-changing the wiki.
+`src/divide/manual/books.json` lists the help's books and where each is
+written; `tools/sync_book.py <book> <checkout>` copies a book's pages into
+`src/divide/manual/books/<book>/`, which the help window reads: run it after
+the wiki (or Div's `docs`) changes.
 
 Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 `src/div.php` with its `vendor/` installed); they are skipped otherwise.
@@ -141,7 +144,7 @@ file only to colour, and reports nothing about it.
   editor / project windows, message boxes, file dialog, completion list, project file operations,
   the dialector, the help window; `HRule` / `VRule` divide a window and join its frame in Ts
 - `src/divide/run/` — rendering: `bridge.php` (runs Div, replies JSON) and `render.py`
-- `src/divide/manual/` — the built-in help: the wiki's pages laid out as topics with cross references
+- `src/divide/manual/` — the built-in help: books (copies of a wiki or a docs folder) laid out as topics with cross references
 - `src/divide/app.py` — the application: menus, status line, commands, window management
 - `docs/div-language.md` — notes on Div as understood by the editor
 

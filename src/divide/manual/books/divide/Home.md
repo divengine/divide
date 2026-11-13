@@ -21,7 +21,7 @@ divide is a full-screen, keyboard-first IDE for [Div](https://github.com/divengi
 
 1. [[Installation]]: Python, PHP and Div.
 2. [[Getting Started]]: a five-minute tour.
-   New to Div? Read [[First Steps with Div]] first.
+   New to Div? Its language is described in [Div's documentation](https://github.com/divengine/div/tree/master/docs), which is also inside divide: see [[Help]].
 3. Then the chapters: [[The Desktop]], [[Editing Templates]], [[Completion]], [[Checking Templates]], [[Rendering]], [[Data Files]], [[Project Window]], [[Dialector]], [[Translating Templates]].
 4. [[Keyboard Reference]] and [[Troubleshooting]] when you need them.
 

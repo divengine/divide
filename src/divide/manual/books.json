@@ -1,0 +1,22 @@
+[
+  {
+    "id": "divide",
+    "title": "divide",
+    "description": "This IDE: the desktop, editing, checking, rendering, data files, the dialector.",
+    "source": "https://github.com/divengine/divide.wiki.git",
+    "path": ".",
+    "home": "Home",
+    "contents": "_Sidebar.md",
+    "skip": ["_Footer.md"]
+  },
+  {
+    "id": "div",
+    "title": "Div",
+    "description": "The Div template engine: the template language, dialects, the PHP API.",
+    "source": "https://github.com/divengine/div.git",
+    "path": "docs",
+    "home": "README",
+    "contents": "book-order.txt",
+    "skip": []
+  }
+]

@@ -230,6 +230,10 @@ async def help():
         save(app, "help")
         await pilot.press("shift+f1"); await settle(pilot, 10)
         save(app, "help-index")
+        app.help_window().open("div:02.10 Lists (loops)"); await settle(pilot, 10)
+        save(app, "help-div")
+        app.help_window().open("_Books"); await settle(pilot, 10)
+        save(app, "help-books")
 
 
 async def run(names: set[str]) -> None:

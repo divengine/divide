@@ -2,7 +2,6 @@
 
 * [[Installation]]
 * [[Getting Started]]
-* [[First Steps with Div]]
 
 **Manual**
 
@@ -26,3 +25,4 @@
 
 * [Repository](https://github.com/divengine/divide)
 * [Div](https://github.com/divengine/div)
+* [Div documentation](https://github.com/divengine/div/tree/master/docs)

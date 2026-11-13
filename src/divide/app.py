@@ -109,6 +109,7 @@ CM_HELP_CONTENTS = Command.USER + 24
 CM_HELP_INDEX = Command.USER + 25
 CM_HELP_SEARCH = Command.USER + 26
 CM_HELP_BACK = Command.USER + 27
+CM_HELP_BOOKS = Command.USER + 28
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -304,6 +305,7 @@ class Divide(ExplorerMixin, Application):
                 SubMenu(
                     "~H~elp",
                     MenuItem("~C~ontents", CM_HELP_CONTENTS),
+                    MenuItem("~B~ooks", CM_HELP_BOOKS),
                     MenuItem("~I~ndex", CM_HELP_INDEX, "Shift+F1"),
                     MenuItem("~T~opic search", CM_HELP_SEARCH, "Ctrl+F1"),
                     MenuItem("~P~revious topic", CM_HELP_BACK, "Alt+F1"),
@@ -596,15 +598,17 @@ class Divide(ExplorerMixin, Application):
             case _ if command == CM_HELP:
                 self.open_help(self.context_topic())
             case _ if command == CM_HELP_CONTENTS:
-                self.open_help(manual.CONTENTS)
+                self.open_help(manual.contents_of(self.help_book()))
             case _ if command == CM_HELP_INDEX:
-                self.open_help(manual.INDEX)
+                self.open_help(manual.index_of(self.help_book()))
+            case _ if command == CM_HELP_BOOKS:
+                self.open_help(manual.LIBRARY)
             case _ if command == CM_HELP_SEARCH:
                 self.help_search()
             case _ if command == CM_HELP_BACK:
                 help_win = self.help_window()
                 if help_win is None:
-                    self.open_help(manual.CONTENTS)
+                    self.open_help(manual.contents_of(manual.DEFAULT))
                 else:
                     self.raise_window(help_win)
                     help_win.action_back()
@@ -1159,12 +1163,17 @@ class Divide(ExplorerMixin, Application):
     def help_window(self) -> HelpWindow | None:
         return next((w for w in self.windows() if isinstance(w, HelpWindow)), None)
 
+    def help_book(self) -> str:
+        """The book the help window shows, else divide's."""
+        win = self.help_window()
+        return win.book if win is not None else manual.DEFAULT
+
     def open_help(self, target: str) -> None:
-        """Show a help topic (``Page`` or ``Page#anchor``) in the help window."""
+        """Show a help topic (``book:Page`` or ``book:Page#anchor``) in the help window."""
         win = self.help_window()
         if win is not None:
             self.raise_window(win)
-            if win.view.name_ != target or target == manual.INDEX:
+            if win.view.name_ != manual.qualify(target) or "#" in target:
                 win.open(target)
             return
         win = HelpWindow(target, number=self._free_number())
@@ -1192,7 +1201,7 @@ class Divide(ExplorerMixin, Application):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):
             return "Data-Files" if active.editor.lang == "json" else "Editing-Templates"
-        return manual.CONTENTS
+        return manual.contents_of(manual.DEFAULT)
 
     def help_search(self) -> None:
         """Ctrl+F1: the topic of the word under the cursor, else the index."""
@@ -1209,8 +1218,9 @@ class Divide(ExplorerMixin, Application):
             while end < len(line) and (line[end].isalnum() or line[end] in "_-"):
                 end += 1
             word = line[start:end]
-        found = manual.search(word) if len(word) > 2 else []
-        self.open_help(found[0][1] if found else manual.INDEX)
+        book = self.help_book()
+        found = manual.search(word, first=book) if len(word) > 2 else []
+        self.open_help(found[0][1] if found else manual.index_of(book))
 
     # ---------------------------------------------------------- dialector
     def dialector_windows(self) -> list[DialectorWindow]:

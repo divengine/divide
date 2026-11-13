@@ -1,4 +1,4 @@
-"""The help window: the manual inside divide, in the colours of Borland's help.
+"""The help window: divide's books, in the colours of Borland's help.
 
 Black on cyan, cross references in yellow, the selected one yellow on blue,
 as in Turbo Pascal and Borland Pascal. Tab and Shift+Tab move between the
@@ -77,13 +77,14 @@ class HelpView(ScrollView, TVViewMixin):
         super().__init__()
         self.tv_options = OptionFlag.SELECTABLE
         self.topic: manual.Topic | None = None
-        self.name_ = manual.CONTENTS
+        self.name_ = manual.contents_of(manual.DEFAULT)
         self.selected: int | None = None  # index into topic.links
         self._width = 0
 
     # ------------------------------------------------------------ content
     def show(self, name: str, anchor: str | None = None, selected: int | None = None, top: int | None = None) -> bool:
         width = self._text_width()
+        name = manual.qualify(name)
         topic = manual.layout(name, width)
         if topic is None:
             return False
@@ -228,7 +229,7 @@ class HelpWindow(_TVWindow):
         Binding("escape", "close", show=False),
     ]
 
-    def __init__(self, target: str = manual.CONTENTS, number: int = 0) -> None:
+    def __init__(self, target: str = manual.contents_of(manual.DEFAULT), number: int = 0) -> None:
         super().__init__("Help", number=number)
         self.view = HelpView()
         self._first = target
@@ -242,16 +243,16 @@ class HelpWindow(_TVWindow):
         self.call_after_refresh(self.view.focus)
 
     def open(self, target: str, remember: bool = True) -> bool:
-        """Show ``Page`` or ``Page#anchor``; the current topic goes to the history."""
+        """Show ``book:Page`` or ``book:Page#anchor``; the current topic goes to the history."""
         name, _, anchor = target.partition("#")
-        name = name or self.view.name_
+        name = manual.qualify(name) if name else self.view.name_
         if remember and self.view.topic is not None:
             self.history.append((self.view.name_, self.view.selected, self.view.scroll_offset.y))
         if not self.view.show(name, anchor or None):
             if remember and self.history:
                 self.history.pop()
             return False
-        self.title = f"Help: {manual.title_of(name)}"
+        self.title = manual.window_title(name)
         return True
 
     def on_help_view_follow(self, message: HelpView.Follow) -> None:
@@ -263,7 +264,12 @@ class HelpWindow(_TVWindow):
             return
         name, selected, top = self.history.pop()
         self.view.show(name, selected=selected, top=top)
-        self.title = f"Help: {manual.title_of(name)}"
+        self.title = manual.window_title(name)
+
+    @property
+    def book(self) -> str:
+        """The book of the topic on show."""
+        return manual.book_of(self.view.name_)
 
     def action_close(self) -> None:
         self.app.close_window(self)  # type: ignore[attr-defined]

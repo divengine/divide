@@ -19,7 +19,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
 | **Options** | colour palette, Div engine |
-| **Help** | Contents, Index (Shift+F1), Topic search (Ctrl+F1), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
+| **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows
 
