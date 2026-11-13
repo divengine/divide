@@ -2,6 +2,7 @@
 
 * [[Installation]]
 * [[Getting Started]]
+* [[First Steps with Div]]
 
 **Manual**
 
