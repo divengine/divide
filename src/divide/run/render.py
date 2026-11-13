@@ -201,3 +201,52 @@ async def render(
             )
         )
     return result
+
+
+@dataclass(frozen=True)
+class DialectVerdict:
+    """What Div says about a dialect.
+
+    ``reason`` is Div's complaint (``isValidCurrentDialect()``), None when valid.
+    ``translated``: the sample as Div read it back into its default dialect
+    (``translateFrom()``), when a sample was given; ``readable`` tells whether it
+    is exactly the expected template.
+    """
+
+    reason: str | None
+    readable: bool | None = None
+    translated: str | None = None
+    version: str | None = None
+
+    @property
+    def valid(self) -> bool:
+        return self.reason is None
+
+
+async def check_dialect(
+    engine: Path,
+    tags: dict[str, str],
+    *,
+    cwd: Path,
+    sample: str | None = None,
+    expected: str | None = None,
+    php: str | None = None,
+    timeout: float = 10.0,
+) -> DialectVerdict:
+    """Ask Div whether ``tags`` (DIV_TAG_* overrides) make a valid dialect and, with
+    ``sample`` (a template in that dialect) and ``expected`` (the same template in
+    Div's default dialect), whether Div reads the sample back as expected."""
+    request = {"engine": str(engine), "op": "dialect_validate", "tags": tags}
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    valid = reply.get("valid")
+    version = reply.get("version")
+    if valid is not True:
+        return DialectVerdict(str(valid or "Div gave no answer"), version=version)
+    if sample is None or expected is None:
+        return DialectVerdict(None, version=version)
+    request = {"engine": str(engine), "op": "dialect_translate", "tags": tags, "code": sample}
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    translated = reply.get("translated")
+    if not isinstance(translated, str):
+        return DialectVerdict(None, None, version=version)
+    return DialectVerdict(None, translated == expected, translated, version=version)

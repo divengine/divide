@@ -69,7 +69,10 @@ def language_of(path: Path | None) -> str | None:
 
 
 class _LexerCache:
-    """One Lexer per dialect file (keyed by path + mtime)."""
+    """One Lexer per dialect: dialect files keyed by path + mtime, dialects built in
+    memory (the dialector's previews) by their tags. Least recently used go first."""
+
+    LIMIT = 32
 
     def __init__(self) -> None:
         self._lexers: dict[object, Lexer] = {}
@@ -82,10 +85,13 @@ class _LexerCache:
             except OSError:
                 key = str(dialect.source)
         elif dialect is not DEFAULT_DIALECT:
-            key = ("broken", dialect.name)
-        lexer = self._lexers.get(key)
+            key = ("tags", frozenset(dialect.tags.items()), dialect.error)
+        lexer = self._lexers.pop(key, None)
         if lexer is None:
-            lexer = self._lexers[key] = Lexer(dialect)
+            lexer = Lexer(dialect)
+            while len(self._lexers) >= self.LIMIT:
+                self._lexers.pop(next(iter(self._lexers)))
+        self._lexers[key] = lexer
         return lexer
 
 
@@ -128,6 +134,8 @@ class DivEditor(TextArea):
         self.tokens: list = []  # lexer tokens of the template (Div only)
         self.include_targets: dict = {}  # include path -> IncludeTarget, as Div resolved it
         self.include_set: frozenset[str] = frozenset()  # literal include paths in the text
+        self.forced_dialect: Dialect | None = None  # a dialect given from outside (the dialector's preview)
+        self.marks: list[tuple[int, int, str]] = []  # extra highlights: (start, end, style name)
         self.dialect: Dialect = DEFAULT_DIALECT
         self._dialect_ref: str | None = None
         super().__init__(
@@ -169,6 +177,7 @@ class DivEditor(TextArea):
             self._set_diagnostics(check(text, tokens, self.dialect, self.include_targets))
             # Overlays after the syntax colours: errors on red, warnings underlined.
             tokens = tokens + [_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics]
+            tokens += [_Mark(start, end, kind) for start, end, kind in self.marks if end > start]
         elif self.lang == "json":
             tokens = divjson.tokenize(text)
             self._check_json(text, tokens)
@@ -251,7 +260,16 @@ class DivEditor(TextArea):
             super().__init__()
             self.editor = editor
 
+    def set_marks(self, marks: list[tuple[int, int, str]]) -> None:
+        if marks != self.marks:
+            self.marks = marks
+            self._build_highlight_map()
+            self.refresh()
+
     def _update_dialect(self, text: str) -> None:
+        if self.forced_dialect is not None:
+            self.dialect = self.forced_dialect
+            return
         prop = template_properties(text).get("DIALECT")
         ref = prop[0] if prop else None
         if ref == self._dialect_ref and (ref is None or self.dialect.error is None):

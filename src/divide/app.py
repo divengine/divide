@@ -32,6 +32,7 @@ from divide.ui.dialogs import (
     GotoLineDialog,
     SearchDialog,
     about_box,
+    InputDialog,
     confirm,
     confirm_save,
     information,
@@ -39,9 +40,21 @@ from divide.ui.dialogs import (
 )
 from divide.ui.shadow import ShadowScreen
 from divide import config
-from divide.run.render import IncludeTarget, RenderError, default_data_file, find_engine, render, resolve_includes
+from divide.run.render import (
+    DialectVerdict,
+    IncludeTarget,
+    RenderError,
+    check_dialect,
+    default_data_file,
+    find_engine,
+    render,
+    resolve_includes,
+)
 from divide.ui.explorer import TREE_HINT, ExplorerMixin
 from divide.ui.jsontree import JsonTreeWindow
+from divide.ui.dialector import DialectorWindow, SectionDialog, TransformDialog
+from divide.lang.div import dialector as dx
+from divide.lang.div.dialect import DEFAULT_TAGS
 from divide.lang import divjson
 from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
@@ -76,6 +89,15 @@ CM_PREV_ERROR = Command.USER + 17
 CM_MESSAGES = Command.USER + 18
 CM_COMPLETE = Command.USER + 19
 CM_GOTO_INCLUDE = Command.USER + 20
+CM_DIALECTOR = Command.USER + 21
+# The dialector's local menu
+CM_DX_EDIT = Command.USER + 70
+CM_DX_RESTORE = Command.USER + 71
+CM_DX_TRANSFORM = Command.USER + 72
+CM_DX_ALL_DEFAULTS = Command.USER + 73
+CM_DX_PHP = Command.USER + 74
+CM_DX_EXAMPLE = Command.USER + 75
+CM_DX_CHECK = Command.USER + 76
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -244,6 +266,7 @@ class Divide(ExplorerMixin, Application):
                     MenuItem("Close a~l~l", Command.CLOSE_ALL),
                 ),
                 # Flat: textual-vision 0.0.1 does not move keyboard focus into nested sub-menus.
+                SubMenu("~T~ools", MenuItem("~D~ialector...", CM_DIALECTOR)),
                 SubMenu("~O~ptions", *palette_items, Separator(), MenuItem("~D~iv engine...", CM_DIV_ENGINE)),
                 SubMenu("~H~elp", MenuItem("~A~bout...", CM_ABOUT)),
             ]
@@ -348,8 +371,11 @@ class Divide(ExplorerMixin, Application):
         self.call_after_refresh(self.resolve_includes_of, win.editor)
         return win
 
-    def new_file(self) -> EditorWindow:
-        win = EditorWindow(None, "", roots=[self.root], untitled=self._untitled, number=self._free_number())
+    def new_file(self, text: str = "", *, plain: bool = False) -> EditorWindow:
+        win = EditorWindow(None, text, roots=[self.root], untitled=self._untitled, number=self._free_number())
+        win.saved_text = ""  # generated text counts as unsaved
+        if plain:
+            win.editor.lang = None
         self._untitled += 1
         self._insert(win)
         return win
@@ -371,9 +397,9 @@ class Divide(ExplorerMixin, Application):
     def _remove_window(self, window: Window) -> None:
         if self.desktop is not None:
             # A data tree is a view of its code window: they close together.
-            for tree in self.tree_windows():
-                if tree.source is window:
-                    self.desktop.remove_window(tree)
+            for view in self.tree_windows() + self.dialector_windows():
+                if view.source is window:
+                    self.desktop.remove_window(view)
             self.desktop.remove_window(window)
         self.call_after_refresh(self.update_status)
 
@@ -472,9 +498,9 @@ class Divide(ExplorerMixin, Application):
                 dialog = FileDialog("Open a file", start)
                 if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
                     self.open_file(dialog.chosen)
-            case Command.SAVE if editor or isinstance(win, JsonTreeWindow):
+            case Command.SAVE if editor or isinstance(win, (JsonTreeWindow, DialectorWindow)):
                 await self.save(editor or win.source)  # type: ignore[union-attr]
-            case Command.SAVE_AS if editor or isinstance(win, JsonTreeWindow):
+            case Command.SAVE_AS if editor or isinstance(win, (JsonTreeWindow, DialectorWindow)):
                 await self.save(editor or win.source, ask_name=True)  # type: ignore[union-attr]
             case Command.SAVE_ALL:
                 for w in self.editor_windows():
@@ -512,6 +538,8 @@ class Divide(ExplorerMixin, Application):
                 editor.editor.action_paste()
             case _ if command == CM_SELECT_ALL and editor:
                 editor.editor.select_all()
+            case _ if command == CM_DIALECTOR:
+                await self.open_dialector()
             case _ if command == CM_GOTO_INCLUDE and editor:
                 await self.goto_include(editor)
             case _ if command == CM_COMPLETE and editor:
@@ -1038,10 +1066,160 @@ class Divide(ExplorerMixin, Application):
     def tree_windows(self) -> list[JsonTreeWindow]:
         return [w for w in self.windows() if isinstance(w, JsonTreeWindow)]
 
+    # ---------------------------------------------------------- dialector
+    def dialector_windows(self) -> list[DialectorWindow]:
+        return [w for w in self.windows() if isinstance(w, DialectorWindow)]
+
+    async def open_dialector(self) -> None:
+        """Tools > Dialector: on the active .dialect file, on the dialect of the active
+        template, or on a new dialect file."""
+        active = self.active_window()
+        if isinstance(active, DialectorWindow):
+            self.raise_window(active.source)
+            return
+        source: EditorWindow | None = None
+        if isinstance(active, EditorWindow) and active.path is not None and active.path.suffix == ".dialect":
+            source = active
+        elif isinstance(active, EditorWindow) and active.editor.div_enabled and active.editor.dialect.source is not None:
+            source = self.open_file(active.editor.dialect.source)
+        else:
+            dialog = InputDialog(
+                "New dialect", "Dialect ~f~ile", "my.dialect",
+                hint="Relative to the project; an existing file is opened", select=(0, 2),
+            )
+            if await self.run_dialog(dialog) != Command.OK or not dialog.value:
+                return
+            path = Path(dialog.value).expanduser()
+            path = (path if path.is_absolute() else self.root / path).resolve()
+            if path.suffix != ".dialect":
+                path = path.with_name(path.name + ".dialect")
+            if not path.exists():
+                try:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("{}\n", encoding="utf-8")
+                except OSError as exc:
+                    await self.run_dialog(information("Dialector", f"Cannot create {path.name}: {exc.strerror or exc}"))
+                    return
+                self.refresh_project()
+            source = self.open_file(path)
+        if source is None:
+            return
+        view = next((d for d in self.dialector_windows() if d.source is source), None)
+        if view is None:
+            view = DialectorWindow(source, number=self._free_number())
+            for attr in ("offset", "width", "height"):
+                setattr(view.styles, attr, getattr(source.styles, attr))
+            self.insert_window(view)
+        else:
+            self.raise_window(view)
+
+    async def dialector_verdict(self, tags: dict[str, str]) -> DialectVerdict | None:
+        """Div's verdict on a dialect: valid? and does it read the dialector's example back?"""
+        engine = self._include_engine(self.root / "x")
+        if engine is None:
+            return None
+        changed = dx.overrides(tags)
+        try:
+            return await check_dialect(
+                engine, changed, cwd=self.root,
+                sample=dx.example(changed).text, expected=dx.example({}).text,
+            )
+        except RenderError as exc:
+            return DialectVerdict(f"could not ask Div: {exc}")
+
+    def dialector_action(self, win: DialectorWindow, action: str) -> None:
+        self._dialector_action(win, action)
+
+    @work(group="dialector")
+    async def _dialector_action(self, win: DialectorWindow, action: str) -> None:
+        if action == "menu":
+            from textual_vision.menus import Menu, MenuItem as Item, Separator as Sep
+            from divide.ui.explorer import LocalMenu
+
+            menu = Menu(items=[
+                Item("~E~dit section...", CM_DX_EDIT, "Enter"),
+                Item("~R~estore section defaults", CM_DX_RESTORE, "Del"),
+                Sep(),
+                Item("~T~ransform all tags...", CM_DX_TRANSFORM),
+                Item("Restore ~a~ll defaults", CM_DX_ALL_DEFAULTS),
+                Sep(),
+                Item("Generate ~P~HP code", CM_DX_PHP),
+                Item("Save e~x~ample template...", CM_DX_EXAMPLE),
+                Item("~C~heck with Div", CM_DX_CHECK),
+            ])
+            region = win.sections.content_region
+            at = (region.x + 2, region.y + max(0, win.section_index - win.sections.scroll_offset.y))
+            command = await self.push_screen_wait(LocalMenu(menu, at))
+            action = {
+                CM_DX_EDIT: "edit", CM_DX_RESTORE: "restore_section", CM_DX_TRANSFORM: "transform",
+                CM_DX_ALL_DEFAULTS: "all_defaults", CM_DX_PHP: "php", CM_DX_EXAMPLE: "example", CM_DX_CHECK: "check",
+            }.get(command, "")
+        section = win.section
+        match action:
+            case "edit":
+                if not await win.can_rewrite():
+                    return
+                dialog = SectionDialog(section, win.tags, win)
+                if await self.run_dialog(dialog) == Command.OK and dialog.values:
+                    win.apply(dialog.values)
+            case "restore_section":
+                if await win.can_rewrite():
+                    win.apply({k: DEFAULT_TAGS[k] for k in section.keys})
+            case "transform":
+                if not await win.can_rewrite():
+                    return
+                dialog = TransformDialog(win.tags)
+                if await self.run_dialog(dialog) == Command.OK and dialog.changes:
+                    win.apply(dialog.changes)
+            case "all_defaults":
+                if await win.can_rewrite() and await self.run_dialog(
+                    confirm("Dialector", "Put every tag back to Div's default?")
+                ) == Command.YES:
+                    win.apply(dict(DEFAULT_TAGS))
+            case "php":
+                self.new_file(dx.php_code(win.tags, win.source.display_name), plain=True)
+            case "example":
+                await self.save_dialect_example(win)
+            case "check":
+                win.check_now()
+        if win.is_attached:
+            win.sections.focus()
+        self.update_status()
+
+    async def save_dialect_example(self, win: DialectorWindow) -> None:
+        """A template written in the dialect (``@_DIALECT`` + the dialector's example), opened."""
+        source = win.source
+        assert source.path is not None
+        if source.dirty and not await self.save(source):
+            return
+        default = source.path.stem + ".example.tpl"
+        dialog = InputDialog("Example template", "~F~ile", default, hint=f"Next to {source.path.name}", select=(0, len(source.path.stem)))
+        if await self.run_dialog(dialog) != Command.OK or not dialog.value:
+            return
+        target = (source.path.parent / dialog.value).resolve()
+        if target.exists() and await self.run_dialog(confirm("Example template", f"{target.name} exists. Replace it?")) != Command.YES:
+            return
+        try:
+            ref = source.path.relative_to(target.parent)
+        except ValueError:
+            ref = source.path
+        text = f"@_DIALECT = {ref}\n\n" + dx.example(dx.overrides(win.tags)).text
+        try:
+            target.write_text(text, encoding="utf-8")
+        except OSError as exc:
+            await self.run_dialog(information("Example template", f"Cannot write {target.name}: {exc.strerror or exc}"))
+            return
+        self.refresh_project()
+        existing = self.window_for(target)
+        if existing is not None:
+            existing.editor.load_text(text)
+            existing.saved_text = text
+        self.open_file(target)
+
     def toggle_data_tree(self) -> None:
         """Code <-> tree: from a tree go to its code; from JSON code (or a template's data) open its tree."""
         active = self.active_window()
-        if isinstance(active, JsonTreeWindow):
+        if isinstance(active, (JsonTreeWindow, DialectorWindow)):
             self.raise_window(active.source)
             return
         source = active if isinstance(active, EditorWindow) and active.editor.lang == "json" else None
@@ -1099,9 +1277,9 @@ class Divide(ExplorerMixin, Application):
             if win.editor is event.text_area:
                 win.refresh_indicator()
         if isinstance(event, DivEditor.Changed):
-            for tree in self.tree_windows():
-                if tree.source.editor is event.text_area:
-                    tree.reload()
+            for view in self.tree_windows() + self.dialector_windows():
+                if view.source.editor is event.text_area:
+                    view.reload()
         self.update_status()
 
     @on(DivEditor.DialectChanged)
@@ -1133,6 +1311,11 @@ class Divide(ExplorerMixin, Application):
         active = self.active_window()
         if isinstance(active, OutputWindow):
             status.set_hint(active.summary)
+            return
+        if isinstance(active, DialectorWindow):
+            dirty = " *" if active.source.dirty else ""
+            verdict = getattr(active.verdict, "reason", None)
+            status.set_hint(f"{active.source.display_name}{dirty} · " + (f"Div: {verdict}" if verdict else DialectorWindow.HINT))
             return
         if isinstance(active, JsonTreeWindow):
             dirty = " *" if active.source.dirty else ""

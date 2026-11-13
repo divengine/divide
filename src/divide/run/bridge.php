@@ -16,6 +16,13 @@
  * "history" seeds Div's include history (the templates that include this one),
  * which Div uses as a fallback for relative paths.
  *
+ * Dialects (for the dialector), answered by Div itself:
+ *   {"op": "dialect_validate", "tags": {"DIV_TAG_...": "..."}}
+ *     -> {"valid": true | "<Div's reason>"}: the tags are defined before Div
+ *        loads, then div::isValidCurrentDialect() judges them;
+ *   {"op": "dialect_translate", "tags": {...}, "code": "<template in that dialect>"}
+ *     -> {"translated": "<the same template in Div's default dialect>"}: translateFrom().
+ *
  * Div prints its errors into the output ("[[]]LEVEL: message" in CLI) and
  * dies on fatal ones, so everything is buffered and the reply is written
  * from a shutdown function.
@@ -66,6 +73,16 @@ if (!is_array($request)) {
 
 // Composer's autoload.php (the usual install) or a bare div.php; Div needs the
 // divengine/functions helpers, found next to a checkout's own vendor/ if any.
+$op = $request['op'] ?? 'render';
+if ($op === 'dialect_validate') {
+    // Div defines its tags with "defined(...) or define(...)": ours must come first.
+    foreach ((array) ($request['tags'] ?? []) as $name => $value) {
+        if (is_string($name) && strpos($name, 'DIV_TAG_') === 0 && !defined($name)) {
+            define($name, (string) $value);
+        }
+    }
+}
+
 $engine = $request['engine'];
 require_once $engine;
 if (basename($engine) === 'div.php' && !function_exists('divengine\\string')) {
@@ -81,7 +98,39 @@ if (!class_exists($divClass)) {
 }
 $version = $divClass::getVersion();
 
-if (($request['op'] ?? 'render') === 'resolve') {
+function reply_now(array $reply)
+{
+    global $replied;
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    $replied = true;
+    fwrite(STDOUT, json_encode($reply, JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    exit(0);
+}
+
+if ($op === 'dialect_validate') {
+    try {
+        class_exists($divClass);  // loads div.php, which defines the tags we did not
+        $valid = $divClass::isValidCurrentDialect();
+    } catch (Throwable $e) {
+        $valid = get_class($e) . ': ' . $e->getMessage();
+    }
+    reply_now(['valid' => $valid, 'messages' => $messages, 'version' => $version]);
+}
+
+if ($op === 'dialect_translate') {
+    $translated = null;
+    try {
+        $tpl = new $divClass('', []);
+        $translated = $tpl->translateFrom((array) ($request['tags'] ?? []), (string) ($request['code'] ?? ''));
+    } catch (Throwable $e) {
+        $messages[] = ['level' => 'FATAL', 'text' => get_class($e) . ': ' . $e->getMessage()];
+    }
+    reply_now(['translated' => $translated, 'messages' => $messages, 'version' => $version]);
+}
+
+if ($op === 'resolve') {
     $resolved = [];
     try {
         $tpl = new $divClass('', []);
