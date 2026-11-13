@@ -228,6 +228,11 @@ class EditorView(DivEditor, TVViewMixin):
     def on_blur(self) -> None:
         self.hide_completion()
 
+    def on_click(self, event: events.Click) -> None:
+        # Ctrl+click on an include opens it (after the click has placed the cursor).
+        if event.ctrl and self.div_enabled and hasattr(self.app, "action_command"):
+            self.call_after_refresh(self.app.action_command, "GOTO_INCLUDE")
+
 
 class EditorWindow(_TVWindow):
 

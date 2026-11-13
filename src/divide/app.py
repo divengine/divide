@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 from pathlib import Path
 
 from textual import events, on, work
@@ -31,17 +32,18 @@ from divide.ui.dialogs import (
     GotoLineDialog,
     SearchDialog,
     about_box,
+    confirm,
     confirm_save,
     information,
     replace_prompt,
 )
 from divide.ui.shadow import ShadowScreen
 from divide import config
-from divide.run.render import RenderError, default_data_file, find_engine, render
+from divide.run.render import IncludeTarget, RenderError, default_data_file, find_engine, render, resolve_includes
 from divide.ui.explorer import TREE_HINT, ExplorerMixin
 from divide.ui.jsontree import JsonTreeWindow
 from divide.lang import divjson
-from divide.lang.div.diagnostics import line_col
+from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
 from divide.ui.windows import EditorWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
@@ -68,6 +70,7 @@ CM_NEXT_ERROR = Command.USER + 16
 CM_PREV_ERROR = Command.USER + 17
 CM_MESSAGES = Command.USER + 18
 CM_COMPLETE = Command.USER + 19
+CM_GOTO_INCLUDE = Command.USER + 20
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -82,6 +85,7 @@ COMMANDS: dict[str, int] = {
     "CHECK": CM_CHECK,
     "NEXT_ERROR": CM_NEXT_ERROR,
     "PREV_ERROR": CM_PREV_ERROR,
+    "GOTO_INCLUDE": CM_GOTO_INCLUDE,
 }
 
 
@@ -135,6 +139,8 @@ class Divide(ExplorerMixin, Application):
         Binding("alt+f9", "command('CHECK')", "Check", show=False, priority=True),
         Binding("alt+f8", "command('NEXT_ERROR')", "Next error", show=False, priority=True),
         Binding("alt+f7", "command('PREV_ERROR')", "Previous error", show=False, priority=True),
+        # Borland's "open file at cursor"; terminals that send Ctrl+Enter as a newline give ctrl+j.
+        Binding("ctrl+enter,ctrl+j", "command('GOTO_INCLUDE')", "Go to include", show=False, priority=True),
         Binding("alt+x,ctrl+q", "command('QUIT')", "Exit", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
@@ -152,6 +158,8 @@ class Divide(ExplorerMixin, Application):
         self.render_messages: list[RenderMessage] = []  # of last_template's last render
         self._focused_template: EditorWindow | None = None  # last template window that had focus
         self._completion_cache: dict[Path, tuple[str, object]] = {}  # data file -> (text, value)
+        self._include_timers: dict[int, object] = {}  # editor id -> pending include resolution
+        self._include_gen: dict[int, int] = {}  # editor id -> latest resolution asked
 
     # --------------------------------------------------------------- shell
     def get_default_screen(self) -> ShadowScreen:
@@ -190,6 +198,7 @@ class Divide(ExplorerMixin, Application):
                     MenuItem("~S~earch again", CM_SEARCH_AGAIN, "Ctrl+L"),
                     Separator(),
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
+                    MenuItem("Go to ~i~ncluded template", CM_GOTO_INCLUDE, "Ctrl+Enter"),
                     Separator(),
                     MenuItem("~P~revious error", CM_PREV_ERROR, "Alt+F7"),
                     MenuItem("~N~ext error", CM_NEXT_ERROR, "Alt+F8"),
@@ -320,6 +329,7 @@ class Divide(ExplorerMixin, Application):
         win = EditorWindow(path, text, roots=[self.root], number=self._free_number())
         self._relabel(win)
         self._insert(win)
+        self.call_after_refresh(self.resolve_includes_of, win.editor)
         return win
 
     def new_file(self) -> EditorWindow:
@@ -363,6 +373,7 @@ class Divide(ExplorerMixin, Application):
         win.refresh_indicator()
         self.update_status()
         self.notify(f"Saved {win.path.name}", timeout=1.5)
+        self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
         return True
 
@@ -485,6 +496,8 @@ class Divide(ExplorerMixin, Application):
                 editor.editor.action_paste()
             case _ if command == CM_SELECT_ALL and editor:
                 editor.editor.select_all()
+            case _ if command == CM_GOTO_INCLUDE and editor:
+                await self.goto_include(editor)
             case _ if command == CM_COMPLETE and editor:
                 editor.editor.focus()
                 self.call_after_refresh(editor.editor.update_completion, True)
@@ -692,6 +705,92 @@ class Divide(ExplorerMixin, Application):
             return cached[1] if cached is not None else None
         self._completion_cache[data_path] = (text, value)
         return value
+
+    # ---------------------------------------------------------- includes
+    # divide never looks for included templates itself: Div's getTplPath does
+    # (through the PHP bridge, with the template's path and the render cwd).
+    @on(DivEditor.IncludesChanged)
+    def _includes_changed(self, event: DivEditor.IncludesChanged) -> None:
+        ed = event.editor
+        timer = self._include_timers.pop(id(ed), None)
+        if timer is not None:
+            timer.stop()  # type: ignore[attr-defined]
+        self._include_timers[id(ed)] = self.set_timer(0.4, lambda: self.resolve_includes_of(ed))
+
+    def recheck_includes(self) -> None:
+        for win in self.editor_windows():
+            if win.editor.div_enabled and win.editor.include_set:
+                self.resolve_includes_of(win.editor)
+
+    def _include_engine(self, template: Path) -> Path | None:
+        if not shutil.which("php"):
+            return None
+        return find_engine([template.parent, self.root], config.load().get("div_engine"))
+
+    async def _resolve(self, ed: DivEditor, includes: list[str]) -> dict[str, IncludeTarget] | None:
+        assert ed.path is not None
+        engine = self._include_engine(ed.path)
+        if engine is None:
+            return None
+        history = [self.last_template] if self.last_template and self.last_template != ed.path else []
+        try:
+            return await resolve_includes(
+                engine, ed.path, includes, cwd=self.root, history=history,
+                separator=ed.dialect["DIV_TAG_PREPROCESSED_SEPARATOR"],
+            )
+        except RenderError:
+            return None
+
+    @work(group="includes")
+    async def resolve_includes_of(self, ed: DivEditor) -> None:
+        self._include_timers.pop(id(ed), None)
+        if not ed.div_enabled or ed.path is None or not ed.include_set:
+            ed.set_include_targets({})
+            return
+        gen = self._include_gen[id(ed)] = self._include_gen.get(id(ed), 0) + 1
+        targets = await self._resolve(ed, sorted(ed.include_set))
+        if targets is not None and self._include_gen.get(id(ed)) == gen:
+            ed.set_include_targets(targets)
+
+    async def goto_include(self, win: EditorWindow) -> None:
+        """Open the template that the include under the cursor leads to (Div decides which)."""
+        ed = win.editor
+        if not ed.div_enabled:
+            return
+        offset = ed.document.get_index_from_location(ed.selection.end)
+        hit = include_at(ed.text, ed.tokens, ed.dialect, offset)
+        if hit is None:
+            self.notify("Put the cursor on a {% %} or {%% %%} include", timeout=2)
+            return
+        raw = hit[2]
+        if win.path is None:
+            await self.run_dialog(information("Go to include", "Save the template first: Div resolves includes from its folder."))
+            return
+        if self._include_engine(win.path) is None:
+            await self.run_dialog(information("Go to include", "Div was not found (see Options > Div engine): only Div knows where an include leads."))
+            return
+        targets = await self._resolve(ed, [raw])
+        target = (targets or {}).get(raw)
+        if target is None:
+            return
+        if target.file is not None:
+            self.open_file(target.file)
+            return
+        # Not found: offer to create it where Div looks first, next to the template.
+        name = target.path if target.path.endswith(".tpl") else target.path + ".tpl"
+        new = (win.path.parent / name).resolve()
+        rel = self._project_relative(new)
+        if await self.run_dialog(confirm("Go to include", f"Div cannot find {target.path}. Create {rel}?")) != Command.YES:
+            return
+        try:
+            new.parent.mkdir(parents=True, exist_ok=True)
+            new.touch()
+        except OSError as exc:
+            await self.run_dialog(information("Go to include", f"Cannot create {rel}: {exc.strerror or exc}"))
+            return
+        self.refresh_project()
+        self.recheck_includes()
+        self.open_file(new)
 
     def _render_layout(self, template: Path, output: OutputWindow, messages: MessagesWindow | None) -> None:
         """First render: template on the left, output on the right, messages below."""
@@ -991,6 +1090,8 @@ class Divide(ExplorerMixin, Application):
     def on_descendant_focus(self, event: events.DescendantFocus) -> None:
         win = self.active_editor()
         if win is not None and win.editor.div_enabled:
+            if self._focused_template is not win:
+                self.resolve_includes_of(win.editor)  # files may have changed meanwhile
             self._focused_template = win
         if not isinstance(self.active_window(), MessagesWindow):
             self.refresh_messages()  # the Messages window follows the active template

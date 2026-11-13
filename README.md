@@ -29,6 +29,7 @@ down; what is underneath stays readable in dark gray on black).
 | `F6` / `Shift+F6`, `Ctrl+PgDn/PgUp` | next / previous window |
 | `Alt+1`…`Alt+9` | go to window *n* |
 | `Ctrl+B` | project window (open, raise, close) |
+| `Ctrl+Enter`, `Ctrl+click` | go to the template included by the `{% %}` / `{%% %%}` under the cursor |
 | `Ctrl+Space` | complete: variables, loop names, include paths, Div tags |
 | `Ctrl+F` / `Ctrl+R` | find / replace (case, whole words, regex with `\1` groups, direction, origin, prompt) |
 | `Ctrl+L` | search again (repeats the last find or replace) |
@@ -46,12 +47,26 @@ Templates are checked on every edit (`divide.lang.div.diagnostics`, with the
 template's dialect): unclosed loops and orphan `[/$x]`, `{?( )?}` without
 `{/?}` (and orphan `{/?}`), begin tags that Div would leave as text because
 their end is missing (`<!--{`, `{=`, `{@`, `{?(`, `(#`, `{#`, `{% `, `{%% `,
-`[:`, `(( `, `{txt}`, `{strip}`, `<!--|`), includes that do not exist, a broken
+`[:`, `(( `, `{txt}`, `{strip}`, `<!--|`), includes that Div cannot resolve, a broken
 `@_DIALECT`, and malformed JSON in `{= x: {...} =}`. Errors are painted red and
 warnings brown in the editor; the status line shows the message under the
 cursor or the counts. The Messages window (Alt+F9, or Window > Messages) lists
 them as `page.tpl(12,5): Error: ...`, follows the active template live, and
 Enter jumps to the place; render messages follow below.
+
+## Includes
+
+divide does not look for included templates on its own: Div's resolution
+(relative to the working directory, to the template's folder, then to the
+include history, adding `.tpl`) is Div's business. The PHP bridge asks the
+engine's own `getTplPath()`, with the template's path and the same working
+directory as a render (the project folder), and seeds the include history
+with the last rendered template. The answers drive the "cannot find" warnings
+(re-asked when the includes change, on focus, after saving and after file
+operations in the project window) and `Ctrl+Enter` (Search > Go to included
+template), which opens what Div resolves, or offers to create the template
+next to the current one. Without php and Div there are no include warnings.
+Terminals that send Ctrl+Enter as a newline give `Ctrl+J`, which works too.
 
 ## Completion
 

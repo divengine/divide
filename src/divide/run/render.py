@@ -106,6 +106,70 @@ def check_data(text: str) -> str | None:
     return None
 
 
+async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: float) -> dict:
+    php = php or shutil.which("php")
+    if not php:
+        raise RenderError("php not found in PATH")
+    proc = await asyncio.create_subprocess_exec(
+        php,
+        str(BRIDGE),
+        cwd=str(cwd),
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        out, err = await asyncio.wait_for(proc.communicate(json.dumps(request).encode()), timeout)
+    except TimeoutError:
+        proc.kill()
+        await proc.wait()
+        raise RenderError(f"php took longer than {timeout:.0f}s and was stopped") from None
+    try:
+        reply = json.loads(out.decode("utf-8", "replace"))
+    except ValueError:
+        detail = (err or out).decode("utf-8", "replace").strip()[:500]
+        raise RenderError(f"php bridge failed (exit {proc.returncode}): {detail}") from None
+    return reply if isinstance(reply, dict) else {}
+
+
+@dataclass(frozen=True)
+class IncludeTarget:
+    """Where Div takes an include: ``path`` is the include without its data part."""
+
+    path: str
+    file: Path | None
+
+
+async def resolve_includes(
+    engine: Path,
+    template: Path,
+    includes: list[str],
+    *,
+    cwd: Path,
+    history: list[Path] | None = None,
+    separator: str | None = None,
+    php: str | None = None,
+    timeout: float = 10.0,
+) -> dict[str, IncludeTarget]:
+    """Ask Div (``getTplPath``, with the template's path) where each include leads.
+
+    ``cwd`` must be the one renders use: Div tries paths relative to it first.
+    """
+    request: dict = {
+        "engine": str(engine), "op": "resolve", "path": str(template),
+        "includes": includes, "history": [str(h) for h in history or []],
+    }
+    if separator is not None:
+        request["separator"] = separator
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    out: dict[str, IncludeTarget] = {}
+    for raw, item in (reply.get("resolved") or {}).items():
+        if isinstance(item, dict):
+            file = item.get("file")
+            out[raw] = IncludeTarget(str(item.get("path", raw)), (cwd / file).resolve() if file else None)
+    return out
+
+
 async def render(
     engine: Path,
     template: Path,
@@ -117,30 +181,9 @@ async def render(
     timeout: float = TIMEOUT,
 ) -> RenderResult:
     """Render ``code`` (the source of ``template``) with ``data`` (JSON text)."""
-    php = php or shutil.which("php")
-    if not php:
-        raise RenderError("php not found in PATH")
-    request = json.dumps({"engine": str(engine), "path": str(template), "code": code, "data": data})
+    request = {"engine": str(engine), "path": str(template), "code": code, "data": data}
     started = time.monotonic()
-    proc = await asyncio.create_subprocess_exec(
-        php,
-        str(BRIDGE),
-        cwd=str(cwd),
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        out, err = await asyncio.wait_for(proc.communicate(request.encode()), timeout)
-    except TimeoutError:
-        proc.kill()
-        await proc.wait()
-        raise RenderError(f"rendering took longer than {timeout:.0f}s and was stopped") from None
-    try:
-        reply = json.loads(out.decode("utf-8", "replace"))
-    except ValueError:
-        detail = (err or out).decode("utf-8", "replace").strip()[:500]
-        raise RenderError(f"php bridge failed (exit {proc.returncode}): {detail}") from None
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     result = RenderResult(
         output=reply.get("output") or "",
         messages=[RenderMessage(m.get("level", "?"), m.get("text", "")) for m in reply.get("messages", [])],

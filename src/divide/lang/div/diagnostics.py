@@ -7,7 +7,10 @@ reports what Div would trip over or silently leave as text:
   ``{ignore}`` without its end) and begin tags left as plain text because
   their end tag is missing (``<!--{``, ``{=``, ``{?(``, ``(#``, ``{% `` ...);
 - ``{?( ... )?}`` / ``{/?}`` balance;
-- ``{% path %}`` / ``{%% path %%}`` includes that do not exist;
+- ``{% path %}`` / ``{%% path %%}`` includes that Div cannot resolve. divide
+  does not look for the files itself: the app asks Div's own ``getTplPath``
+  (``divide.run.render.resolve_includes``) and passes the answers in
+  ``includes``; includes without an answer are not reported;
 - a broken ``@_DIALECT``;
 - malformed JSON in ``{= name: {...} =}``.
 
@@ -18,12 +21,16 @@ from __future__ import annotations
 
 import bisect
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from divide.lang import divjson
 from divide.lang.div.dialect import Dialect
 from divide.lang.div.lexer import Token
+
+if TYPE_CHECKING:
+    from divide.run.render import IncludeTarget
 
 ERROR, WARNING = "error", "warning"
 
@@ -64,18 +71,16 @@ def _line_end(text: str, pos: int) -> int:
 
 
 class _Checker:
-    def __init__(self, text: str, tokens: list[Token], dialect: Dialect, template: Path | None, roots: list[Path]):
+    def __init__(self, text: str, tokens: list[Token], dialect: Dialect, resolved: Mapping[str, "IncludeTarget"]):
         self.text = text
         self.tokens = tokens
         self.T = dialect
         self.dialect = dialect
-        self.template = template
-        self.roots = roots
+        self.resolved = resolved
         self.out: list[Diagnostic] = []
         self.starts = {t.start for t in tokens if t.kind.startswith("div.")}
         self.opaque = sorted((t.start, t.end) for t in tokens if t.kind in _OPAQUE)
         self.opaque_starts = [s for s, _ in self.opaque]
-        self._exists: dict[Path, bool] = {}
 
     def add(self, start: int, end: int, severity: str, message: str) -> None:
         self.out.append(Diagnostic(start, max(end, start + 1), severity, message))
@@ -164,43 +169,13 @@ class _Checker:
             shown = text[tok.start : stop + len(suffix)] if stop >= 0 else text[tok.start : min(eol, tok.start + 40)].strip()
             self.add(tok.start, tok.end, ERROR, f"condition {shown} is never closed with {close}")
 
-    def include_candidates(self, path: str) -> list[Path]:
-        bases: list[Path] = []
-        if self.template is not None:
-            bases.append(self.template.parent)
-        bases.extend(self.roots)
-        bases.append(Path.cwd())
-        ext = ".tpl"
-        out: list[Path] = []
-        for base in bases:
-            p = base / path
-            out.extend([p, p.with_name(p.name + ext)])
-        return out
-
-    def _is_file(self, path: Path) -> bool:
-        if path not in self._exists:
-            self._exists[path] = path.is_file()
-        return self._exists[path]
-
     def includes(self) -> None:
-        text = self.text
-        sep = self.T["DIV_TAG_PREPROCESSED_SEPARATOR"]
-        for tok in self.tokens:
-            if tok.kind != "div.path":
-                continue
-            raw = text[tok.start : tok.end].strip()
-            before = text[tok.start - 1 : tok.start] if tok.start else " "
-            after = text[tok.end : tok.end + 1] or " "
-            glued = not before.isspace() or not (after.isspace() or after == sep)
-            if not raw or glued or any(c in raw for c in "{}$<>[]"):
-                continue  # dynamic path ({$dir}/file, file{$n}): only Div knows
-            path = raw.split(sep, 1)[0] if sep and sep in raw and not re.match(r"^[A-Za-z]:[\\/]", raw) else raw
-            if Path(path).is_absolute():
-                found = Path(path).exists() or Path(path + ".tpl").exists()
-            else:
-                found = any(self._is_file(c) for c in self.include_candidates(path))
-            if not found:
-                self.add(tok.start, tok.end, WARNING, f"include not found: {path}")
+        if not self.resolved:
+            return
+        for start, end, raw in include_paths(self.text, self.tokens, self.dialect):
+            target = self.resolved.get(raw)
+            if target is not None and target.file is None:
+                self.add(start, end, WARNING, f"Div cannot find the template {target.path}")
 
     def dialect_error(self) -> None:
         if not self.dialect.error:
@@ -259,10 +234,40 @@ def check(
     text: str,
     tokens: list[Token],
     dialect: Dialect,
-    template: Path | None = None,
-    roots: list[Path] | None = None,
+    includes: Mapping[str, "IncludeTarget"] | None = None,
 ) -> list[Diagnostic]:
-    return _Checker(text, tokens, dialect, template, roots or []).run()
+    """Diagnostics of a template; ``includes``: Div's answers for its include paths."""
+    return _Checker(text, tokens, dialect, includes or {}).run()
+
+
+def include_paths(text: str, tokens: list[Token], dialect: Dialect) -> list[tuple[int, int, str]]:
+    """(start, end, path) of the ``{% %}`` / ``{%% %%}`` includes with a literal path.
+
+    Paths built from variables (``{$dir}/file``) are left out: only a render knows them.
+    """
+    out = []
+    for tok in tokens:
+        if tok.kind != "div.path":
+            continue
+        raw = text[tok.start : tok.end].strip()
+        before = text[tok.start - 1 : tok.start] if tok.start else " "
+        after = text[tok.end : tok.end + 1] or " "
+        glued = not before.isspace() or not (after.isspace() or after == dialect["DIV_TAG_PREPROCESSED_SEPARATOR"])
+        if raw and not glued and not any(c in raw for c in "{}$<>[]"):
+            out.append((tok.start, tok.end, raw))
+    return out
+
+
+def include_at(text: str, tokens: list[Token], dialect: Dialect, offset: int) -> tuple[int, int, str] | None:
+    """The include whose tag (``{% `` path `` %}``) contains ``offset``."""
+    paths = {start: (start, end, raw) for start, end, raw in include_paths(text, tokens, dialect)}
+    for i, tok in enumerate(tokens):
+        if tok.start in paths:
+            first = tokens[i - 1].start if i and tokens[i - 1].kind == "div.include" else tok.start
+            last = tokens[i + 1].end if i + 1 < len(tokens) and tokens[i + 1].kind == "div.include" else tok.end
+            if first <= offset <= last:
+                return paths[tok.start]
+    return None
 
 
 def line_col(text: str, offset: int) -> tuple[int, int]:

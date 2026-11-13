@@ -151,6 +151,7 @@ class ExplorerMixin:
                 await self.delete_entry(tree)
             case "refresh":
                 await tree.reload()
+        self.recheck_includes()  # type: ignore[attr-defined]  # includes may now resolve, or not
         tree.focus()
 
     def _project_relative(self, path: Path) -> str:

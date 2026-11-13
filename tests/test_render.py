@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from divide.app import Divide
-from divide.run.render import ENV_ENGINE, check_data, find_engine, render
+from divide.run.render import ENV_ENGINE, IncludeTarget, check_data, find_engine, render, resolve_includes
 from divide.ui.dialogs import DialogScreen, MessageBox
 from divide.ui.windows import EditorWindow, MessagesWindow, OutputWindow
 
@@ -158,3 +158,60 @@ async def test_data_file_choice_is_used(tmp_path):
         app.data_files[page.resolve()] = other.resolve()
         assert app.template_for_data(other.resolve()) == page.resolve()
         assert isinstance(app.query_one(EditorWindow), EditorWindow)
+
+
+def site(tmp_path: Path) -> Path:
+    """examples/showcase.tpl including components/card relative to itself, project root above."""
+    (tmp_path / "examples" / "components").mkdir(parents=True)
+    (tmp_path / "examples" / "components" / "card.tpl").write_text("<card/>")
+    page = tmp_path / "examples" / "showcase.tpl"
+    page.write_text("{% layout %}\n{%% components/card %%}\n")
+    return page
+
+
+@needs_div
+async def test_div_resolves_includes_relative_to_the_template(tmp_path):
+    page = site(tmp_path)
+    got = await resolve_includes(Path(ENGINE), page, ["components/card", "layout", "components/card:{}"], cwd=tmp_path)
+    card = (tmp_path / "examples" / "components" / "card.tpl").resolve()
+    assert got["components/card"].file == card
+    assert got["layout"].file is None
+    assert got["components/card:{}"] == IncludeTarget("components/card", card)  # data part dropped, as Div does
+
+
+@needs_div
+async def test_include_warnings_and_goto_include(tmp_path):
+    page = site(tmp_path)
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        win = app.window_for(page.resolve())
+        for _ in range(60):
+            if win.editor.include_targets:
+                break
+            await pilot.pause(0.05)
+        assert [d.message for d in win.editor.diagnostics] == ["Div cannot find the template layout"]
+
+        win.editor.move_cursor((1, 6))  # on components/card
+        await pilot.press("ctrl+j")  # Ctrl+Enter as most terminals send it
+        for _ in range(60):
+            if app.active_editor() is not win:
+                break
+            await pilot.pause(0.05)
+        assert app.active_editor().path == (tmp_path / "examples" / "components" / "card.tpl").resolve()
+
+        app.raise_window(win)
+        win.editor.move_cursor((0, 4))  # on layout: Div cannot find it, offer to create it
+        await pilot.press("ctrl+j")
+        for _ in range(60):
+            if isinstance(app.screen, DialogScreen):
+                break
+            await pilot.pause(0.05)
+        assert "Div cannot find layout" in app.screen.dialog._text
+        await pilot.press("y")
+        for _ in range(60):
+            if not win.editor.diagnostics:
+                break
+            await pilot.pause(0.05)
+        assert (tmp_path / "examples" / "layout.tpl").is_file()
+        assert app.active_editor().path == (tmp_path / "examples" / "layout.tpl").resolve()
+        assert win.editor.diagnostics == []  # Div finds it now

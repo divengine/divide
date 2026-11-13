@@ -20,7 +20,7 @@ from textual.widgets import TextArea
 from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect, resolve_dialect, template_properties
 from divide.lang import divjson
 from divide.lang.divjson import DivJsonError
-from divide.lang.div.diagnostics import Diagnostic, check
+from divide.lang.div.diagnostics import Diagnostic, check, include_paths
 from divide.lang.div.lexer import Lexer
 
 from .theme import CGA, DIV_STYLES, TURBO_STYLES
@@ -126,6 +126,8 @@ class DivEditor(TextArea):
         self.json_refs: list[str] = []
         self.diagnostics: list[Diagnostic] = []
         self.tokens: list = []  # lexer tokens of the template (Div only)
+        self.include_targets: dict = {}  # include path -> IncludeTarget, as Div resolved it
+        self.include_set: frozenset[str] = frozenset()  # literal include paths in the text
         self.dialect: Dialect = DEFAULT_DIALECT
         self._dialect_ref: str | None = None
         super().__init__(
@@ -159,7 +161,12 @@ class DivEditor(TextArea):
         if self.lang == "div":
             self._update_dialect(text)
             tokens = self.tokens = _LEXERS.get(self.dialect).tokenize(text)
-            self._set_diagnostics(check(text, tokens, self.dialect, self.path, self.roots))
+            includes = frozenset(raw for _, _, raw in include_paths(text, tokens, self.dialect))
+            if includes != self.include_set:
+                self.include_set = includes
+                if self.is_mounted:
+                    self.post_message(self.IncludesChanged(self))
+            self._set_diagnostics(check(text, tokens, self.dialect, self.include_targets))
             # Overlays after the syntax colours: errors on red, warnings underlined.
             tokens = tokens + [_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics]
         elif self.lang == "json":
@@ -191,6 +198,21 @@ class DivEditor(TextArea):
                 highlights[row].append((to_byte(row, col), None, tok.kind))
                 row += 1
                 start = line_end + 1
+
+    def set_include_targets(self, targets: dict) -> None:
+        """Div's answers for the includes (from the app); re-checks when they change."""
+        if targets != self.include_targets:
+            self.include_targets = targets
+            if self.lang == "div":
+                self._build_highlight_map()
+                self.refresh()
+
+    class IncludesChanged(Message):
+        """The literal include paths of the template changed: ask Div about them."""
+
+        def __init__(self, editor: "DivEditor") -> None:
+            super().__init__()
+            self.editor = editor
 
     def _set_diagnostics(self, diagnostics: list[Diagnostic]) -> None:
         if diagnostics != self.diagnostics:

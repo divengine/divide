@@ -8,6 +8,14 @@
  * Prints one JSON reply on stdout:
  *   {"output": "...", "messages": [{"level": "WARNING|FATAL|PHP", "text": "..."}], "fatal": bool, "version": "..."}
  *
+ * With "op": "resolve" it renders nothing: it asks Div where the includes of
+ * the template lead, the way Div itself resolves them when it includes:
+ *   {"engine": ..., "op": "resolve", "path": "/abs/page.tpl",
+ *    "includes": ["parts/menu", "box:data"], "history": ["/abs/parent.tpl"]}
+ *   -> {"resolved": {"parts/menu": {"path": "parts/menu", "file": "/abs/parts/menu.tpl" | null}}, ...}
+ * "history" seeds Div's include history (the templates that include this one),
+ * which Div uses as a fallback for relative paths.
+ *
  * Div prints its errors into the output ("[[]]LEVEL: message" in CLI) and
  * dies on fatal ones, so everything is buffered and the reply is written
  * from a shutdown function.
@@ -15,6 +23,7 @@
 
 $messages = [];
 $version = null;
+$replied = false;  // the resolve operation answers by itself
 
 set_error_handler(static function ($no, $str, $file, $line) use (&$messages) {
     $level = in_array($no, [E_DEPRECATED, E_USER_DEPRECATED], true) ? 'DEPRECATED' : 'PHP';
@@ -22,7 +31,10 @@ set_error_handler(static function ($no, $str, $file, $line) use (&$messages) {
     return true;
 });
 
-register_shutdown_function(static function () use (&$messages, &$version) {
+register_shutdown_function(static function () use (&$messages, &$version, &$replied) {
+    if ($replied) {
+        return;
+    }
     $buffer = '';
     while (ob_get_level() > 0) {
         $buffer = ob_get_clean() . $buffer;
@@ -68,6 +80,38 @@ if (!class_exists($divClass)) {
     exit(0);
 }
 $version = $divClass::getVersion();
+
+if (($request['op'] ?? 'render') === 'resolve') {
+    $resolved = [];
+    try {
+        $tpl = new $divClass('', []);
+        $tpl->__path = $request['path'];
+        $history = array_values(array_filter((array) ($request['history'] ?? []), 'is_string'));
+        if ($history) {
+            $prop = new ReflectionProperty($divClass, '__includes_history');
+            $prop->setAccessible(true);
+            $prop->setValue(null, $history);
+        }
+        $separator = $request['separator'] ?? DIV_TAG_PREPROCESSED_SEPARATOR;
+        foreach ((array) ($request['includes'] ?? []) as $raw) {
+            // As Div's include parsers do: "path:data" when "path:data" itself is not a file.
+            $path = trim((string) $raw);
+            if ($separator !== '' && !$divClass::fileExists($path) && ($sep = strpos($path, $separator)) !== false) {
+                $path = substr($path, 0, $sep);
+            }
+            $file = $tpl->getTplPath($path);
+            $resolved[(string) $raw] = ['path' => $path, 'file' => $file === null ? null : (realpath($file) ?: $file)];
+        }
+    } catch (Throwable $e) {
+        $messages[] = ['level' => 'FATAL', 'text' => get_class($e) . ': ' . $e->getMessage()];
+    }
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    $replied = true;
+    fwrite(STDOUT, json_encode(['resolved' => (object) $resolved, 'messages' => $messages, 'version' => $version], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    exit(0);
+}
 
 try {
     // Decode with Div's own (lenient) JSON parser, so the check matches what the template sees.

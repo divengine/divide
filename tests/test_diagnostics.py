@@ -1,14 +1,15 @@
 from pathlib import Path
 
 from divide.app import Divide
-from divide.lang.div.diagnostics import check, line_col
+from divide.lang.div.diagnostics import include_at, include_paths, check, line_col
 from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect
 from divide.lang.div.lexer import Lexer
+from divide.run.render import IncludeTarget
 from divide.ui.windows import EditorWindow, MessagesWindow
 
 
-def diags(text, template=None, roots=(), dialect=DEFAULT_DIALECT):
-    found = check(text, Lexer(dialect).tokenize(text), dialect, template, list(roots))
+def diags(text, includes=None, dialect=DEFAULT_DIALECT):
+    found = check(text, Lexer(dialect).tokenize(text), dialect, includes)
     return [(line_col(text, d.start), d.severity, d.message) for d in found]
 
 
@@ -36,13 +37,23 @@ def test_clean_template_and_no_false_positives():
     assert diags(text) == []
 
 
-def test_includes(tmp_path):
-    (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "ok.tpl").write_text("x")
-    tpl = tmp_path / "page.tpl"
-    text = "{% parts/ok %}\n{% parts/missing %}\n{% parts/{$name} %}\n{%% parts/ok:main %%}\n"
-    got = diags(text, tpl)
-    assert got == [((2, 4), "warning", "include not found: parts/missing")]
+def test_includes_report_only_what_div_could_not_resolve():
+    text = "{% parts/ok %}\n{% parts/missing %}\n{% parts/{$name} %}\n{%% parts/x:main %%}\n{% unknown %}\n"
+    tokens = Lexer(DEFAULT_DIALECT).tokenize(text)
+    assert [raw for _, _, raw in include_paths(text, tokens, DEFAULT_DIALECT)] == ["parts/ok", "parts/missing", "parts/x:main", "unknown"]
+    answers = {
+        "parts/ok": IncludeTarget("parts/ok", Path("/p/parts/ok.tpl")),
+        "parts/missing": IncludeTarget("parts/missing", None),
+        "parts/x:main": IncludeTarget("parts/x", None),
+    }
+    got = diags(text, answers)  # "unknown" has no answer yet: nothing is said
+    assert got == [
+        ((2, 4), "warning", "Div cannot find the template parts/missing"),
+        ((4, 5), "warning", "Div cannot find the template parts/x"),
+    ]
+    assert diags(text) == []  # without Div's answers (no engine), no guessing
+    assert include_at(text, tokens, DEFAULT_DIALECT, 0)[2] == "parts/ok"  # on "{% "
+    assert include_at(text, tokens, DEFAULT_DIALECT, text.index("missing") + 3)[2] == "parts/missing"
 
 
 def test_tplvar_json_and_dialect():
