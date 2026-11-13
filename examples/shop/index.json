@@ -1,0 +1,11 @@
+{
+  "title": "the divide shop",
+  "shop": "Divengine",
+  "tagline": "Fresh templates, rendered daily.",
+  "products": [
+    {"name": "Potato", "price": 1.5, "offer": true},
+    {"name": "Tomato", "price": 2.25, "offer": false},
+    {"name": "Onion", "price": 0.8, "offer": false}
+  ],
+  "cart": {"items": 2}
+}

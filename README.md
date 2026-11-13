@@ -92,6 +92,10 @@ first. Once a template has a file, its unsaved edits are always what Div gets.
 .venv/bin/python -m divide.lang.div.preview [--kinds] file.tpl    # highlighted dump / token list
 ```
 
+`examples/shop` is a small Div project (one template broken on purpose) used by
+the manual. `tools/wiki_shots.py --out <wiki clone>/images` retakes the
+manual's screenshots from the real app on it, so they follow UI changes.
+
 Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 `src/div.php` with its `vendor/` installed); they are skipped otherwise.
 
