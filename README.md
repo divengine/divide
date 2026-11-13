@@ -62,12 +62,15 @@ Rendering and include checks need `php` and Div in your project
 | `Ctrl+T` | data tree ⇄ code |
 | `Ctrl+Enter` | go to the included template |
 | `Alt+T` | Tools: Dialector, Translate a template |
+| `F1` · `Shift+F1` | help on the active window · help index |
 | `F2` · `F3` · `Alt+X` | save · open · exit |
 
 ## Manual
 
 The **[wiki](https://github.com/divengine/divide/wiki)** is the user manual,
-with screenshots:
+with screenshots. The same manual is inside divide: `F1` opens it at the topic
+of the window you are in, in a help window with Borland's help colours, its
+contents, an index and cross references.
 
 - [Installation](https://github.com/divengine/divide/wiki/Installation)
 - [Getting Started](https://github.com/divengine/divide/wiki/Getting-Started)
@@ -82,6 +85,7 @@ with screenshots:
 - [Translating Templates](https://github.com/divengine/divide/wiki/Translating-Templates)
 - [Keyboard Reference](https://github.com/divengine/divide/wiki/Keyboard-Reference)
 - [Troubleshooting](https://github.com/divengine/divide/wiki/Troubleshooting)
+- [Help](https://github.com/divengine/divide/wiki/Help)
 
 ### One convention: save first
 
@@ -104,6 +108,9 @@ first. Once a template has a file, its unsaved edits are always what Div gets.
 ERB-like `erb.dialect`) used by
 the manual. `tools/wiki_shots.py --out <wiki clone>/images` retakes the
 manual's screenshots from the real app on it, so they follow UI changes.
+`tools/sync_manual.py <wiki clone>` copies the wiki's pages into
+`src/divide/manual/pages/`, which the help window reads: run it after
+changing the wiki.
 
 Tests that render need `DIVIDE_DIV_PHP` (an `autoload.php`, or a Div checkout's
 `src/div.php` with its `vendor/` installed); they are skipped otherwise.
@@ -131,8 +138,10 @@ file only to colour, and reports nothing about it.
   - `complete.py` — completion of variables, loops, include paths and tags
 - `src/divide/editor/` — `DivEditor` (Textual `TextArea` fed by the lexer instead of tree-sitter) and theme
 - `src/divide/ui/` — Turbo Vision pieces on [textual-vision](https://pypi.org/project/textual-vision/):
-  editor / project windows, message boxes, file dialog, completion list, project file operations
+  editor / project windows, message boxes, file dialog, completion list, project file operations,
+  the dialector, the help window; `HRule` / `VRule` divide a window and join its frame in Ts
 - `src/divide/run/` — rendering: `bridge.php` (runs Div, replies JSON) and `render.py`
+- `src/divide/manual/` — the built-in help: the wiki's pages laid out as topics with cross references
 - `src/divide/app.py` — the application: menus, status line, commands, window management
 - `docs/div-language.md` — notes on Div as understood by the editor
 

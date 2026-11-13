@@ -216,6 +216,22 @@ async def translate():
         save(app, "translate")
 
 
+
+@shot
+async def help():
+    app = Divide(DEMO, [DEMO / "erb.dialect"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+t", "d"); await settle(pilot)
+        win = app.active_window()
+        await until(pilot, lambda: win.verdict is not None)
+        await pilot.press("f1"); await settle(pilot, 10)
+        await pilot.press("tab", "tab"); await settle(pilot)
+        save(app, "help")
+        await pilot.press("shift+f1"); await settle(pilot, 10)
+        save(app, "help-index")
+
+
 async def run(names: set[str]) -> None:
     for fn in SHOTS:
         if not names or fn.__name__ in names:

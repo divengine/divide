@@ -54,6 +54,7 @@ from divide.run.render import (
     translate_template,
 )
 from divide.ui.explorer import TREE_HINT, ExplorerMixin
+from divide.ui.help import HelpWindow
 from divide.ui.jsontree import JsonTreeWindow
 from divide.ui.dialector import (
     CM_OPEN_TRANSLATION,
@@ -66,6 +67,7 @@ from divide.ui.dialector import (
 from divide.lang.div.dialect import Dialect, template_properties
 from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS
+from divide import manual
 from divide.lang import divjson
 from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
@@ -102,6 +104,11 @@ CM_COMPLETE = Command.USER + 19
 CM_GOTO_INCLUDE = Command.USER + 20
 CM_DIALECTOR = Command.USER + 21
 CM_TRANSLATE = Command.USER + 22
+CM_HELP = Command.USER + 23  # F1: help on what you are doing
+CM_HELP_CONTENTS = Command.USER + 24
+CM_HELP_INDEX = Command.USER + 25
+CM_HELP_SEARCH = Command.USER + 26
+CM_HELP_BACK = Command.USER + 27
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -127,6 +134,10 @@ COMMANDS: dict[str, int] = {
     "NEXT_ERROR": CM_NEXT_ERROR,
     "PREV_ERROR": CM_PREV_ERROR,
     "GOTO_INCLUDE": CM_GOTO_INCLUDE,
+    "HELP": CM_HELP,
+    "HELP_INDEX": CM_HELP_INDEX,
+    "HELP_SEARCH": CM_HELP_SEARCH,
+    "HELP_BACK": CM_HELP_BACK,
 }
 
 
@@ -194,6 +205,10 @@ class Divide(ExplorerMixin, Application):
         # Borland's "open file at cursor"; terminals that send Ctrl+Enter as a newline give ctrl+j.
         Binding("ctrl+enter,ctrl+j", "command('GOTO_INCLUDE')", "Go to include", show=False, priority=True),
         Binding("alt+x,ctrl+q", "command('QUIT')", "Exit", show=False, priority=True),
+        Binding("f1", "command('HELP')", "Help", show=False, priority=True),
+        Binding("shift+f1", "command('HELP_INDEX')", "Help index", show=False, priority=True),
+        Binding("ctrl+f1", "command('HELP_SEARCH')", "Topic search", show=False, priority=True),
+        Binding("alt+f1", "command('HELP_BACK')", "Previous topic", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
     def __init__(self, root: Path, files: list[Path], *, palette: str = DEFAULT_PALETTE) -> None:
@@ -286,7 +301,16 @@ class Divide(ExplorerMixin, Application):
                     MenuItem("~T~ranslate a template...", CM_TRANSLATE),
                 ),
                 SubMenu("~O~ptions", *palette_items, Separator(), MenuItem("~D~iv engine...", CM_DIV_ENGINE)),
-                SubMenu("~H~elp", MenuItem("~A~bout...", CM_ABOUT)),
+                SubMenu(
+                    "~H~elp",
+                    MenuItem("~C~ontents", CM_HELP_CONTENTS),
+                    MenuItem("~I~ndex", CM_HELP_INDEX, "Shift+F1"),
+                    MenuItem("~T~opic search", CM_HELP_SEARCH, "Ctrl+F1"),
+                    MenuItem("~P~revious topic", CM_HELP_BACK, "Alt+F1"),
+                    MenuItem("~U~sing help", CM_HELP, "F1"),
+                    Separator(),
+                    MenuItem("~A~bout...", CM_ABOUT),
+                ),
             ]
         )
 
@@ -569,6 +593,21 @@ class Divide(ExplorerMixin, Application):
                 self.toggle_project()
             case _ if command == CM_PALETTE and isinstance(info, str):
                 self.theme = info
+            case _ if command == CM_HELP:
+                self.open_help(self.context_topic())
+            case _ if command == CM_HELP_CONTENTS:
+                self.open_help(manual.CONTENTS)
+            case _ if command == CM_HELP_INDEX:
+                self.open_help(manual.INDEX)
+            case _ if command == CM_HELP_SEARCH:
+                self.help_search()
+            case _ if command == CM_HELP_BACK:
+                help_win = self.help_window()
+                if help_win is None:
+                    self.open_help(manual.CONTENTS)
+                else:
+                    self.raise_window(help_win)
+                    help_win.action_back()
             case _ if command == CM_ABOUT:
                 await self.run_dialog(about_box(f"v{__version__}"))
             case _ if command in (CM_FIND, CM_REPLACE) and editor:
@@ -1116,6 +1155,63 @@ class Divide(ExplorerMixin, Application):
     def tree_windows(self) -> list[JsonTreeWindow]:
         return [w for w in self.windows() if isinstance(w, JsonTreeWindow)]
 
+    # ---------------------------------------------------------- help
+    def help_window(self) -> HelpWindow | None:
+        return next((w for w in self.windows() if isinstance(w, HelpWindow)), None)
+
+    def open_help(self, target: str) -> None:
+        """Show a help topic (``Page`` or ``Page#anchor``) in the help window."""
+        win = self.help_window()
+        if win is not None:
+            self.raise_window(win)
+            if win.view.name_ != target or target == manual.INDEX:
+                win.open(target)
+            return
+        win = HelpWindow(target, number=self._free_number())
+        width = self.desktop.size.width or 80
+        height = self.desktop.size.height or 24
+        win.styles.width = min(width, 80)
+        win.styles.height = max(10, height - 2)
+        win.styles.offset = ((width - min(width, 80)) // 2, 1 if height > 12 else 0)
+        self.insert_window(win)
+
+    def context_topic(self) -> str:
+        """F1: the topic of the active window (Turbo Pascal's context help)."""
+        active = self.active_window()
+        if isinstance(active, HelpWindow):
+            return "Help"
+        if isinstance(active, DialectorWindow):
+            return "Dialector"
+        if isinstance(active, JsonTreeWindow):
+            return "Data-Files"
+        if isinstance(active, ProjectWindow):
+            return "Project-Window"
+        if isinstance(active, OutputWindow):
+            return "Rendering"
+        if isinstance(active, MessagesWindow):
+            return "Checking-Templates"
+        if isinstance(active, EditorWindow):
+            return "Data-Files" if active.editor.lang == "json" else "Editing-Templates"
+        return manual.CONTENTS
+
+    def help_search(self) -> None:
+        """Ctrl+F1: the topic of the word under the cursor, else the index."""
+        win = self.active_editor()
+        word = ""
+        if win is not None:
+            ed = win.editor
+            row, col = ed.cursor_location
+            line = ed.document.get_line(row)
+            start = col
+            while start > 0 and (line[start - 1].isalnum() or line[start - 1] in "_-"):
+                start -= 1
+            end = col
+            while end < len(line) and (line[end].isalnum() or line[end] in "_-"):
+                end += 1
+            word = line[start:end]
+        found = manual.search(word) if len(word) > 2 else []
+        self.open_help(found[0][1] if found else manual.INDEX)
+
     # ---------------------------------------------------------- dialector
     def dialector_windows(self) -> list[DialectorWindow]:
         return [w for w in self.windows() if isinstance(w, DialectorWindow)]
@@ -1552,6 +1648,9 @@ class Divide(ExplorerMixin, Application):
             return
         if isinstance(active, ProjectWindow):
             status.set_hint(TREE_HINT)
+            return
+        if isinstance(active, HelpWindow):
+            status.set_hint(HelpWindow.HINT)
             return
         win = self.active_editor()
         if win is None:
