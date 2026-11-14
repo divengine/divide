@@ -3,7 +3,7 @@
 A Turbo Vision screen is a grid of cells: a character the terminal draws two
 cells wide shifts the rest of its line and breaks the frames. So every mark is
 plain ASCII, the same width in every terminal, font and platform, and it goes
-in the blank cell files already have where folders show their ▸ ▾: the tree
+in the blank cell files already have where folders show their ► ▼: the tree
 keeps its width. Options > File type marks turns them on; the plain style
 (the default) leaves that cell blank.
 """

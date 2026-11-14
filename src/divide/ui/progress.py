@@ -69,7 +69,7 @@ class ProgressDialog(_Dialog):
         room = self.width - pad - 8
         lines = []
         for label, value in self.rows.items():
-            value = value if len(value) <= room else "…" + value[-(room - 1):]
+            value = value if len(value) <= room else "..." + value[-(room - 3):]
             lines.append(f"{label + ':':>{pad}} {value}")
         return "\n".join(lines)
 

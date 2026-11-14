@@ -21,7 +21,7 @@ Div reads the file: the dialector decodes it with Div's own `jsonDecode()`, as D
 - **Left: the sections of the language.** The sections are Replacements, Modifiers, Multiple modifiers, Template variables, Loops and iterations, Conditions, Includes and locations, Formats and formulas, Aggregate functions, Blocks, Capsules and sub-parsers, and Special characters. Each row says how many of its tags you changed (`4/11`) and carries a mark:
   - `•`: the section has changes;
   - `!`: Div rejects a tag of this section;
-  - `≠`: Div reads this section back differently from what you wrote (see below).
+  - `≈`: Div reads this section back differently from what you wrote (see below).
 - **Right: the preview.** An example template that uses every construct, written in your dialect and highlighted by divide in your dialect. The tags of the selected section are marked. Moving through the sections scrolls the preview to them.
 - **Below the sections:** what the section is about, and Div's verdict.
 

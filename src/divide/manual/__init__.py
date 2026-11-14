@@ -27,6 +27,8 @@ from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote, unquote
 
+from divide.glyphs import screen_text
+
 HERE = Path(__file__).parent
 BOOKS_DIR = HERE / "books"
 DEFAULT = "divide"  # the book of bare topic names
@@ -479,6 +481,7 @@ def layout(name: str, width: int) -> Topic | None:
     text = topic_source(name)
     if text is None:
         return None
+    text = screen_text(text)  # the books are written for browsers: keep the grid
     topic = Topic(name, title_of(name))
     writer = _Writer(topic, width)
     lines = text.splitlines()

@@ -13,9 +13,9 @@ So the trace is not a list of lines but a list of **mutations**: what the templa
 ## The window
 
 - **The rows**, at the bottom, one per mutation, in the order Div made them:
-  - `▶ Template`: the template as Div starts on it.
-  - `-30   Condition: {$cart.items} > 0 › The condition 2 > 0 is true`: a change. The number is how many characters it added or took away; the words are Div's own, from its log of what it was doing.
-  - `▶ Sub-parse: Item 0 of the list 'products'`: Div starts parsing a part apart. Its rows are indented below it.
+  - `► Template`: the template as Div starts on it.
+  - `-30   Condition: {$cart.items} > 0 > The condition 2 > 0 is true`: a change. The number is how many characters it added or took away; the words are Div's own, from its log of what it was doing.
+  - `► Sub-parse: Item 0 of the list 'products'`: Div starts parsing a part apart. Its rows are indented below it.
   - `■ Fixed point: nothing changes after 3 cycles`: that parse is done.
   - `■ Output: what Div returns`: the result, the same as Ctrl+F9 gives.
 - **The template**, at the top, as it was after the selected row. What the mutation wrote is marked green.

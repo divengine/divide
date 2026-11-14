@@ -2,7 +2,7 @@
 
 A render is not stepped line by line: Div rewrites the whole template again
 and again until nothing changes. The trace window replays that: the list at
-the bottom has one row per mutation (in Div's words: "Condition {$x} > 0 ›
+the bottom has one row per mutation (in Div's words: "Condition {$x} > 0 >
 The condition 2 > 0 is true", "Trying to include layout/header.tpl"), the
 sub-parses Div starts (each item of a list, each condition) indented, and the
 fixed points; the view at the top shows the template as it was at that row,
@@ -45,11 +45,11 @@ class TraceList(PickList):
 
 
 def row_text(m: Mutation) -> str:
-    """``  -30    Condition {$x} > 0 › The condition 2 > 0 is true``: bytes, then the step;
+    """``  -30    Condition {$x} > 0 > The condition 2 > 0 is true``: bytes, then the step;
     sub-parses indented."""
     indent = "  " * max(0, m.level - 1)
     size = f"{m.delta:+6d}" if m.kind == "change" else " " * 6
-    mark = {"start": "▶ ", "end": "■ ", "output": "■ "}.get(m.kind, "  ")
+    mark = {"start": "► ", "end": "■ ", "output": "■ "}.get(m.kind, "  ")
     return f"{size}  {indent if m.kind != 'output' else ''}{mark}{m.label}"
 
 
@@ -180,7 +180,7 @@ class TraceMixin:
             return "Success", not trace.truncated, rows
 
         try:
-            with self.busy(f"Tracing {template.name}…"):
+            with self.busy(f"Tracing {template.name}..."):
                 trace = await run_with_progress(self, dialog, trace_render(engine, template, code, data, cwd=self.root), verdict)
         except RenderError as exc:
             await self.run_dialog(information("Render trace", str(exc)))

@@ -529,8 +529,8 @@ class ProjectTree(DirectoryTree, TVViewMixin):
     Ctrl+R refresh, Alt+F10 (or a right click) the local menu."""
 
     # Single-width glyphs: the default emoji icons are double width and not in the TV style.
-    ICON_NODE = "▸ "
-    ICON_NODE_EXPANDED = "▾ "
+    ICON_NODE = "► "  # Turbo Vision's own (CP437), like every glyph divide draws
+    ICON_NODE_EXPANDED = "▼ "
     ICON_FILE = "  "
     BINDINGS = [
         Binding("insert", "request('new_file')", "New file", show=False),
@@ -586,7 +586,7 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         text = super().render_label(node, base_style, style)
         if self.icons != icons_mod.MARKS or node.data is None or node._allow_expand or not self.is_mounted:
             return text
-        # the file's mark in the blank cell where a folder has its ▸: the same width
+        # the file's mark in the blank cell where a folder has its ►: the same width
         mark, colour = icons_mod.mark_for(node.data.path)
         return Text.assemble((mark, base_style + Style(color=colour) + style), text[1:])
 

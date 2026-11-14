@@ -177,7 +177,7 @@ async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
         marked = lines()
         assert marked[2].endswith(" ? a.php") and marked[3].endswith(" { b.tpl")
         assert [len(l) for l in marked] == [len(l) for l in plain]  # the same width
-        assert "▸ sub" in marked[1]  # folders keep their arrow
+        assert "► sub" in marked[1]  # folders keep their arrow
         assert app.icons == icons.MARKS  # remembered
         app.set_icons(icons.PLAIN)
         await pilot.pause()

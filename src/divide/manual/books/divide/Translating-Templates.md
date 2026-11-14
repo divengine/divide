@@ -27,4 +27,4 @@ The translation is Div's own, as Div does it today. Two things are worth checkin
 - `{%% path:data %%}` pre-processed includes lose their `:` separator.
 - Includes inside a loop or a condition are left in the source dialect.
 
-The [[Dialector]]'s verdict shows the first one as a section that Div reads otherwise (`≠`).
+The [[Dialector]]'s verdict shows the first one as a section that Div reads otherwise (`≈`).

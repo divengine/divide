@@ -8,7 +8,7 @@
 
 ## File type marks
 
-The tree shows folders with Turbo Vision's `▸` and `▾`. **Options > File type marks** puts a coloured mark before each file, in the cell where a folder has its arrow, so the tree keeps its width. **Options > Plain symbols** goes back. divide remembers the choice.
+The tree shows folders with Turbo Vision's `►` and `▼`. **Options > File type marks** puts a coloured mark before each file, in the cell where a folder has its arrow, so the tree keeps its width. **Options > Plain symbols** goes back. divide remembers the choice.
 
 ![the project window with file type marks](images/project-marks.png)
 

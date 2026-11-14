@@ -104,14 +104,14 @@ def _step(message: str) -> str:
 
 
 def cause_text(causes: list[str]) -> str:
-    """The steps behind a change, the most telling last: "conditions › condition {$x} > 0 › true"."""
+    """The steps behind a change, the most telling last: "conditions > condition {$x} > 0 > true"."""
     items = sum(m.startswith("Parsing item ") for m in causes)
     steps = [m for m in causes if not m.startswith(_QUIET + ("Parsing item ", "Checking logical order"))]
     if not steps:
         return "(between cycles)"
     detail = list(dict.fromkeys(_step(m) for m in steps))
     # "Parsing conditions..." then "Parsing condition: x" then "The condition x is true": keep the last two
-    text = " › ".join(detail[-2:])
+    text = " > ".join(detail[-2:])
     if items:
         text += f" ({items} item{'s' if items != 1 else ''})"
     return text

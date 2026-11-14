@@ -24,7 +24,7 @@ Use a terminal with 256 colours or true colour (`TERM=xterm-256color`). The othe
 **`$references` in my data come out empty.**
 That is Div: a data file is decoded before any variable exists. Use them in JSON inside templates (`{= x: {"a": $b} =}`). divide adds a note when it renders data that uses references.
 
-**The dialector marks a section with `≠` that looks right.**
+**The dialector marks a section with `≈` that looks right.**
 Div translated the example back and got something else. The verdict shows the line you wrote and what Div read. If the difference is in a tag you did not change (for instance a `{%% path:data %%}` that loses its `:`), the cause is Div's translator, not your dialect. See [[Translating Templates]].
 
 **The debugger says it needs Xdebug, or "PHP ended before Xdebug connected".**

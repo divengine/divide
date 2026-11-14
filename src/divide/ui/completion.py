@@ -198,7 +198,7 @@ class InfoPopup(Widget):
             out.pop()
         if len(out) > rows:
             out = out[:rows]
-            out[-1] = (out[-1][: width - 1] + "…") if len(out[-1]) >= width else out[-1] + " …"
+            out[-1] = (out[-1][: width - 3] + "...") if len(out[-1]) >= width - 3 else out[-1] + " ..."
         return out
 
     def show(self, lines: list[str], *, x: int, y: int, mark: tuple[int, int, int] | None = None) -> None:
@@ -253,9 +253,9 @@ def signature_lines(label: str, start: int, end: int, doc: str, width: int) -> t
         left = max(0, min(start - width // 3, len(label) - width))
         cut = list(label[left:left + width])
         if left > 0:
-            cut[0] = "…"
+            cut[:3] = "..."
         if left + width < len(label):
-            cut[-1] = "…"
+            cut[-3:] = "..."
         label = "".join(cut)
         if mark is not None:
             mark = (0, max(0, start - left), min(width, end - left))

@@ -263,12 +263,12 @@ async def test_status_line_spinner(tmp_path):
         assert isinstance(status, HintStatusLine)
         app.update_status()
         plain = status._hint_text
-        with app.busy("Rendering page.tpl…"):
+        with app.busy("Rendering page.tpl..."):
             first = status._hint_text
-            assert first[0] in SPINNER and first.endswith("Rendering page.tpl…")
+            assert first[0] in SPINNER and first.endswith("Rendering page.tpl...")
             await pilot.pause(0.3)
             assert status._hint_text != first  # it turns
-            with app.busy("Starting phpactor…"):
-                assert status._hint_text.endswith("Starting phpactor…")
-            assert status._hint_text.endswith("Rendering page.tpl…")
+            with app.busy("Starting phpactor..."):
+                assert status._hint_text.endswith("Starting phpactor...")
+            assert status._hint_text.endswith("Rendering page.tpl...")
         assert status._hint_text == plain and status._timer is None

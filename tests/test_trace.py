@@ -54,8 +54,8 @@ def test_mutations_from_events():
     ]
     assert rows[1].context == "Condition: {$n} > 0" and rows[1].label == "Sub-parse: Condition: {$n} > 0"
     assert rows[2].before == " {$n} > 0 " and rows[2].after == " 2 > 0 " and rows[2].label == "Matches"
-    assert rows[4].label == "Condition: {$n} > 0 › The condition 2 > 0 is true" and rows[4].delta == -20
-    assert rows[5].label == "Matches › Match: n" and rows[5].after == "yes2" and rows[5].cycle == 1
+    assert rows[4].label == "Condition: {$n} > 0 > The condition 2 > 0 is true" and rows[4].delta == -20
+    assert rows[5].label == "Matches > Match: n" and rows[5].after == "yes2" and rows[5].cycle == 1
     assert rows[6].label == "Fixed point: nothing changes after 3 cycles" and rows[6].after == "yes2"
     assert row_text(rows[5]).split()[:2] == ["-3", "Matches"]
 
@@ -63,7 +63,7 @@ def test_mutations_from_events():
 def test_cause_text_of_lists():
     causes = ["Parsing loops, SUPER KEY = ''...", "Parsing the list: items..", "Checking logical order at 3...",
               "Parsing item 0 of the list 'items'...", "Parsing item 1 of the list 'items'..."]
-    assert cause_text(causes) == "Loops, SUPER KEY = '' › List: items (2 items)"
+    assert cause_text(causes) == "Loops, SUPER KEY = '' > List: items (2 items)"
     assert cause_text(["Template | size: 3"]) == "(between cycles)"
 
 

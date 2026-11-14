@@ -104,7 +104,7 @@ class LspMixin:
         session = LspSession(server, command, self.root,  # type: ignore[attr-defined]
                              on_diagnostics=self._lsp_diagnostics, on_message=self._lsp_message,
                              on_progress=lambda token, title, name=server.name: self._lsp_progress_changed(name, token, title))
-        with self.busy(f"Starting {server.name}…"):  # type: ignore[attr-defined]
+        with self.busy(f"Starting {server.name}..."):  # type: ignore[attr-defined]
             ok = await session.start()
         self._lsp_starting.pop(server.name, None)
         if ok:
@@ -177,7 +177,7 @@ class LspMixin:
             return
         key = (server, token)
         if title is not None and key not in self._lsp_progress:
-            self._lsp_progress[key] = status.start_busy(f"{server}: {title}…")
+            self._lsp_progress[key] = status.start_busy(f"{server}: {title}...")
         elif title is None and key in self._lsp_progress:
             status.stop_busy(self._lsp_progress.pop(key))
 
@@ -286,7 +286,7 @@ class LspMixin:
             return False
         session.open(ed.path, ed.text, ed.lang)
         offset = ed.document.get_index_from_location(ed.selection.end)
-        with self.busy(f"Asking {session.server.name}…"):  # type: ignore[attr-defined]
+        with self.busy(f"Asking {session.server.name}..."):  # type: ignore[attr-defined]
             hover = await session.hover(ed.path, offset)
         text = clean_hover(lsp.plain_markup(hover.contents) if hover else "")
         word = _WORD.search(ed.text[:offset]).group(0) + re.match(r"\w*", ed.text[offset:]).group(0)  # type: ignore[union-attr]
@@ -304,7 +304,7 @@ class LspMixin:
             return False
         session.open(win.path, ed.text, ed.lang)
         offset = ed.document.get_index_from_location(ed.selection.end)
-        with self.busy(f"Asking {session.server.name}…"):  # type: ignore[attr-defined]
+        with self.busy(f"Asking {session.server.name}..."):  # type: ignore[attr-defined]
             found = await session.definition(win.path, offset)
         if not found:
             self.notify(f"{session.server.name} does not know where this is defined", timeout=2)  # type: ignore[attr-defined]
@@ -342,7 +342,7 @@ class LspMixin:
         session = self._lsp.get(server.name)
         if session is not None and session.running:
             return server.name
-        return f"{server.name} starting…" if server.name in self._lsp_starting else server.name
+        return f"{server.name} starting..." if server.name in self._lsp_starting else server.name
 
     async def choose_servers(self, language: str = "php") -> None:
         dialog = ServersDialog(language, self.root)  # type: ignore[attr-defined]

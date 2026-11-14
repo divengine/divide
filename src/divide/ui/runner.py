@@ -343,7 +343,7 @@ class RunMixin:
             session = DebugSession(script, split_args(self.run_arguments(script)), ini=ini,
                                    on_data=lambda: self._debug_output(create=True))
             try:
-                with self.busy(f"Starting {script.name} in the debugger…"):
+                with self.busy(f"Starting {script.name} in the debugger..."):
                     await session.start()
             except DebugError as exc:
                 await self.run_dialog(information("Debug", str(exc)))
@@ -395,7 +395,7 @@ class RunMixin:
                 await session.set_breakpoint(*target, temporary=True)
                 how = "run"
             label = "Running" if how == "run" else "Stepping"
-            with self.busy(f"{label} {session.request or session.script.name}… (Ctrl+F2 stops)"):
+            with self.busy(f"{label} {session.request or session.script.name}... (Ctrl+F2 stops)"):
                 location = await session.resume(how)
         except (DebugError, OSError):
             await session.stop()
@@ -532,7 +532,7 @@ class RunMixin:
         try:
             value = await self.session.evaluate(dialog.value, self.debug_frame)
             lines = value.lines(depth=2)
-            text = "\n".join(lines[:20] + (["…"] if len(lines) > 20 else []))
+            text = "\n".join(lines[:20] + (["..."] if len(lines) > 20 else []))
         except DebugError as exc:
             text = f"{dialog.value}: {exc}"
         await self.run_dialog(information("Evaluate", text))

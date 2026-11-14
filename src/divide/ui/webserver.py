@@ -205,7 +205,7 @@ class WebMixin:
             await self.web_stop()
         server = WebServer(address, root, router, ini=ini, on_log=self._web_logged)
         try:
-            with self.busy(f"Starting php -S {address}…"):
+            with self.busy(f"Starting php -S {address}..."):
                 await server.start()
         except ServerError as exc:
             await self.run_dialog(information("Web server", str(exc)))

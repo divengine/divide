@@ -166,3 +166,23 @@ async def test_without_a_server_the_status_says_so(tmp_path, monkeypatch):
         await settle(pilot)
         assert app.lsp_session("php") is None
         assert "install phpactor or intelephense" in app.lsp_status("php")
+
+
+def test_servers_get_a_temp_dir_of_their_own(tmp_path, monkeypatch):
+    """A PHAR server's unpacked copy goes there, not to /tmp; dirs of gone divides are swept."""
+    import os
+    import subprocess
+
+    from divide.lsp.client import server_temp_dir, temp_root
+
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
+    gone = subprocess.run(["true"]).args and subprocess.Popen(["true"])
+    gone.wait()
+    stale = temp_root() / f"{gone.pid}-old"
+    stale.mkdir(parents=True)
+    (stale / "php123").write_text("x")
+    mine = temp_root() / f"{os.getpid()}-other"
+    mine.mkdir()
+    made = server_temp_dir()
+    assert made.parent == temp_root() and made.name.startswith(f"{os.getpid()}-")
+    assert not stale.exists() and mine.exists()

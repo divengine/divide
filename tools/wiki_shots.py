@@ -40,6 +40,8 @@ from divide.ui.progress import ProgressScreen  # noqa: E402
 
 def save(app, name):
     svg = app.export_screenshot(title="divide")
+    if os.environ.get("DIVIDE_SHOT_KEEP_SVG"):
+        (Path(os.environ["DIVIDE_SHOT_KEEP_SVG"]) / f"{name}.svg").write_text(svg)
     svg = re.sub(r'font-family:[^;"]*', "font-family: Liberation Mono; letter-spacing: 0.2px", svg)
     # rsvg drops a span's leading no-break space: plain spaces, preserved
     svg = svg.replace("&#160;", " ").replace("<svg ", '<svg xml:space="preserve" ', 1)
@@ -489,11 +491,12 @@ def main() -> None:
     if unknown:
         sys.exit(f"unknown shots: {', '.join(sorted(unknown))}")
     os.environ["DIVIDE_DIV_PHP"] = str(Path(engine).resolve())
-    os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp()  # no personal settings in the pictures
     OUT = args.out.resolve()
     OUT.mkdir(parents=True, exist_ok=True)
-    SVG_DIR = Path(tempfile.mkdtemp())
-    asyncio.run(run(set(args.shots)))
+    with tempfile.TemporaryDirectory() as work:  # removed afterwards: /tmp is often in RAM
+        os.environ["XDG_CONFIG_HOME"] = str(Path(work) / "config")  # no personal settings in the pictures
+        SVG_DIR = Path(work)
+        asyncio.run(run(set(args.shots)))
 
 
 if __name__ == "__main__":

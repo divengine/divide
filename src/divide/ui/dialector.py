@@ -68,21 +68,21 @@ def _verdict_text(verdict, tags: dict[str, str], section: dx.Section | None = No
     if verdict.reason:
         return f"[!] Div: {verdict.reason}", True
     if verdict.translated is None:
-        return "Div: valid ✓", False
+        return "Div: valid √", False
     diffs = dx.differences(tags, verdict.translated)
     if section is not None:
         mine = next((d for d in diffs if d.section == section.title), None)
         if mine is None:
-            return "Div: valid ✓ · reads this section back exactly", False
+            return "Div: valid √ · reads this section back exactly", False
         return f"Div reads line {mine.line} otherwise: {mine.read.strip()}", True
     total = len(dx.SECTIONS)
     if not diffs:
-        return f"Div: valid ✓\nIt reads all {total} sections of the example back exactly.", False
+        return f"Div: valid √\nIt reads all {total} sections of the example back exactly.", False
     d = diffs[0]
     more = f" (+{len(diffs) - 1} more)" if len(diffs) > 1 else ""
     return (
-        f"Div: valid ✓ · reads {total - len(diffs)}/{total} sections back\n"
-        f"≠ {d.section}{more}, line {d.line}:\n"
+        f"Div: valid √ · reads {total - len(diffs)}/{total} sections back\n"
+        f"!= {d.section}{more}, line {d.line}:\n"
         f"wrote {d.wrote.strip()}\nread  {d.read.strip()}"
     ), True
 
@@ -264,7 +264,7 @@ class DialectorWindow(_TVWindow):
         rows = []
         for section in dx.SECTIONS:
             n = dx.changed_in(section, self.tags)
-            mark = "!" if bad in section.keys else "≠" if section.title in misread else ("•" if n else " ")
+            mark = "!" if bad in section.keys else "≈" if section.title in misread else ("•" if n else " ")
             count = f"{n}/{len(section.keys)}" if n else f"  {len(section.keys)}"
             rows.append(f"{mark} {section.title:<31.31}{count:>6}")
         return rows

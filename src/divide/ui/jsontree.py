@@ -43,7 +43,7 @@ def scalar_text(value: Any) -> Text:
     if isinstance(value, Ref):
         return Text(str(value), style=_style("json.ref"))
     if isinstance(value, str):
-        shown = value if len(value) <= MAX_PREVIEW else value[: MAX_PREVIEW - 1] + "…"
+        shown = value if len(value) <= MAX_PREVIEW else value[: MAX_PREVIEW - 3] + "..."
         return Text(divjson.dumps(shown), style=_style("json.string"))
     if isinstance(value, (dict, list)):
         return container_preview(value)
@@ -51,14 +51,14 @@ def scalar_text(value: Any) -> Text:
 
 
 def container_preview(value: dict | list) -> Text:
-    """``{name: "Potato", price: 1.5, …}`` / ``[1, 2, …]`` cut to a readable width."""
+    """``{name: "Potato", price: 1.5, ...}`` / ``[1, 2, ...]`` cut to a readable width."""
     is_dict = isinstance(value, dict)
     punct = _style("json.punct")
     text = Text("{" if is_dict else "[", style=punct)
     items = list(value.items()) if is_dict else list(enumerate(value))
     for i, (key, child) in enumerate(items):
         if text.cell_len > MAX_PREVIEW:
-            text.append("…", style=punct)
+            text.append("...", style=punct)
             break
         if i:
             text.append(", ", style=punct)
@@ -148,6 +148,8 @@ class EditItemDialog(_Dialog):
 
 
 class JsonTree(Tree[Path_], TVViewMixin):
+    ICON_NODE = "► "  # Turbo Vision's own (CP437); Textual's ▶ is not
+    ICON_NODE_EXPANDED = "▼ "
     DEFAULT_CSS = """
     JsonTree {
         background: $window-content-background;

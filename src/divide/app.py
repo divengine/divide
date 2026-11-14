@@ -22,6 +22,17 @@ from textual_vision.events import CommandMessage
 from textual_vision.menus import Menu, MenuBar, MenuItem, Separator, SubMenu
 from textual_vision.status_line import StatusDef, StatusItem, StatusLine
 from textual.widgets.text_area import Selection
+from textual.scrollbar import ScrollBar, ScrollBarRender
+
+
+class CellScrollBarRender(ScrollBarRender):
+    """Thumbs in whole cells, as Turbo Vision's: Textual's eighths (▁▂▃ ▉▊▋) are not CP437."""
+
+    VERTICAL_BARS = [" "]
+    HORIZONTAL_BARS = [" "]
+
+
+ScrollBar.renderer = CellScrollBarRender  # the way Textual documents to change every scrollbar
 from textual_vision.window import Window
 
 from divide import __version__
@@ -1210,7 +1221,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
             return
         template, engine, code, data_path, data = inputs
         try:
-            with self.busy(f"Rendering {template.name}…"):
+            with self.busy(f"Rendering {template.name}..."):
                 job = render(engine, template, code, data, cwd=self.root)
                 if progress:
                     dialog = ProgressDialog("Rendering", [

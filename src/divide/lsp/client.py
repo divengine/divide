@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -63,6 +66,7 @@ class LspSession:
         self.texts: dict[Path, str] = {}
         self.ready = False
         self.failed: str | None = None
+        self.temp: Path | None = None  # the server's TMPDIR (see server_temp_dir)
         self.stderr: list[str] = []
         self._register()
 
@@ -124,8 +128,9 @@ class LspSession:
 
     async def start(self, timeout: float = 30.0) -> bool:
         """Start the server and initialize it; False (and ``failed``) when it does not answer."""
+        self.temp = server_temp_dir()
         try:
-            await self.client.start_io(*self.command, cwd=str(self.root))
+            await self.client.start_io(*self.command, cwd=str(self.root), env={**os.environ, "TMPDIR": str(self.temp)})
         except OSError as exc:
             self.failed = f"cannot start {self.command[0]}: {exc.strerror or exc}"
             return False
@@ -207,6 +212,9 @@ class LspSession:
             await asyncio.wait_for(self.client.stop(), 2)
         except Exception:
             pass
+        if self.temp is not None:
+            shutil.rmtree(self.temp, ignore_errors=True)
+            self.temp = None
 
     # ------------------------------------------------------------ documents
     def open(self, path: Path, text: str, language: str) -> None:
@@ -347,3 +355,35 @@ def diagnostics_in(text: str, items: list[types.Diagnostic], source: str) -> lis
         out.append(ServerDiagnostic(start, end, "error" if severity == types.DiagnosticSeverity.Error else "warning",
                                     f"{d.message} ({label})"))
     return out
+
+
+# ------------------------------------------------------------ temp files
+# A PHAR server (phpactor) unpacks itself into the temp directory, about 14 MB,
+# and PHP deletes that copy only when it exits normally: killed while starting,
+# or with the terminal or the SSH connection gone, it stays. In /tmp (often a
+# tmpfs, in RAM) the copies add up. So each server gets a temp directory of
+# its own, on disk, removed when it stops; those of divides no longer running
+# are removed when the next server starts.
+def temp_root() -> Path:
+    base = os.environ.get("XDG_CACHE_HOME") or str(Path.home() / ".cache")
+    return Path(base) / "divide" / "tmp"
+
+
+def _alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def server_temp_dir() -> Path:
+    root = temp_root()
+    root.mkdir(parents=True, exist_ok=True)
+    for old in root.iterdir():
+        pid = old.name.split("-", 1)[0]
+        if pid.isdigit() and int(pid) != os.getpid() and not _alive(int(pid)):
+            shutil.rmtree(old, ignore_errors=True)
+    return Path(tempfile.mkdtemp(prefix=f"{os.getpid()}-", dir=root))
