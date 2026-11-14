@@ -115,6 +115,18 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 | **Del** | remove the watch under the cursor |
 | **Enter** (Call stack) | show that call; Watches and Evaluate look from there |
 
+## Render trace window
+
+| Key | Action |
+|---|---|
+| **↑ / ↓** | previous / next row |
+| **F8** | next row of the same parse (over sub-parses) |
+| **F7** | next row (into sub-parses) |
+| **Shift+F8** | out to the parse that started this one |
+| **Space** | the template before / after the mutation |
+
+See [[Render Trace]].
+
 ## Help window
 
 | Key | Action |

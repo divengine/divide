@@ -75,6 +75,7 @@ from divide.ui import icons as icons_mod
 from divide.ui.lsp import LspMixin
 from divide.ui.progress import ProgressDialog, ProgressScreen, run_with_progress
 from divide.ui.runner import CallStackWindow, RunMixin, WatchesWindow
+from divide.ui.tracer import TraceMixin, TraceWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide import lsp
@@ -137,6 +138,7 @@ CM_ADD_WATCH = Command.USER + 87  # Ctrl+F7
 CM_WATCHES = Command.USER + 88
 CM_CALL_STACK = Command.USER + 89  # Ctrl+F3
 CM_XDEBUG = Command.USER + 90
+CM_TRACE_RENDER = Command.USER + 91
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -265,7 +267,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
+class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
@@ -400,6 +402,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
                     Separator(),
                     MenuItem("~A~dd watch...", CM_ADD_WATCH, "Ctrl+F7"),
                     MenuItem("Toggle ~b~reakpoint", CM_BREAKPOINT, "Ctrl+F8"),
+                    Separator(),
+                    MenuItem("~R~ender trace", CM_TRACE_RENDER),
                 ),
                 SubMenu(
                     "~W~indow",
@@ -799,6 +803,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
                 await self.web_server_command()
             case _ if command == CM_XDEBUG:
                 await self.choose_xdebug()
+            case _ if command == CM_TRACE_RENDER:
+                await self.trace_render_command()
             case _ if command == CM_OUTPUT:
                 output = self.output_window()
                 if output is not None:
@@ -1182,26 +1188,10 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
             # code alone, but its includes and data file are found from where it lives.
             await self.run_dialog(information("Render", SAVE_FIRST))
             return
-        template = self.render_target()
-        if template is None:
-            await self.run_dialog(information("Render", "Open a Div template (.tpl) to render it."))
+        inputs = await self.render_inputs("Render")
+        if inputs is None:
             return
-        engine = find_engine([template.parent, self.root], config.load().get("div_engine"))
-        if engine is None:
-            await self.run_dialog(
-                information(
-                    "Render",
-                    "Div was not found.\n\nInstall it in the project (composer require divengine/div) "
-                    "or set its path in Options > Div engine.",
-                )
-            )
-            return
-        code = self._text_of(template)
-        if code is None:
-            await self.run_dialog(information("Render", f"Cannot read {template.name}."))
-            return
-        data_path = self.data_file_for(template)
-        data = self._text_of(data_path) if data_path.exists() or self.window_for(data_path) else None
+        template, engine, code, data_path, data = inputs
         try:
             with self.busy(f"Rendering {template.name}…"):
                 job = render(engine, template, code, data, cwd=self.root)
@@ -1245,6 +1235,31 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
         self.notify(("Render failed: " if result.fatal else "Rendered ") + summary, timeout=3,
                     severity="error" if result.fatal else "information")
         self.update_status()
+
+    async def render_inputs(self, title: str) -> tuple[Path, Path, str, Path, str | None] | None:
+        """What a render takes: template, engine, the template's text, data file and its text
+        (None after telling why not)."""
+        template = self.render_target()
+        if template is None:
+            await self.run_dialog(information(title, "Open a Div template (.tpl) to render it."))
+            return None
+        engine = find_engine([template.parent, self.root], config.load().get("div_engine"))
+        if engine is None:
+            await self.run_dialog(
+                information(
+                    title,
+                    "Div was not found.\n\nInstall it in the project (composer require divengine/div) "
+                    "or set its path in Options > Div engine.",
+                )
+            )
+            return None
+        code = self._text_of(template)
+        if code is None:
+            await self.run_dialog(information(title, f"Cannot read {template.name}."))
+            return None
+        data_path = self.data_file_for(template)
+        data = self._text_of(data_path) if data_path.exists() or self.window_for(data_path) else None
+        return template, engine, code, data_path, data
 
     @staticmethod
     def _render_verdict(result) -> tuple[str, bool, list[tuple[str, str]]]:
@@ -1486,6 +1501,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
             return "Debugging-PHP"
         if isinstance(active, ServerLogWindow):
             return "Web-Server"
+        if isinstance(active, TraceWindow):
+            return "Render-Trace"
         if isinstance(active, MessagesWindow):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):
@@ -1973,6 +1990,9 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
             return
         if isinstance(active, ProjectWindow):
             status.set_hint(TREE_HINT)
+            return
+        if isinstance(active, TraceWindow):
+            status.set_hint(active.hint())
             return
         if isinstance(active, HelpWindow):
             status.set_hint(HelpWindow.HINT)

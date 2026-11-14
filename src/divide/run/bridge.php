@@ -29,6 +29,14 @@
  *     -> {"translated": "..."}: div::translate(); an empty "from" / "to" is Div's
  *        default dialect, and dialect files are given as text for Div to decode.
  *
+ * With "op": "trace" it renders as above and also records how Div got there:
+ * the reply gains "trace": {"events": [...], "truncated": bool}. Div is not
+ * changed: the template is a subclass of Div whose logger() (called by Div's
+ * log mode, div::logOn(), at every step of its parser) notes the step, the
+ * engine and its parse level, and the template's whole source when it changed
+ * since that engine's last note:
+ *   {"engine": 1, "level": 1, "message": "Parsing conditions...", "src": "..." | null}
+ *
  * Div prints its errors into the output ("[[]]LEVEL: message" in CLI) and
  * dies on fatal ones, so everything is buffered and the reply is written
  * from a shutdown function.
@@ -63,8 +71,12 @@ register_shutdown_function(static function () use (&$messages, &$version, &$repl
         $messages[] = ['level' => 'FATAL', 'text' => $last['message'] . ' (' . basename($last['file']) . ':' . $last['line'] . ')'];
         $fatal = true;
     }
+    $reply = ['output' => $output, 'messages' => $messages, 'fatal' => $fatal, 'version' => $version];
+    if (isset($GLOBALS['divide_trace'])) {
+        $reply['trace'] = $GLOBALS['divide_trace'];
+    }
     fwrite(STDOUT, json_encode(
-        ['output' => $output, 'messages' => $messages, 'fatal' => $fatal, 'version' => $version],
+        $reply,
         JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
     ));
 });
@@ -232,6 +244,69 @@ if ($op === 'resolve') {
     $replied = true;
     fwrite(STDOUT, json_encode(['resolved' => (object) $resolved, 'messages' => $messages, 'version' => $version], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     exit(0);
+}
+
+if ($op === 'trace') {
+    // What Div does, step by step: its own log messages, seen from a subclass.
+    $GLOBALS['divide_trace'] = ['events' => [], 'truncated' => false];
+    $GLOBALS['divide_trace_state'] = ['last' => [], 'bytes' => 0, 'level' => new ReflectionProperty($divClass, '__parse_level')];
+
+    function divide_trace_note($engine, $message)
+    {
+        static $noise = ['Building instance', 'Destroying the instance', 'Template [checksum=', 'Loading the template'];
+        foreach ($noise as $prefix) {
+            if (strpos($message, $prefix) === 0) {
+                return;
+            }
+        }
+        $trace = &$GLOBALS['divide_trace'];
+        $state = &$GLOBALS['divide_trace_state'];
+        if (count($trace['events']) >= 50000) {
+            $trace['truncated'] = true;
+            return;
+        }
+        $id = spl_object_id($engine);  // Div's clones of its auxiliary engine share getId()
+        $src = (string) $engine->__src;
+        $crc = crc32($src);
+        $changed = !isset($state['last'][$id]) || $state['last'][$id] !== $crc;
+        if ($changed && $state['bytes'] + strlen($src) > 64 * 1024 * 1024) {
+            $trace['truncated'] = true;
+            $changed = false;
+        }
+        if ($changed) {
+            $state['last'][$id] = $crc;
+            $state['bytes'] += strlen($src);
+        }
+        $trace['events'][] = [
+            'engine' => $id,
+            'level' => $state['level']->getValue(),
+            'message' => $message,
+            'src' => $changed ? $src : null,
+        ];
+    }
+
+    trait divide_tracing
+    {
+        public function logger($msg, $level = 'INFO')
+        {
+            divide_trace_note($this, (string) $msg);
+        }
+    }
+
+    if ($divClass === 'divengine\\div') {
+        class divide_traced extends \divengine\div
+        {
+            use divide_tracing;
+        }
+    } else {
+        class divide_traced extends \div
+        {
+            use divide_tracing;
+        }
+    }
+    $null = stripos(PHP_OS_FAMILY, 'win') === 0 ? 'NUL' : '/dev/null';
+    $divClass::logOn($null);  // the log file gets only Div's static notes; ours go to the trace
+    $divClass = 'divide_traced';
 }
 
 try {

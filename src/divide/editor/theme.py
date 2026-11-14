@@ -75,6 +75,8 @@ DIV_STYLES: dict[str, Style] = {
     "php.operator": Style(color="#F92672"),
     "diag.error": Style(color="#FFFFFF", bgcolor="#8B1E3F"),
     "dialector.focus": Style(color="#000000", bgcolor="#66D9EF", bold=True),
+    "trace.new": Style(color="#000000", bgcolor="#A6E22E", bold=True),  # what a mutation wrote
+    "trace.old": Style(color="#FFFFFF", bgcolor="#F92672", bold=True),  # what it took away
     "diag.warning": Style(underline=True),
 }
 
@@ -167,5 +169,7 @@ TURBO_STYLES: dict[str, Style] = {
     # Diagnostics, drawn over the syntax colours (Run > Check, Alt+F7/F8).
     "diag.error": Style(color=CGA["white"], bgcolor=CGA["red"]),
     "dialector.focus": Style(color=CGA["black"], bgcolor=CGA["lightcyan"], bold=True),
+    "trace.new": Style(color=CGA["black"], bgcolor=CGA["lightgreen"], bold=True),
+    "trace.old": Style(color=CGA["white"], bgcolor=CGA["red"], bold=True),
     "diag.warning": Style(bgcolor=CGA["brown"]),
 }

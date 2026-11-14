@@ -12,6 +12,7 @@
 * [[Completion]]
 * [[Checking Templates]]
 * [[Rendering]]
+* [[Render Trace]]
 * [[Running PHP]]
 * [[Debugging PHP]]
 * [[Web Server]]

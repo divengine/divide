@@ -413,6 +413,25 @@ async def web():
         writer.close()
         await app.web_stop()
 
+@shot
+async def trace():
+    """Debug > Render trace on the shop: the row where Div decides the condition."""
+    from divide.ui.tracer import TraceWindow
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        app.run_worker(app.trace_render_command())
+        await close_box(pilot, app)
+        await until(pilot, lambda: isinstance(app.active_window(), TraceWindow), tries=200)
+        window = app.active_window()
+        row = next(i for i, m in enumerate(window.rows) if "is true" in m.label)
+        window.list.focus_item(row)
+        await settle(pilot, 6)
+        save(app, "trace")
+        window.toggle_before()
+        await settle(pilot, 6)
+        save(app, "trace-before")
+
 
 async def run(names: set[str]) -> None:
     for fn in SHOTS:

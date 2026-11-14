@@ -31,3 +31,7 @@ One Div behaviour worth knowing: a data file is decoded before any variable exis
 ## Choosing the engine
 
 See [[Installation]]: `DIVIDE_DIV_PHP`, **Options > Div engine…**, or the project's `vendor/`. When Div cannot be found, Ctrl+F9 tells you how to install it.
+
+## How Div got there
+
+**Debug > Render trace** renders the same way and lets you replay every change Div made to the template, step by step, up to the fixed point where nothing changes any more. See [[Render Trace]].
