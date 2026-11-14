@@ -179,7 +179,7 @@ COMMANDS: dict[str, int] = {
     "ADD_WATCH": CM_ADD_WATCH,
     "CALL_STACK": CM_CALL_STACK,
 }
-DEBUG_KEYS = {"TRACE", "STEP", "STEP_OUT", "GOTO_CURSOR"}  # theirs only in PHP (F7 selects all elsewhere)
+DEBUG_KEYS = {"TRACE", "STEP", "STEP_OUT", "GOTO_CURSOR"}  # theirs only in PHP (F7 traces a template's render)
 
 
 class DropMenuBar(MenuBar):
@@ -271,6 +271,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
+    /* Turbo Vision's desktop: 0x71, the ░ pattern blue on light gray (textual-vision draws it on blue) */
+    Background { background: #AAAAAA; color: #0000AA; }
     """
     # Key handling lives in bindings; menu and status line entries only show the keys.
     BINDINGS = [
@@ -360,7 +362,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
                     MenuItem("~C~opy", Command.COPY, "Ctrl+C"),
                     MenuItem("~P~aste", Command.PASTE, "Ctrl+V"),
                     Separator(),
-                    MenuItem("Select ~a~ll", CM_SELECT_ALL, "F7"),
+                    MenuItem("Select ~a~ll", CM_SELECT_ALL),
                     MenuItem("Co~m~plete", CM_COMPLETE, "Ctrl+Space"),
                 ),
                 SubMenu(
@@ -403,7 +405,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
                     MenuItem("~A~dd watch...", CM_ADD_WATCH, "Ctrl+F7"),
                     MenuItem("Toggle ~b~reakpoint", CM_BREAKPOINT, "Ctrl+F8"),
                     Separator(),
-                    MenuItem("~R~ender trace", CM_TRACE_RENDER),
+                    MenuItem("~R~ender trace", CM_TRACE_RENDER, "F7"),
                 ),
                 SubMenu(
                     "~W~indow",
@@ -648,10 +650,16 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
             self.post_message(CommandMessage(COMMANDS[name]))  # type: ignore[arg-type]
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
-        # F7 / F8 / F4 / Shift+F8 are the debugger's in PHP; elsewhere the key goes on (F7 selects all).
+        # F7 / F8 / F4 / Shift+F8 are the debugger's in PHP; in a template F7 traces its render;
+        # elsewhere the key goes on (the trace window's own F7 / F8).
         if action == "command" and parameters and parameters[0] in DEBUG_KEYS:
-            return self.debug_keys_active()
+            return self.debug_keys_active() or (parameters[0] == "TRACE" and self.traces_template())
         return True
+
+    def traces_template(self) -> bool:
+        """F7 in a Div template: Debug > Render trace."""
+        win = self.active_editor()
+        return win is not None and win.editor.lang == "div"
 
     def action_project(self) -> None:
         self.toggle_project()
@@ -781,6 +789,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
                     await self.run_script_command()
                 else:
                     await self.render_template(progress=True)
+            case _ if command == CM_TRACE and not self.wants_run():
+                await self.trace_render_command()
             case _ if command in DEBUG_STEPS:
                 await self.debug_resume(DEBUG_STEPS[command])
             case _ if command == CM_RESET:

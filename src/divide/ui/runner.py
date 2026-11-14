@@ -175,7 +175,7 @@ class RunMixin:
         return win is not None and win.editor.lang == "php"
 
     def debug_keys_active(self) -> bool:
-        """F7 / F8 / F4 belong to the debugger in PHP (elsewhere F7 still selects all)."""
+        """F7 / F8 / F4 belong to the debugger in PHP (in a template F7 is the render trace)."""
         return self.wants_run()
 
     def run_arguments(self, script: Path) -> str:

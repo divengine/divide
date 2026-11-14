@@ -33,7 +33,7 @@
 | **Ctrl+G** | go to line |
 | **Ctrl+Z** / **Ctrl+Y** | undo / redo |
 | **Ctrl+X** / **Ctrl+C** / **Ctrl+V** | cut / copy / paste |
-| **F7** | select all (in PHP: trace into, see below) |
+| **F7** | in a template: the [[Render Trace]]; in PHP: trace into, see below |
 
 ## Debugger (PHP)
 

@@ -260,16 +260,24 @@ async def test_debugger(tmp_path):
         assert "program reset" in app.output_window().summary
 
 
+class AsyncCalls:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def __call__(self) -> None:
+        self.calls += 1
+
+
 async def test_debug_keys_belong_to_php(tmp_path):
     page = tmp_path / "a.tpl"
     page.write_text("hello\nworld\n")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
-        await pilot.press("f7")  # in a template F7 still selects all
+        app.trace_render_command = traced = AsyncCalls()  # in a template F7 is the render trace
+        await pilot.press("f7")
         await settle(pilot)
-        assert app.active_editor().editor.selected_text == "hello\nworld\n"
-        assert app.session is None
+        assert traced.calls == 1 and app.session is None
 
 
 @needs_xdebug

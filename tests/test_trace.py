@@ -145,3 +145,22 @@ def app_command(name: str) -> int:
     import divide.app as module
 
     return getattr(module, name)
+
+
+@needs_div
+async def test_f7_traces_a_template(tmp_path, monkeypatch):
+    monkeypatch.setenv("DIVIDE_DIV_PHP", ENGINE)
+    page = make_page(tmp_path)
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        for _ in range(6):
+            await pilot.pause()
+        await pilot.press("f7")
+        for _ in range(200):
+            if isinstance(app.active_window(), TraceWindow):
+                break
+            await pilot.pause(0.05)
+        window = app.active_window()
+        assert isinstance(window, TraceWindow) and window.list.focused == 0
+        await pilot.press("f7")  # in the trace window F7 is its own: the next row
+        assert app.active_window() is window and window.list.focused == 1

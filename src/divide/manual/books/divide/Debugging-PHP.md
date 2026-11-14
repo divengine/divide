@@ -17,7 +17,7 @@ Nothing else needs setting up. divide starts the script with Xdebug in debug mod
 
 ## Keys
 
-These keys belong to the debugger in PHP files. In templates F7 still selects all.
+These keys belong to the debugger in PHP files. In templates F7 opens the [[Render Trace]].
 
 | Key | Menu | Action |
 |---|---|---|

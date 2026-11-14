@@ -1,6 +1,6 @@
 # Render Trace
 
-**Debug > Render trace** renders the template as [[Ctrl+F9|Rendering]] does, and keeps every change Div made on the way, so you can replay how the template became its output.
+**Debug > Render trace** (**F7** in a template) renders the template as [[Ctrl+F9|Rendering]] does, and keeps every change Div made on the way, so you can replay how the template became its output.
 
 ![the row where Div decides a condition: what stays, in green](images/trace.png)
 
