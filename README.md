@@ -38,6 +38,11 @@ through the real Div engine, side by side with the code.
 - **PHP next to the templates.** `.php` files are highlighted with
   tree-sitter's PHP grammar and checked by PHP itself (`php -l`) as you type.
   Ctrl+Enter on `new div('page.tpl')` opens the template.
+- **Run and debug PHP.** Ctrl+F9 runs the script under a Turbo Pascal–style
+  progress box (renders and checks get it too); its output goes to the Output
+  window and PHP's errors to the Messages window, with their place. With
+  Xdebug, F7 / F8 step through the code with breakpoints, watches, evaluate
+  and the call stack.
 - **Language servers.** With phpactor or intelephense (in the project or the
   PATH), PHP gets completion (with the classes of `vendor/`, like Div's, and
   their `use` lines added for you, and the documentation of each item),
@@ -71,7 +76,8 @@ Rendering and include checks need `php` and Div in your project
 | `Ctrl+B` | project window: `Ins` new file, `F7` new folder, `F2` rename, `Del` delete |
 | `Ctrl+Space` | completion |
 | `Alt+F9` · `Alt+F8` | check the template · next error |
-| `Ctrl+F9` | render with its data (`page.tpl` + `page.json`) |
+| `Ctrl+F9` | render the template with its data (`page.tpl` + `page.json`), or run the PHP script |
+| `F8` · `F7` · `Ctrl+F8` | PHP debugger: step over · trace into · breakpoint |
 | `Ctrl+T` | data tree ⇄ code |
 | `Ctrl+Enter` | go to the included template |
 | `Alt+T` | Tools: Dialector, Translate a template |
@@ -91,9 +97,13 @@ references.
 - [Getting Started](https://github.com/divengine/divide/wiki/Getting-Started)
 - [The Desktop](https://github.com/divengine/divide/wiki/The-Desktop)
 - [Editing Templates](https://github.com/divengine/divide/wiki/Editing-Templates)
+- [Editing PHP](https://github.com/divengine/divide/wiki/Editing-PHP)
+- [Language Servers](https://github.com/divengine/divide/wiki/Language-Servers)
 - [Completion](https://github.com/divengine/divide/wiki/Completion)
 - [Checking Templates](https://github.com/divengine/divide/wiki/Checking-Templates)
 - [Rendering](https://github.com/divengine/divide/wiki/Rendering)
+- [Running PHP](https://github.com/divengine/divide/wiki/Running-PHP)
+- [Debugging PHP](https://github.com/divengine/divide/wiki/Debugging-PHP)
 - [Data Files](https://github.com/divengine/divide/wiki/Data-Files)
 - [Project Window](https://github.com/divengine/divide/wiki/Project-Window)
 - [Dialector](https://github.com/divengine/divide/wiki/Dialector)
@@ -108,7 +118,7 @@ Div can take a template as a string, without a file, but then it has no folder.
 Its includes would not resolve the way they will in production, and divide
 would not know its data file. So **templates are saved before Div sees them**.
 An untitled template is still highlighted, completed and checked, but its
-includes are not resolved, and Render and Go to include ask you to save it
+includes are not resolved, and Ctrl+F9 and Go to include ask you to save it
 first. Once a template has a file, its unsaved edits are always what Div gets.
 
 ## Development

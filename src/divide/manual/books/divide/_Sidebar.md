@@ -12,6 +12,8 @@
 * [[Completion]]
 * [[Checking Templates]]
 * [[Rendering]]
+* [[Running PHP]]
+* [[Debugging PHP]]
 * [[Data Files]]
 * [[Project Window]]
 * [[Dialector]]

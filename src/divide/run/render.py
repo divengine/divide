@@ -124,6 +124,10 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
         proc.kill()
         await proc.wait()
         raise RenderError(f"php took longer than {timeout:.0f}s and was stopped") from None
+    except asyncio.CancelledError:  # stopped from the progress box
+        proc.kill()
+        await asyncio.shield(proc.wait())
+        raise
     try:
         reply = json.loads(out.decode("utf-8", "replace"))
     except ValueError:

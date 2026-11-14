@@ -72,6 +72,8 @@ async def test_php_editor(tmp_path: Path):
         assert any(name == "diag.error" for row in ed._highlights.values() for *_, name in row)
         await pilot.press("alt+f9")
         await settle(pilot)
+        await pilot.press("enter")  # the box: "Errors: press any key"
+        await settle(pilot)
         messages = app.messages_window()
         assert isinstance(messages, MessagesWindow)
         assert any("Page.php(9,1): Error: syntax error" in item.text for item in messages.items)

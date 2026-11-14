@@ -15,10 +15,11 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **File** | New, Open (F3), Save (F2), Save as, Save all, Exit (Alt+X) |
 | **Edit** | Undo, Redo, Cut, Copy, Paste, Select all, Complete (Ctrl+Space) |
 | **Search** | Find, Replace, Search again, Go to line, Go to included template, Previous / Next error |
-| **Run** | Render (Ctrl+F9), Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
+| **Run** | Run (Ctrl+F9: render a template, run a PHP script), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
+| **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]] |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | colour palette, plain symbols or Nerd Font icons, language servers, Div engine |
+| **Options** | colour palette, plain symbols or Nerd Font icons, language servers, Div engine, Xdebug |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows
@@ -31,7 +32,7 @@ Every window has a number on its top border (**Alt+1…9** goes to it) and, for 
 - Drag a window by its title, resize it from a bottom corner, click `[■]` to close, `[▲]` to zoom.
 - **Window > Tile** arranges every window in a grid; **Cascade** stacks them.
 
-Kinds of windows: editors (templates, data, any text file), the [[Project Window]], the Output of a render, the Messages window, the data tree, the [[Dialector]] and the [[Help]] window.
+Kinds of windows: editors (templates, data, PHP, any text file), the [[Project Window]], the Output of a render or a script, the Messages window, the Watches and Call stack windows of the [[debugger|Debugging PHP]], the data tree, the [[Dialector]] and the [[Help]] window.
 
 ## Status line
 
@@ -39,7 +40,8 @@ The left side shows the keys that matter. The right side tells you about the win
 
 - in a template, `Div` (plus the dialect's name when it is not the default), or the error or warning under the cursor, or the count of problems;
 - in a data file, `JSON ok` or the JSON error with its line and column;
-- in the Output window, which template and data file were rendered, and how long it took;
+- in the Output window, which template and data file were rendered, or which script ran and its exit code, and how long it took;
+- while debugging, where the script is paused and the debugger's keys;
 - in the project window, the dialector and the help window, their keys;
 - while something runs in the background (a render, for example), a turning spinner `⠋` and what is running.
 

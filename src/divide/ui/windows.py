@@ -223,6 +223,38 @@ class EditorView(DivEditor, TVViewMixin):
         self._doc: InfoPopup | None = None  # the documentation of the selected completion
         self._typed = False  # the last change came from a key typed here
         self._completion_pending = False
+        self.breakpoint_rows: set[int] = set()  # debugger marks, 0-based rows
+        self.execution_row: int | None = None
+
+    # ------------------------------------------------------------ debugger
+    # Turbo Pascal's bars: breakpoints in red, the line about to run in cyan.
+    BREAKPOINT_STYLE = Style(color="bright_white", bgcolor="red")
+    EXECUTION_STYLE = Style(color="black", bgcolor="cyan")
+
+    def set_debug_marks(self, breakpoints: set[int], execution: int | None) -> None:
+        if breakpoints != self.breakpoint_rows or execution != self.execution_row:
+            self.breakpoint_rows = set(breakpoints)
+            self.execution_row = execution
+            self.refresh()
+
+    def render_line(self, y: int) -> Strip:
+        strip = super().render_line(y)
+        if not self.breakpoint_rows and self.execution_row is None:
+            return strip
+        try:
+            row = self.wrapped_document._offset_to_line_info[y + self.scroll_offset.y][0]
+        except (IndexError, TypeError):
+            return strip
+        if row == self.execution_row:
+            style = self.EXECUTION_STYLE
+        elif row in self.breakpoint_rows:
+            style = self.BREAKPOINT_STYLE
+        else:
+            return strip
+        gutter = self.gutter_width
+        code = strip.crop(gutter, strip.cell_length)
+        code = Strip(list(Segment.apply_style(list(code), post_style=style)), code.cell_length)
+        return Strip.join([strip.crop(0, gutter), code])
 
     # ------------------------------------------------------------ completion
     @property

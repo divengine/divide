@@ -7,6 +7,7 @@
 | **Python 3.11+** | divide itself |
 | **PHP 8** (the `php` command) | rendering, and checking includes |
 | **Div** (`divengine/div`) | rendering, and checking includes |
+| **Xdebug** (optional) | the PHP [[debugger|Debugging PHP]] |
 
 Editing, highlighting, completion and most checks work with Python alone. Everything that needs to know what Div would do (rendering, resolving `{% includes %}`) asks the real engine, so it needs PHP and Div.
 
@@ -51,7 +52,7 @@ divide finds the engine by itself, in this order:
 2. the path set in **Options > Div engine…** (saved in `~/.config/divide/config.json`);
 3. a `vendor/autoload.php` with `vendor/divengine/div`, looking upwards from the template and from the project folder.
 
-If none is found, **Run > Render** explains what to do, and include checks are simply skipped.
+If none is found, **Ctrl+F9** on a template explains what to do, and include checks are simply skipped.
 
 ## Start it
 

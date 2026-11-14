@@ -14,7 +14,7 @@ divide does not judge PHP code: PHP does. When you stop typing for a moment, div
 
 - the line PHP points at is painted red;
 - the status line gives PHP's message;
-- **Alt+F9** lists it in the Messages window, **Enter** jumps to it, **Alt+F8** / **Alt+F7** walk the errors, as with templates (see [[Checking Templates]]).
+- **Alt+F9** asks PHP again under the progress box and lists the error in the Messages window, **Enter** jumps to it, **Alt+F8** / **Alt+F7** walk the errors, as with templates (see [[Checking Templates]]).
 
 PHP stops at the first syntax error, so there is one at a time. `php` must be in the `PATH`; without it the status line says the file is not checked.
 
@@ -25,5 +25,9 @@ Put the cursor on a string that names a file and press **Ctrl+Enter** (or Ctrl+c
 ## With a language server
 
 With [phpactor](https://phpactor.readthedocs.io) or [intelephense](https://intelephense.com) installed, the PHP editor completes functions, classes and methods with their documentation, shows the signature of the call you are typing, shows what a symbol is (**Ctrl+F1**), goes to its definition (**Ctrl+Enter**) and adds the server's warnings to PHP's errors. See [[Language Servers]].
+
+## Running and debugging
+
+**Ctrl+F9** runs the script and shows what it printed, PHP's errors with their place (see [[Running PHP]]). **F8**, **F7** and **Ctrl+F8** step through it with Xdebug, with breakpoints, watches and the call stack (see [[Debugging PHP]]).
 
 Everything else is the same editor as for templates: find and replace, the editing keys, undo (see [[Editing Templates]]).

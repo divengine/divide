@@ -5,6 +5,7 @@ from divide.lang.div.diagnostics import include_at, include_paths, check, line_c
 from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect
 from divide.lang.div.lexer import Lexer
 from divide.run.render import IncludeTarget
+from divide.ui.progress import ProgressScreen
 from divide.ui.windows import EditorWindow, MessagesWindow
 
 
@@ -85,8 +86,13 @@ async def test_check_messages_and_navigation(tmp_path):
         # error spans are painted over the syntax colours
         assert any(name == "diag.error" for _, _, name in win.editor._highlights[1])
 
-        await pilot.press("alt+f9")  # Run > Check
+        await pilot.press("alt+f9")  # Run > Check: the box says so, the Messages window is behind it
         await settle(pilot)
+        assert isinstance(app.screen, ProgressScreen) and app.screen.dialog.verdict == "Errors: press any key"
+        assert app.screen.dialog.rows["Errors"] == "2"
+        await pilot.press("enter")
+        await settle(pilot)
+        assert not isinstance(app.screen, ProgressScreen)
         messages = app.messages_window()
         assert isinstance(messages, MessagesWindow)
         assert [i.text for i in messages.items][0].startswith("page.tpl(2,1): Error: loop [$items]")

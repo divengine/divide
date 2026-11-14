@@ -22,7 +22,7 @@ divide checks your template on every edit, with its dialect, and tells you what 
 
 - In the editor, the problem is painted where it is.
 - The **status line** shows the message under the cursor, or the counts: `Div · 2 errors, 1 warning (Alt+F8)`.
-- **Alt+F9** (Run > Check) opens the **Messages** window at the bottom, Turbo Pascal style: `checkout.tpl(3,1): Error: loop [$cart.lines] is never closed with [/$cart.lines]`. It follows the active template while you type, and the messages of the last render are listed below. **Enter** or a double click jumps to the place.
+- **Alt+F9** (Run > Check) checks the file under a progress box (the file, its language, its lines, then the errors and warnings found; any key closes it) and opens the **Messages** window at the bottom, Turbo Pascal style: `checkout.tpl(3,1): Error: loop [$cart.lines] is never closed with [/$cart.lines]`. It follows the active template while you type, and the messages of the last render are listed below. **Enter** or a double click jumps to the place.
 - **Alt+F8** / **Alt+F7** jump to the next / previous problem, even with the Messages window closed.
 
 ## Includes are resolved by Div

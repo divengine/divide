@@ -444,9 +444,11 @@ class InputDialog(_Dialog):
         hint: str = "",
         select: tuple[int, int] | None = None,
         browse: tuple[str, Path] | None = None,
+        allow_empty: bool = False,
     ) -> None:
         super().__init__(title=title)
         self.browse = browse
+        self.allow_empty = allow_empty
         self.input = InputLine(max_len=1024)
         self.input.data = text
         self.label = label
@@ -490,7 +492,7 @@ class InputDialog(_Dialog):
         if command != Command.OK:
             return True
         self.value = self.input.data.strip()
-        return bool(self.value)
+        return bool(self.value) or self.allow_empty
 
 
 def confirm(title: str, text: str) -> MessageBox:

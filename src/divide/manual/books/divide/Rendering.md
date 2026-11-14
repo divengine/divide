@@ -1,8 +1,14 @@
 # Rendering
 
-**Ctrl+F9** (Run > Render) renders the template through PHP and the real Div engine, and shows the result next to the code. While PHP works, a spinner turns in the status line.
+**Ctrl+F9** (Run > Run) in a template renders it through PHP and the real Div engine, and shows the result next to the code. (In a PHP script the same key runs the script: see [[Running PHP]].)
 
 ![template and output side by side](images/hero.png)
+
+## The progress box
+
+While Div works, a box like Turbo Pascal's *Compiling* box shows the template, the data file, the engine and a clock; big templates can take a while, and **Esc** stops the render. When it ends, the box gives the verdict, **Success**, **Warnings** or **Errors**, with Div's version, the size of the output and the number of messages. The output is already behind it; any key closes the box, and a success closes by itself after a moment.
+
+![the progress box after a render](images/render-box.png)
 
 ## What is rendered
 
@@ -14,7 +20,7 @@ The first render places the template on the left and the Output on the right. Th
 
 ## Rendering again
 
-While the Output window is open, **saving the template or its data re-renders** in the background, without moving your focus. **Alt+F5** brings the Output window back; if there is none, it renders.
+While the Output window is open, **saving the template or its data re-renders** in the background, without moving your focus and without the box (a spinner turns in the status line). **Alt+F5** brings the Output window back; if there is none, it renders.
 
 ## Messages
 
@@ -24,4 +30,4 @@ One Div behaviour worth knowing: a data file is decoded before any variable exis
 
 ## Choosing the engine
 
-See [[Installation]]: `DIVIDE_DIV_PHP`, **Options > Div engine…**, or the project's `vendor/`. When Div cannot be found, Render tells you how to install it.
+See [[Installation]]: `DIVIDE_DIV_PHP`, **Options > Div engine…**, or the project's `vendor/`. When Div cannot be found, Ctrl+F9 tells you how to install it.

@@ -73,6 +73,9 @@ from divide.lang import divjson
 from divide import lang as languages
 from divide.ui import icons as icons_mod
 from divide.ui.lsp import LspMixin
+from divide.ui.progress import ProgressDialog, ProgressScreen, run_with_progress
+from divide.ui.runner import CallStackWindow, RunMixin, WatchesWindow
+from divide.run.script import size_text
 from divide import lsp
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
@@ -118,6 +121,21 @@ CM_HELP_BACK = Command.USER + 27
 CM_HELP_BOOKS = Command.USER + 28
 CM_ICONS = Command.USER + 29  # info: icons mode
 CM_LSP_SERVERS = Command.USER + 30
+CM_RUN_ARGS = Command.USER + 31
+CM_RUN_TERMINAL = Command.USER + 32
+# The debugger (Turbo Pascal's keys).
+CM_TRACE = Command.USER + 80  # F7
+CM_STEP = Command.USER + 81  # F8
+CM_STEP_OUT = Command.USER + 82  # Shift+F8
+CM_GOTO_CURSOR = Command.USER + 83  # F4
+CM_RESET = Command.USER + 84  # Ctrl+F2
+CM_BREAKPOINT = Command.USER + 85  # Ctrl+F8
+CM_EVALUATE = Command.USER + 86  # Ctrl+F4
+CM_ADD_WATCH = Command.USER + 87  # Ctrl+F7
+CM_WATCHES = Command.USER + 88
+CM_CALL_STACK = Command.USER + 89  # Ctrl+F3
+CM_XDEBUG = Command.USER + 90
+DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -147,7 +165,17 @@ COMMANDS: dict[str, int] = {
     "HELP_INDEX": CM_HELP_INDEX,
     "HELP_SEARCH": CM_HELP_SEARCH,
     "HELP_BACK": CM_HELP_BACK,
+    "TRACE": CM_TRACE,
+    "STEP": CM_STEP,
+    "STEP_OUT": CM_STEP_OUT,
+    "GOTO_CURSOR": CM_GOTO_CURSOR,
+    "RESET": CM_RESET,
+    "BREAKPOINT": CM_BREAKPOINT,
+    "EVALUATE": CM_EVALUATE,
+    "ADD_WATCH": CM_ADD_WATCH,
+    "CALL_STACK": CM_CALL_STACK,
 }
+DEBUG_KEYS = {"TRACE", "STEP", "STEP_OUT", "GOTO_CURSOR"}  # theirs only in PHP (F7 selects all elsewhere)
 
 
 class DropMenuBar(MenuBar):
@@ -235,7 +263,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ExplorerMixin, LspMixin, Application):
+class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
@@ -255,7 +283,17 @@ class Divide(ExplorerMixin, LspMixin, Application):
         Binding("ctrl+r", "command('REPLACE')", "Replace", show=False),
         Binding("ctrl+l", "command('SEARCH_AGAIN')", "Search again", show=False),
         Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
-        Binding("ctrl+f9", "command('RENDER')", "Render", show=False, priority=True),
+        Binding("ctrl+f9", "command('RENDER')", "Run", show=False, priority=True),
+        # The debugger, as in Turbo Pascal.
+        Binding("f7", "command('TRACE')", "Trace into", show=False, priority=True),
+        Binding("f8", "command('STEP')", "Step over", show=False, priority=True),
+        Binding("shift+f8", "command('STEP_OUT')", "Step out", show=False, priority=True),
+        Binding("f4", "command('GOTO_CURSOR')", "Go to cursor", show=False, priority=True),
+        Binding("ctrl+f2", "command('RESET')", "Program reset", show=False, priority=True),
+        Binding("ctrl+f8", "command('BREAKPOINT')", "Breakpoint", show=False, priority=True),
+        Binding("ctrl+f4", "command('EVALUATE')", "Evaluate", show=False, priority=True),
+        Binding("ctrl+f7", "command('ADD_WATCH')", "Add watch", show=False, priority=True),
+        Binding("ctrl+f3", "command('CALL_STACK')", "Call stack", show=False, priority=True),
         Binding("alt+f5", "command('OUTPUT')", "Output", show=False, priority=True),
         Binding("ctrl+t", "command('DATA_TREE')", "Data tree", show=False, priority=True),
         # Turbo Pascal: Alt+F9 compile, Alt+F8 / Alt+F7 next / previous message.
@@ -274,6 +312,7 @@ class Divide(ExplorerMixin, LspMixin, Application):
     def __init__(self, root: Path, files: list[Path], *, palette: str = DEFAULT_PALETTE) -> None:
         super().__init__(theme=palette)
         self._lsp_init()
+        self._run_init()
         self.root = root
         self.initial_files = files
         self._untitled = 0
@@ -333,13 +372,30 @@ class Divide(ExplorerMixin, LspMixin, Application):
                 ),
                 SubMenu(
                     "~R~un",
-                    MenuItem("~R~ender", CM_RENDER, "Ctrl+F9"),
+                    MenuItem("~R~un", CM_RENDER, "Ctrl+F9"),
+                    MenuItem("~S~tep over", CM_STEP, "F8"),
+                    MenuItem("~T~race into", CM_TRACE, "F7"),
+                    MenuItem("Step o~u~t", CM_STEP_OUT, "Shift+F8"),
+                    MenuItem("~G~o to cursor", CM_GOTO_CURSOR, "F4"),
+                    MenuItem("Progra~m~ reset", CM_RESET, "Ctrl+F2"),
+                    MenuItem("~P~arameters...", CM_RUN_ARGS),
+                    MenuItem("Run in termi~n~al", CM_RUN_TERMINAL),
+                    Separator(),
                     MenuItem("~C~heck", CM_CHECK, "Alt+F9"),
                     MenuItem("~O~utput", CM_OUTPUT, "Alt+F5"),
                     Separator(),
                     MenuItem("~D~ata file...", CM_DATA_FILE),
                     MenuItem("~E~dit data", CM_EDIT_DATA),
-                    MenuItem("Data ~t~ree", CM_DATA_TREE, "Ctrl+T"),
+                    MenuItem("D~a~ta tree", CM_DATA_TREE, "Ctrl+T"),
+                ),
+                SubMenu(
+                    "~D~ebug",
+                    MenuItem("~E~valuate...", CM_EVALUATE, "Ctrl+F4"),
+                    MenuItem("~W~atches", CM_WATCHES),
+                    MenuItem("~C~all stack", CM_CALL_STACK, "Ctrl+F3"),
+                    Separator(),
+                    MenuItem("~A~dd watch...", CM_ADD_WATCH, "Ctrl+F7"),
+                    MenuItem("Toggle ~b~reakpoint", CM_BREAKPOINT, "Ctrl+F8"),
                 ),
                 SubMenu(
                     "~W~indow",
@@ -370,6 +426,7 @@ class Divide(ExplorerMixin, LspMixin, Application):
                     Separator(),
                     MenuItem("~L~anguage servers...", CM_LSP_SERVERS),
                     MenuItem("~D~iv engine...", CM_DIV_ENGINE),
+                    MenuItem("~X~debug...", CM_XDEBUG),
                 ),
                 SubMenu(
                     "~H~elp",
@@ -482,6 +539,7 @@ class Divide(ExplorerMixin, LspMixin, Application):
         self._relabel(win)
         self._insert(win)
         self.call_after_refresh(self.resolve_includes_of, win.editor)
+        self.call_after_refresh(self.refresh_debug_marks)
         return win
 
     def new_file(self, text: str = "", *, plain: bool = False) -> EditorWindow:
@@ -578,8 +636,14 @@ class Divide(ExplorerMixin, LspMixin, Application):
     # ---------------------------------------------------------- commands
     def action_command(self, name: str) -> None:
         # Priority bindings fire even under a dialog; the dialog owns the keyboard then.
-        if not isinstance(self.screen, DialogScreen):
+        if not isinstance(self.screen, (DialogScreen, ProgressScreen)):
             self.post_message(CommandMessage(COMMANDS[name]))  # type: ignore[arg-type]
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        # F7 / F8 / F4 / Shift+F8 are the debugger's in PHP; elsewhere the key goes on (F7 selects all).
+        if action == "command" and parameters and parameters[0] in DEBUG_KEYS:
+            return self.debug_keys_active()
+        return True
 
     def action_project(self) -> None:
         self.toggle_project()
@@ -607,6 +671,8 @@ class Divide(ExplorerMixin, LspMixin, Application):
                     if not await self.confirm_close(w):
                         return
                 await self.lsp_stop_all()
+                if self.session is not None:
+                    await self.session.stop()
                 self.exit()
             case Command.NEW:
                 self.new_file()
@@ -702,7 +768,30 @@ class Divide(ExplorerMixin, LspMixin, Application):
                 else:
                     await self.search(editor, first=False)
             case _ if command == CM_RENDER:
-                await self.render_template()
+                if self.wants_run():
+                    await self.run_script_command()
+                else:
+                    await self.render_template(progress=True)
+            case _ if command in DEBUG_STEPS:
+                await self.debug_resume(DEBUG_STEPS[command])
+            case _ if command == CM_RESET:
+                await self.debug_reset()
+            case _ if command == CM_BREAKPOINT:
+                await self.toggle_breakpoint()
+            case _ if command == CM_EVALUATE:
+                await self.evaluate()
+            case _ if command == CM_ADD_WATCH:
+                await self.add_watch()
+            case _ if command == CM_WATCHES:
+                self.show_watches()
+            case _ if command == CM_CALL_STACK:
+                self.show_call_stack()
+            case _ if command == CM_RUN_ARGS:
+                await self.run_parameters()
+            case _ if command == CM_RUN_TERMINAL:
+                await self.run_in_terminal()
+            case _ if command == CM_XDEBUG:
+                await self.choose_xdebug()
             case _ if command == CM_OUTPUT:
                 output = self.output_window()
                 if output is not None:
@@ -714,7 +803,7 @@ class Divide(ExplorerMixin, LspMixin, Application):
             case _ if command == CM_EDIT_DATA:
                 self.edit_data()
             case _ if command == CM_CHECK:
-                self.show_messages(announce=True)
+                await self.check_command()
             case _ if command == CM_MESSAGES:
                 self.show_messages()
             case _ if command in (CM_NEXT_ERROR, CM_PREV_ERROR):
@@ -1077,7 +1166,7 @@ class Divide(ExplorerMixin, LspMixin, Application):
             messages.styles.offset = (left, top_height)
             messages.styles.width, messages.styles.height = width, 8
 
-    async def render_template(self, *, keep_focus: bool = False) -> None:
+    async def render_template(self, *, keep_focus: bool = False, progress: bool = False) -> None:
         """Render the target template. ``keep_focus`` (re-render after a save) leaves the active window on top."""
         previous = self.active_window()
         active = self.active_editor()
@@ -1108,7 +1197,18 @@ class Divide(ExplorerMixin, LspMixin, Application):
         data = self._text_of(data_path) if data_path.exists() or self.window_for(data_path) else None
         try:
             with self.busy(f"Rendering {template.name}…"):
-                result = await render(engine, template, code, data, cwd=self.root)
+                job = render(engine, template, code, data, cwd=self.root)
+                if progress:
+                    dialog = ProgressDialog("Rendering", [
+                        ("Template", self._relative(template)),
+                        ("Data", self._relative(data_path) if data is not None else "(none)"),
+                        ("Engine", self._relative(engine)),
+                    ])
+                    result = await run_with_progress(self, dialog, job, self._render_verdict)
+                    if result is None:
+                        return
+                else:
+                    result = await job
         except RenderError as exc:
             await self.run_dialog(information("Render", str(exc)))
             return
@@ -1137,6 +1237,49 @@ class Divide(ExplorerMixin, LspMixin, Application):
                 self.raise_window(messages)
         self.notify(("Render failed: " if result.fatal else "Rendered ") + summary, timeout=3,
                     severity="error" if result.fatal else "information")
+        self.update_status()
+
+    @staticmethod
+    def _render_verdict(result) -> tuple[str, bool, list[tuple[str, str]]]:
+        serious = result.serious
+        rows = [("Engine", f"Div {result.version or '?'}"), ("Output", size_text(result.output)),
+                ("Messages", f"{len(serious)} to look at" if serious else "none")]
+        if result.fatal:
+            return "Errors", False, rows
+        return ("Warnings", False, rows) if serious else ("Success", True, rows)
+
+    async def check_command(self) -> None:
+        """Alt+F9: check the file under the progress box, then the Messages window."""
+        target = self._check_target()
+        if target is None:
+            self.show_messages(announce=True)
+            return
+        ed = target.editor
+
+        async def job() -> list:
+            if ed.lang == "php":
+                text = ed.text
+                found = await php.lint(text)
+                if found is not None and ed.text == text:
+                    ed.set_lint(found)
+            return list(ed.diagnostics)
+
+        def verdict(diagnostics: list) -> tuple[str, bool, list[tuple[str, str]]]:
+            errors = sum(d.severity == "error" for d in diagnostics)
+            warnings = len(diagnostics) - errors
+            rows = [("Errors", str(errors)), ("Warnings", str(warnings))]
+            if errors:
+                return "Errors", False, rows
+            return ("Warnings", False, rows) if warnings else ("Success", True, rows)
+
+        dialog = ProgressDialog("Checking", [
+            ("File", target.display_name),
+            ("Language", self._lang_title(ed)),
+            ("Lines", f"{ed.document.line_count:,}"),
+        ])
+        if await run_with_progress(self, dialog, job(), verdict) is None:
+            return
+        self.show_messages()
         self.update_status()
 
     # ---------------------------------------------------------- messages
@@ -1168,6 +1311,7 @@ class Divide(ExplorerMixin, LspMixin, Application):
                 items.append(MessageItem(f"{name}({line},{col}): {label}: {d.message}", win.path, d.start, d.end))
             if not win.editor.diagnostics:
                 items.append(MessageItem(f"{name}: no {self._lang_title(win.editor)} errors"))
+        items.extend(self.run_items(win.path if win is not None else template))
         rendered = win.path if win is not None else template
         if self.render_messages and rendered is not None and rendered == self.last_template:
             order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3, "NOTE": 4}
@@ -1330,7 +1474,9 @@ class Divide(ExplorerMixin, LspMixin, Application):
         if isinstance(active, ProjectWindow):
             return "Project-Window"
         if isinstance(active, OutputWindow):
-            return "Rendering"
+            return "Running-PHP" if active.template is not None and active.template.suffix == ".php" else "Rendering"
+        if isinstance(active, (WatchesWindow, CallStackWindow)):
+            return "Debugging-PHP"
         if isinstance(active, MessagesWindow):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):
@@ -1835,6 +1981,9 @@ class Divide(ExplorerMixin, LspMixin, Application):
             if ed.json_refs:
                 hint += f" · {len(ed.json_refs)} $ref" + ("s" if len(ed.json_refs) > 1 else "")
             status.set_hint(hint)
+            return
+        if ed.lang == "php" and (debug_hint := self.debug_hint()) is not None:
+            status.set_hint(debug_hint)
             return
         if ed.lang == "php":
             here = ed.document.get_index_from_location(min(ed.selection.start, ed.selection.end))

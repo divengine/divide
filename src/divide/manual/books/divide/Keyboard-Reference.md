@@ -5,7 +5,7 @@
 | Key | Action |
 |---|---|
 | **F10** | menu bar (opens the first menu) |
-| **Alt+letter** | open that menu (Alt+F, Alt+E, Alt+S, Alt+R, Alt+T, Alt+W, Alt+O, Alt+H) |
+| **Alt+letter** | open that menu (Alt+F, Alt+E, Alt+S, Alt+R, Alt+D, Alt+W, Alt+T, Alt+O, Alt+H) |
 | **F2** / **Ctrl+S** | save |
 | **F3** | open a file |
 | **Alt+F3** / **Ctrl+W** | close the window |
@@ -13,9 +13,9 @@
 | **F6** / **Shift+F6** | next / previous window (also Ctrl+PgDn / Ctrl+PgUp) |
 | **Alt+1 … Alt+9** | go to window *n* |
 | **Ctrl+B** | project window |
-| **Ctrl+F9** | render |
+| **Ctrl+F9** | run: render the template, run the PHP script (in the debugger: go on) |
 | **Alt+F5** | Output window |
-| **Alt+F9** | check: Messages window |
+| **Alt+F9** | check: progress box, then the Messages window |
 | **Alt+F8** / **Alt+F7** | next / previous error |
 | **Ctrl+T** | data tree ⇄ code |
 | **F1** | help on the active window |
@@ -33,7 +33,29 @@
 | **Ctrl+G** | go to line |
 | **Ctrl+Z** / **Ctrl+Y** | undo / redo |
 | **Ctrl+X** / **Ctrl+C** / **Ctrl+V** | cut / copy / paste |
-| **F7** | select all |
+| **F7** | select all (in PHP: trace into, see below) |
+
+## Debugger (PHP)
+
+| Key | Action |
+|---|---|
+| **F8** | step over (the first one starts the script) |
+| **F7** | trace into |
+| **Shift+F8** | step out |
+| **F4** | go to cursor |
+| **Ctrl+F9** | run to the next breakpoint |
+| **Ctrl+F2** | program reset |
+| **Ctrl+F8** | toggle breakpoint |
+| **Ctrl+F7** | add watch |
+| **Ctrl+F4** | evaluate |
+| **Ctrl+F3** | call stack |
+
+## Progress box
+
+| Key | Action |
+|---|---|
+| **Esc** | stop the render or the script while it runs |
+| any key | close the box after the verdict |
 
 ## Completion list
 
@@ -84,6 +106,14 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 | Key | Action |
 |---|---|
 | **Enter** / double click | go to the message's place |
+
+## Watches and Call stack windows
+
+| Key | Action |
+|---|---|
+| **Ins** | add a watch |
+| **Del** | remove the watch under the cursor |
+| **Enter** (Call stack) | show that call; Watches and Evaluate look from there |
 
 ## Help window
 

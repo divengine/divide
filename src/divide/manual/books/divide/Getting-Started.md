@@ -63,7 +63,7 @@ More in [[Checking Templates]].
 
 ## 4. Render
 
-Press **Ctrl+F9**. divide runs your template through PHP and Div, with your unsaved edits, and shows the result in an Output window to the right. From now on, saving the template or its data (**F2**) renders again.
+Press **Ctrl+F9**. divide runs your template through PHP and Div, with your unsaved edits: a progress box tells how it went (any key closes it) and the result is in an Output window to the right. From now on, saving the template or its data (**F2**) renders again.
 
 More in [[Rendering]].
 

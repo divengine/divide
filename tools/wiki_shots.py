@@ -36,6 +36,7 @@ OUT: Path = Path()
 SVG_DIR: Path = Path()
 
 from divide.app import Divide  # noqa: E402
+from divide.ui.progress import ProgressScreen  # noqa: E402
 
 def save(app, name):
     svg = app.export_screenshot(title="divide")
@@ -58,6 +59,12 @@ async def until(pilot, pred, tries=100):
         await pilot.pause(0.05)
     raise SystemExit("timed out waiting for the app")
 
+async def close_box(pilot, app):
+    """Wait for the progress box's verdict and close it, as a key would."""
+    await until(pilot, lambda: isinstance(app.screen, ProgressScreen) and not app.screen.dialog.running, tries=200)
+    await pilot.press("escape")
+    await settle(pilot)
+
 def shot(fn):
     SHOTS.append(fn)
     return fn
@@ -73,6 +80,7 @@ async def hero():
         await tree.reveal(DEMO / "components" / "card.tpl"); await settle(pilot)
         app.raise_window(app.window_for(DEMO / "index.tpl")); await settle(pilot)
         await pilot.press("ctrl+f9")
+        await close_box(pilot, app)
         await until(pilot, lambda: app.output_window() is not None and app.output_window().view.text)
         app.raise_window(app.window_for(DEMO / "index.tpl"))
         app.window_for(DEMO / "index.tpl").editor.move_cursor((10, 4))
@@ -107,7 +115,7 @@ async def diagnostics():
     async with app.run_test(size=SIZE) as pilot:
         ed = app.window_for(DEMO / "checkout.tpl").editor
         await until(pilot, lambda: ed.include_targets)
-        await pilot.press("alt+f9"); await settle(pilot)
+        await pilot.press("alt+f9"); await close_box(pilot, app)
         app.raise_window(app.window_for(DEMO / "checkout.tpl"))
         ed.move_cursor((6, 3)); await settle(pilot)
         save(app, "diagnostics")
@@ -161,6 +169,8 @@ async def menus():
         await settle(pilot)
         await pilot.press("alt+r"); await settle(pilot)
         save(app, "menu-run")
+        await pilot.press("escape", "alt+d"); await settle(pilot)
+        save(app, "menu-debug")
 
 @shot
 async def find():
@@ -245,7 +255,7 @@ async def php():
         ed.move_cursor((13, 0))
         ed.insert("$data['cart'] = ['items' => count($data['products'])\n")
         await until(pilot, lambda: bool(ed.diagnostics))
-        await pilot.press("alt+f9"); await settle(pilot, 10)
+        await pilot.press("alt+f9"); await close_box(pilot, app)
         app.raise_window(app.window_for(DEMO / "index.php"))
         app.window_for(DEMO / "index.php").editor.move_cursor((13, 20))
         await settle(pilot, 6)
@@ -298,6 +308,65 @@ async def lsp():
             os.environ.pop("XDG_CONFIG_HOME", None)
         else:
             os.environ["XDG_CONFIG_HOME"] = old
+
+
+@shot
+async def render_box():
+    """The progress box of Ctrl+F9 on a template, with its verdict."""
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        await pilot.press("ctrl+f9")
+        await until(pilot, lambda: isinstance(app.screen, ProgressScreen) and not app.screen.dialog.running, tries=200)
+        await settle(pilot, 6)
+        save(app, "render-box")
+
+
+@shot
+async def run_php():
+    """Ctrl+F9 on a PHP script: the box, the output behind it (needs composer install in examples/shop)."""
+    if not (DEMO / "vendor" / "autoload.php").is_file():
+        print("skipped run_php: composer install in examples/shop")
+        return
+    app = Divide(DEMO, [DEMO / "index.php"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        await pilot.press("ctrl+f9")
+        await until(pilot, lambda: isinstance(app.screen, ProgressScreen) and not app.screen.dialog.running, tries=200)
+        await settle(pilot, 6)
+        save(app, "run-php")
+
+
+@shot
+async def debug():
+    """The debugger paused on a breakpoint, with Watches and the Call stack:
+    DIVIDE_SHOT_XDEBUG=path/xdebug.so (or Xdebug in php.ini) and composer install in examples/shop."""
+    import json
+    xdebug = os.environ.get("DIVIDE_SHOT_XDEBUG", "")
+    if not (DEMO / "vendor" / "autoload.php").is_file():
+        print("skipped debug: composer install in examples/shop")
+        return
+    config_home = Path(os.environ["XDG_CONFIG_HOME"])
+    (config_home / "divide").mkdir(parents=True, exist_ok=True)
+    (config_home / "divide" / "config.json").write_text(json.dumps({"xdebug": xdebug or None}))
+    app = Divide(DEMO, [DEMO / "index.php"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.active_editor().editor
+        ed.move_cursor((15, 0))  # echo new div(...)
+        await pilot.press("ctrl+f8")
+        await pilot.press("f8")
+        await until(pilot, lambda: app.paused, tries=400)
+        await pilot.press("ctrl+f9")
+        await until(pilot, lambda: app.paused and ed.execution_row == 15, tries=400)
+        app.watches.append("count($data['products'])")
+        app.show_watches()
+        app.show_call_stack()
+        await app.refresh_debug_windows()
+        app.raise_window(app.window_for(DEMO / "index.php"))
+        await settle(pilot, 8)
+        save(app, "debug")
+        await app.debug_reset()
 
 
 async def run(names: set[str]) -> None:
