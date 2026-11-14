@@ -13,7 +13,7 @@
 | **F6** / **Shift+F6** | next / previous window (also Ctrl+PgDn / Ctrl+PgUp) |
 | **Alt+1 … Alt+9** | go to window *n* |
 | **Ctrl+B** | project window |
-| **Ctrl+F9** | run: render the template, run the PHP script (in the debugger: go on) |
+| **Ctrl+F9** | run: render the template, run the PHP script (in the debugger: go on; with the [[Web Server]] running: open the page in the browser) |
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |
 | **Alt+F8** / **Alt+F7** | next / previous error |
@@ -39,7 +39,7 @@
 
 | Key | Action |
 |---|---|
-| **F8** | step over (the first one starts the script) |
+| **F8** | step over (the first one starts the script; with the [[Web Server]] running, in one of its pages: the next request stops) |
 | **F7** | trace into |
 | **Shift+F8** | step out |
 | **F4** | go to cursor |

@@ -75,6 +75,7 @@ from divide.ui import icons as icons_mod
 from divide.ui.lsp import LspMixin
 from divide.ui.progress import ProgressDialog, ProgressScreen, run_with_progress
 from divide.ui.runner import CallStackWindow, RunMixin, WatchesWindow
+from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide import lsp
 from divide.lang import php
@@ -123,6 +124,7 @@ CM_ICONS = Command.USER + 29  # info: icons mode
 CM_LSP_SERVERS = Command.USER + 30
 CM_RUN_ARGS = Command.USER + 31
 CM_RUN_TERMINAL = Command.USER + 32
+CM_WEB_SERVER = Command.USER + 33
 # The debugger (Turbo Pascal's keys).
 CM_TRACE = Command.USER + 80  # F7
 CM_STEP = Command.USER + 81  # F8
@@ -263,7 +265,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
+class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
@@ -313,6 +315,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
         super().__init__(theme=palette)
         self._lsp_init()
         self._run_init()
+        self._web_init()
         self.root = root
         self.initial_files = files
         self._untitled = 0
@@ -380,6 +383,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
                     MenuItem("Progra~m~ reset", CM_RESET, "Ctrl+F2"),
                     MenuItem("~P~arameters...", CM_RUN_ARGS),
                     MenuItem("Run in termi~n~al", CM_RUN_TERMINAL),
+                    MenuItem("~W~eb server...", CM_WEB_SERVER),
                     Separator(),
                     MenuItem("~C~heck", CM_CHECK, "Alt+F9"),
                     MenuItem("~O~utput", CM_OUTPUT, "Alt+F5"),
@@ -673,6 +677,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
                 await self.lsp_stop_all()
                 if self.session is not None:
                     await self.session.stop()
+                await self.web_stop()
                 self.exit()
             case Command.NEW:
                 self.new_file()
@@ -790,6 +795,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
                 await self.run_parameters()
             case _ if command == CM_RUN_TERMINAL:
                 await self.run_in_terminal()
+            case _ if command == CM_WEB_SERVER:
+                await self.web_server_command()
             case _ if command == CM_XDEBUG:
                 await self.choose_xdebug()
             case _ if command == CM_OUTPUT:
@@ -1477,6 +1484,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, Application):
             return "Running-PHP" if active.template is not None and active.template.suffix == ".php" else "Rendering"
         if isinstance(active, (WatchesWindow, CallStackWindow)):
             return "Debugging-PHP"
+        if isinstance(active, ServerLogWindow):
+            return "Web-Server"
         if isinstance(active, MessagesWindow):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):

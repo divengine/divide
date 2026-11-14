@@ -141,7 +141,7 @@ async def xdebug_ini(php: str | None = None, extension: str | None = None) -> li
 
 
 class DebugSession:
-    """One debugged run of a PHP script."""
+    """One debugged run of a PHP script, or one web request (``attach``)."""
 
     def __init__(
         self,
@@ -173,6 +173,9 @@ class DebugSession:
         self._tx = 0
         self._lock = asyncio.Lock()
         self._pipes: list[asyncio.Task] = []
+        self.request: str | None = None  # "GET /index.php" for a web request
+        self.bp_ids: dict[tuple[Path, int], str] = {}  # breakpoints set in this session
+        self.closed = asyncio.Event()
 
     # ------------------------------------------------------------ output
     @property
@@ -237,12 +240,31 @@ class DebugSession:
             raise DebugError("PHP ended before Xdebug connected: is Xdebug loaded?\n" + self.errors.strip())
         exited.cancel()
         self._reader, self._writer = self._connected.result()
+        await self._handshake()
+
+    @classmethod
+    async def attach(cls, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> DebugSession:
+        """A session on a connection Xdebug opened by itself (a web request of
+        ``php -S``): no process of ours; ``stop`` ends only that request."""
+        session = cls(Path("?"))
+        session._reader, session._writer = reader, writer
+        try:
+            init = await asyncio.wait_for(session._handshake(), CONNECT_TIMEOUT)
+        except (DebugError, TimeoutError, OSError, ET.ParseError) as exc:
+            await session._shutdown()
+            raise DebugError(f"Xdebug connection failed: {exc}") from None
+        session.script = uri_path(init.get("fileuri")) or session.script
+        session.cwd = session.script.parent
+        return session
+
+    async def _handshake(self) -> ET.Element:
         init = await self._packet()
         if init.tag != f"{{{NS['d']}}}init":
             raise DebugError("Xdebug sent no init packet")
         self.state = "starting"
         for name, value in (("max_depth", "1"), ("max_children", "100"), ("max_data", "2048")):
             await self.command("feature_set", "-n", name, "-v", value)
+        return init
 
     async def _packet(self) -> ET.Element:
         assert self._reader is not None
@@ -337,9 +359,11 @@ class DebugSession:
 
     # -------------------------------------------------------------- stop
     async def stop(self) -> None:
-        """Program reset: end the script now."""
-        if self.state == "running" and self._proc is not None and self._proc.returncode is None:
-            self._proc.kill()  # busy in PHP: Xdebug would not read a command before the next break
+        """Program reset: end the script now (a web request: end that request;
+        while it runs, only let it go on without the debugger)."""
+        if self.state == "running":
+            if self._proc is not None and self._proc.returncode is None:
+                self._proc.kill()  # busy in PHP: Xdebug would not read a command before the next break
         elif self._writer is not None and self.state != "stopped":
             try:
                 await asyncio.wait_for(self.command("stop"), 2)
@@ -377,3 +401,4 @@ class DebugSession:
         if self._server is not None:
             self._server.close()
             self._server = None
+        self.closed.set()

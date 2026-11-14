@@ -14,6 +14,7 @@
 * [[Rendering]]
 * [[Running PHP]]
 * [[Debugging PHP]]
+* [[Web Server]]
 * [[Data Files]]
 * [[Project Window]]
 * [[Dialector]]

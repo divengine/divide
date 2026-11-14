@@ -42,7 +42,8 @@ through the real Div engine, side by side with the code.
   progress box (renders and checks get it too); its output goes to the Output
   window and PHP's errors to the Messages window, with their place. With
   Xdebug, F7 / F8 step through the code with breakpoints, watches, evaluate
-  and the call stack.
+  and the call stack. Run > Web server serves the project with `php -S`, and
+  its requests stop at the same breakpoints.
 - **Language servers.** With phpactor or intelephense (in the project or the
   PATH), PHP gets completion (with the classes of `vendor/`, like Div's, and
   their `use` lines added for you, and the documentation of each item),
@@ -104,6 +105,7 @@ references.
 - [Rendering](https://github.com/divengine/divide/wiki/Rendering)
 - [Running PHP](https://github.com/divengine/divide/wiki/Running-PHP)
 - [Debugging PHP](https://github.com/divengine/divide/wiki/Debugging-PHP)
+- [Web Server](https://github.com/divengine/divide/wiki/Web-Server)
 - [Data Files](https://github.com/divengine/divide/wiki/Data-Files)
 - [Project Window](https://github.com/divengine/divide/wiki/Project-Window)
 - [Dialector](https://github.com/divengine/divide/wiki/Dialector)

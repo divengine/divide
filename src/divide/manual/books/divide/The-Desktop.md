@@ -15,7 +15,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **File** | New, Open (F3), Save (F2), Save as, Save all, Exit (Alt+X) |
 | **Edit** | Undo, Redo, Cut, Copy, Paste, Select all, Complete (Ctrl+Space) |
 | **Search** | Find, Replace, Search again, Go to line, Go to included template, Previous / Next error |
-| **Run** | Run (Ctrl+F9: render a template, run a PHP script), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
+| **Run** | Run (Ctrl+F9: render a template, run a PHP script), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Web server, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]] |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
@@ -32,7 +32,7 @@ Every window has a number on its top border (**Alt+1…9** goes to it) and, for 
 - Drag a window by its title, resize it from a bottom corner, click `[■]` to close, `[▲]` to zoom.
 - **Window > Tile** arranges every window in a grid; **Cascade** stacks them.
 
-Kinds of windows: editors (templates, data, PHP, any text file), the [[Project Window]], the Output of a render or a script, the Messages window, the Watches and Call stack windows of the [[debugger|Debugging PHP]], the data tree, the [[Dialector]] and the [[Help]] window.
+Kinds of windows: editors (templates, data, PHP, any text file), the [[Project Window]], the Output of a render or a script, the Messages window, the Watches and Call stack windows of the [[debugger|Debugging PHP]], the log of the [[Web Server]], the data tree, the [[Dialector]] and the [[Help]] window.
 
 ## Status line
 

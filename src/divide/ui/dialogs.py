@@ -154,7 +154,8 @@ class FileDialog(_Dialog):
     """Open / Save-as dialog: name line with wildcards, list of entries.
 
     Entries are ``..``, folders (``name/``) and files matching the wildcard.
-    ``chosen`` holds the resulting path once the dialog ends with OK.
+    ``chosen`` holds the resulting path once the dialog ends with OK. With
+    ``folders`` it lists only folders and OK on ``.`` chooses the one shown.
     """
 
     DEFAULT_CSS = """
@@ -165,8 +166,14 @@ class FileDialog(_Dialog):
     FileDialog Label { margin-top: 0; }
     """
 
-    def __init__(self, title: str, directory: Path, *, name: str = "", pattern: str = "*", ok_label: str = "~O~pen") -> None:
+    def __init__(
+        self, title: str, directory: Path, *, name: str = "", pattern: str = "*", ok_label: str = "~O~pen",
+        folders: bool = False,
+    ) -> None:
         super().__init__(title=title)
+        self.folders = folders
+        if folders:
+            pattern = "."
         self.directory = directory.resolve()
         self.pattern = pattern
         self.ok_label = ok_label
@@ -179,9 +186,9 @@ class FileDialog(_Dialog):
         self._syncing = False
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~N~ame", link=self.input)
+        yield Label("~N~ame (. is the folder below)" if self.folders else "~N~ame", link=self.input)
         yield self.input
-        yield Label("~F~iles", link=self.list)
+        yield Label("~F~olders" if self.folders else "~F~iles", link=self.list)
         yield self.list
         yield self.dir_label
         with Horizontal(classes="dlg-buttons"):
@@ -203,7 +210,7 @@ class FileDialog(_Dialog):
                 continue
             if child.is_dir():
                 entries.append(child.name + "/")
-            elif fnmatch.fnmatch(child.name, self.pattern):
+            elif not self.folders and fnmatch.fnmatch(child.name, self.pattern):
                 entries.append(child.name)
         self._entries = entries
         self._syncing = True
@@ -230,10 +237,14 @@ class FileDialog(_Dialog):
         text = text.strip()
         if not text:
             return
+        if self.folders and text == ".":
+            self.chosen = self.directory
+            self.end_modal(Command.OK)
+            return
         target = Path(text).expanduser()
         if not target.is_absolute():
             target = self.directory / target
-        if any(ch in target.name for ch in "*?["):
+        if any(ch in target.name for ch in "*?[") and not self.folders:
             if target.parent.is_dir():
                 self.directory = target.parent.resolve()
                 self.pattern = target.name
@@ -401,11 +412,14 @@ class GotoLineDialog(_Dialog):
 CM_BROWSE = Command.USER + 101
 
 
-async def browse_into(dialog: _Dialog, line: InputLine, title: str, pattern: str, start: Path) -> bool:
+async def browse_into(
+    dialog: _Dialog, line: InputLine, title: str, pattern: str, start: Path, *, folders: bool = False
+) -> bool:
     """File dialog over ``dialog``; the chosen file's absolute path goes into ``line``.
 
     Call from a worker. ``start``: the folder to begin in, unless ``line`` already
-    names a file or folder that exists (relative paths are taken from ``start``)."""
+    names a file or folder that exists (relative paths are taken from ``start``).
+    ``folders``: choose a folder, not a file."""
     current = line.data.strip()
     if current:
         here = Path(current).expanduser()
@@ -414,7 +428,7 @@ async def browse_into(dialog: _Dialog, line: InputLine, title: str, pattern: str
             start = here
         elif here.parent.is_dir():
             start = here.parent
-    chooser = FileDialog(title, start, pattern=pattern, ok_label="~O~K")
+    chooser = FileDialog(title, start, pattern=pattern, ok_label="~O~K", folders=folders)
     if await dialog.app.push_screen_wait(DialogScreen(chooser)) != Command.OK or chooser.chosen is None:
         return False
     line.data = str(chooser.chosen)

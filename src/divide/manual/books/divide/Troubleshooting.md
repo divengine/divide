@@ -33,5 +33,11 @@ Div translated the example back and got something else. The verdict shows the li
 **A script waits forever under Ctrl+F9.**
 It is not waiting for the keyboard (its input is closed): it is busy, or waiting on the network. **Esc** stops it. Interactive scripts go in **Run > Run in terminal**.
 
+**The web server does not start.**
+The box shows what `php -S` said. `Address already in use`: another program (or another divide) serves that port; choose another port in **Run > Web server**. See [[Web Server]].
+
+**A page never loads.**
+A request is paused in the debugger (the status line says `Paused at …`): Ctrl+F9 lets it go on, Ctrl+F2 ends it. While one request is paused the others wait, because `php -S` serves one at a time.
+
 **I found a bug.**
 Please open an issue at [divengine/divide](https://github.com/divengine/divide/issues), with the template if you can.

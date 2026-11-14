@@ -368,6 +368,51 @@ async def debug():
         save(app, "debug")
         await app.debug_reset()
 
+@shot
+async def web():
+    """Run > Web server, then a request of php -S paused on a breakpoint
+    (same needs as the debug shot)."""
+    import json
+    import socket
+    from divide.ui.webserver import WebServerDialog
+    xdebug = os.environ.get("DIVIDE_SHOT_XDEBUG", "")
+    if not (DEMO / "vendor" / "autoload.php").is_file():
+        print("skipped web: composer install in examples/shop")
+        return
+    config_home = Path(os.environ["XDG_CONFIG_HOME"])
+    (config_home / "divide").mkdir(parents=True, exist_ok=True)
+    (config_home / "divide" / "config.json").write_text(json.dumps({"xdebug": xdebug or None}))
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    app = Divide(DEMO, [DEMO / "index.php"])
+    app.open_url = lambda url, **kw: None  # no browser in a screenshot
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.active_editor().editor
+        await pilot.press("alt+r", "w")
+        await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), WebServerDialog), tries=200)
+        app.screen.dialog.address_input.data = "localhost:8000"
+        await settle(pilot)
+        save(app, "web-server-dialog")
+        app.screen.dialog.address_input.data = f"127.0.0.1:{port}"
+        await pilot.press("enter")
+        await until(pilot, lambda: app.serving, tries=200)
+        ed.move_cursor((13, 0))  # $data['today'] = ...
+        await pilot.press("ctrl+f8")
+        reader, writer = await asyncio.open_connection("127.0.0.1", port)
+        writer.write(b"GET /?page=2 HTTP/1.0\r\nHost: localhost\r\n\r\n")
+        await writer.drain()
+        await until(pilot, lambda: app.paused, tries=400)
+        await settle(pilot, 10)
+        app._web_tick()
+        await settle(pilot, 4)
+        save(app, "web-debug")
+        await pilot.press("ctrl+f9")
+        await reader.read()
+        writer.close()
+        await app.web_stop()
+
 
 async def run(names: set[str]) -> None:
     for fn in SHOTS:

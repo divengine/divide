@@ -53,11 +53,15 @@ Without breakpoints, Ctrl+F9 runs the script to its end; with one, it starts the
 
 **Ctrl+F3** opens the Call stack window at the bottom right: the function where the script stopped first, `{main}` last. **Enter** on a call shows its line, and from then on Watches and Evaluate look at that call's variables. The next step goes back to the innermost one.
 
+## Web pages
+
+**Run > Web server…** serves the project with `php -S`, and its requests stop at the same breakpoints: see [[Web Server]].
+
 ## Output and errors
 
 What the script prints appears in the Output window as it prints it. When the script ends, the Output and the Messages windows are filled as after [[Ctrl+F9|Running PHP]].
 
 ## Limits
 
-- One script at a time, run from the command line (`php script.php`). Debugging pages served by a web server is not supported yet.
+- One script at a time, run from the command line (`php script.php`). Web pages are debugged through the [[Web Server]] (`php -S`).
 - Values are shown one level deep; ask for a deeper one with a watch or Evaluate (`$data['products'][0]`).

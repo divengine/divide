@@ -10,6 +10,9 @@
   to cursor, Ctrl+F9 run to the next breakpoint, Ctrl+F2 program reset,
   Ctrl+F8 toggle breakpoint, Ctrl+F7 add watch, Ctrl+F4 evaluate, Ctrl+F3
   call stack. The line about to run is the cyan bar; breakpoints are red.
+- With the web server running (``WebMixin``), the same keys debug its
+  requests: they pause at the breakpoints; F7 / F8 / F4 on a page it serves
+  make the next request stop; Ctrl+F9 on such a page opens it in the browser.
 """
 
 from __future__ import annotations
@@ -136,7 +139,6 @@ class RunMixin:
         self._debug_starting = False
         self.debug_frame = 0
         self.breakpoints: dict[Path, set[int]] = {}  # file -> 1-based lines
-        self._bp_ids: dict[tuple[Path, int], str] = {}  # in the running session
         self.watches: list[str] = []
 
     # ---------------------------------------------------------- targets
@@ -195,6 +197,10 @@ class RunMixin:
         """Ctrl+F9 on a PHP script: run it (in the debugger: go on to the next breakpoint)."""
         if self.debugging:
             await self.debug_resume("run")
+            return
+        win = self.active_editor()
+        if win is not None and self.web_serves(win.path):
+            self.open_page(win.path)  # a page: the browser requests it (and its breakpoints stop it)
             return
         if self.breakpoints and await xdebug_ini(extension=config.load().get("xdebug")) is not None:
             await self.debug_resume("run")  # as in Turbo Pascal: Ctrl+F9 stops at the breakpoints
@@ -258,10 +264,12 @@ class RunMixin:
         self.update_status()
 
     def run_items(self, path: Path | None) -> list[MessageItem]:
-        """The last run's messages, for the Messages window of ``path`` (or of nothing)."""
+        """The last run's messages, for the Messages window of ``path`` (or of nothing),
+        then the web server's."""
+        items = []
         if self.run_messages and (path is None or path == self.last_script):
-            return self.run_messages
-        return []
+            items += self.run_messages
+        return items + self.web_items()
 
     async def run_parameters(self) -> None:
         """Run > Parameters: the script's ``$argv`` (remembered per script)."""
@@ -323,23 +331,24 @@ class RunMixin:
             except DebugError as exc:
                 await self.run_dialog(information("Debug", str(exc)))
                 return False
-            self.session, self.last_script, self._bp_ids = session, script, {}
+            self.session, self.last_script = session, script
             return True
         finally:
             self._debug_starting = False
 
-    async def _sync_breakpoints(self) -> None:
-        session = self.session
+    async def sync_breakpoints(self, session: DebugSession | None = None) -> None:
+        """Give ``session`` (the debugged one) the breakpoints as they are now."""
+        session = session or self.session
         if session is None or not session._writer:
             return
         wanted = {(path, line) for path, lines in self.breakpoints.items() for line in lines}
-        for key in list(self._bp_ids):
+        for key in list(session.bp_ids):
             if key not in wanted:
-                await session.remove_breakpoint(self._bp_ids.pop(key))
-        for path, line in sorted(wanted - set(self._bp_ids)):
+                await session.remove_breakpoint(session.bp_ids.pop(key))
+        for path, line in sorted(wanted - set(session.bp_ids)):
             ident = await session.set_breakpoint(path, line)
             if ident:
-                self._bp_ids[(path, line)] = ident
+                session.bp_ids[(path, line)] = ident
 
     async def debug_resume(self, how: str) -> None:
         """``run``, ``step_into``, ``step_over``, ``step_out`` or ``cursor`` (F4)."""
@@ -353,20 +362,25 @@ class RunMixin:
                 self.notify("Put the cursor on a line of a PHP script", timeout=2)
                 return
             target = (win.path, win.editor.cursor_location[0] + 1)
-        if not self.debugging and not await self.debug_start():
-            return
+        if not self.debugging:
+            win = self.active_editor()
+            if win is not None and self.web_serves(win.path) and self.web.debugging:  # type: ignore[attr-defined]
+                self.arm_next_request(how, target)
+                return
+            if not await self.debug_start():
+                return
         session = self.session
         assert session is not None
         location: Location | None = None
         try:
-            await self._sync_breakpoints()
+            await self.sync_breakpoints()
             if target is not None:
                 await session.set_breakpoint(*target, temporary=True)
                 how = "run"
             label = "Running" if how == "run" else "Stepping"
-            with self.busy(f"{label} {session.script.name}… (Ctrl+F2 stops)"):
+            with self.busy(f"{label} {session.request or session.script.name}… (Ctrl+F2 stops)"):
                 location = await session.resume(how)
-        except DebugError:
+        except (DebugError, OSError):
             await session.stop()
         if location is None or not session.running:
             await self._debug_ended()
@@ -388,10 +402,13 @@ class RunMixin:
     async def _debug_ended(self, reset: bool = False) -> None:
         session = self.session
         self.session = None
-        self._bp_ids = {}
         self.refresh_debug_marks()
         await self.refresh_debug_windows()
         if session is None:
+            return
+        if session.request is not None:  # a web request: what it printed went to the browser
+            self.notify(f"{session.request}: {'ended (program reset)' if reset else 'done'}", timeout=2)
+            self.update_status()
             return
         state = "program reset" if reset else f"exit code {session.exit_code}"
         summary = f"{session.script.name} · {state} · {size_text(session.output)}"
@@ -401,6 +418,11 @@ class RunMixin:
     async def debug_reset(self) -> None:
         """Ctrl+F2: end the script being debugged."""
         if self.session is None:
+            if self.web_next is not None:  # type: ignore[attr-defined]
+                self.web_next = None
+                self.notify("The next request will not stop", timeout=1.5)
+                self.update_status()
+                return
             self.notify("No program is being debugged", timeout=1.5)
             return
         await self.session.stop()
@@ -412,7 +434,7 @@ class RunMixin:
         from divide.ui.windows import OutputWindow
 
         session = self.session
-        if session is None:
+        if session is None or session.request is not None:  # a request prints to the browser
             return
         win = self.output_window()
         if win is None:
@@ -428,12 +450,14 @@ class RunMixin:
     def debug_hint(self) -> str | None:
         session = self.session
         if session is None:
-            return None
+            return self.web_hint()  # type: ignore[attr-defined]
+        name = session.request or session.script.name
         if session.state == "running":
-            return f"Running {session.script.name} · Ctrl+F2 reset"
+            return f"Running {name} · Ctrl+F2 reset"
         where = session.location
         place = f"{where.file.name}:{where.line}" if where and where.file else "?"
-        return f"Paused at {place} · {DEBUG_HINT}"
+        request = f" ({session.request})" if session.request else ""
+        return f"Paused at {place}{request} · {DEBUG_HINT}"
 
     def refresh_debug_marks(self) -> None:
         location = self.session.location if self.paused and self.session is not None else None
@@ -458,7 +482,7 @@ class RunMixin:
             del self.breakpoints[win.path]
         self.refresh_debug_marks()
         if self.paused:
-            await self._sync_breakpoints()
+            await self.sync_breakpoints()
 
     # ---------------------------------------------- watches, evaluate
     def _word_at_cursor(self) -> str:
@@ -518,15 +542,16 @@ class RunMixin:
     def stack_window(self) -> CallStackWindow | None:
         return next((w for w in self.windows() if isinstance(w, CallStackWindow)), None)
 
-    def _bottom_window(self, window: _TVWindow, *, right: bool) -> None:
-        """Watches bottom left, Call stack bottom right; the editors end where they start."""
+    def _bottom_window(self, window: _TVWindow, *, side: str) -> None:
+        """Watches bottom left, Call stack bottom right, the server's log across
+        (``side``: left, right, full); the editors end where they start."""
         desktop = self.desktop
         width, height = (desktop.size.width or 80), (desktop.size.height or 24)
         half = width // 2
         top = max(0, height - 8)
-        window.styles.width = width - half if right else half
+        window.styles.width = {"left": half, "right": width - half}.get(side, width)
         window.styles.height = min(8, height)
-        window.styles.offset = (half if right else 0, top)
+        window.styles.offset = (half if side == "right" else 0, top)
         for other in self.windows():
             if other.zoomed or isinstance(other, (_ListWindow,)) or type(other).__name__ in ("MessagesWindow", "ProjectWindow"):
                 continue
@@ -539,7 +564,7 @@ class RunMixin:
         window = self.watches_window()
         if window is None:
             window = WatchesWindow(number=self._free_number())
-            self._bottom_window(window, right=False)
+            self._bottom_window(window, side="left")
             self.run_worker(self.refresh_debug_windows(), group="debug-view")
         self.raise_window(window)
 
@@ -547,7 +572,7 @@ class RunMixin:
         window = self.stack_window()
         if window is None:
             window = CallStackWindow(number=self._free_number())
-            self._bottom_window(window, right=True)
+            self._bottom_window(window, side="right")
             self.run_worker(self.refresh_debug_windows(), group="debug-view")
         self.raise_window(window)
 

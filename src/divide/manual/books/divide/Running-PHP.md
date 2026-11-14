@@ -34,4 +34,8 @@ When it ends, the box gives the verdict: **Success**, **Warnings**, **Errors**, 
 
 A script that renders with Div (`echo new div('index.tpl', $data);`) shows the rendered page in the Output window. To look at the template alone, with its data file, open the template and press Ctrl+F9 there.
 
+## Web pages
+
+Pages are not run from the command line: **Run > Web server…** serves them with `php -S`, and while it runs Ctrl+F9 on a page opens it in the browser. See [[Web Server]].
+
 Next: [[Debugging PHP]].
