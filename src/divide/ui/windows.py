@@ -24,6 +24,7 @@ from textual_vision.list_box import ListBox
 from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
+from divide.editor.theme import CGA
 from divide.lang.div.complete import CARET, CompletionResult, complete
 from divide.ui.completion import CompletionPopup, InfoPopup
 from divide.ui import icons as icons_mod
@@ -678,12 +679,24 @@ class ProjectWindow(_TVWindow):
             self.app.close_window(self)  # type: ignore[attr-defined]
 
 
+# Turbo Pascal's Output window: white on black, whatever the palette.
+OUTPUT_CSS = f"""
+    {{name}} {{{{ background: {CGA["black"]}; }}}}
+    {{name}} IndicatorFrame .frame--active {{{{ color: {CGA["white"]}; }}}}
+    {{name}} IndicatorFrame .frame--passive {{{{ color: {CGA["lightgray"]}; }}}}
+    {{name}} IndicatorFrame .frame--title {{{{ color: {CGA["white"]}; }}}}
+"""
+
+
 class OutputWindow(_TVWindow):
-    """Rendered output of a template (read only; leftover Div tags stay highlighted)."""
+    """Rendered output of a template, or what a script printed (read only;
+    leftover Div tags stay highlighted). White on black."""
+
+    DEFAULT_CSS = OUTPUT_CSS.format(name="OutputWindow")
 
     def __init__(self, number: int = 0) -> None:
         super().__init__("Output", number=number)
-        self.view = EditorView("", read_only=True)
+        self.view = EditorView("", read_only=True, editor_theme="output")
         self.template: Path | None = None
         self.summary = ""
 

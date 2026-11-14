@@ -12,7 +12,7 @@ When it ends, the box gives the verdict: **Success**, **Warnings**, **Errors**, 
 
 ## What you get
 
-- **The Output window** shows what the script printed (stdout). If PHP or the script wrote to stderr, it comes below a `── stderr ──` line. The status line says the exit code, the time and the size.
+- **The Output window**, white on black like Turbo Pascal's, shows what the script printed (stdout). If PHP or the script wrote to stderr, it comes below a `── stderr ──` line. The status line says the exit code, the time and the size.
 - **The Messages window** lists PHP's warnings and errors with their place: `index.php(12): Warning: Undefined variable $nope`, `index.php(13): Fatal error: Uncaught Exception: boom`. **Enter** opens the file at that line, even a file of `vendor/`. PHP is asked to print its errors as plain text on stderr (`display_errors=stderr`, `html_errors=0`), so they never mix with the output.
 
 ## How it runs

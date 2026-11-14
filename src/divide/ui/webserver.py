@@ -27,7 +27,7 @@ from divide.run.dbgp import DebugError, xdebug_ini
 from divide.run.server import DEFAULT_ADDRESS, ServerError, WebServer, check_address
 from divide.ui.dialogs import MessageBox, _Dialog, browse_into, information
 from divide.ui.runner import message_items
-from divide.ui.windows import EditorView, MessageItem, _TVWindow
+from divide.ui.windows import OUTPUT_CSS, EditorView, MessageItem, _TVWindow
 
 CM_BROWSE_ROOT = Command.USER + 102
 CM_BROWSE_ROUTER = Command.USER + 103
@@ -122,11 +122,13 @@ class WebServerDialog(_Dialog):
 
 
 class ServerLogWindow(_TVWindow):
-    """What ``php -S`` logs: the requests and PHP's errors (read only)."""
+    """What ``php -S`` logs: the requests and PHP's errors (read only; white on black, like Output)."""
+
+    DEFAULT_CSS = OUTPUT_CSS.format(name="ServerLogWindow")
 
     def __init__(self, number: int = 0) -> None:
         super().__init__("Web server", number=number)
-        self.view = EditorView("", read_only=True)
+        self.view = EditorView("", read_only=True, editor_theme="output")
 
     def compose_content(self) -> ComposeResult:
         yield self.view

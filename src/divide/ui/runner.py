@@ -26,6 +26,7 @@ from textual.app import ComposeResult
 from textual_vision.list_box import ListBox
 
 from divide import config
+from divide.editor.theme import CGA
 from divide.run.dbgp import DebugError, DebugSession, Location, xdebug_ini
 from divide.run.script import ScriptMessage, ScriptResult, command, run_script, size_text, split_args
 from divide.ui.dialogs import InputDialog, information
@@ -41,11 +42,15 @@ NOT_PAUSED = "Start the script in the debugger first (F7, F8 or F4) and stop at 
 DEBUG_HINT = "F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 reset"
 
 
+# Turbo Pascal's debugger windows: all cyan, black text, the chosen line white on red.
+_CYAN, _BLACK, _WHITE, _RED = CGA["cyan"], CGA["black"], CGA["white"], CGA["red"]
+
+
 class PickList(ListBox):
-    DEFAULT_CSS = """
-    PickList { background: $panel; }
-    PickList > .list-viewer--normal { color: $text; background: $panel; }
-    PickList > .list-viewer--focused { color: $foreground; background: $background; }
+    DEFAULT_CSS = f"""
+    PickList {{ background: {_CYAN}; }}
+    PickList > .list-viewer--normal {{ color: {_BLACK}; background: {_CYAN}; }}
+    PickList > .list-viewer--focused {{ color: {_WHITE}; background: {_RED}; }}
     """
     can_focus = True
 
@@ -58,6 +63,14 @@ class PickList(ListBox):
     def on_click(self, event) -> None:
         if event.chain >= 2:
             self.select_item(self.focused)
+
+
+DEBUG_CSS = f"""
+    {{name}} {{{{ background: {_CYAN}; }}}}
+    {{name}} IndicatorFrame .frame--active {{{{ color: {_WHITE}; }}}}
+    {{name}} IndicatorFrame .frame--passive {{{{ color: {_BLACK}; }}}}
+    {{name}} IndicatorFrame .frame--title {{{{ color: {_BLACK}; }}}}
+"""
 
 
 class _ListWindow(_TVWindow):
@@ -85,6 +98,8 @@ class _ListWindow(_TVWindow):
 class WatchesWindow(_ListWindow):
     """The watch expressions, then the variables of the frame. Ins adds, Del removes."""
 
+    DEFAULT_CSS = DEBUG_CSS.format(name="WatchesWindow")
+
     def __init__(self, number: int = 0) -> None:
         super().__init__("Watches", number=number)
         self.rows: list[int | None] = []  # line -> index of its watch
@@ -103,6 +118,8 @@ class WatchesWindow(_ListWindow):
 
 class CallStackWindow(_ListWindow):
     """Where the script is: the innermost call first. Enter shows a frame."""
+
+    DEFAULT_CSS = DEBUG_CSS.format(name="CallStackWindow")
 
     def __init__(self, number: int = 0) -> None:
         super().__init__("Call stack", number=number)

@@ -42,7 +42,7 @@ Without breakpoints, Ctrl+F9 runs the script to its end; with one, it starts the
 
 ## Watches and variables
 
-**Debug > Watches** opens the Watches window at the bottom left. At every stop it shows:
+**Debug > Watches** opens the Watches window at the bottom left. Like Turbo Pascal's debugger windows, it is cyan with black text, and the line under the cursor is white on red (the Call stack too). At every stop it shows:
 
 - your watch expressions and their values: `count($data['products']) = 3`. **Ins** (or Ctrl+F7) adds one, **Del** removes the one under the cursor;
 - below `── local variables ──`, every variable of the function where the script stopped, with the first level of arrays and objects: `$data = array(6)`, `  title = 'the divide shop'`.

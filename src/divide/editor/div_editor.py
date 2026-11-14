@@ -53,7 +53,22 @@ def turbo_theme() -> TextAreaTheme:
     )
 
 
-EDITOR_THEMES = {"turbo": turbo_theme, "divide": divide_theme}
+def output_theme() -> TextAreaTheme:
+    """White on black, like Turbo Pascal's Output window; Div tags left in a
+    render keep their colours, everything else is plain."""
+    return TextAreaTheme(
+        name="output",
+        base_style=Style(color=CGA["white"], bgcolor=CGA["black"]),
+        gutter_style=Style(color=CGA["darkgray"], bgcolor=CGA["black"]),
+        cursor_style=Style(color=CGA["black"], bgcolor=CGA["lightgray"]),
+        cursor_line_gutter_style=Style(color=CGA["lightgray"], bgcolor=CGA["black"]),
+        bracket_matching_style=Style(color=CGA["white"], bgcolor=CGA["black"]),
+        selection_style=Style(color=CGA["black"], bgcolor=CGA["lightgray"]),
+        syntax_styles={k: v for k, v in TURBO_STYLES.items() if k.startswith("div.")},
+    )
+
+
+EDITOR_THEMES = {"turbo": turbo_theme, "divide": divide_theme, "output": output_theme}
 
 
 JSON_EXTENSIONS = set(languages.JSON.extensions)
