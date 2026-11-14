@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import re
 import shutil
+from dataclasses import dataclass
 from functools import lru_cache
 
 from divide.lang.div.diagnostics import Diagnostic
@@ -102,3 +103,110 @@ def in_parentheses(text: str, offset: int, window: int = 4000) -> bool:
             depth = max(0, depth - 1)
         i += 1
     return depth > 0
+
+
+# ---------------------------------------------------------------- outline
+@dataclass(frozen=True)
+class Symbol:
+    """A declaration of the file: what Search > Outline lists."""
+
+    kind: str  # namespace, class, interface, trait, enum, function, method, property, const, case
+    name: str
+    detail: str  # "(array $items): float" for a function, "private static" for a member
+    level: int  # 0 the file, 1 inside a class
+    start: int  # the name, as offsets into the text
+    end: int
+
+    @property
+    def text(self) -> str:
+        """``class Cart``, ``+ add(string $name): self``, ``- $items``, ``const TAX``."""
+        indent = "  " * self.level
+        if self.kind in ("namespace", "class", "interface", "trait", "enum", "const", "case"):
+            return f"{indent}{self.kind} {self.name}{self.detail if self.kind == 'class' else ''}"
+        mark = "" if self.level == 0 else VISIBILITY.get(self.detail.split(" ")[0], "+") + " "
+        if self.kind == "property":
+            return f"{indent}{mark}{self.name}"
+        return f"{indent}{mark}{self.name}{self.signature}"
+
+    @property
+    def signature(self) -> str:
+        return self.detail.split("|", 1)[1] if "|" in self.detail else ""
+
+
+VISIBILITY = {"public": "+", "protected": "#", "private": "-"}  # UML's marks
+_CLASSES = {"class_declaration": "class", "interface_declaration": "interface",
+            "trait_declaration": "trait", "enum_declaration": "enum"}
+
+
+def outline(text: str) -> list[Symbol] | None:
+    """The declarations of ``text``, in order, from tree-sitter's PHP grammar
+    (None without it). Closures and anonymous classes are left out."""
+    found = grammar()
+    if found is None:
+        return None
+    from tree_sitter import Parser
+
+    source = text.encode("utf-8")
+    tree = Parser(found[0]).parse(source)  # type: ignore[arg-type]
+
+    def offset(byte: int) -> int:
+        return len(source[:byte].decode("utf-8", "replace"))
+
+    def flat(node) -> str:
+        return re.sub(r"\s+", " ", source[node.start_byte:node.end_byte].decode("utf-8", "replace")).strip()
+
+    symbols: list[Symbol] = []
+
+    def add(kind: str, name_node, detail: str, level: int) -> None:
+        symbols.append(Symbol(kind, flat(name_node), detail, level, offset(name_node.start_byte), offset(name_node.end_byte)))
+
+    def modifiers(node) -> str:
+        words = [flat(c) for c in node.named_children if c.type.endswith("_modifier")]
+        return " ".join(words) or "public"
+
+    def signature(node) -> str:
+        params = node.child_by_field_name("parameters")
+        returns = node.child_by_field_name("return_type")
+        return (flat(params) if params is not None else "()") + (f": {flat(returns)}" if returns is not None else "")
+
+    def members(body, level: int) -> None:
+        for member in body.named_children:
+            if member.type == "method_declaration" and member.child_by_field_name("name") is not None:
+                add("method", member.child_by_field_name("name"), f"{modifiers(member)}|{signature(member)}", level)
+            elif member.type == "property_declaration":
+                for element in member.named_children:
+                    if element.type == "property_element" and element.named_children:
+                        add("property", element.named_children[0], modifiers(member), level)
+            elif member.type == "const_declaration":
+                for element in member.named_children:
+                    if element.type == "const_element" and element.named_children:
+                        add("const", element.named_children[0], "", level)
+            elif member.type == "enum_case" and member.child_by_field_name("name") is not None:
+                add("case", member.child_by_field_name("name"), "", level)
+
+    def top(container, level: int) -> None:
+        for node in container.named_children:
+            name = node.child_by_field_name("name")
+            if node.type == "namespace_definition":
+                if name is not None:
+                    add("namespace", name, "", level)
+                body = node.child_by_field_name("body")
+                if body is not None:  # namespace X { ... }
+                    top(body, level)
+            elif node.type in _CLASSES and name is not None:
+                extends = next((c for c in node.named_children if c.type == "base_clause"), None)
+                add(_CLASSES[node.type], name, f" {flat(extends)}" if extends is not None else "", level)
+                body = node.child_by_field_name("body")
+                if body is not None:
+                    members(body, level + 1)
+            elif node.type == "function_definition" and name is not None:
+                add("function", name, f"|{signature(node)}", level)
+            elif node.type == "const_declaration":
+                for element in node.named_children:
+                    if element.type == "const_element" and element.named_children:
+                        add("const", element.named_children[0], "", level)
+            elif node.type in ("compound_statement", "declare_statement", "if_statement"):
+                top(node, level)  # function_exists() guards, declare(...) { }
+
+    top(tree.root_node, 0)
+    return symbols

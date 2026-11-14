@@ -27,7 +27,7 @@ The dialogs are the classic ones: case sensitive, whole words only, regular expr
 
 ## Editing keys
 
-The usual ones work: arrows, Home/End, PgUp/PgDn, Shift to select, **Ctrl+Z** / **Ctrl+Y** undo and redo, **Ctrl+X/C/V** cut, copy and paste, **Tab** indents (Edit > Select all selects the whole file; **F7** opens the [[Render Trace]]). **Ctrl+Space** opens [[Completion]], **Ctrl+Enter** goes to the template an include points to (see [[Checking Templates]]).
+The usual ones work: arrows, Home/End, PgUp/PgDn, Shift to select, **Ctrl+Z** / **Ctrl+Y** undo and redo, **Ctrl+X/C/V** cut, copy and paste, **Ctrl+A** select all, **Tab** indents (**F7** opens the [[Render Trace]]). **Ctrl+Space** opens [[Completion]], **Ctrl+Enter** goes to the template an include points to (see [[Checking Templates]]).
 
 ## Other files
 

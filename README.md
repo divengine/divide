@@ -38,7 +38,9 @@ through the real Div engine, side by side with the code.
 - **PHP next to the templates.** `.php` files are highlighted with
   tree-sitter's PHP grammar and checked by PHP itself (`php -l`) as you type.
   Ctrl+Enter on `new div('page.tpl')` opens the template.
-- **Render trace.** Debug > Render trace replays how Div mutated the template
+- **Outline.** Search > Outline (Ctrl+O) lists the classes, methods, properties
+  and functions of a PHP file; Enter goes to one.
+- **Render trace.** Debug > Render trace (F7 in a template) replays how Div mutated the template
   into its output: every change, in Div's own words, with what it wrote and
   took away, sub-parses and fixed points; F7 / F8 step through them.
 - **Run and debug PHP.** Ctrl+F9 runs the script under a Turbo Pascal–style

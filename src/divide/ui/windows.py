@@ -214,7 +214,10 @@ class EditorView(DivEditor, TVViewMixin):
     }
     """
 
-    BINDINGS = [Binding("ctrl+space,ctrl+@", "complete", "Complete", show=False)]
+    BINDINGS = [
+        Binding("ctrl+space,ctrl+@", "complete", "Complete", show=False),
+        Binding("ctrl+a", "select_all", "Select all", show=False),  # TextArea's ctrl+a is Home
+    ]
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

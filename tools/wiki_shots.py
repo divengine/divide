@@ -263,6 +263,27 @@ async def php():
 
 
 @shot
+async def outline():
+    """Search > Outline on Div's own class (needs composer install in examples/shop)."""
+    div = DEMO / "vendor" / "divengine" / "div" / "src" / "div.php"
+    if not div.exists():
+        print("skipped outline: composer install in examples/shop")
+        return
+    app = Divide(DEMO, [div])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        await pilot.press("ctrl+o")
+        await settle(pilot)
+        window = app.outline_window()
+        index = next(i for i, line in enumerate(window.lines) if "parseMatches(" in line)
+        window.list.focus_item(index)
+        await pilot.press("enter")
+        await settle(pilot)
+        app.raise_window(window)
+        await settle(pilot)
+        save(app, "outline")
+
+@shot
 async def lsp():
     """Completion and signatures from a real language server, on Div's classes:
     DIVIDE_SHOT_LSP="name command…" (for example "phpactor phpactor language-server"),

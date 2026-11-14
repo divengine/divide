@@ -18,6 +18,10 @@ divide does not judge PHP code: PHP does. When you stop typing for a moment, div
 
 PHP stops at the first syntax error, so there is one at a time. `php` must be in the `PATH`; without it the status line says the file is not checked.
 
+## Outline
+
+**Ctrl+O** (Search > Outline) lists the classes, methods, properties and functions of the file in a window at the right; **Enter** goes to one. See [[Outline]].
+
 ## Opening the file a string names
 
 Put the cursor on a string that names a file and press **Ctrl+Enter** (or Ctrl+click): `new div('index.tpl', $data)` opens the template, `require 'menu.php'` opens `menu.php`. divide looks next to the PHP file, then in the project folder, and tries the name with `.tpl` too.

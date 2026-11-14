@@ -76,6 +76,7 @@ from divide.ui.lsp import LspMixin
 from divide.ui.progress import ProgressDialog, ProgressScreen, run_with_progress
 from divide.ui.runner import CallStackWindow, RunMixin, WatchesWindow
 from divide.ui.tracer import TraceMixin, TraceWindow
+from divide.ui.outline import OutlineMixin, OutlineWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide import lsp
@@ -139,6 +140,7 @@ CM_WATCHES = Command.USER + 88
 CM_CALL_STACK = Command.USER + 89  # Ctrl+F3
 CM_XDEBUG = Command.USER + 90
 CM_TRACE_RENDER = Command.USER + 91
+CM_OUTLINE = Command.USER + 92  # Ctrl+O
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -170,6 +172,7 @@ COMMANDS: dict[str, int] = {
     "HELP_SEARCH": CM_HELP_SEARCH,
     "HELP_BACK": CM_HELP_BACK,
     "TRACE": CM_TRACE,
+    "OUTLINE": CM_OUTLINE,
     "STEP": CM_STEP,
     "STEP_OUT": CM_STEP_OUT,
     "GOTO_CURSOR": CM_GOTO_CURSOR,
@@ -267,7 +270,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Application):
+class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
@@ -289,6 +292,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
         Binding("ctrl+r", "command('REPLACE')", "Replace", show=False),
         Binding("ctrl+l", "command('SEARCH_AGAIN')", "Search again", show=False),
         Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
+        Binding("ctrl+o", "command('OUTLINE')", "Outline", show=False, priority=True),
         Binding("ctrl+f9", "command('RENDER')", "Run", show=False, priority=True),
         # The debugger, as in Turbo Pascal.
         Binding("f7", "command('TRACE')", "Trace into", show=False, priority=True),
@@ -362,7 +366,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
                     MenuItem("~C~opy", Command.COPY, "Ctrl+C"),
                     MenuItem("~P~aste", Command.PASTE, "Ctrl+V"),
                     Separator(),
-                    MenuItem("Select ~a~ll", CM_SELECT_ALL),
+                    MenuItem("Select ~a~ll", CM_SELECT_ALL, "Ctrl+A"),
                     MenuItem("Co~m~plete", CM_COMPLETE, "Ctrl+Space"),
                 ),
                 SubMenu(
@@ -373,6 +377,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
                     Separator(),
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
                     MenuItem("Go to ~i~ncluded template", CM_GOTO_INCLUDE, "Ctrl+Enter"),
+                    MenuItem("~O~utline", CM_OUTLINE, "Ctrl+O"),
                     Separator(),
                     MenuItem("~P~revious error", CM_PREV_ERROR, "Alt+F7"),
                     MenuItem("~N~ext error", CM_NEXT_ERROR, "Alt+F8"),
@@ -813,6 +818,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
                 await self.web_server_command()
             case _ if command == CM_XDEBUG:
                 await self.choose_xdebug()
+            case _ if command == CM_OUTLINE:
+                self.show_outline()
             case _ if command == CM_TRACE_RENDER:
                 await self.trace_render_command()
             case _ if command == CM_OUTPUT:
@@ -1026,7 +1033,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
         timer = self._include_timers.pop(("lint", id(ed)), None)
         if timer is not None:
             timer.stop()  # type: ignore[attr-defined]
-        self._include_timers[("lint", id(ed))] = self.set_timer(0.5, lambda: self.lint_php(ed))
+        self._include_timers[("lint", id(ed))] = self.set_timer(0.5, lambda: (self.lint_php(ed), self.follow_outline()))
 
     @work(group="lint")
     async def lint_php(self, ed: DivEditor) -> None:
@@ -1513,6 +1520,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
             return "Web-Server"
         if isinstance(active, TraceWindow):
             return "Render-Trace"
+        if isinstance(active, OutlineWindow):
+            return "Outline"
         if isinstance(active, MessagesWindow):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):
@@ -2004,6 +2013,10 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, Applicatio
         if isinstance(active, TraceWindow):
             status.set_hint(active.hint())
             return
+        if isinstance(active, OutlineWindow):
+            status.set_hint(OutlineWindow.HINT)
+            return
+        self.follow_outline()
         if isinstance(active, HelpWindow):
             status.set_hint(HelpWindow.HINT)
             return
