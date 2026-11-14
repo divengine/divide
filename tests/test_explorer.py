@@ -143,7 +143,17 @@ async def test_window_tile_arranges_every_window(tmp_path):
         assert all(not a.overlaps(b) for i, a in enumerate(regions) for b in regions[i + 1 :])
 
 
-async def test_nerd_font_icons_are_an_option(tmp_path, monkeypatch):
+def test_file_marks_are_ascii():
+    """One ASCII character each: the same width in every terminal, font and platform."""
+    from divide.app import SPINNER
+    from divide.ui import icons
+
+    marks = [m for m, _ in [*icons.BY_EXTENSION.values(), *icons.BY_NAME.values(), icons.FILE]]
+    assert all(len(m) == 1 and m.isascii() and m.isprintable() and m != " " for m in marks)
+    assert SPINNER.isascii()
+
+
+async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
     from divide.ui import icons
 
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
@@ -159,13 +169,16 @@ async def test_nerd_font_icons_are_an_option(tmp_path, monkeypatch):
         for _ in range(6):
             await pilot.pause()
         tree = app.project_window().project_tree
-        lines = lambda: [tree.render_line(y).text for y in range(4)]
-        assert tree.icons == icons.PLAIN and not any(icons.BY_EXTENSION[".php"][0] in l for l in lines())
-        app.set_icons(icons.NERD)
+        lines = lambda: [tree.render_line(y).text.rstrip() for y in range(4)]
+        plain = lines()
+        assert tree.icons == icons.PLAIN and plain[2].endswith("   a.php")
+        app.set_icons(icons.MARKS)
         await pilot.pause()
-        text = "\n".join(lines())
-        assert icons.FOLDER in text and icons.BY_EXTENSION[".php"][0] in text and icons.BY_EXTENSION[".tpl"][0] in text
-        assert app.icons == icons.NERD  # remembered
+        marked = lines()
+        assert marked[2].endswith(" ? a.php") and marked[3].endswith(" { b.tpl")
+        assert [len(l) for l in marked] == [len(l) for l in plain]  # the same width
+        assert "▸ sub" in marked[1]  # folders keep their arrow
+        assert app.icons == icons.MARKS  # remembered
         app.set_icons(icons.PLAIN)
         await pilot.pause()
-        assert icons.FOLDER not in "\n".join(lines())
+        assert lines() == plain

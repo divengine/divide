@@ -1,9 +1,11 @@
-"""File icons for the project window: Nerd Font glyphs, when the user wants them.
+"""File marks for the project window: one ASCII character, coloured by type.
 
-Nerd Fonts are fonts patched with icons in Unicode's private use area. Without
-such a font in the terminal the glyphs are boxes, so icons are an option
-(Options > Nerd Font icons), off by default; the plain style keeps only the
-Turbo Vision ▸ ▾ of the folders.
+A Turbo Vision screen is a grid of cells: a character the terminal draws two
+cells wide shifts the rest of its line and breaks the frames. So every mark is
+plain ASCII, the same width in every terminal, font and platform, and it goes
+in the blank cell files already have where folders show their ▸ ▾: the tree
+keeps its width. Options > File type marks turns them on; the plain style
+(the default) leaves that cell blank.
 """
 
 from __future__ import annotations
@@ -13,50 +15,43 @@ from pathlib import Path
 from divide.editor.theme import CGA
 
 PLAIN = "plain"
-NERD = "nerd"
-MODES = (PLAIN, NERD)
+MARKS = "marks"
+MODES = (PLAIN, MARKS)
 
-FOLDER = ""  # nf-fa-folder
-FOLDER_OPEN = ""  # nf-fa-folder_open
-FILE = ""  # nf-fa-file
+FILE = ("-", "lightgray")  # a file of no known type
 
-# by extension: (glyph, colour)
+# by extension: (mark, colour) — a hint of the language where there is one
 BY_EXTENSION: dict[str, tuple[str, str]] = {
-    ".tpl": ("", "lightcyan"),  # nf-fa-code: a Div template
-    ".div": ("", "lightcyan"),
-    ".dialect": ("", "lightmagenta"),  # nf-fa-paint_brush: a Div dialect
-    ".php": ("", "lightmagenta"),  # nf-dev-php
-    ".phtml": ("", "lightmagenta"),
-    ".json": ("", "yellow"),  # nf-seti-json
-    ".md": ("", "white"),  # nf-dev-markdown
-    ".html": ("", "lightred"),  # nf-dev-html5
-    ".htm": ("", "lightred"),
-    ".css": ("", "lightblue"),  # nf-dev-css3
-    ".js": ("", "yellow"),  # nf-dev-javascript
-    ".py": ("", "yellow"),  # nf-dev-python
-    ".sh": ("", "lightgreen"),  # nf-oct-terminal
-    ".xml": ("", "cyan"),  # nf-fa-file_code_o
-    ".txt": ("", "lightgray"),  # nf-fa-file_text
-    ".lock": ("", "lightgray"),  # nf-fa-lock
-    ".png": ("", "lightmagenta"),  # nf-fa-file_image_o
-    ".jpg": ("", "lightmagenta"),
-    ".gif": ("", "lightmagenta"),
-    ".svg": ("", "lightmagenta"),
+    ".tpl": ("{", "lightcyan"),  # Div's braces
+    ".div": ("{", "lightcyan"),
+    ".dialect": ("%", "lightgreen"),  # a Div dialect
+    ".php": ("?", "lightmagenta"),  # <?php
+    ".phtml": ("?", "lightmagenta"),
+    ".json": (":", "yellow"),  # "key": value
+    ".md": ("#", "white"),  # a heading
+    ".html": ("<", "lightred"),
+    ".htm": ("<", "lightred"),
+    ".xml": ("<", "cyan"),
+    ".css": ("*", "lightblue"),
+    ".js": (";", "yellow"),
+    ".py": ("@", "yellow"),
+    ".sh": ("$", "lightgreen"),  # the prompt
+    ".txt": ("=", "lightgray"),
+    ".lock": ("=", "darkgray"),
+    ".png": ("^", "lightmagenta"),  # a mountain: a picture
+    ".jpg": ("^", "lightmagenta"),
+    ".gif": ("^", "lightmagenta"),
+    ".svg": ("^", "lightmagenta"),
 }
 BY_NAME: dict[str, tuple[str, str]] = {
-    "composer.json": ("", "brown"),  # nf-dev-composer
-    "composer.lock": ("", "brown"),
-    ".gitignore": ("", "lightred"),  # nf-dev-git
-    "LICENSE": ("", "lightgray"),  # nf-fa-legal
+    "composer.json": ("&", "brown"),
+    "composer.lock": ("&", "brown"),
+    ".gitignore": ("!", "lightred"),
+    "LICENSE": ("c", "lightgray"),  # (c)
 }
 
 
-def icon_for(path: Path, *, folder: bool = False, expanded: bool = False) -> tuple[str, str | None]:
-    """``(glyph, colour)`` of a project entry; the colour is a CGA name or None."""
-    if folder:
-        return (FOLDER_OPEN if expanded else FOLDER), None
-    found = BY_NAME.get(path.name) or BY_EXTENSION.get(path.suffix.lower())
-    if found is None:
-        return FILE, None
-    glyph, colour = found
-    return glyph, CGA[colour]
+def mark_for(path: Path) -> tuple[str, str]:
+    """``(mark, colour)`` of a file; the colour is a CGA hex value."""
+    mark, colour = BY_NAME.get(path.name) or BY_EXTENSION.get(path.suffix.lower()) or FILE
+    return mark, CGA[colour]

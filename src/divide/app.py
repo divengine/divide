@@ -210,7 +210,7 @@ class DropMenuBar(MenuBar):
         return handled
 
 
-SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"  # braille: a turning dot, one cell wide
+SPINNER = "|/-\\"  # ASCII: the same in every terminal and font
 
 
 class HintStatusLine(StatusLine):
@@ -437,7 +437,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
                     *palette_items,
                     Separator(),
                     MenuItem("Plain ~s~ymbols", CM_ICONS, param=icons_mod.PLAIN),
-                    MenuItem("~N~erd Font icons", CM_ICONS, param=icons_mod.NERD),
+                    MenuItem("~F~ile type marks", CM_ICONS, param=icons_mod.MARKS),
                     Separator(),
                     MenuItem("~L~anguage servers...", CM_LSP_SERVERS),
                     MenuItem("~D~iv engine...", CM_DIV_ENGINE),
@@ -1970,13 +1970,11 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
         return mode if mode in icons_mod.MODES else icons_mod.PLAIN
 
     def set_icons(self, mode: str) -> None:
-        """Options > Plain symbols / Nerd Font icons (remembered)."""
+        """Options > Plain symbols / File type marks (remembered)."""
         config.set_value("icons", mode)
         project = self.project_window()
         if project is not None:
             project.project_tree.set_icons(mode)
-        if mode == icons_mod.NERD:
-            self.notify("Nerd Font icons: the terminal needs a Nerd Font (nerdfonts.com), or they show as boxes", timeout=4)
 
     @contextmanager
     def busy(self, label: str):

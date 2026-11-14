@@ -163,6 +163,18 @@ async def project():
         save(app, "project-new-file")
 
 @shot
+async def marks():
+    """Options > File type marks in the project window (set on the tree only: no config written)."""
+    app = Divide(DEMO, [])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        tree = app.project_window().project_tree
+        await tree.reveal(DEMO / "components" / "card.tpl")
+        await tree.reveal(DEMO / "layout" / "header.tpl"); await settle(pilot)
+        tree.set_icons("marks"); await settle(pilot)
+        save(app, "project-marks")
+
+@shot
 async def menus():
     app = Divide(DEMO, [DEMO / "index.tpl"])
     async with app.run_test(size=SIZE) as pilot:

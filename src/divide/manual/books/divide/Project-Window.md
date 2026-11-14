@@ -6,11 +6,30 @@
 
 **Enter** opens a file, or folds and unfolds a folder. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
 
-## Icons
+## File type marks
 
-The tree shows folders with Turbo Vision's `▸` and `▾`. **Options > Nerd Font icons** adds an icon for each folder and file type: Div templates, dialects, PHP, JSON, Markdown, HTML, `composer.json`… **Options > Plain symbols** goes back. divide remembers the choice.
+The tree shows folders with Turbo Vision's `▸` and `▾`. **Options > File type marks** puts a coloured mark before each file, in the cell where a folder has its arrow, so the tree keeps its width. **Options > Plain symbols** goes back. divide remembers the choice.
 
-The icons are glyphs of the [Nerd Fonts](https://www.nerdfonts.com/), fonts patched with icons. The terminal must use one of them (JetBrains Mono Nerd Font, FiraCode Nerd Font…); with an ordinary font they show as boxes, which is why they are off by default.
+![the project window with file type marks](images/project-marks.png)
+
+| Mark | Files |
+|---|---|
+| `{` | Div templates (`.tpl`, `.div`) |
+| `%` | dialects |
+| `?` | PHP (`<?php`) |
+| `:` | JSON |
+| `#` | Markdown |
+| `<` | HTML, XML |
+| `*` | CSS |
+| `;` | JavaScript |
+| `@` | Python |
+| `$` | shell scripts |
+| `^` | images |
+| `&` | `composer.json`, `composer.lock` |
+| `!` | `.gitignore` |
+| `-` | any other file |
+
+The marks are plain ASCII on purpose: every terminal, font and platform draws them one cell wide, so they can never shift a line or break a frame, here or over SSH.
 
 ## Working with files
 

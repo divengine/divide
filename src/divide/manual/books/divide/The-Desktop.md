@@ -19,7 +19,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | colour palette, plain symbols or Nerd Font icons, language servers, Div engine, Xdebug |
+| **Options** | colour palette, plain symbols or file type marks, language servers, Div engine, Xdebug |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows
@@ -43,7 +43,7 @@ The left side shows the keys that matter. The right side tells you about the win
 - in the Output window, which template and data file were rendered, or which script ran and its exit code, and how long it took;
 - while debugging, where the script is paused and the debugger's keys;
 - in the project window, the dialector and the help window, their keys;
-- while something runs in the background (a render, for example), a turning spinner `⠋` and what is running.
+- while something runs in the background (a render, for example), a turning spinner (`|` `/` `-` `\`) and what is running.
 
 ## Colours
 

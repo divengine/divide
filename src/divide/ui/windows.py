@@ -584,16 +584,11 @@ class ProjectTree(DirectoryTree, TVViewMixin):
 
     def render_label(self, node, base_style, style):
         text = super().render_label(node, base_style, style)
-        if self.icons != icons_mod.NERD or node.data is None or not self.is_mounted:
+        if self.icons != icons_mod.MARKS or node.data is None or node._allow_expand or not self.is_mounted:
             return text
-        folder = node._allow_expand
-        glyph, colour = icons_mod.icon_for(node.data.path, folder=folder, expanded=node.is_expanded)
-        if folder:
-            look = base_style + self.get_component_rich_style("directory-tree--folder", partial=True)
-        else:
-            look = base_style + (Style(color=colour) if colour else self.get_component_rich_style("directory-tree--file", partial=True))
-        prefix = len(self.ICON_NODE)
-        return Text.assemble(text[:prefix], (glyph + " ", look + style), text[prefix:])
+        # the file's mark in the blank cell where a folder has its ▸: the same width
+        mark, colour = icons_mod.mark_for(node.data.path)
+        return Text.assemble((mark, base_style + Style(color=colour) + style), text[1:])
 
     def filter_paths(self, paths):
         return [p for p in paths if p.name not in HIDDEN_NAMES and not p.name.endswith(".egg-info")]
