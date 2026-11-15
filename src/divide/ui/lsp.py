@@ -33,12 +33,15 @@ from divide.lang.div.complete import CARET, Completion, CompletionResult
 from divide.lsp.client import LspSession, diagnostics_in
 from divide.ui.completion import InfoPopup, signature_lines
 from divide.ui.dialogs import _Dialog, browse_into, information
+from divide.ui.progress import bar_text
 
 CM_LSP_BROWSE = Command.USER + 101
 
 KIND = {k.value: k.name.lower() for k in types.CompletionItemKind}
 _WORD = re.compile(r"[A-Za-z0-9_$\\]*$")
 _NAME = re.compile(r"[A-Za-z0-9_$]*$")  # what a completion replaces: the name after the last \\
+
+LSP_BAR = 10  # cells of the indexing bar in the status line
 
 
 def lsp_settings() -> tuple[dict[str, str], dict[str, list[str]]]:
@@ -103,7 +106,7 @@ class LspMixin:
         self._lsp_starting[server.name] = future
         session = LspSession(server, command, self.root,  # type: ignore[attr-defined]
                              on_diagnostics=self._lsp_diagnostics, on_message=self._lsp_message,
-                             on_progress=lambda token, title, name=server.name: self._lsp_progress_changed(name, token, title))
+                             on_progress=lambda token, title, percentage, name=server.name: self._lsp_progress_changed(name, token, title, percentage))
         with self.busy(f"Starting {server.name}..."):  # type: ignore[attr-defined]
             ok = await session.start()
         self._lsp_starting.pop(server.name, None)
@@ -170,15 +173,23 @@ class LspMixin:
         win.editor.set_server_diagnostics(diagnostics_in(text, items, name))
         self.update_status()  # type: ignore[attr-defined]
 
-    def _lsp_progress_changed(self, server: str, token: str, title: str | None) -> None:
-        """The server works on its own (indexing…): the spinner says so."""
+    def _lsp_progress_changed(self, server: str, token: str, title: str | None, percentage: int | None = None) -> None:
+        """The server works on its own (indexing...): the spinner says so, with a
+        bar in Norton Commander's style when the server says how far it is."""
         status = self.status_line  # type: ignore[attr-defined]
         if not hasattr(status, "start_busy"):
             return
         key = (server, token)
-        if title is not None and key not in self._lsp_progress:
-            self._lsp_progress[key] = status.start_busy(f"{server}: {title}...")
-        elif title is None and key in self._lsp_progress:
+        if title is not None:
+            if percentage is None:
+                label = f"{server}: {title}..."
+            else:
+                label = f"{server}: {title} {bar_text(LSP_BAR, percentage / 100).plain} {percentage}%"
+            if key in self._lsp_progress:
+                status.relabel_busy(self._lsp_progress[key], label)
+            else:
+                self._lsp_progress[key] = status.start_busy(label)
+        elif key in self._lsp_progress:
             status.stop_busy(self._lsp_progress.pop(key))
 
     @property

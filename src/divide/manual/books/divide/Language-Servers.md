@@ -14,7 +14,7 @@ A language server is a program that knows a language deeply: it reads the whole 
 | **Ctrl+Enter** / Ctrl+click | the definition of the symbol under the cursor, in its file; on a string with a file name, that file (see [[Editing PHP]]) |
 | | the server's errors and warnings join PHP's in the editor and in the Messages window (**Alt+F9**) |
 
-The server is started when the first PHP file opens. A spinner turns in the status line while it starts and while it indexes the project; the status line then names the server. It is stopped when divide exits.
+The server is started when the first PHP file opens. A spinner turns in the status line while it starts and while it indexes the project; when the server says how far the indexing is, a bar shows it: `phpactor: Indexing ████░░░░░░ 42%`; the status line then names the server. It is stopped when divide exits.
 
 ![the signature of div::parse while typing its arguments](images/lsp-signature.png)
 

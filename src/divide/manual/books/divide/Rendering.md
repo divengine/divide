@@ -6,7 +6,11 @@
 
 ## The progress box
 
-While Div works, a box like Turbo Pascal's *Compiling* box shows the template, the data file, the engine and a clock; big templates can take a while, and **Esc** stops the render. When it ends, the box gives the verdict, **Success**, **Warnings** or **Errors**, with Div's version, the size of the output and the number of messages. The output is already behind it; any key closes the box, and a success closes by itself after a moment.
+While Div works, a box like Turbo Pascal's *Compiling* box shows the template, the data file, the engine and a clock; big templates can take a while, and **Esc** stops the render.
+
+Under them runs a bar in Norton Commander's style, drawn with the blocks of the PC's own character set: `█` and `▓` fill a track of `░`. Div does not tell how far it is, so a block goes back and forth over the track while it works; a success fills the bar, errors or a stop leave the track empty. The same box, and the same bar, come with running PHP (see [[Running PHP]]), checking (**Alt+F9**) and the [[Render Trace]].
+
+![the progress box while Div works](images/progress-running.png) When it ends, the box gives the verdict, **Success**, **Warnings** or **Errors**, with Div's version, the size of the output and the number of messages. The output is already behind it; any key closes the box, and a success closes by itself after a moment.
 
 ![the progress box after a render](images/render-box.png)
 

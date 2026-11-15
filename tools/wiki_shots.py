@@ -358,6 +358,26 @@ async def render_box():
 
 
 @shot
+async def progress_running():
+    """The progress box while a job runs and cannot say how far it is: the block going back and forth."""
+    import asyncio
+    from divide.ui.progress import ProgressDialog, run_with_progress
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        dialog = ProgressDialog("Rendering", [("Template", "index.tpl"), ("Data", "index.json"), ("Engine", "Div 6.1.2")])
+        never = asyncio.Event()
+        app.run_worker(run_with_progress(app, dialog, never.wait(), lambda r: ("Success", True, [])))
+        await until(pilot, lambda: dialog.is_mounted)
+        await pilot.pause(1.2)
+        dialog.rows["Time"] = "1.2 s"  # the picture's own clock
+        dialog._phase = 14
+        dialog._show()
+        await settle(pilot)
+        save(app, "progress-running")
+        never.set()
+
+@shot
 async def run_php():
     """Ctrl+F9 on a PHP script: the box, the output behind it (needs composer install in examples/shop)."""
     if not (DEMO / "vendor" / "autoload.php").is_file():

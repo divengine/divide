@@ -52,13 +52,13 @@ class LspSession:
     def __init__(self, server: ServerSpec, command: list[str], root: Path,
                  on_diagnostics: Callable[[Path, list[types.Diagnostic]], None] | None = None,
                  on_message: Callable[[str], None] | None = None,
-                 on_progress: Callable[[str, str | None], None] | None = None) -> None:
+                 on_progress: Callable[[str, str | None, int | None], None] | None = None) -> None:
         self.server = server
         self.command = command
         self.root = root
         self.on_diagnostics = on_diagnostics
         self.on_message = on_message
-        self.on_progress = on_progress  # (token, title or None when it ends)
+        self.on_progress = on_progress  # (token, title or None when it ends, percentage if the server gives one)
         self.working: dict[str, str] = {}  # progress token -> title, while the server works
         self.client = BaseLanguageClient("divide", __version__)
         self.capabilities: types.ServerCapabilities | None = None
@@ -102,13 +102,18 @@ class LspSession:
             token, value = str(params.token), params.value
             kind = value.get("kind") if isinstance(value, dict) else getattr(value, "kind", None)
             title = value.get("title") if isinstance(value, dict) else getattr(value, "title", None)
+            percentage = value.get("percentage") if isinstance(value, dict) else getattr(value, "percentage", None)
+            percentage = int(percentage) if isinstance(percentage, (int, float)) else None
             if kind == "begin":
                 self.working[token] = title or self.server.name
                 if self.on_progress is not None:
-                    self.on_progress(token, self.working[token])
+                    self.on_progress(token, self.working[token], percentage)
+            elif kind == "report" and token in self.working:
+                if self.on_progress is not None:
+                    self.on_progress(token, self.working[token], percentage)
             elif kind == "end" and self.working.pop(token, None) is not None:
                 if self.on_progress is not None:
-                    self.on_progress(token, None)
+                    self.on_progress(token, None, None)
 
         @client.feature(types.CLIENT_REGISTER_CAPABILITY)
         def _register_capability(params: types.RegistrationParams) -> None:

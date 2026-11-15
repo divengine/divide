@@ -5,6 +5,10 @@ the bottom, what to do: Esc stops the job while it runs; then the verdict
 ("Success", "Errors") waits for any key. A success also closes by itself after
 a moment, so a quick render only flashes it.
 
+Under the rows, a bar in Norton Commander's style, in CP437 blocks: ``█`` and
+``▓`` fill a track of ``░`` while the job says how far it is (``progress``);
+a job that cannot say gets a block going back and forth over the track.
+
 ``run_with_progress`` runs a coroutine under the box and returns its result
 (None when the user stopped it) as soon as it ends: the caller shows what
 came out behind the box, which stays up with its verdict.
@@ -20,8 +24,10 @@ from typing import TypeVar
 from textual import events
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
+from rich.text import Text
 from textual.widgets import Static
 
+from divide.editor.theme import CGA
 from divide.ui.dialogs import _Dialog
 from divide.ui.shadow import install_shadows
 
@@ -29,12 +35,31 @@ T = TypeVar("T")
 
 AUTO_CLOSE = 2.0  # seconds a success stays up
 TIME = "Time"
+BLOCK = "▓██▓"  # what goes back and forth while the job cannot say how far it is
+FILL, TRACK = CGA["blue"], CGA["darkgray"]  # on the gray of the dialogs
+
+
+def bar_text(width: int, fraction: float | None = None, phase: int = 0, *,
+             fill: str | None = FILL, track: str | None = TRACK) -> Text:
+    """A bar ``width`` cells wide: ``fraction`` (0-1) filled, half cells as ``▓``;
+    None: ``BLOCK`` at step ``phase`` of its trip there and back."""
+    width = max(1, width)
+    if fraction is None:
+        block = BLOCK[:width]
+        span = width - len(block)
+        at = phase % (2 * span) if span > 0 else 0
+        at = 2 * span - at if at > span else at
+        return Text.assemble(("░" * at, track), (block, fill), ("░" * (width - at - len(block)), track))
+    halves = round(max(0.0, min(1.0, fraction)) * width * 2)
+    full, half = divmod(halves, 2)
+    return Text.assemble(("█" * full + "▓" * half, fill), ("░" * (width - full - half), track))
 
 
 class ProgressDialog(_Dialog):
     DEFAULT_CSS = """
     ProgressDialog > .tv-window-content { margin: 1 2 0 2; }
     ProgressDialog .progress-rows { color: $text; background: $surface; width: 1fr; height: auto; }
+    ProgressDialog .progress-bar { background: $surface; width: 1fr; height: 1; margin-top: 1; }
     ProgressDialog .progress-verdict { color: $text; background: $surface; width: 1fr; height: 1; margin-top: 1;
                                        text-align: center; }
     ProgressDialog .progress-verdict.-done { color: $foreground; background: $background; text-style: bold; }
@@ -50,15 +75,18 @@ class ProgressDialog(_Dialog):
         self.running = True
         self.verdict = "Press Esc to stop" if stoppable else "Working..."
         self.ok: bool | None = None
+        self.fraction: float | None = None  # how far the job is, when it can say
+        self._phase = 0
         self._started = time.monotonic()
         self.styles.width = width
         self._fit()
 
     def _fit(self) -> None:
-        self.styles.height = len(self.rows) + 6
+        self.styles.height = len(self.rows) + 8
 
     def compose_content(self) -> ComposeResult:
         yield Static(self._rows_text(), classes="progress-rows", markup=False)
+        yield Static(self._bar(), classes="progress-bar", markup=False)
         yield Static(self.verdict, classes="progress-verdict", markup=False)
 
     def on_mount(self) -> None:
@@ -73,10 +101,25 @@ class ProgressDialog(_Dialog):
             lines.append(f"{label + ':':>{pad}} {value}")
         return "\n".join(lines)
 
+    def _bar(self) -> Text:
+        """The bar, with the percentage when the job says how far it is."""
+        shown = self.query(".progress-bar").first() if self.is_mounted else None
+        width = shown.size.width if shown is not None and shown.size.width else self.width - 6  # inside frame and margins
+        if self.running and self.fraction is None:
+            return bar_text(width, None, self._phase)
+        if not self.running and self.fraction is None:
+            # done: full on a success; empty track after errors or a stop
+            return bar_text(width, 1.0 if self.ok else 0.0)
+        fraction = 1.0 if self.ok and not self.running else self.fraction
+        bar = bar_text(width - 5, fraction)
+        bar.append(f"{round(fraction * 100):4d}%", style=CGA["black"])
+        return bar
+
     def _show(self) -> None:
         if not self.is_mounted:
             return
         self.query_one(".progress-rows", Static).update(self._rows_text())
+        self.query_one(".progress-bar", Static).update(self._bar())
         verdict = self.query_one(".progress-verdict", Static)
         verdict.update(self.verdict)
         verdict.set_class(not self.running and self.ok is True, "-done")
@@ -84,8 +127,14 @@ class ProgressDialog(_Dialog):
 
     def _tick(self) -> None:
         if self.running:
+            self._phase += 1
             self.rows[TIME] = f"{time.monotonic() - self._started:.1f} s"
             self._show()
+
+    def progress(self, fraction: float | None) -> None:
+        """How far the job is, 0 to 1 (None: it cannot say)."""
+        self.fraction = None if fraction is None else max(0.0, min(1.0, fraction))
+        self._show()
 
     def set(self, label: str, value: str) -> None:
         """Change (or add) one row."""

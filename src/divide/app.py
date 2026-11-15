@@ -265,6 +265,11 @@ class HintStatusLine(StatusLine):
         self._show()
         return self._next_token
 
+    def relabel_busy(self, token: int, label: str) -> None:
+        if token in self._busy:
+            self._busy[token] = label
+            self._show()
+
     def stop_busy(self, token: int) -> None:
         self._busy.pop(token, None)
         if not self._busy and self._timer is not None:
