@@ -23,22 +23,33 @@ from textual_vision.constants import OptionFlag
 from textual_vision.group import TVViewMixin
 
 from divide import manual
-from divide.editor.theme import CGA
+from divide import themes
 from divide.ui.windows import _TVWindow
 
-_CYAN = CGA["cyan"]
-STYLES = {
-    "text": Style(color=CGA["black"], bgcolor=_CYAN),
-    "bold": Style(color=CGA["white"], bgcolor=_CYAN, bold=True),
-    "code": Style(color=CGA["blue"], bgcolor=_CYAN),
-    "link": Style(color=CGA["yellow"], bgcolor=_CYAN, bold=True),
-    "url": Style(color=CGA["black"], bgcolor=_CYAN, underline=True),
-    "title": Style(color=CGA["white"], bgcolor=_CYAN, bold=True),
-    "heading": Style(color=CGA["white"], bgcolor=_CYAN, bold=True),
-    "head": Style(color=CGA["white"], bgcolor=_CYAN, bold=True),
-    "rule": Style(color=CGA["lightgray"], bgcolor=_CYAN),
-    "selected": Style(color=CGA["yellow"], bgcolor=CGA["blue"], bold=True),
+# span style -> (foreground role, attributes), on the help-bg role; cyan in the Borland palettes
+SPANS = {
+    "text": ("help-text", {}),
+    "bold": ("help-bold", {"bold": True}),
+    "code": ("help-code", {}),
+    "link": ("help-link", {"bold": True}),
+    "url": ("help-url", {"underline": True}),
+    "title": ("help-bold", {"bold": True}),
+    "heading": ("help-bold", {"bold": True}),
+    "head": ("help-bold", {"bold": True}),
+    "rule": ("help-rule", {}),
 }
+
+
+_styles: dict[tuple[str, bool], dict[str, Style]] = {}  # (palette, 16 colours) -> its help styles
+
+
+def help_styles(palette: themes.Palette) -> dict[str, Style]:
+    key = (palette.name, themes.ansi16())
+    if key not in _styles:
+        styles = {name: palette.style(fg, "help-bg", **attrs) for name, (fg, attrs) in SPANS.items()}
+        styles["selected"] = palette.style("help-selected", "help-selected-bg", bold=True)
+        _styles[key] = styles
+    return _styles[key]
 
 HINT = "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
 
@@ -127,15 +138,16 @@ class HelpView(ScrollView, TVViewMixin):
     def render_line(self, y: int) -> Strip:
         width = self._view_width()
         row = self.scroll_offset.y + y
-        base = STYLES["text"]
+        styles = help_styles(themes.current())
+        base = styles["text"]
         if self.topic is None or not 0 <= row < len(self.topic.lines):
             return Strip([Segment(" " * width, base)])
         segments = [Segment(" ", base)]
         used = 1
         for span in self.topic.lines[row]:
-            style = STYLES.get(span.style, base)
+            style = styles.get(span.style, base)
             if span.link is not None and span.link == self.selected:
-                style = STYLES["selected"]
+                style = styles["selected"]
             if span.link is not None and self.topic.links[span.link].external:
                 style = style + Style(link=self.topic.links[span.link].target)
             segments.append(Segment(span.text, style))
@@ -228,10 +240,10 @@ class HelpWindow(_TVWindow):
     """The manual: topics with cross references, a history to go back."""
 
     HINT = HINT
-    DEFAULT_CSS = f"""
-    HelpWindow {{ background: {_CYAN}; }}
-    HelpWindow IndicatorFrame .frame--active {{ color: {CGA["white"]}; }}
-    HelpWindow IndicatorFrame .frame--passive {{ color: {CGA["lightgray"]}; }}
+    DEFAULT_CSS = """
+    HelpWindow { background: $divide-help-bg; }
+    HelpWindow IndicatorFrame .frame--active { color: $divide-help-frame; }
+    HelpWindow IndicatorFrame .frame--passive { color: $divide-help-frame-passive; }
     """
     BINDINGS = [
         Binding("alt+f1,backspace", "back", show=False),

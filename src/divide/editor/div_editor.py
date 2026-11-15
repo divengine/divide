@@ -11,11 +11,9 @@ diagnostics are drawn over it.
 from __future__ import annotations
 
 import bisect
-import dataclasses
 from pathlib import Path
 
 from rich.style import Style
-from textual._text_area_theme import TextAreaTheme
 from textual.message import Message
 from textual.widgets import TextArea
 
@@ -27,48 +25,13 @@ from divide.lang.div.lexer import Lexer
 from divide import lang as languages
 from divide.lang import php
 
-from .theme import CGA, DIV_STYLES, TURBO_STYLES
+from divide import themes
+
+from . import theme as editor_themes
 
 DIV_EXTENSIONS = set(languages.DIV.extensions)
 
 
-def divide_theme() -> TextAreaTheme:
-    """Dark, Monokai-based theme."""
-    base = TextAreaTheme.get_builtin_theme("monokai")
-    assert base is not None
-    return dataclasses.replace(base, name="divide", syntax_styles={**base.syntax_styles, **DIV_STYLES})
-
-
-def turbo_theme() -> TextAreaTheme:
-    """Yellow on blue, like the Borland editors (selection: blue on light gray)."""
-    return TextAreaTheme(
-        name="turbo",
-        base_style=Style(color=CGA["yellow"], bgcolor=CGA["blue"]),
-        gutter_style=Style(color=CGA["cyan"], bgcolor=CGA["blue"]),
-        cursor_style=Style(color=CGA["blue"], bgcolor=CGA["yellow"]),
-        cursor_line_gutter_style=Style(color=CGA["yellow"], bgcolor=CGA["blue"]),
-        bracket_matching_style=Style(color=CGA["white"], bgcolor=CGA["cyan"], bold=True),
-        selection_style=Style(color=CGA["blue"], bgcolor=CGA["lightgray"]),
-        syntax_styles=dict(TURBO_STYLES),
-    )
-
-
-def output_theme() -> TextAreaTheme:
-    """White on black, like Turbo Pascal's Output window; Div tags left in a
-    render keep their colours, everything else is plain."""
-    return TextAreaTheme(
-        name="output",
-        base_style=Style(color=CGA["white"], bgcolor=CGA["black"]),
-        gutter_style=Style(color=CGA["darkgray"], bgcolor=CGA["black"]),
-        cursor_style=Style(color=CGA["black"], bgcolor=CGA["lightgray"]),
-        cursor_line_gutter_style=Style(color=CGA["lightgray"], bgcolor=CGA["black"]),
-        bracket_matching_style=Style(color=CGA["white"], bgcolor=CGA["black"]),
-        selection_style=Style(color=CGA["black"], bgcolor=CGA["lightgray"]),
-        syntax_styles={k: v for k, v in TURBO_STYLES.items() if k.startswith("div.")},
-    )
-
-
-EDITOR_THEMES = {"turbo": turbo_theme, "divide": divide_theme, "output": output_theme}
 
 
 JSON_EXTENSIONS = set(languages.JSON.extensions)
@@ -126,7 +89,7 @@ class DivEditor(TextArea):
         *,
         path: Path | None = None,
         roots: list[Path] | None = None,
-        editor_theme: str = "turbo",
+        kind: str = editor_themes.EDITOR,  # or OUTPUT: the colours of the Output window
         **kwargs,
     ) -> None:
         self.path = path
@@ -154,9 +117,10 @@ class DivEditor(TextArea):
             show_line_numbers=True,
             **kwargs,
         )
-        for factory in EDITOR_THEMES.values():
-            self.register_theme(factory())
-        self.theme = editor_theme
+        self.kind = kind
+        for theme in editor_themes.all_themes():
+            self.register_theme(theme)
+        self.apply_palette()
         self._set_language()
 
     def _set_language(self) -> None:
@@ -170,8 +134,13 @@ class DivEditor(TextArea):
             self.language = None
 
     def on_mount(self) -> None:
+        self.app.theme_changed_signal.subscribe(self, lambda _theme: self.apply_palette())
         if self.lang == "php":
             self.post_message(self.CheckRequested(self))
+
+    def apply_palette(self) -> None:
+        """The colours of the current palette (Options > Colors)."""
+        self.theme = editor_themes.theme_name(themes.current(), self.kind)
 
     @property
     def checked(self) -> bool:

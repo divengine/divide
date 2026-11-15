@@ -22,7 +22,13 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widget import Widget
 
-SHADOW_STYLE = Style(color="#555555", bgcolor="#000000", bold=False, italic=False, underline=False, reverse=False, dim=False)
+from divide import themes
+
+def shadow_style() -> Style:
+    """Turbo Vision's shadow (dark gray on black in the Borland palettes): every attribute off."""
+    p = themes.current()
+    return Style(color=p.colour("shadow-text"), bgcolor=p.colour("shadow"),
+                 bold=False, italic=False, underline=False, reverse=False, dim=False)
 SHADOW_X, SHADOW_Y = 2, 1
 
 Spans = dict[int, list[tuple[int, int]]]  # row -> sorted, disjoint [x0, x1) ranges
@@ -101,8 +107,9 @@ def darken(strip: Strip, start: int, end: int) -> Strip:
     if start >= end:
         return strip
     before, middle, after = strip.divide([start, end, length])
+    shadow = shadow_style()
     shaded = Strip(
-        [seg if seg.control else Segment(seg.text, (seg.style or Style.null()) + SHADOW_STYLE) for seg in middle],
+        [seg if seg.control else Segment(seg.text, (seg.style or Style.null()) + shadow) for seg in middle],
         middle.cell_length,
     )
     return Strip.join([before, shaded, after])

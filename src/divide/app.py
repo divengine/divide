@@ -14,6 +14,7 @@ import shutil
 from contextlib import contextmanager
 from pathlib import Path
 
+from textual import constants as textual_constants
 from textual import events, on, work
 from textual.binding import Binding
 from textual_vision.app import Application
@@ -52,7 +53,7 @@ from divide.ui.dialogs import (
     replace_prompt,
 )
 from divide.ui.shadow import ShadowScreen
-from divide import config
+from divide import config, themes
 from divide.run.render import (
     DialectVerdict,
     IncludeTarget,
@@ -87,6 +88,7 @@ from divide.ui.lsp import LspMixin
 from divide.ui.progress import ProgressDialog, ProgressScreen, run_with_progress
 from divide.ui.runner import CallStackWindow, RunMixin, WatchesWindow
 from divide.ui.tracer import TraceMixin, TraceWindow
+from divide.ui.colors import ColorsMixin
 from divide.ui.outline import OutlineMixin, OutlineWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
@@ -101,14 +103,14 @@ SAVE_FIRST = (
     "Div finds the includes and the data file from the template's folder."
 )
 
-PALETTES = {"turbo-pascal": "Turbo ~P~ascal colors", "turbo-c": "Turbo ~C~ colors"}
-DEFAULT_PALETTE = "turbo-pascal"
+PALETTES = {name: p.label for name, p in themes.THEMES.items()}
+DEFAULT_PALETTE = themes.DEFAULT
 
 # Commands of our own, beyond the Turbo Vision standard set.
 CM_PROJECT = Command.USER + 1
 CM_ABOUT = Command.USER + 2
 CM_SELECT_ALL = Command.USER + 3
-CM_PALETTE = Command.USER + 4  # info: palette name
+CM_COLORS = Command.USER + 4  # Options > Colors
 CM_FIND = Command.USER + 5
 CM_REPLACE = Command.USER + 6
 CM_SEARCH_AGAIN = Command.USER + 7
@@ -286,12 +288,12 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, Application):
     TITLE = "divide"
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
     /* Turbo Vision's desktop: 0x71, the ░ pattern blue on light gray (textual-vision draws it on blue) */
-    Background { background: #AAAAAA; color: #0000AA; }
+    Background { background: $divide-desktop; color: $divide-desktop-pattern; }
     """
     # Key handling lives in bindings; menu and status line entries only show the keys.
     BINDINGS = [
@@ -335,8 +337,19 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
         Binding("alt+f1", "command('HELP_BACK')", "Previous topic", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
-    def __init__(self, root: Path, files: list[Path], *, palette: str = DEFAULT_PALETTE) -> None:
-        super().__init__(theme=palette)
+    def __init__(self, root: Path, files: list[Path], *, palette: str | None = None, colors: str | None = None) -> None:
+        settings = config.load()
+        palette = palette or settings.get("palette")
+        palette = palette if palette in themes.THEMES else DEFAULT_PALETTE
+        depth = colors or settings.get("colors", "auto")
+        # Rich (and so Textual) sends the colours as deep as the terminal says it can, or as asked
+        textual_constants.COLOR_SYSTEM = themes.DEPTHS.get(depth, "auto")
+        themes.use(palette)
+        super().__init__(theme=DEFAULT_PALETTE)  # textual-vision knows only its own themes
+        themes.set_ansi16(self.console.color_system in ("standard", "windows"))
+        for p in themes.THEMES.values():
+            self.register_theme(p.textual_theme())  # textual-vision's, with divide's roles
+        self.theme = palette
         self._lsp_init()
         self._run_init()
         self._web_init()
@@ -356,11 +369,17 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
         self._include_gen: dict[int, int] = {}  # editor id -> latest resolution asked
 
     # --------------------------------------------------------------- shell
+    def watch_theme(self, name: str) -> None:
+        """Options > Colors: the CSS follows by itself; what the code paints is painted again."""
+        themes.use(name)
+        for screen in self.screen_stack:
+            for widget in screen.walk_children():
+                widget.refresh()
+
     def get_default_screen(self) -> ShadowScreen:
         return ShadowScreen(id="_default")
 
     def init_menu_bar(self) -> Menu:
-        palette_items = [MenuItem(label, CM_PALETTE, param=name) for name, label in PALETTES.items()]
         return Menu(
             items=[
                 SubMenu(
@@ -450,7 +469,7 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
                 ),
                 SubMenu(
                     "~O~ptions",
-                    *palette_items,
+                    MenuItem("~C~olors...", CM_COLORS),
                     Separator(),
                     MenuItem("Plain ~s~ymbols", CM_ICONS, param=icons_mod.PLAIN),
                     MenuItem("~F~ile type marks", CM_ICONS, param=icons_mod.MARKS),
@@ -770,8 +789,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
                 self.call_after_refresh(editor.editor.update_completion, True)
             case _ if command == CM_PROJECT:
                 self.toggle_project()
-            case _ if command == CM_PALETTE and isinstance(info, str):
-                self.theme = info
+            case _ if command == CM_COLORS:
+                await self.choose_colors()
             case _ if command == CM_ICONS and info in icons_mod.MODES:
                 self.set_icons(info)
             case _ if command == CM_LSP_SERVERS:
@@ -2083,7 +2102,8 @@ class Divide(ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMix
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="divide", description="Terminal IDE for the Divengine projects.")
     parser.add_argument("paths", nargs="*", help="project folder and/or files to open")
-    parser.add_argument("--palette", choices=sorted(PALETTES), default=DEFAULT_PALETTE, help="colour palette")
+    parser.add_argument("--palette", choices=sorted(PALETTES), help="colour theme (default: the one chosen in Options > Colors, else turbo-pascal)")
+    parser.add_argument("--colors", choices=list(themes.DEPTHS), help="colour depth (default: what the terminal says it supports)")
     args = parser.parse_args(argv)
     root = Path.cwd()
     files: list[Path] = []
@@ -2095,7 +2115,7 @@ def main(argv: list[str] | None = None) -> None:
             files.append(p)
     if files and not any(Path(a).is_dir() for a in args.paths):
         root = files[0].resolve().parent
-    Divide(root, files, palette=args.palette).run()
+    Divide(root, files, palette=args.palette, colors=args.colors).run()
 
 
 __all__ = ["Divide", "main", "is_div_file"]

@@ -1,175 +1,55 @@
-"""Colour theme for Div token kinds (used by the editor and the CLI preview)."""
+"""The editor's TextArea themes, made from the palettes (divide.themes)."""
 
 from __future__ import annotations
 
 from rich.style import Style
+from textual._text_area_theme import TextAreaTheme
 
-# Palette loosely based on Monokai, tuned so that the families of Div blocks
-# are distinguishable at a glance: replacements (cyan), control flow (pink),
-# scopes (orange), definitions (green), code containers (purple).
-DIV_STYLES: dict[str, Style] = {
-    "div.replace": Style(color="#66D9EF"),
-    "div.modifier": Style(color="#FD971F", bold=True),
-    "div.var": Style(color="#A6E3FF"),
-    "div.var.builtin": Style(color="#66D9EF", italic=True),
-    "div.var.def": Style(color="#A6E22E", bold=True),
-    "div.format": Style(color="#E6DB74"),
-    "div.loop": Style(color="#F92672", bold=True),
-    "div.cond": Style(color="#F92672", bold=True),
-    "div.keyword": Style(color="#F92672", bold=True, italic=True),
-    "div.capsule": Style(color="#FD971F", bold=True),
-    "div.location": Style(color="#FD971F", bold=True),
-    "div.subparser": Style(color="#AE81FF", bold=True),
-    "div.multirep": Style(color="#AE81FF", bold=True),
-    "div.include": Style(color="#A6E22E", bold=True),
-    "div.path": Style(color="#A6E22E", underline=True),
-    "div.tplvar": Style(color="#A6E22E", bold=True),
-    "div.special": Style(color="#AE81FF", bold=True),
-    "div.comment": Style(color="#75715E", italic=True),
-    "div.doc": Style(color="#9C9A86", bold=True, italic=True),
-    "div.ignored": Style(color="#B8B8A8", dim=True),
-    "div.macro": Style(color="#AE81FF", bold=True),
-    "div.friendly": Style(color="#75715E"),
-    "div.property": Style(color="#FD971F", bold=True),
-    "div.property.value": Style(color="#E6DB74"),
-    "div.string": Style(color="#E6DB74"),
-    "div.number": Style(color="#AE81FF"),
-    "div.constant": Style(color="#66D9EF", italic=True),
-    "div.operator": Style(color="#F92672"),
-    "div.function": Style(color="#A6E22E"),
-    "div.punct": Style(color="#C0C0B8"),
-    "div.key": Style(color="#FD971F"),
-    "div.error": Style(color="#FFFFFF", bgcolor="#8B1E3F", bold=True),
-    "html.tag": Style(color="#7F9FBF"),
-    "html.attr": Style(color="#9FB8A0"),
-    "html.string": Style(color="#C8B88A"),
-    "html.comment": Style(color="#75715E", italic=True),
-    "html.entity": Style(color="#AE81FF"),
-    "json.key": Style(color="#F8F8F2", bold=True),
-    "json.string": Style(color="#E6DB74"),
-    "json.number": Style(color="#AE81FF"),
-    "json.constant": Style(color="#AE81FF"),
-    "json.ref": Style(color="#66D9EF", bold=True),
-    "json.punct": Style(color="#C0C0B8"),
-    "json.comment": Style(color="#75715E", italic=True),
-    "json.error": Style(color="#FFFFFF", bgcolor="#8B1E3F", bold=True),
-    # PHP (tree-sitter-php's highlight names)
-    "php.tag": Style(color="#F92672", bold=True),
-    "php.keyword": Style(color="#F92672"),
-    "php.string": Style(color="#E6DB74"),
-    "php.number": Style(color="#AE81FF"),
-    "php.comment": Style(color="#75715E", italic=True),
-    "php.variable": Style(color="#F8F8F2"),
-    "php.variable.builtin": Style(color="#FD971F", italic=True),
-    "php.function": Style(color="#A6E22E"),
-    "php.function.builtin": Style(color="#66D9EF"),
-    "php.function.method": Style(color="#A6E22E"),
-    "php.constructor": Style(color="#A6E22E", bold=True),
-    "php.type": Style(color="#66D9EF", italic=True),
-    "php.type.builtin": Style(color="#66D9EF", italic=True),
-    "php.module": Style(color="#FD971F"),
-    "php.module.builtin": Style(color="#FD971F"),
-    "php.constant": Style(color="#AE81FF"),
-    "php.constant.builtin": Style(color="#AE81FF", bold=True),
-    "php.property": Style(color="#FD971F"),
-    "php.operator": Style(color="#F92672"),
-    "diag.error": Style(color="#FFFFFF", bgcolor="#8B1E3F"),
-    "dialector.focus": Style(color="#000000", bgcolor="#66D9EF", bold=True),
-    "trace.new": Style(color="#000000", bgcolor="#A6E22E", bold=True),  # what a mutation wrote
-    "trace.old": Style(color="#FFFFFF", bgcolor="#F92672", bold=True),  # what it took away
-    "diag.warning": Style(underline=True),
-}
+from divide import themes
+from divide.themes import CGA  # noqa: F401  (the CGA colours, for whoever needs a slot's RGB)
+
+EDITOR, OUTPUT = "editor", "output"
 
 
-# --------------------------------------------------------------------------
-# Borland-style palette: the 16 CGA text-mode colours, yellow on blue like the
-# Turbo Pascal / Turbo C editors. Div is the "code" of a template, so its
-# structure gets the reserved-word white, variables get light cyan, and the
-# HTML around it stays in the quieter cyan/yellow range.
-CGA = {
-    "black": "#000000", "blue": "#0000AA", "green": "#00AA00", "cyan": "#00AAAA",
-    "red": "#AA0000", "magenta": "#AA00AA", "brown": "#AA5500", "lightgray": "#AAAAAA",
-    "darkgray": "#555555", "lightblue": "#5555FF", "lightgreen": "#55FF55",
-    "lightcyan": "#55FFFF", "lightred": "#FF5555", "lightmagenta": "#FF55FF",
-    "yellow": "#FFFF55", "white": "#FFFFFF",
-}
+def theme_name(palette: themes.Palette, kind: str) -> str:
+    return palette.name if kind == EDITOR else f"{palette.name}-{kind}"
 
 
-def _c(name: str, **kw) -> Style:
-    return Style(color=CGA[name], **kw)
+def editor_theme(p: themes.Palette) -> TextAreaTheme:
+    """The editor: Borland's yellow on blue in the Borland themes."""
+    return TextAreaTheme(
+        name=theme_name(p, EDITOR),
+        base_style=p.style("editor-text", "editor-bg"),
+        gutter_style=p.style("editor-gutter", "editor-bg"),
+        cursor_style=p.style("editor-cursor", "editor-cursor-bg"),
+        cursor_line_gutter_style=p.style("editor-cursor-line", "editor-bg"),
+        bracket_matching_style=p.style("editor-bracket", "editor-bracket-bg", bold=True),
+        selection_style=p.style("editor-selection", "editor-selection-bg"),
+        syntax_styles=dict(p.token_styles()),
+    )
 
 
-TURBO_STYLES: dict[str, Style] = {
-    "div.replace": _c("lightcyan"),
-    "div.modifier": _c("lightmagenta"),
-    "div.var": _c("lightcyan"),
-    "div.var.builtin": _c("lightgreen"),
-    "div.var.def": _c("white", bold=True),
-    "div.format": _c("lightmagenta"),
-    "div.loop": _c("white", bold=True),
-    "div.cond": _c("white", bold=True),
-    "div.keyword": _c("white", bold=True),
-    "div.capsule": _c("white", bold=True),
-    "div.location": _c("white", bold=True),
-    "div.subparser": _c("lightred", bold=True),
-    "div.multirep": _c("lightred", bold=True),
-    "div.include": _c("white", bold=True),
-    "div.path": _c("lightgreen", underline=True),
-    "div.tplvar": _c("white", bold=True),
-    "div.special": _c("lightred"),
-    "div.comment": _c("lightgray"),
-    "div.doc": _c("lightgray", bold=True),
-    "div.ignored": _c("lightgray"),
-    "div.macro": _c("lightred", bold=True),
-    "div.friendly": _c("lightgray"),
-    "div.property": _c("white"),
-    "div.property.value": _c("lightcyan"),
-    "div.string": _c("lightgreen"),
-    "div.number": _c("lightmagenta"),
-    "div.constant": _c("lightmagenta"),
-    "div.operator": _c("yellow"),
-    "div.function": _c("white"),
-    "div.punct": _c("yellow"),
-    "div.key": _c("lightcyan"),
-    "div.error": Style(color=CGA["white"], bgcolor=CGA["red"], bold=True),
-    "html.tag": _c("cyan"),
-    "html.attr": _c("cyan"),
-    "html.string": _c("lightgreen"),
-    "html.comment": _c("lightgray"),
-    "html.entity": _c("lightmagenta"),
-    # Div JSON (data files, dialects): keys like reserved words, $refs like Div variables.
-    "json.key": _c("white", bold=True),
-    "json.string": _c("lightgreen"),
-    "json.number": _c("lightmagenta"),
-    "json.constant": _c("lightmagenta"),
-    "json.ref": _c("lightcyan", bold=True),
-    "json.punct": _c("yellow"),
-    "json.comment": _c("lightgray"),
-    "json.error": Style(color=CGA["white"], bgcolor=CGA["red"], bold=True),
-    # PHP: reserved words white like Borland's, variables like Div's.
-    "php.tag": _c("lightred", bold=True),
-    "php.keyword": _c("white", bold=True),
-    "php.string": _c("lightgreen"),
-    "php.number": _c("lightmagenta"),
-    "php.comment": _c("lightgray"),
-    "php.variable": _c("lightcyan"),
-    "php.variable.builtin": _c("lightcyan", bold=True),
-    "php.function": _c("white"),
-    "php.function.builtin": _c("white"),
-    "php.function.method": _c("white"),
-    "php.constructor": _c("white", bold=True),
-    "php.type": _c("lightgreen"),
-    "php.type.builtin": _c("lightgreen"),
-    "php.module": _c("cyan"),
-    "php.module.builtin": _c("cyan"),
-    "php.constant": _c("lightmagenta"),
-    "php.constant.builtin": _c("lightmagenta", bold=True),
-    "php.property": _c("lightcyan"),
-    "php.operator": _c("yellow"),
-    # Diagnostics, drawn over the syntax colours (Run > Check, Alt+F7/F8).
-    "diag.error": Style(color=CGA["white"], bgcolor=CGA["red"]),
-    "dialector.focus": Style(color=CGA["black"], bgcolor=CGA["lightcyan"], bold=True),
-    "trace.new": Style(color=CGA["black"], bgcolor=CGA["lightgreen"], bold=True),
-    "trace.old": Style(color=CGA["white"], bgcolor=CGA["red"], bold=True),
-    "diag.warning": Style(bgcolor=CGA["brown"]),
-}
+def output_theme(p: themes.Palette) -> TextAreaTheme:
+    """Turbo Pascal's Output window; Div tags left in a render keep their
+    colours, everything else is plain."""
+    return TextAreaTheme(
+        name=theme_name(p, OUTPUT),
+        base_style=p.style("output-text", "output-bg"),
+        gutter_style=p.style("output-gutter", "output-bg"),
+        cursor_style=p.style("output-cursor", "output-cursor-bg"),
+        cursor_line_gutter_style=p.style("output-cursor-bg", "output-bg"),
+        bracket_matching_style=p.style("output-text", "output-bg"),
+        selection_style=p.style("output-selection", "output-selection-bg"),
+        syntax_styles={k: v for k, v in p.token_styles().items() if k.startswith("div.")},
+    )
+
+
+_all: dict[bool, list[TextAreaTheme]] = {}  # per colour mode (themes.ansi16)
+
+
+def all_themes() -> list[TextAreaTheme]:
+    """Every palette's editor and output themes (made once per colour mode)."""
+    mode = themes.ansi16()
+    if mode not in _all:
+        _all[mode] = [make(p) for p in themes.THEMES.values() for make in (editor_theme, output_theme)]
+    return _all[mode]

@@ -12,7 +12,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Static
 from textual_vision.button import Button
-from textual_vision.cluster import CheckBoxes, RadioButtons
+from textual_vision.cluster import CheckBoxes, Cluster, RadioButtons
 from textual_vision.constants import Command
 from textual_vision.dialogs import Dialog
 from textual_vision.input_line import InputLine
@@ -77,8 +77,8 @@ class _Dialog(Dialog):
             yield from self.compose_content()
 
     def on_key(self, event: events.Key) -> None:
-        # Enter in an input line presses the default button, as in Turbo Vision.
-        if event.key == "enter" and isinstance(self.current, InputLine):
+        # Enter in an input line or a cluster presses the default button, as in Turbo Vision.
+        if event.key == "enter" and isinstance(self.current, (InputLine, Cluster)):
             default = next((b for b in self.query(Button) if b.is_default), None)
             if default is not None:
                 event.stop()

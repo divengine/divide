@@ -26,7 +26,8 @@ from textual_vision.scroll_bar import ScrollBar as TVScrollBar
 from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
-from divide.editor.theme import CGA
+from divide import themes
+from divide.editor.theme import OUTPUT
 from divide.lang.div.complete import CARET, CompletionResult, complete
 from divide.ui.completion import CompletionPopup, InfoPopup
 from divide.ui import icons as icons_mod
@@ -401,8 +402,6 @@ class EditorView(DivEditor, TVViewMixin):
 
     # ------------------------------------------------------------ debugger
     # Turbo Pascal's bars: breakpoints in red, the line about to run in cyan.
-    BREAKPOINT_STYLE = Style(color="bright_white", bgcolor="red")
-    EXECUTION_STYLE = Style(color="black", bgcolor="cyan")
 
     def set_debug_marks(self, breakpoints: set[int], execution: int | None) -> None:
         if breakpoints != self.breakpoint_rows or execution != self.execution_row:
@@ -419,9 +418,9 @@ class EditorView(DivEditor, TVViewMixin):
         except (IndexError, TypeError):
             return strip
         if row == self.execution_row:
-            style = self.EXECUTION_STYLE
+            style = themes.current().style("execution", "execution-bg")
         elif row in self.breakpoint_rows:
-            style = self.BREAKPOINT_STYLE
+            style = themes.current().style("breakpoint", "breakpoint-bg")
         else:
             return strip
         gutter = self.gutter_width
@@ -846,12 +845,12 @@ class ProjectWindow(_TVWindow):
             self.app.close_window(self)  # type: ignore[attr-defined]
 
 
-# Turbo Pascal's Output window: white on black, whatever the palette.
-OUTPUT_CSS = f"""
-    {{name}} {{{{ background: {CGA["black"]}; }}}}
-    {{name}} IndicatorFrame .frame--active {{{{ color: {CGA["white"]}; }}}}
-    {{name}} IndicatorFrame .frame--passive {{{{ color: {CGA["lightgray"]}; }}}}
-    {{name}} IndicatorFrame .frame--title {{{{ color: {CGA["white"]}; }}}}
+# Turbo Pascal's Output window: white on black in the Borland palettes.
+OUTPUT_CSS = """
+    {name} { background: $divide-output-bg; }
+    {name} IndicatorFrame .frame--active { color: $divide-output-frame; }
+    {name} IndicatorFrame .frame--passive { color: $divide-output-frame-passive; }
+    {name} IndicatorFrame .frame--title { color: $divide-output-frame; }
 """
 
 
@@ -859,11 +858,11 @@ class OutputWindow(_TVWindow):
     """Rendered output of a template, or what a script printed (read only;
     leftover Div tags stay highlighted). White on black."""
 
-    DEFAULT_CSS = OUTPUT_CSS.format(name="OutputWindow")
+    DEFAULT_CSS = OUTPUT_CSS.replace("{name}", "OutputWindow")
 
     def __init__(self, number: int = 0) -> None:
         super().__init__("Output", number=number)
-        self.view = EditorView("", read_only=True, editor_theme="output")
+        self.view = EditorView("", read_only=True, kind=OUTPUT)
         self.template: Path | None = None
         self.summary = ""
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from divide.editor.theme import CGA
+from divide import themes
 
 PLAIN = "plain"
 MARKS = "marks"
@@ -20,7 +20,7 @@ MODES = (PLAIN, MARKS)
 
 FILE = ("-", "lightgray")  # a file of no known type
 
-# by extension: (mark, colour) — a hint of the language where there is one
+# by extension: (mark, colour slot) — a hint of the language where there is one
 BY_EXTENSION: dict[str, tuple[str, str]] = {
     ".tpl": ("{", "lightcyan"),  # Div's braces
     ".div": ("{", "lightcyan"),
@@ -51,7 +51,7 @@ BY_NAME: dict[str, tuple[str, str]] = {
 }
 
 
-def mark_for(path: Path) -> tuple[str, str]:
-    """``(mark, colour)`` of a file; the colour is a CGA hex value."""
-    mark, colour = BY_NAME.get(path.name) or BY_EXTENSION.get(path.suffix.lower()) or FILE
-    return mark, CGA[colour]
+def mark_for(path: Path, palette: themes.Palette | None = None) -> tuple[str, str]:
+    """``(mark, colour)`` of a file; the colour is the slot's ``#RRGGBB`` in the palette."""
+    mark, slot = BY_NAME.get(path.name) or BY_EXTENSION.get(path.suffix.lower()) or FILE
+    return mark, (palette or themes.current()).hex(slot)

@@ -32,7 +32,7 @@ from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
-from divide.editor.theme import CGA
+from divide import themes
 from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
 from divide.ui.dialogs import _Dialog, browse_into
@@ -178,6 +178,7 @@ class DialectorWindow(_TVWindow):
         self.call_after_refresh(self.paint)
         self.call_after_refresh(self.reload)
         self.call_after_refresh(self.sections.focus)
+        self.app.theme_changed_signal.subscribe(self, lambda _theme: self.call_after_refresh(self.paint))
 
     def paint(self) -> None:
         """The panels take the editor's colours (Options > Editor theme included)."""
@@ -188,7 +189,7 @@ class DialectorWindow(_TVWindow):
             box.styles.background = bg
             box.styles.color = fg
         if self.verdict_box.has_class("-bad"):
-            self.verdict_box.styles.color = Color.parse(CGA["lightred"])
+            self.verdict_box.styles.color = Color.parse(themes.current().colour("verdict-error"))
         self.sections.refresh()
 
     # ------------------------------------------------------------- sync

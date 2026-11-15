@@ -8,17 +8,21 @@ from pathlib import Path
 from rich.console import Console
 from rich.text import Text
 
-from divide.editor.theme import DIV_STYLES
+from divide import themes
 
 from .dialect import resolve_dialect
 from .lexer import tokenize
 
 
+PREVIEW_PALETTE = "modern-dark"  # made for a dark terminal, as the preview's colours always were
+
+
 def render(text: str, path: Path | None = None, show_kinds: bool = False) -> Text:
     dialect = resolve_dialect(text, path)
     out = Text(text)
+    styles = themes.get(PREVIEW_PALETTE).token_styles()
     for tok in tokenize(text, dialect):
-        style = DIV_STYLES.get(tok.kind)
+        style = styles.get(tok.kind)
         if style:
             out.stylize(style, tok.start, tok.end)
     return out

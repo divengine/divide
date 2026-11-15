@@ -129,8 +129,13 @@ async def test_menu_and_windows(tmp_path):
         await pilot.press("alt+2")
         await settle(pilot)
         assert app.active_editor() is wb
-        # Options > Turbo C colors, through the menu
+        # Options > Colors, through the menu: Turbo C, the theme after Turbo Pascal
         await pilot.press("alt+o", "c")
+        await settle(pilot)
+        await pilot.press("down")
+        await settle(pilot)
+        assert app.theme == "turbo-c"  # previewed
+        await pilot.press("enter")
         await settle(pilot)
         assert app.theme == "turbo-c"
         # Window > Project toggles the project window

@@ -24,7 +24,7 @@ from textual_vision.group import TVViewMixin
 from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 
-from divide.editor.theme import TURBO_STYLES
+from divide import themes
 from divide.lang import divjson
 from divide.lang.divjson import Ref
 from divide.ui.dialogs import _Dialog
@@ -35,7 +35,7 @@ MAX_PREVIEW = 48
 
 
 def _style(kind: str):
-    return TURBO_STYLES[kind]
+    return themes.current().token_styles()[kind]
 
 
 def scalar_text(value: Any) -> Text:
@@ -226,6 +226,8 @@ class JsonTreeWindow(_TVWindow):
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.reload)
+        # the labels are coloured when made: made again in the new colours
+        self.app.theme_changed_signal.subscribe(self, lambda _theme: self.rebuild() if hasattr(self, "value") else None)
 
     # ------------------------------------------------------------- sync
     def reload(self) -> None:

@@ -26,7 +26,6 @@ from textual.app import ComposeResult
 from textual_vision.list_box import ListBox
 
 from divide import config
-from divide.editor.theme import CGA
 from divide.run.dbgp import DebugError, DebugSession, Location, xdebug_ini
 from divide.run.script import ScriptMessage, ScriptResult, command, run_script, size_text, split_args
 from divide.ui.dialogs import InputDialog, information
@@ -42,15 +41,15 @@ NOT_PAUSED = "Start the script in the debugger first (F7, F8 or F4) and stop at 
 DEBUG_HINT = "F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 reset"
 
 
-# Turbo Pascal's debugger windows: all cyan, black text, the chosen line white on red.
-_CYAN, _BLACK, _WHITE, _RED = CGA["cyan"], CGA["black"], CGA["white"], CGA["red"]
+# Turbo Pascal's debugger windows: all cyan, black text, the chosen line white on red
+# (in the Borland palettes: the colours are the palette's debug-* roles).
 
 
 class PickList(ListBox):
-    DEFAULT_CSS = f"""
-    PickList {{ background: {_CYAN}; }}
-    PickList > .list-viewer--normal {{ color: {_BLACK}; background: {_CYAN}; }}
-    PickList > .list-viewer--focused {{ color: {_WHITE}; background: {_RED}; }}
+    DEFAULT_CSS = """
+    PickList { background: $divide-debug-bg; }
+    PickList > .list-viewer--normal { color: $divide-debug-text; background: $divide-debug-bg; }
+    PickList > .list-viewer--focused { color: $divide-debug-selected; background: $divide-debug-selected-bg; }
     """
     can_focus = True
 
@@ -65,11 +64,11 @@ class PickList(ListBox):
             self.select_item(self.focused)
 
 
-DEBUG_CSS = f"""
-    {{name}} {{{{ background: {_CYAN}; }}}}
-    {{name}} IndicatorFrame .frame--active {{{{ color: {_WHITE}; }}}}
-    {{name}} IndicatorFrame .frame--passive {{{{ color: {_BLACK}; }}}}
-    {{name}} IndicatorFrame .frame--title {{{{ color: {_BLACK}; }}}}
+DEBUG_CSS = """
+    {name} {{ background: $divide-debug-bg; }}
+    {name} IndicatorFrame .frame--active {{ color: $divide-debug-frame; }}
+    {name} IndicatorFrame .frame--passive {{ color: $divide-debug-frame-passive; }}
+    {name} IndicatorFrame .frame--title {{ color: $divide-debug-title; }}
 """
 
 

@@ -27,7 +27,7 @@ from textual.screen import ModalScreen
 from rich.text import Text
 from textual.widgets import Static
 
-from divide.editor.theme import CGA
+from divide import themes
 from divide.ui.dialogs import _Dialog
 from divide.ui.shadow import install_shadows
 
@@ -36,13 +36,17 @@ T = TypeVar("T")
 AUTO_CLOSE = 2.0  # seconds a success stays up
 TIME = "Time"
 BLOCK = "▓██▓"  # what goes back and forth while the job cannot say how far it is
-FILL, TRACK = CGA["blue"], CGA["darkgray"]  # on the gray of the dialogs
 
 
 def bar_text(width: int, fraction: float | None = None, phase: int = 0, *,
-             fill: str | None = FILL, track: str | None = TRACK) -> Text:
+             fill: str | None = None, track: str | None = None) -> Text:
     """A bar ``width`` cells wide: ``fraction`` (0-1) filled, half cells as ``▓``;
-    None: ``BLOCK`` at step ``phase`` of its trip there and back."""
+    None: ``BLOCK`` at step ``phase`` of its trip there and back. The colours
+    are the palette's progress-fill and progress-track (blue and dark gray on
+    the gray dialogs of the Borland palettes)."""
+    palette = themes.current()
+    fill = fill or palette.colour("progress-fill")
+    track = track or palette.colour("progress-track")
     width = max(1, width)
     if fraction is None:
         block = BLOCK[:width]
@@ -112,7 +116,7 @@ class ProgressDialog(_Dialog):
             return bar_text(width, 1.0 if self.ok else 0.0)
         fraction = 1.0 if self.ok and not self.running else self.fraction
         bar = bar_text(width - 5, fraction)
-        bar.append(f"{round(fraction * 100):4d}%", style=CGA["black"])
+        bar.append(f"{round(fraction * 100):4d}%", style=themes.current().colour("progress-text"))
         return bar
 
     def _show(self) -> None:

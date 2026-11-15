@@ -4,7 +4,7 @@ from textual.geometry import Region
 from textual_vision.menus import MenuBox
 
 from divide.app import Divide
-from divide.ui.shadow import SHADOW_STYLE, compute_shadow_spans, shadow_regions
+from divide.ui.shadow import compute_shadow_spans, shadow_regions, shadow_style
 
 
 class Fake:
@@ -60,7 +60,7 @@ async def test_menu_casts_shadow_on_screen(tmp_path):
             return next(iter(line)).style
 
         shadow = style_at(x + w, y + 2)
-        assert shadow.bgcolor == SHADOW_STYLE.bgcolor and shadow.color == SHADOW_STYLE.color
-        assert style_at(x + w + 3, y + 2).bgcolor != SHADOW_STYLE.bgcolor
-        assert style_at(x + 2, y + h).bgcolor == SHADOW_STYLE.bgcolor
-        assert style_at(x + 1, y + h).bgcolor != SHADOW_STYLE.bgcolor  # starts 2 columns in
+        assert shadow.bgcolor == shadow_style().bgcolor and shadow.color == shadow_style().color
+        assert style_at(x + w + 3, y + 2).bgcolor != shadow_style().bgcolor
+        assert style_at(x + 2, y + h).bgcolor == shadow_style().bgcolor
+        assert style_at(x + 1, y + h).bgcolor != shadow_style().bgcolor  # starts 2 columns in
