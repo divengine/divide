@@ -99,6 +99,8 @@ class DivEditor(TextArea):
         self.json_refs: list[str] = []
         self.diagnostics: list[Diagnostic] = []
         self.tokens: list = []  # lexer tokens of the template (Div only)
+        self.blocks: list = []  # its constructs (Lexer.blocks), for the outline
+        self._blocks_text: str | None = None
         self.include_targets: dict = {}  # include path -> IncludeTarget, as Div resolved it
         self.include_set: frozenset[str] = frozenset()  # literal include paths in the text
         self.forced_dialect: Dialect | None = None  # a dialect given from outside (the dialector's preview)
@@ -137,6 +139,15 @@ class DivEditor(TextArea):
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.apply_palette())
         if self.lang == "php":
             self.post_message(self.CheckRequested(self))
+
+    def div_blocks(self) -> list:
+        """The constructs of the template as it is now (lexed again if the colours lag behind)."""
+        if self._blocks_text != self.text:
+            self._update_dialect(self.text)
+            lexer = _LEXERS.get(self.dialect)
+            lexer.tokenize(self.text)
+            self.blocks, self._blocks_text = lexer.blocks, self.text
+        return self.blocks
 
     def apply_palette(self) -> None:
         """The colours of the current palette (Options > Colors)."""
@@ -215,7 +226,9 @@ class DivEditor(TextArea):
         text = self.text
         if self.lang == "div":
             self._update_dialect(text)
-            tokens = self.tokens = _LEXERS.get(self.dialect).tokenize(text)
+            lexer = _LEXERS.get(self.dialect)
+            tokens = self.tokens = lexer.tokenize(text)
+            self.blocks, self._blocks_text = lexer.blocks, text
             includes = frozenset(raw for _, _, raw in include_paths(text, tokens, self.dialect))
             if includes != self.include_set:
                 self.include_set = includes

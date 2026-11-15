@@ -2047,7 +2047,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             status.set_hint(active.hint())
             return
         if isinstance(active, OutlineWindow):
-            status.set_hint(OutlineWindow.HINT)
+            status.set_hint(active.hint)
             return
         self.follow_outline()
         if isinstance(active, HelpWindow):

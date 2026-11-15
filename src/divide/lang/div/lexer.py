@@ -38,6 +38,19 @@ class Token:
     kind: str
 
 
+@dataclass(frozen=True, slots=True)
+class Block:
+    """A construct the lexer recognised, for the outline: its kind, its head
+    (the opening tag, ``start``..``head``) and its end (after the closing tag;
+    the head's end for tags without a body). ``CONDITIONS`` ends where its
+    ``{/?}`` is found, which the outline pairs."""
+
+    kind: str
+    start: int
+    head: int
+    end: int
+
+
 # Token kinds (also the names used by editor themes).
 DELIM = "div.delim"
 LOOP = "div.loop"
@@ -112,6 +125,14 @@ AGGREGATE_KEYS = (
     "DIV_TAG_AGGREGATE_FUNCTION_SUM",
     "DIV_TAG_AGGREGATE_FUNCTION_AVG",
 )
+
+# Outline kinds of the keyed blocks, by their begin tag.
+BLOCK_OF = {
+    "DIV_TAG_CAPSULE_BEGIN_PREFIX": "capsule",
+    "DIV_TAG_LOCATION_CONTENT_BEGIN_PREFIX": "location-content",
+    "DIV_TAG_CONDITIONAL_TRUE_BEGIN_PREFIX": "if",
+    "DIV_TAG_CONDITIONAL_FALSE_BEGIN_PREFIX": "if-not",
+}
 
 # Mode names for the text between Div tags.
 TEXT, VALUE, EXPR, PATHM, ITER, VARM, STRM = "text", "value", "expr", "path", "iter", "var", "string"
@@ -211,7 +232,7 @@ class Lexer:
             (T["DIV_TAG_PREPROCESSED_BEGIN"], self._r_include(T["DIV_TAG_PREPROCESSED_BEGIN"], T["DIV_TAG_PREPROCESSED_END"])),
             (T["DIV_TAG_INCLUDE_BEGIN"], self._r_include(T["DIV_TAG_INCLUDE_BEGIN"], T["DIV_TAG_INCLUDE_END"])),
             (T["DIV_TAG_CONDITIONS_BEGIN_PREFIX"], self._r_conditions),
-            (T["DIV_TAG_CONDITIONS_END"], self._r_lit(COND)),
+            (T["DIV_TAG_CONDITIONS_END"], self._r_conditions_end),
             (T["DIV_TAG_FORMULA_BEGIN"], self._r_formula),
             (T["DIV_TAG_STRIP_BEGIN"], self._r_lit(KEYWORD)),
             (T["DIV_TAG_STRIP_END"], self._r_lit(KEYWORD)),
@@ -226,7 +247,7 @@ class Lexer:
             (T["DIV_TAG_LOOP_END_PREFIX"], self._r_orphan_end),
             (T["DIV_TAG_LOOP_BEGIN_PREFIX"], self._r_loop),
             (T["DIV_TAG_ITERATION_BEGIN_PREFIX"], self._r_iteration),
-            (T["DIV_TAG_ITERATION_END"], self._r_lit(LOOP)),
+            (T["DIV_TAG_ITERATION_END"], self._r_iteration_end),
             (T["DIV_TAG_EMPTY"], self._r_lit(KEYWORD)),
             (T["DIV_TAG_BREAK"], self._r_lit(KEYWORD)),
             (T["DIV_TAG_ELSE"], self._r_lit(KEYWORD)),
@@ -262,9 +283,13 @@ class Lexer:
         self.pending: dict[int, list[tuple[int, str]]] = {}
         self.pending_pos: list[int] = []
         self.html_state: str | None = None  # None | "tag" | quote char
+        self.blocks: list[Block] = []  # the constructs, for the outline
         self._scan(0, len(text), TEXT)
         self.out.sort(key=lambda t: t.start)
         return self.out
+
+    def _block(self, kind: str, start: int, head: int, end: int | None = None) -> None:
+        self.blocks.append(Block(kind, start, head, head if end is None else end))
 
     def _emit(self, start: int, end: int, kind: str) -> None:
         if end > start:
@@ -466,6 +491,7 @@ class Lexer:
         self._emit(pos, pos + len(b), KEYWORD)
         self._emit(pos + len(b), close, IGNORED)
         self._emit(close, close + len(e), KEYWORD)
+        self._block("ignore", pos, pos + len(b), close + len(e))
         return close + len(e)
 
     def _r_macro(self, pos: int, hi: int, mode: str) -> int | None:
@@ -478,6 +504,7 @@ class Lexer:
         self._emit(pos, pos + len(b), MACRO)
         self._scan(pos + len(b), close, EXPR)
         self._emit(close, close + len(e), MACRO)
+        self._block("macro", pos, close + len(e))
         return close + len(e)
 
     def _r_tplvar(self, pos: int, hi: int, mode: str) -> int | None:
@@ -496,6 +523,7 @@ class Lexer:
             inner = m.end()
         self._scan(inner, close, VALUE)
         self._emit(close, close + len(e), TPLVAR)
+        self._block("tplvar", pos, close + len(e))
         return close + len(e)
 
     def _r_default(self, pos: int, hi: int, mode: str) -> int | None:
@@ -506,6 +534,7 @@ class Lexer:
         self._emit(pos, pos + len(b), TPLVAR)
         self._scan(pos + len(b), close, VALUE)
         self._emit(close, close + len(e), TPLVAR)
+        self._block("default", pos, close + len(e))
         return close + len(e)
 
     def _r_include(self, b: str, e: str) -> Callable[[int, int, str], int | None]:
@@ -518,6 +547,7 @@ class Lexer:
             self._emit(pos, pos + len(b), INCLUDE)
             self._scan(pos + len(b), close, PATHM)
             self._emit(close, close + len(e), INCLUDE)
+            self._block("preprocessed" if b == self.T["DIV_TAG_PREPROCESSED_BEGIN"] else "include", pos, close + len(e))
             return close + len(e)
 
         return rule
@@ -530,7 +560,20 @@ class Lexer:
         self._emit(pos, pos + len(b), COND)
         self._scan(pos + len(b), close, EXPR)
         self._emit(close, close + len(e), COND)
+        self._block("conditions", pos, close + len(e))  # its end: the {/?} the outline pairs with it
         return close + len(e)
+
+    def _r_conditions_end(self, pos: int, hi: int, mode: str) -> int | None:
+        return self._end_tag(pos, "DIV_TAG_CONDITIONS_END", COND, "conditions-end")
+
+    def _end_tag(self, pos: int, key: str, kind: str, block: str) -> int | None:
+        """A closing tag whose opening one the outline pairs with it ({/?}, [/])."""
+        lit = self.T[key]
+        if not self.text.startswith(lit, pos):
+            return None
+        self._emit(pos, pos + len(lit), kind)
+        self._block(block, pos, pos + len(lit))
+        return pos + len(lit)
 
     def _r_formula(self, pos: int, hi: int, mode: str) -> int | None:
         b, e = self.T["DIV_TAG_FORMULA_BEGIN"], self.T["DIV_TAG_FORMULA_END"]
@@ -665,6 +708,7 @@ class Lexer:
         ep = len(T["DIV_TAG_SUBPARSER_END_PREFIX"])
         name_len = len(m.group(0))
         self._add_pending(close, [(ep, SUBPARSER), (name_len, SUBPARSER), (len(T["DIV_TAG_SUBPARSER_END_SUFFIX"]), SUBPARSER)])
+        self._block("subparser", pos, end, close + len(close_tag))
         return end
 
     def _r_multirep(self, pos: int, hi: int, mode: str) -> int | None:
@@ -684,6 +728,7 @@ class Lexer:
             (len(T["DIV_TAG_MULTI_REPLACEMENT_END_PREFIX"]), MULTIREP), (len(key), VAR),
             (len(T["DIV_TAG_MULTI_REPLACEMENT_END_SUFFIX"]), MULTIREP),
         ])
+        self._block("multirep", pos, pos + len(open_tag), close + len(close_tag))
         return pos + len(open_tag)
 
     def _r_loop(self, pos: int, hi: int, mode: str) -> int | None:
@@ -710,6 +755,7 @@ class Lexer:
             self._emit(it.start("op"), it.end("op"), LOOP)
             end = it.end()
         self._add_pending(close, [(len(ep), LOOP), (len(key), self._var_kind(key)), (len(es), LOOP)])
+        self._block("loop", pos, end, close + len(close_tag))
         return end
 
     def _r_orphan_end(self, pos: int, hi: int, mode: str) -> int | None:
@@ -735,7 +781,11 @@ class Lexer:
         self._emit(pos, pos + len(b), LOOP)
         self._scan(pos + len(b), close, ITER)
         self._emit(close, close + len(e), LOOP)
+        self._block("iteration", pos, close + len(e))  # its end: the [/] the outline pairs with it
         return close + len(e)
+
+    def _r_iteration_end(self, pos: int, hi: int, mode: str) -> int | None:
+        return self._end_tag(pos, "DIV_TAG_ITERATION_END", LOOP, "iteration-end")
 
     def _r_location(self, pos: int, hi: int, mode: str) -> int | None:
         m = self.location_re.match(self.text, pos)
@@ -744,6 +794,7 @@ class Lexer:
         self._emit(pos, m.start("name"), LOCATION)
         self._emit(m.start("name"), m.end("name"), VAR_DEF)
         self._emit(m.end("name"), m.end(), LOCATION)
+        self._block("location", pos, m.end())
         return m.end()
 
     def _r_keyed(self, bp: str, bs: str, ep: str, es: str, kind: str) -> Callable[[int, int, str], int | None]:
@@ -773,6 +824,7 @@ class Lexer:
                     continue
                 self._parts(pos, (len(b), kind), (len(k), self._var_kind(k)), (len(s), kind))
                 self._add_pending(close, [(len(e1), kind), (len(k), self._var_kind(k)), (len(e2), kind)])
+                self._block(BLOCK_OF.get(bp, kind), pos, pos + len(open_tag), close + len(close_tag))
                 return pos + len(open_tag)
             return None
 
@@ -811,6 +863,7 @@ class Lexer:
         self._emit(pos, m.end("name"), PROPERTY)
         self._emit(m.start("sp"), m.end("sp"), OPERATOR)
         self._emit(m.start("val"), m.end("val"), PROPERTY_VALUE)
+        self._block("property", pos, m.end())
         return m.end()
 
 

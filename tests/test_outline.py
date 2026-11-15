@@ -89,16 +89,78 @@ async def test_outline_window_follows_and_jumps(tmp_path):
         app.update_status()
         assert "extra()" in window.lines
 
-        # a template: Ctrl+A selects all; the outline keeps the PHP file's list
+        # a template: Ctrl+A selects all; the outline follows it
         app.raise_window(app.window_for(page))
         await settle(pilot)
         await pilot.press("ctrl+a")
         assert app.active_editor().editor.selected_text == "hello\nworld\n"
-        assert window.source is editor
+        app.update_status()
+        assert window.source.path == page and window.lines == ["(no Div tags)"]
 
-    app = Divide(tmp_path, [page])
+    notes = tmp_path / "notes.txt"
+    notes.write_text("plain\n")
+    app = Divide(tmp_path, [notes])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
         await pilot.press("ctrl+o")
         await settle(pilot)
         assert app.outline_window().lines == [NO_OUTLINE]
+
+
+TEMPLATE = """@_DIALECT = default
+{= title: "Shop" =}
+{% layout/header %}
+[$products] product =>
+  ?$product.offer
+    {%% components/card %%}
+  $product.offer?
+  {?( {$product.price} > 10 )?}<b>dear</b>{/?}
+[/$products]
+[[cart  {$total}  cart]]
+{{side <aside/> side}}
+(( side ))
+"""
+
+
+def test_outline_of_a_template():
+    from divide.lang.div.lexer import Lexer
+    from divide.lang.div.outline import outline as div_outline
+
+    lexer = Lexer()
+    lexer.tokenize(TEMPLATE)
+    entries = div_outline(TEMPLATE, lexer.blocks)
+    assert [e.text for e in entries] == [
+        "@_DIALECT = default",
+        '{= title: "Shop" =}',
+        "{% layout/header %}",
+        "[$products] product =>",
+        "  ?$product.offer",
+        "    {%% components/card %%}",
+        "  {?( {$product.price} > 10 )?}",
+        "[[cart",
+        "{{side",
+        "(( side ))",
+    ]
+    loop = entries[3]
+    assert TEMPLATE[loop.start:loop.end] == "[$products] product =>"
+    assert TEMPLATE[loop.body_end - len("[/$products]"):loop.body_end] == "[/$products]"
+
+
+async def test_outline_window_of_a_template(tmp_path):
+    page = tmp_path / "page.tpl"
+    page.write_text(TEMPLATE)
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await pilot.press("ctrl+o")
+        await settle(pilot)
+        window = app.outline_window()
+        assert window.lines[3] == "[$products] product =>" and "Enter go to the tag" in window.hint
+        window.list.focus_item(5)
+        await pilot.press("enter")
+        await settle(pilot)
+        assert app.active_editor().editor.selected_text == "{%% components/card %%}"
+        app.active_editor().editor.insert("{% extra %}\n", (1, 0))
+        await settle(pilot)
+        app.update_status()
+        assert "{% extra %}" in window.lines
