@@ -190,7 +190,23 @@ class HRule(Rule):
         return Strip([Segment("─" * self.size.width, self._line_style())])
 
 
-class FrameScrollBar(TVScrollBar):
+class PassiveScrollBar(TVScrollBar):
+    """textual-vision's TScrollBar (▲ ▒ ■ ▼, ◄ ►) that never takes the focus:
+    a click on it scrolls its view and leaves the focus where it was."""
+
+    # as Textual's own scroll bars: a click on one does not move the focus (to the window)
+    DEFAULT_CLASSES = "-textual-system"
+
+    def __init__(self, horizontal: bool = False, **kwargs) -> None:
+        super().__init__(horizontal=horizontal, **kwargs)
+        self.tv_options = OptionFlag(0)
+        self.can_focus = False
+
+    def tv_select_self(self) -> None:
+        pass
+
+
+class FrameScrollBar(PassiveScrollBar):
     """Turbo Vision's standard scroll bar: drawn over the window's border.
 
     As ``TWindow::standardScrollBar`` does, the vertical bar takes the right
@@ -204,18 +220,11 @@ class FrameScrollBar(TVScrollBar):
     DEFAULT_CSS = """
     FrameScrollBar { layer: bars; position: absolute; display: none; width: 1; height: 1; }
     """
-    # as Textual's own scroll bars: a click on one does not move the focus (to the window)
-    DEFAULT_CLASSES = "-textual-system"
 
     def __init__(self, horizontal: bool = False) -> None:
         super().__init__(horizontal=horizontal)
-        self.tv_options = OptionFlag(0)  # a click on the bar leaves the focus in the view
-        self.can_focus = False
         self.view: Widget | None = None
         self.shown = False  # the window wants the bar (active, on the border)
-
-    def tv_select_self(self) -> None:
-        pass
 
     def get_component_rich_style(self, *names: str, partial: bool = False) -> Style:
         # the border's colours, whatever the window's palette

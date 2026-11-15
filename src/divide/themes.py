@@ -113,6 +113,8 @@ UI_ROLES = (
     "help-bg", "help-text", "help-bold", "help-code", "help-link", "help-url", "help-rule",
     "help-selected", "help-selected-bg", "help-frame", "help-frame-passive",
     "progress-fill", "progress-track", "progress-text", "verdict-error",
+    "list-bg", "list-text", "list-selected", "list-focused", "list-focused-bg", "list-scroll",
+    "info-bg", "info-text",
 )
 
 # --------------------------------------------------------------------------
@@ -137,6 +139,10 @@ BORLAND_UI = {
     "help-selected": "yellow", "help-selected-bg": "blue", "help-frame": "white", "help-frame-passive": "lightgray",
     "progress-fill": "blue", "progress-track": "darkgray", "progress-text": "black",  # on the gray dialog
     "verdict-error": "lightred",
+    # a dialog's lists (the files of File > Open, the histories): Turbo Pascal's own
+    "list-bg": "cyan", "list-text": "black", "list-selected": "yellow",  # the chosen one, the list elsewhere
+    "list-focused": "white", "list-focused-bg": "green", "list-scroll": "blue",  # the chosen one, in the list
+    "info-bg": "blue", "info-text": "cyan",  # File > Open's pane: the folder, the file under the bar
 }
 
 # Div's structure in the reserved-word white, variables in light cyan, the HTML
@@ -158,7 +164,7 @@ FREE_PASCAL_SYNTAX = {
     "special": "lightcyan", "markup": "lightgray", "module": "lightgray",
 }
 
-FREE_PASCAL_UI = {**BORLAND_UI, "editor-gutter": "lightgray"}  # Campbell's cyan is faint on its blue
+FREE_PASCAL_UI = {**BORLAND_UI, "editor-gutter": "lightgray", "info-text": "lightcyan"}  # Campbell's cyan is faint on its blue
 
 # --------------------------------------------------------------------------
 # modern-dark: deep gray surfaces, light text, one blue accent.
@@ -218,6 +224,9 @@ MODERN_UI = {
     "help-selected": "#101216", "help-selected-bg": "#7DB4F5", "help-frame": "#7DB4F5", "help-frame-passive": "#5F6673",
     "progress-fill": "#4D8FE0", "progress-track": _RAISED, "progress-text": _TEXT,
     "verdict-error": "#FF7A85",
+    "list-bg": "#11141A", "list-text": _TEXT, "list-selected": "#E8C77D",
+    "list-focused": _BRIGHT, "list-focused-bg": "#2F5F9E", "list-scroll": "#5F6673",
+    "info-bg": "#1E3350", "info-text": "#9FD0FF",
 }
 
 MODERN_SYNTAX = {

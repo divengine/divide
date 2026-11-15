@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import fnmatch
+from datetime import datetime
 from pathlib import Path
 
 from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
+from rich.segment import Segment
 from textual.screen import ModalScreen
+from textual.strip import Strip
 from textual.widgets import Static
 from textual_vision.button import Button
 from textual_vision.cluster import CheckBoxes, Cluster, RadioButtons
@@ -20,8 +23,9 @@ from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
 from divide.editor.search import SearchOptions
+from divide.ui.history import HistoryInput
 from divide.ui.shadow import install_shadows
-from divide.ui.windows import RuleFrame
+from divide.ui.windows import PassiveScrollBar, RuleFrame
 
 CM_CHANGE_ALL = Command.USER + 100
 
@@ -76,9 +80,15 @@ class _Dialog(Dialog):
         with Container(classes="tv-window-content"):
             yield from self.compose_content()
 
+    def end_modal(self, command: Command) -> None:
+        if command != Command.CANCEL and self.valid(command):
+            for line in self.query(HistoryInput):
+                line.remember()  # what was accepted joins the line's history
+        super().end_modal(command)
+
     def on_key(self, event: events.Key) -> None:
         # Enter in an input line or a cluster presses the default button, as in Turbo Vision.
-        if event.key == "enter" and isinstance(self.current, (InputLine, Cluster)):
+        if event.key == "enter" and isinstance(self.current, (InputLine, Cluster, HistoryInput)):
             default = next((b for b in self.query(Button) if b.is_default), None)
             if default is not None:
                 event.stop()
@@ -132,7 +142,19 @@ def about_box(version: str) -> MessageBox:
 
 
 class FileList(ListBox):
-    """ListBox that reports the focused entry and accepts on double click."""
+    """The files of the folder, on Turbo Pascal's cyan: the chosen one white on
+    green while the list has the focus, yellow when the focus is elsewhere.
+    Reports the chosen entry and accepts on a double click."""
+
+    COMPONENT_CLASSES = ListBox.COMPONENT_CLASSES | {"list-viewer--selected"}
+    DEFAULT_CSS = """
+    FileList { background: $divide-list-bg; }
+    FileList > .list-viewer--normal { color: $divide-list-text; background: $divide-list-bg; }
+    FileList > .list-viewer--focused { color: $divide-list-focused; background: $divide-list-focused-bg; }
+    FileList > .list-viewer--selected { color: $divide-list-selected; background: $divide-list-bg; }
+    """
+
+    can_focus = True  # Tab brings the keys here, not only Turbo Vision's focus
 
     def __init__(self, dialog: "FileDialog", **kwargs) -> None:
         super().__init__(**kwargs)
@@ -149,9 +171,45 @@ class FileList(ListBox):
         if event.chain >= 2:
             self.select_item(self.focused)
 
+    def on_focus(self) -> None:
+        self.refresh()
+
+    def on_blur(self) -> None:
+        self.refresh()
+
+    def render_line(self, y: int) -> Strip:
+        width = self.size.width
+        item = self.top_item + y
+        normal = self.get_component_rich_style("list-viewer--normal")
+        if not 0 <= item < self.range:
+            return Strip([Segment(" " * width, normal)], width)
+        if item == self.focused:
+            style = self.get_component_rich_style("list-viewer--focused" if self.has_focus else "list-viewer--selected")
+        else:
+            style = normal
+        text = (" " + self.get_text(item))[:width].ljust(width)  # a space before, as Turbo Pascal's
+        return Strip([Segment(text, style)], width)
+
+
+def file_info(path: Path, name: str, width: int) -> str:
+    """Turbo Pascal's second line: ``NAME   size   May 4, 2019  10:16pm``."""
+    try:
+        st = path.stat()
+    except OSError:
+        return name[:width]
+    t = datetime.fromtimestamp(st.st_mtime)
+    when = f"{t:%b} {t.day}, {t.year}  {t.hour % 12 or 12}:{t.minute:02d}{'am' if t.hour < 12 else 'pm'}"
+    size = "Directory" if path.is_dir() else str(st.st_size)
+    room = max(1, width - len(when) - len(size) - 4)
+    shown = name if len(name) <= room else name[:room - 3] + "..."
+    return f"{shown:<{room}}  {size}  {when}"[:width]
+
 
 class FileDialog(_Dialog):
-    """Open / Save-as dialog: name line with wildcards, list of entries.
+    """Open / Save-as dialog, laid out as Turbo Pascal's: the name line (with
+    its history), the files on cyan with their scroll bar, the buttons in a
+    column at the right, and the pane below with the folder and the file under
+    the bar (size, date). One column of names: today's are longer than 8.3.
 
     Entries are ``..``, folders (``name/``) and files matching the wildcard.
     ``chosen`` holds the resulting path once the dialog ends with OK. With
@@ -159,11 +217,20 @@ class FileDialog(_Dialog):
     """
 
     DEFAULT_CSS = """
-    FileDialog { width: 64; height: 22; }
-    FileDialog InputLine { width: 1fr; }
-    FileDialog FileList { height: 1fr; margin-bottom: 0; }
-    FileDialog .dlg-dir { color: $text; background: $surface; height: 1; }
-    FileDialog Label { margin-top: 0; }
+    FileDialog { width: 66; height: 22; }
+    FileDialog > .tv-window-content { margin: 1 1; }
+    FileDialog .fd-body { height: 1fr; padding: 0 1; }
+    FileDialog .fd-left { width: 1fr; height: 1fr; }
+    FileDialog .fd-files-label { margin-top: 1; }
+    FileDialog .fd-files { height: 1fr; margin-bottom: 1; }
+    FileDialog FileList { width: 1fr; height: 1fr; }
+    FileDialog .fd-bar { width: 1; height: 1fr; background: $divide-list-bg; }
+    FileDialog .fd-bar .scrollbar--arrow, FileDialog .fd-bar .scrollbar--track, FileDialog .fd-bar .scrollbar--thumb {
+        color: $divide-list-scroll; background: $divide-list-bg;
+    }
+    FileDialog .fd-buttons { width: 13; height: 1fr; margin-left: 2; padding-top: 1; }
+    FileDialog .fd-buttons Button { width: 12; margin-bottom: 1; }
+    FileDialog .fd-info { width: 1fr; height: 2; padding: 0 1; color: $divide-info-text; background: $divide-info-bg; }
     """
 
     def __init__(
@@ -181,23 +248,42 @@ class FileDialog(_Dialog):
         self.input = InputLine(max_len=1024)
         self.input.data = name or pattern
         self.list = FileList(self)
-        self.dir_label = Static("", classes="dlg-dir", markup=False)
+        self.bar = PassiveScrollBar(classes="fd-bar")
+        self.list.v_scroll_bar = self.bar
+        self.info = Static("", classes="fd-info", markup=False)
+        self.info_lines = ("", "")
         self._entries: list[str] = []
         self._syncing = False
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~N~ame (. is the folder below)" if self.folders else "~N~ame", link=self.input)
-        yield self.input
-        yield Label("~F~olders" if self.folders else "~F~iles", link=self.list)
-        yield self.list
-        yield self.dir_label
-        with Horizontal(classes="dlg-buttons"):
-            yield Button(self.ok_label, Command.OK, is_default=True, id="ok")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+        with Horizontal(classes="fd-body"):
+            with Vertical(classes="fd-left"):
+                yield Label("~N~ame (. is the folder below)" if self.folders else "~N~ame", link=self.input)
+                yield HistoryInput(self.input, "folder" if self.folders else "file")
+                yield Label("~F~olders" if self.folders else "~F~iles", link=self.list, classes="fd-files-label")
+                with Horizontal(classes="fd-files"):
+                    yield self.list
+                    yield self.bar
+            with Vertical(classes="fd-buttons"):
+                yield Button(self.ok_label, Command.OK, is_default=True, id="ok")
+                yield Button("Cancel", Command.CANCEL, id="cancel")
+        yield self.info
 
     def on_mount(self) -> None:
         self.call_after_refresh(self._load)
 
+    def show_info(self, index: int | None = None) -> None:
+        """The pane: the folder and its wildcard, then the entry under the bar."""
+        width = max(10, (self.info.size.width or self.size.width or 64) - 2)
+        first = str(self.directory / self.pattern) if not self.folders else str(self.directory)
+        if len(first) > width:
+            first = "..." + first[-(width - 3):]
+        second = ""
+        if index is not None and 0 <= index < len(self._entries):
+            entry = self._entries[index]
+            second = file_info(self.directory / entry.rstrip("/"), entry, width)
+        self.info_lines = (first, second)
+        self.info.update(f"{first}\n{second}")
     # ------------------------------------------------------------ entries
     def _load(self) -> None:
         try:
@@ -216,12 +302,13 @@ class FileDialog(_Dialog):
         self._syncing = True
         self.list.set_list(entries)
         self._syncing = False
-        self.dir_label.update(str(self.directory))
+        self.show_info(self.list.focused if entries else None)
         self.input.refresh()
 
     def entry_focused(self, index: int) -> None:
         if self._syncing or not (0 <= index < len(self._entries)):
             return
+        self.show_info(index)
         entry = self._entries[index]
         if not entry.endswith("/") and entry != "..":
             self.input.data = entry
@@ -273,7 +360,7 @@ class FileDialog(_Dialog):
             self.accept(self.input.data)
 
     def on_key(self, event: events.Key) -> None:
-        if event.key == "enter" and self.current is self.input:
+        if event.key == "enter" and self.input.has_focus:
             event.stop()
             event.prevent_default()
             self.accept(self.input.data)
@@ -287,7 +374,7 @@ class SearchDialog(_Dialog):
 
     DEFAULT_CSS = """
     SearchDialog { width: 62; }
-    SearchDialog InputLine { width: 1fr; margin-bottom: 1; }
+    SearchDialog HistoryInput { margin-bottom: 1; }
     SearchDialog .sd-row { height: auto; }
     SearchDialog .sd-col { width: 1fr; height: auto; }
     SearchDialog Cluster { margin-bottom: 1; width: 1fr; }
@@ -318,10 +405,10 @@ class SearchDialog(_Dialog):
 
     def compose_content(self) -> ComposeResult:
         yield Label("~T~ext to find", link=self.query_input)
-        yield self.query_input
+        yield HistoryInput(self.query_input, "find")
         if self.replace:
             yield Label("~N~ew text", link=self.replace_input)
-            yield self.replace_input
+            yield HistoryInput(self.replace_input, "replace")
         with Horizontal(classes="sd-row"):
             with Vertical(classes="sd-col"):
                 yield Label("Options", link=self.flags)
@@ -379,7 +466,7 @@ def information(title: str, text: str) -> MessageBox:
 class GotoLineDialog(_Dialog):
     DEFAULT_CSS = """
     GotoLineDialog { width: 40; height: 10; }
-    GotoLineDialog InputLine { width: 12; }
+    GotoLineDialog HistoryInput { width: 15; }
     """
 
     def __init__(self, line: int) -> None:
@@ -390,7 +477,7 @@ class GotoLineDialog(_Dialog):
 
     def compose_content(self) -> ComposeResult:
         yield Label("Enter new line ~n~umber", link=self.input)
-        yield self.input
+        yield HistoryInput(self.input, "line")
         with Horizontal(classes="dlg-buttons"):
             yield Button("O~K~", Command.OK, is_default=True, id="ok")
             yield Button("Cancel", Command.CANCEL, id="cancel")
@@ -445,7 +532,7 @@ class InputDialog(_Dialog):
 
     DEFAULT_CSS = """
     InputDialog { width: 64; height: 9; }
-    InputDialog InputLine { width: 1fr; }
+    InputDialog HistoryInput { width: 1fr; }
     InputDialog .dlg-hint { color: $text-muted; background: $surface; height: 1; }
     """
 
@@ -459,8 +546,10 @@ class InputDialog(_Dialog):
         select: tuple[int, int] | None = None,
         browse: tuple[str, Path] | None = None,
         allow_empty: bool = False,
+        history: str | None = None,
     ) -> None:
         super().__init__(title=title)
+        self.history = history or f"input:{title}"  # one history per kind of question
         self.browse = browse
         self.allow_empty = allow_empty
         self.input = InputLine(max_len=1024)
@@ -472,7 +561,7 @@ class InputDialog(_Dialog):
 
     def compose_content(self) -> ComposeResult:
         yield Label(self.label, link=self.input)
-        yield self.input
+        yield HistoryInput(self.input, self.history)
         yield Static(self.hint, classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
             yield Button("O~K~", Command.OK, is_default=True, id="ok")
