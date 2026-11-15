@@ -54,7 +54,7 @@ class ColorsDialog(_Dialog):
     """The themes (each one previewed as it is chosen) and the colour depth."""
 
     DEFAULT_CSS = """
-    ColorsDialog { width: 66; height: 25; }
+    ColorsDialog { width: 66; height: 23; }
     ColorsDialog Cluster { width: 1fr; margin-bottom: 1; }
     ColorsDialog .colors-about { color: $text-muted; background: $surface; height: 1; margin-bottom: 1; }
     ColorsDialog .colors-sample { width: 1fr; height: 4; margin-bottom: 1; scrollbar-size: 0 0; }

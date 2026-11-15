@@ -101,7 +101,17 @@
 | **Alt+F10** / **Shift+F10** | local menu: transform, import, export, example, translate |
 | **F2** | save the dialect file |
 
-In dialogs with a path, the **...** / **Browse...** button opens the file dialog.
+## Dialogs
+
+| Key | Action |
+|---|---|
+| **Tab** / **Shift+Tab** | next / previous control |
+| **Alt + yellow letter** | go to that control |
+| **Enter** | the default button (also from an input line or a group of options) |
+| **Esc** | cancel |
+| **↓** in an input line with `▐↓▌` | its history: **↑ ↓** choose, **Enter** puts it in the line, **Esc** closes it |
+
+In dialogs with a path, the **...** / **Browse...** button opens the file dialog. See [[The Desktop#dialogs]].
 
 ## Messages window
 

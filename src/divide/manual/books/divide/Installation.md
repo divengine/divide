@@ -61,8 +61,11 @@ divide                    # the current folder as the project, project window op
 divide ~/sites/shop       # another folder as the project
 divide index.tpl card.tpl # open files (their folder becomes the project)
 divide ~/sites/shop index.tpl
-divide --palette turbo-c  # Turbo C colours instead of Turbo Pascal's
+divide --palette turbo-c  # start with a colour theme: turbo-pascal, turbo-c, free-pascal, modern-dark
+divide --colors truecolor # colour depth when the terminal says less than it can: auto, truecolor, 256, 16
 ```
+
+Both are also in **Options > Colors**, which remembers them (see [[The Desktop#colours]]).
 
 Use a terminal at least 80×25; 120 columns or more is comfortable for working side by side with the output.
 

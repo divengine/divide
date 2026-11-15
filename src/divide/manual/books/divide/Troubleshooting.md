@@ -18,8 +18,8 @@ Some terminals or desktop environments take Ctrl+Space for themselves (input met
 **Alt+letter does not open the menus.**
 Your terminal may be sending Alt as Meta differently, or the window manager may grab it. **F10** always opens the menu bar.
 
-**Colours look wrong.**
-Use a terminal with 256 colours or true colour (`TERM=xterm-256color`). The other palette is under **Options**.
+**Colours look wrong, or flat.**
+divide shows colours as deep as the terminal says it can. Over ssh or inside tmux `COLORTERM` is often lost, and a true-colour terminal looks like a 256-colour one: choose **True colour** in **Options > Colors** (from the next start) or start with `divide --colors truecolor`; for tmux, also tell it the outer terminal has true colour (`set -as terminal-features ",xterm-256color:RGB"`). On a 16-colour terminal choose **16 colours**. The themes are also in **Options > Colors**.
 
 **`$references` in my data come out empty.**
 That is Div: a data file is decoded before any variable exists. Use them in JSON inside templates (`{= x: {"a": $b} =}`). divide adds a note when it renders data that uses references.

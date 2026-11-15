@@ -208,6 +208,39 @@ async def turbo_c():
         save(app, "palette-turbo-c")
 
 @shot
+async def colors():
+    """Options > Colors previewing modern-dark, then the desktop in modern-dark and free-pascal."""
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+o", "c"); await settle(pilot)
+        await pilot.press("m"); await settle(pilot, 10)  # the whole desktop previews it
+        save(app, "colors-dialog")
+        await pilot.press("escape"); await settle(pilot)
+    for name in ("modern-dark", "free-pascal"):
+        app = Divide(DEMO, [DEMO / "index.tpl", DEMO / "components" / "card.tpl"], palette=name)
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot)
+            app.toggle_project(); await settle(pilot)
+            app.desktop.tile(); await settle(pilot, 10)
+            save(app, f"theme-{name}")
+
+@shot
+async def open_file():
+    """File > Open as Turbo Pascal's, then the history of its name line."""
+    from divide.ui import history
+    for name in ("components/card.tpl", "*.php", "index.tpl"):
+        history.add("file", name)  # the temporary config of the shots
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("f3"); await settle(pilot)
+        await pilot.press("tab", "down", "down"); await settle(pilot)
+        save(app, "open-file")
+        await pilot.press("shift+tab", "down"); await settle(pilot)
+        save(app, "open-history")
+
+@shot
 async def dialector():
     app = Divide(DEMO, [DEMO / "erb.dialect"])
     async with app.run_test(size=SIZE) as pilot:

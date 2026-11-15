@@ -19,7 +19,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | colour palette, plain symbols or file type marks, language servers, Div engine, Xdebug |
+| **Options** | Colors (the theme and the colour depth), plain symbols or file type marks, language servers, Div engine, Xdebug |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows
@@ -31,6 +31,8 @@ Every window has a number on its top border (**Alt+1…9** goes to it) and, for 
 - **Alt+F3** or **Ctrl+W**: close it (divide asks about unsaved changes).
 - Drag a window by its title, resize it from a bottom corner, click `[■]` to close, `[▲]` to zoom.
 - **Window > Tile** arranges every window in a grid; **Cascade** stacks them.
+
+The scroll bars are on the border of the active window, as in Turbo Pascal: the vertical one on the right border (`▲ ▒ ■ ▼`), the horizontal one on the bottom border after the `line:col` (`◄ ▒ ■ ►`), so the text keeps the column and the row a bar inside the window would take. An arrow moves a line, a click on the track a page, and the `■` can be dragged; the focus stays in the text. Windows in the background show a plain border, and a bar only shows when there is something to scroll.
 
 Kinds of windows: editors (templates, data, PHP, any text file), the [[Project Window]], the Output of a render or a script, the Messages window, the Watches and Call stack windows of the [[debugger|Debugging PHP]], the log of the [[Web Server]], the data tree, the [[Dialector]] and the [[Help]] window.
 
@@ -45,8 +47,43 @@ The left side shows the keys that matter. The right side tells you about the win
 - in the project window, the dialector and the help window, their keys;
 - while something runs in the background (a render, for example), a turning spinner (`|` `/` `-` `\`) and what is running.
 
+## Dialogs
+
+Dialogs work as in Turbo Vision: **Tab** / **Shift+Tab** go from one control to the next, **Alt + the yellow letter** jumps to a control, **Enter** presses the default button (also from an input line or a group of options), **Esc** cancels.
+
+**File > Open** (F3) and **Save as** are laid out like Turbo Pascal's: the name line at the top, the files of the folder below it on cyan with their own scroll bar, the buttons in a column at the right, and a pane at the bottom with the folder (and its wildcard) and the file under the bar, with its size and date. Type a wildcard (`*.php`) to list other files, a folder name or `..` to go there, or a full path.
+
+![File > Open](images/open-file.png)
+
+### Input line history
+
+Input lines remember what you accepted in them, as in Turbo Pascal: the `▐↓▌` at the right of a line opens the earlier entries, newest first. **↓** in the line (or a click on the arrow) opens the list, **Enter** or a click puts an entry back in the line, **Esc** closes the list. Each kind of line has its own history: file names, texts to find and to replace, line numbers, the parameters of a program, watch expressions… An entry is remembered when the dialog ends with OK, not with Cancel, and the histories are kept in the config for the next session.
+
+![the history of the file name](images/open-history.png)
+
 ## Colours
 
-Turbo Pascal's palette (yellow on blue) is the default. **Options** switches to Turbo C's; start with `divide --palette turbo-c` to make it the first one.
+**Options > Colors** chooses the colour theme:
+
+| Theme | Look |
+|---|---|
+| **Turbo Pascal** (the default) | Turbo Vision's colours: gray menus and dialogs, blue windows, yellow text |
+| **Turbo C** | the same, with Turbo C 2.01's white-on-black menu hotkeys |
+| **Free Pascal** | Turbo Vision's layout in Windows Terminal's Campbell colours, as Free Pascal's IDE looks on Windows today |
+| **Modern dark** | deep grays, light text and a blue accent, high contrast |
+
+Moving through the themes with the arrows paints the whole desktop in each one (the dialog and its sample of a template too). **OK** keeps the theme, also for the next start; **Cancel** goes back to the one you had. `divide --palette modern-dark` starts with a theme without changing the one chosen.
+
+![Options > Colors, previewing Modern dark](images/colors-dialog.png)
+
+![Modern dark](images/theme-modern-dark.png)
+
+![Free Pascal](images/theme-free-pascal.png)
 
 ![Turbo C colours and the Window menu](images/palette-turbo-c.png)
+
+### Colour depth
+
+divide sends its colours as the terminal says it can show them: true colour when it announces it (`COLORTERM=truecolor`, Windows Terminal, iTerm2, most Linux terminals), the 256-colour palette otherwise (`TERM=xterm-256color`), and the 16 ANSI colours on a basic terminal. In 16 colours each colour goes to the one it stands for in its theme (a light green stays light green). The operating system plays no part, only what the terminal says.
+
+Over ssh or inside tmux `COLORTERM` is often lost and the terminal looks like a 256-colour one. If it can do better, choose **True colour** under **Colour depth** in **Options > Colors** (it applies from the next start), or start with `divide --colors truecolor`. The dialog says what the terminal gets now.
