@@ -109,8 +109,8 @@ class HelpView(ScrollView, TVViewMixin):
         return self.scrollable_content_region.width or self.size.width or 80
 
     def _text_width(self) -> int:
-        # a margin each side and the scrollbar's column, there or not yet
-        return max(20, (self.size.width or 80) - 3)
+        # a margin each side: the scroll bar is on the window's border
+        return max(20, (self.size.width or 80) - 2)
 
     def _links(self) -> list[int]:
         """Followable links in reading order."""

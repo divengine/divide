@@ -21,6 +21,8 @@ from textual_vision.events import CommandMessage
 from textual_vision.frame import Frame
 from textual_vision.group import TVViewMixin
 from textual_vision.list_box import ListBox
+from textual_vision.list_viewer import ListViewer
+from textual_vision.scroll_bar import ScrollBar as TVScrollBar
 from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
@@ -85,6 +87,9 @@ class RuleFrame(Frame):
         if self.parent is not None:
             for rule in self.parent.query(Rule):
                 rule.refresh()
+            update = getattr(self.parent, "update_scroll_bars", None)
+            if update is not None:
+                update()  # only the active window shows its scroll bars
 
 
 class IndicatorFrame(RuleFrame):
@@ -98,8 +103,12 @@ class IndicatorFrame(RuleFrame):
 
     def set_indicator(self, text: str) -> None:
         if text != self.indicator:
+            longer = len(text) != len(self.indicator)
             self.indicator = text
             self.refresh()
+            update = getattr(self.parent, "update_scroll_bars", None)
+            if longer and update is not None:
+                update()  # the horizontal bar starts after the indicator
 
     def render_line(self, y: int) -> Strip:
         strip = super().render_line(y)
@@ -180,13 +189,85 @@ class HRule(Rule):
         return Strip([Segment("─" * self.size.width, self._line_style())])
 
 
+class FrameScrollBar(TVScrollBar):
+    """Turbo Vision's standard scroll bar: drawn over the window's border.
+
+    As ``TWindow::standardScrollBar`` does, the vertical bar takes the right
+    border and the horizontal one the bottom border (after the indicator, up to
+    the resize corner), so the text keeps the column and the row a bar inside
+    the window would take. Only the active window shows them, and only on an
+    axis there is something to scroll. The bar is textual-vision's port of
+    TScrollBar (▲ ▒ ■ ▼, ◄ ►): arrows a line, the track a page, the ■ dragged.
+    """
+
+    DEFAULT_CSS = """
+    FrameScrollBar { layer: bars; position: absolute; display: none; width: 1; height: 1; }
+    """
+    # as Textual's own scroll bars: a click on one does not move the focus (to the window)
+    DEFAULT_CLASSES = "-textual-system"
+
+    def __init__(self, horizontal: bool = False) -> None:
+        super().__init__(horizontal=horizontal)
+        self.tv_options = OptionFlag(0)  # a click on the bar leaves the focus in the view
+        self.can_focus = False
+        self.view: Widget | None = None
+        self.shown = False  # the window wants the bar (active, on the border)
+
+    def tv_select_self(self) -> None:
+        pass
+
+    def get_component_rich_style(self, *names: str, partial: bool = False) -> Style:
+        # the border's colours, whatever the window's palette
+        frame = self.parent.frame if isinstance(self.parent, Window) else None
+        if frame is None:
+            return super().get_component_rich_style(*names, partial=partial)
+        return frame.get_component_rich_style("frame--active")
+
+    def sync(self, max_val: int, page: int, value: int) -> None:
+        """The view's state, without scrolling it back."""
+        self._min_val, self._max_val = 0, max(0, max_val)
+        self._page_step, self._arrow_step = max(1, page), 1
+        self.set_reactive(TVScrollBar.value, max(0, min(value, self._max_val)))
+        self.update_display()
+        self.refresh()
+
+    def set_params(self, min_val: int, max_val: int, page_step: int = 1, arrow_step: int = 1) -> None:
+        super().set_params(min_val, max_val, page_step, arrow_step)  # a list keeps its bar up to date itself
+        self.update_display()
+        self.refresh()
+
+    def update_display(self) -> None:
+        self.display = self.shown and self._max_val > self._min_val
+
+    def scroll_to_value(self, value: int) -> None:
+        view = self.view
+        if isinstance(view, ListViewer):
+            view.scroll_to_value(value)
+        elif view is not None:
+            if self.horizontal:
+                view.scroll_to(x=value, animate=False)
+            else:
+                view.scroll_to(y=value, animate=False)
+
+
+HBAR_AFTER_INDICATOR = 18  # TEditWindow's: the line:column indicator is before it
+
+
 class _TVWindow(Window):
-    """Window whose frame is an IndicatorFrame and whose content is composed."""
+    """Window whose frame is an IndicatorFrame and whose content is composed.
+
+    Its scrolling view (the largest one) gets the standard scroll bars on the
+    border where the view reaches it; the view's own bars go away there."""
+
+    DEFAULT_CSS = "_TVWindow { layers: frame content bars; }"
 
     def __init__(self, title: str = "", *, number: int = 0, **kwargs) -> None:
         super().__init__(title=title, **kwargs)
         self.number = number
         self.tv_options |= OptionFlag.TILEABLE  # Window > Tile only arranges tileable windows
+        self.v_bar = FrameScrollBar()
+        self.h_bar = FrameScrollBar(horizontal=True)
+        self._scrolled: Widget | None = None  # the view the bars are bound to
 
     def compose_content(self) -> ComposeResult:
         yield from ()
@@ -195,6 +276,94 @@ class _TVWindow(Window):
         yield IndicatorFrame(title=self._title, flags=self._window_flags, active=True, number=self.number)
         with Container(classes="tv-window-content"):
             yield from self.compose_content()
+        yield self.v_bar
+        yield self.h_bar
+
+    # ------------------------------------------------------------ scroll bars
+    def scroll_view(self) -> Widget | None:
+        """The view the border's bars scroll: the largest scrolling one."""
+        content = self.content
+        if content is None:
+            return None
+        views = [
+            w for w in content.query("*")
+            if w.display and w.region.area and (isinstance(w, ListViewer) or w.styles.overflow_y in ("auto", "scroll") or w.styles.overflow_x in ("auto", "scroll"))
+        ]
+        return max(views, key=lambda w: w.region.area, default=None)
+
+    def on_mount(self) -> None:
+        self.call_after_refresh(self.update_scroll_bars)
+
+    def on_resize(self) -> None:
+        self.call_after_refresh(self.update_scroll_bars)
+
+    def on_scroll_bar_changed(self, message: TVScrollBar.Changed) -> None:
+        message.stop()  # the bar has already scrolled its view
+
+    def _bind(self, view: Widget | None) -> None:
+        old = self._scrolled
+        if view is old:
+            return
+        if old is not None and isinstance(old, ListViewer) and old.v_scroll_bar is self.v_bar:
+            old.v_scroll_bar = None
+        self._scrolled = view
+        self.v_bar.view = self.h_bar.view = view
+        if view is None:
+            return
+        if isinstance(view, ListViewer):
+            view.v_scroll_bar = self.v_bar  # the list sets its bar's range and value itself
+            self.v_bar.scroll_target = view
+        else:
+            self.v_bar.scroll_target = self.v_bar  # its scroll_to_value scrolls the view
+            self.h_bar.scroll_target = self.h_bar
+            for name in ("scroll_x", "scroll_y", "virtual_size"):
+                self.watch(view, name, lambda *_: self.sync_scroll_bars(), init=False)
+
+    def update_scroll_bars(self) -> None:
+        """Bind, place and show the bars (after a layout change, or the window's activation)."""
+        if not self.is_mounted:
+            return
+        view = self.scroll_view()
+        self._bind(view)
+        frame = self.frame
+        active = bool(frame is not None and frame.active)
+        right = bottom = False
+        if view is not None and view.region.area:
+            wr, vr = self.region, view.region
+            right = vr.right == wr.right - 1 and wr.width > 4
+            bottom = vr.bottom == wr.bottom - 1 and wr.height > 3
+            if right:
+                self.v_bar.styles.offset = (wr.width - 1, vr.y - wr.y)
+                self.v_bar.styles.height = vr.height
+            if bottom:
+                start = vr.x - wr.x
+                if isinstance(frame, IndicatorFrame) and frame.indicator:
+                    start = max(start, HBAR_AFTER_INDICATOR, 2 + len(frame.indicator) + 3)
+                end = min(vr.right - wr.x, wr.width - 2)  # the ─┘ of the resize corner stays
+                bottom = end - start >= 4
+                if bottom:
+                    self.h_bar.styles.offset = (start, wr.height - 1)
+                    self.h_bar.styles.width = end - start
+            if not isinstance(view, ListViewer):
+                view.styles.scrollbar_size_vertical = 0 if right else 1
+                view.styles.scrollbar_size_horizontal = 0 if bottom else 1
+        self.v_bar.shown = active and right
+        self.h_bar.shown = active and bottom and not isinstance(view, ListViewer)
+        self.sync_scroll_bars()
+
+    def sync_scroll_bars(self) -> None:
+        view = self._scrolled
+        if view is None:
+            self.v_bar.update_display()
+            self.h_bar.update_display()
+            return
+        if isinstance(view, ListViewer):
+            self.v_bar.update_display()
+            self.h_bar.update_display()
+            return
+        region = view.scrollable_content_region
+        self.v_bar.sync(view.max_scroll_y, region.height, round(view.scroll_y))
+        self.h_bar.sync(view.max_scroll_x, region.width, round(view.scroll_x))
 
 
 class EditorView(DivEditor, TVViewMixin):
