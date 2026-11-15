@@ -70,16 +70,16 @@ class HistoryArrow(Widget):
 
 
 class HistoryList(ListBox):
-    """The earlier entries, in a small framed list under the line."""
+    """The earlier entries, in a small blue window under the line."""
 
     DEFAULT_CSS = """
     HistoryList {
         position: absolute;
-        border: double $divide-list-text;
-        background: $divide-list-bg;
+        border: double $divide-history-frame;
+        background: $divide-history-bg;
     }
-    HistoryList > .list-viewer--normal { color: $divide-list-text; background: $divide-list-bg; }
-    HistoryList > .list-viewer--focused { color: $divide-list-focused; background: $divide-list-focused-bg; }
+    HistoryList > .list-viewer--normal { color: $divide-history-text; background: $divide-history-bg; }
+    HistoryList > .list-viewer--focused { color: $divide-history-focused; background: $divide-history-focused-bg; }
     """
 
     def __init__(self, items: list[str], owner: HistoryInput) -> None:

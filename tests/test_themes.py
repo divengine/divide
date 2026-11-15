@@ -164,12 +164,13 @@ def test_syntax_is_legible(palette):
                  "modifier", "comment", "operator", "punct", "special", "markup", "module"):
         assert contrast(palette.colour(role), bg) >= 3.0, role
     for fg, back in (("error", "error-bg"), ("focus", "focus-bg"), ("inserted", "inserted-bg"), ("deleted", "deleted-bg"),
-                     ("info-text", "info-bg"), ("list-focused", "list-focused-bg")):
+                     ("info-text", "info-bg"), ("list-focused", "list-focused-bg"),
+                     ("history-focused", "history-focused-bg"), ("history-frame", "history-bg")):
         assert contrast(palette.colour(fg), palette.colour(back)) >= 3.0, fg
     # the chosen file of a list elsewhere: Turbo Vision's yellow on cyan is 2.7
     assert contrast(palette.colour("list-selected"), palette.colour("list-bg")) >= 2.5
     for fg, back in (("help-text", "help-bg"), ("debug-text", "debug-bg"), ("output-text", "output-bg"),
-                     ("list-text", "list-bg")):
+                     ("list-text", "list-bg"), ("history-text", "history-bg")):
         assert contrast(palette.colour(fg), palette.colour(back)) >= 4.5, fg
 
 
