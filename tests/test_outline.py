@@ -152,6 +152,9 @@ async def test_outline_window_folds_follows_and_jumps(tmp_path):
         editor.editor.insert("function extra() {}\n", (1, 0))
         await settle(pilot)
         app.update_status()
+        assert "f extra()" not in window.lines  # not while typing: once the keys stop
+        await pilot.pause(0.6)
+        await settle(pilot)
         assert "f extra()" in window.lines and len(window.lines) == 9
         assert window.lines[window.outline_tree.cursor_line].startswith("  C Cart")
         app.raise_window(window)
@@ -194,4 +197,104 @@ async def test_outline_window_of_a_template(tmp_path):
         app.active_editor().editor.insert("{% extra %}\n", (1, 0))
         await settle(pilot)
         app.update_status()
+        await pilot.pause(0.6)
+        await settle(pilot)
         assert "i {% extra %}" in window.lines
+
+
+# ---------------------------------------------------------------- the other languages
+def outlined(lang: str, text: str) -> list[str]:
+    return tree(outline(lang, text))
+
+
+def test_outline_of_html():
+    assert outlined("html", '<html><body><main id="m" class="page wide"><h1>Hi</h1></main>'
+                            '<script src="a.js"></script></body></html>') == [
+        "< html", "  < body", "    < main#m.page.wide", "      < h1", "    < script a.js"]
+
+
+def test_outline_of_xml():
+    assert outlined("xml", '<?xml version="1.0"?><phpunit bootstrap="b.php"><testsuites>'
+                           '<testsuite name="unit"><directory>tests</directory></testsuite></testsuites></phpunit>') == [
+        '< phpunit bootstrap="b.php"', "  < testsuites", '    < testsuite name="unit"', "      < directory"]
+
+
+def test_outline_of_markdown():
+    assert outlined("markdown", "# Title\n\ntext\n\n## One\n\n### Deep\n\n## Two\n") == [
+        "# Title", "  # One", "    # Deep", "  # Two"]
+
+
+def test_outline_of_css():
+    assert outlined("css", '@import "x.css";\nbody, .a > p { color: red; }\n'
+                           "@media (max-width: 600px) { .card { margin: 0; } }\n") == [
+        '@ @import "x.css"', "s body, .a > p", "@ @media (max-width: 600px)", "  s .card"]
+
+
+def test_outline_of_javascript():
+    assert outlined("javascript", 'import x from "y";\nconst A = 1, b = () => 2;\nlet c;\n'
+                                  "function f(a, b = 1) {}\n"
+                                  "class Cart extends Base { #items = []; add(name, qty = 1) {} }\n"
+                                  "export function g() {}\n") == [
+        'u import x from "y"', "k A", "f b()", "v c", "f f(a, b = 1)",
+        "C Cart extends Base", "  p - #items", "  m + add(name, qty = 1)", "f g()"]
+
+
+def test_outline_of_sql():
+    assert outlined("sql", "CREATE TABLE products (id INT PRIMARY KEY, name VARCHAR(80) NOT NULL);\n"
+                           "CREATE VIEW v AS SELECT * FROM products;\nCREATE INDEX idx ON products (name);\n"
+                           "SELECT 1;\n") == [
+        "t products", "  c id INT", "  c name VARCHAR(80)", "w v", "x idx on products"]
+
+
+def test_outline_of_shell_and_env():
+    assert outlined("shell", "#!/bin/sh\nX=1\nexport Y=2\nfunction a() { echo; }\nb() { :; }\n") == [
+        "v X=1", "v Y=2", "f a()", "f b()"]
+
+
+def test_outline_of_json():
+    assert outlined("json", '{"name": "shop", // the shop\n "items": [{"title": "Apple", "price": 1.5}],'
+                            ' "tags": ["a", "b"], "cart": {"total": 3}}') == [
+        'k "name": "shop"', 'a "items" [1]', '  o [0] "title": "Apple"', '    k "title": "Apple"',
+        '    k "price": 1.5', 'a "tags" [2]', 'o "cart"', '  k "total": 3']
+
+
+def test_outline_of_yaml():
+    assert outlined("yaml", "name: shop\nservices:\n  web:\n    image: php\n    ports:\n      - \"80:80\"\n"
+                            "list:\n  - a: 1\n") == [
+        "k name: shop", "o services", "  o web", "    k image: php", "    a ports [1]",
+        "a list [1]", "  o - a: 1", "    k a: 1"]
+
+
+def test_outline_of_toml():
+    assert outlined("toml", 'title = "x"\n[owner]\nname = "T"\n[[products]]\nname = "a"\n') == [
+        'k title = "x"', "t [owner]", '  k name = "T"', "a [[products]]", '  k name = "a"']
+
+
+def test_outline_of_ini_and_csv():
+    assert outlined("ini", "; c\n[PHP]\nmemory_limit = 128M\n[xdebug]\nxdebug.mode = debug\n") == [
+        "[ [PHP]", "  k memory_limit = 128M", "[ [xdebug]", "  k xdebug.mode = debug"]
+    assert outlined("csv", "id,name,price\n1,Apple,1.5\n") == ["c id", "c name", "c price"]
+
+
+def test_every_language_divide_colours_has_an_outline():
+    from divide import lang
+    from divide.outline import languages
+
+    coloured = {language.name for language in lang.LANGUAGES}
+    assert coloured <= languages() | {"text"}, coloured - languages()
+
+
+async def test_outline_window_of_markdown(tmp_path):
+    notes = tmp_path / "README.md"
+    notes.write_text("# Shop\n\n## Install\n\n## Use\n")
+    app = Divide(tmp_path, [notes])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await pilot.press("ctrl+o")
+        await settle(pilot)
+        window = app.outline_window()
+        assert window.lines == ["# Shop", "  # Install", "  # Use"]
+        window.focus_row(2)
+        await pilot.press("enter")
+        await settle(pilot)
+        assert app.active_editor().editor.selected_text == "Use"

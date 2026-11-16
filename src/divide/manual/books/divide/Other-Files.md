@@ -32,4 +32,4 @@ The colours come from the theme in **Options > Colors**: strings, numbers, keywo
 
 ## What divide does not do with them
 
-They are coloured, not checked: divide lists errors only for templates, Div JSON and PHP (see [[Checking Templates]]). Completion, the outline and the language servers are for templates and PHP too.
+They are coloured, not checked: divide lists errors only for templates, Div JSON and PHP (see [[Checking Templates]]). Completion and the language servers are for templates and PHP too. Each one has its [[Outline]]: the elements of an HTML page, the headings of a Markdown file, the rules of a stylesheet, the tables of a SQL script, the keys of a YAML or JSON file...

@@ -1,6 +1,6 @@
 # Outline
 
-**Search > Outline** (**Ctrl+O**) opens a window at the right of the desktop with the shape of the active file, a Div template or a PHP file, as a tree: to see how it is made, fold what you don't need and jump to any part of it.
+**Search > Outline** (**Ctrl+O**) opens a window at the right of the desktop with the shape of the active file as a tree, in every language divide colours (a Div template, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...): to see how it is made, fold what you don't need and jump to any part of it.
 
 ![the outline of the shop's home page, on the products loop](images/outline_tpl.png)
 
@@ -45,6 +45,24 @@ Classes, interfaces, traits and enums hold their members. Closures and anonymous
 
 The declarations come from [tree-sitter](https://tree-sitter.github.io/)'s PHP grammar, the one that colours the editor (see [[Editing PHP]]), so the outline needs no language server and works while the file has errors.
 
+## In the other files
+
+The same tree, with what each kind of file is made of. Labels keep the editor's colours here too.
+
+| File | What the outline holds |
+|---|---|
+| HTML | every element (**<**), nested as written, by its tag, id and classes: `main#main.page`; scripts, links and images with their `src` or `href` |
+| XML | every element (**<**), nested, with its `name`, `id` or first attribute: `testsuite name="unit"` |
+| Markdown | the headings (**#**), each one holding the deeper ones below it |
+| CSS | the rules (**s**) by their selectors; `@media`, `@supports` and `@keyframes` (**@**) holding their rules; `@import` |
+| JavaScript | imports (**u**), classes with their methods and fields (`#private` ones marked **-**), functions, and the file's constants (**k**) and variables (**v**); a constant holding a function counts as a function |
+| SQL | what the script creates: tables (**t**) with their columns and types (**c**), views (**w**), indexes (**x**), functions |
+| JSON | the keys (**k**) with their values; objects (**o**) and lists (**a**, with how many items) holding theirs; the objects of a list as `[0]`, `[1]`... with their first key beside them |
+| YAML, TOML | the keys the same way; TOML's tables `[owner]` (**t**) and `[[products]]` (**a**) |
+| Shell scripts, `.env` | the functions and the variables set |
+| INI (`php.ini`) | the sections (**[**) with their keys and values |
+| CSV | the columns, by the names in the first row |
+
 ## Keys
 
 | Key | Action |
@@ -57,4 +75,4 @@ The declarations come from [tree-sitter](https://tree-sitter.github.io/)'s PHP g
 | click on **►** / **▼** | fold or unfold |
 | **Ctrl+O** | back to the outline from the editor |
 
-The outline follows you: it changes when another template or PHP editor comes to the front, and it is redone a moment after you stop typing, keeping what you folded and the bar where it was. In any other file it keeps the one it was showing; opened from other files alone, it says there is no outline for that kind of file.
+The outline follows you: it changes when another editor comes to the front, and it is redone a moment after you stop typing, keeping what you folded and the bar where it was. In a plain text file it keeps the one it was showing; opened from such files alone, it says there is no outline for that kind of file.

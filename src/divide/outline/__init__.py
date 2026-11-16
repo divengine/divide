@@ -15,6 +15,7 @@ kind; class members carry UML's visibility marks, + # -, coloured too.
 
 from __future__ import annotations
 
+import bisect
 import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
@@ -228,9 +229,65 @@ class Offsets:
     def __init__(self, source: bytes) -> None:
         self.source = source
         self.ascii = source.isascii()
+        self._starts: list[int] | None = None  # the byte where each character starts
 
     def __call__(self, byte: int) -> int:
-        return byte if self.ascii else len(self.source[:byte].decode("utf-8", "replace"))
+        if self.ascii:
+            return byte
+        if self._starts is None:
+            starts, at = [], 0
+            for ch in self.source.decode("utf-8", "replace"):
+                starts.append(at)
+                at += len(ch.encode("utf-8"))
+            self._starts = starts
+        return bisect.bisect_left(self._starts, byte)
+
+
+@dataclass
+class Parsed:
+    """A text parsed by one of tree-sitter's grammars, with what the builders need."""
+
+    source: bytes
+    tree: object
+    paint: TreePainter
+    offset: Offsets
+
+    def text(self, node) -> str:
+        return self.source[node.start_byte:node.end_byte].decode("utf-8", "replace")
+
+    def line(self, node, end=None) -> list[Span]:
+        """The spans of ``node`` (up to ``end``, a byte or a node's start) on its first line."""
+        stop = node.end_byte if end is None else end if isinstance(end, int) else end.start_byte
+        newline = self.source.find(b"\n", node.start_byte, stop)
+        return self.paint.spans(node.start_byte, newline if newline >= 0 else stop)
+
+    def node(self, kind: str, select, label: list[Span], children: list[Node] | None = None, mark: str = "") -> Node:
+        """A Node whose Enter selects ``select`` (a tree-sitter node)."""
+        return Node(kind, label, self.offset(select.start_byte), self.offset(select.end_byte), mark, children or [])
+
+
+def parse(lang: str, text: str) -> Parsed | None:
+    """``text`` parsed with the grammar divide colours ``lang`` with; None without it."""
+    from divide.lang import treesitter
+
+    found = treesitter.grammar(lang)
+    if found is None:
+        return None
+    from tree_sitter import Parser
+
+    language, query_source = found
+    source = text.encode("utf-8")
+    tree = Parser(language).parse(source)  # type: ignore[arg-type]
+    return Parsed(source, tree, TreePainter(source, tree, treesitter.query(language, query_source)), Offsets(source))
+
+
+def named(node, *types: str) -> list:
+    """The named children of ``node`` of these types (all of them without types)."""
+    return [c for c in node.named_children if not types or c.type in types]
+
+
+def first(node, *types: str):
+    return next(iter(named(node, *types)), None)
 
 
 # ------------------------------------------------------------------ builders
@@ -238,9 +295,12 @@ Builder = Callable[..., "list[Node] | None"]
 
 
 def _builders() -> dict[str, Builder]:
-    from divide.outline import div, php
+    from divide.outline import code, data, div, markup, php
 
-    return {"php": php.outline, "div": div.outline}
+    return {"php": php.outline, "div": div.outline,
+            "html": markup.html, "xml": markup.xml, "markdown": markup.markdown,
+            "javascript": code.javascript, "css": code.css, "sql": code.sql, "shell": code.shell,
+            "json": data.json, "yaml": data.yaml, "toml": data.toml, "ini": data.ini, "csv": data.csv}
 
 
 def languages() -> frozenset[str]:

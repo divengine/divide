@@ -31,6 +31,7 @@ from divide.ui.runner import _ListWindow
 from divide.ui.windows import EditorWindow, LocationsWindow, ProjectWindow, _TVWindow
 
 WIDTH = 36
+REDO_AFTER = 0.4  # seconds without typing before the outline is redone
 NO_OUTLINE = _('(no outline for this kind of file)')
 HINTS = {
     "php": _('Enter go to the declaration · Space fold · + public  # protected  - private'),
@@ -176,6 +177,7 @@ class OutlineWindow(_TVWindow):
         nodes = None
         if editor is not None:
             context = {"tokens": editor.tokens, "blocks": editor.div_blocks()} if lang == "div" else {}
+            context["path"] = source.path
             nodes = outline_mod.outline(lang, editor.text, **context)
         self.hint = HINTS.get(lang or "", HINT)
         name = source.path.name if source is not None and source.path is not None else ""
@@ -279,5 +281,20 @@ class OutlineMixin:
         editor = editor or self.active_editor()
         if editor is None or editor.editor.lang not in outline_mod.languages():
             return
-        if editor is not window.source or window.text != editor.editor.text:
+        timer = getattr(self, "_outline_timer", None)
+        if editor is not window.source:
+            if timer is not None:
+                timer.stop()
+            window.load(editor)
+        elif window.text != editor.editor.text:
+            # typing: redone once the keys stop (a big file takes a tenth of a second)
+            if timer is not None:
+                timer.stop()
+            self._outline_timer = self.set_timer(  # type: ignore[attr-defined]
+                REDO_AFTER, lambda: self._redo_outline(editor))
+
+    def _redo_outline(self, editor: EditorWindow) -> None:
+        self._outline_timer = None
+        window = self.outline_window()
+        if window is not None and window.source is editor and window.text != editor.editor.text:
             window.load(editor)
