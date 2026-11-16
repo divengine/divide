@@ -13,6 +13,9 @@
 | **F6** / **Shift+F6** | next / previous window (also Ctrl+PgDn / Ctrl+PgUp) |
 | **Alt+1 … Alt+9** | go to window *n* |
 | **Ctrl+B** | project window |
+| **Ctrl+P** | go to file (a `>` first: the commands), see [[Finding Files and Commands]] |
+| **Ctrl+Shift+P** | command palette |
+| **Ctrl+Shift+F** | find in files |
 | **Ctrl+F9** | run: render the template, run the PHP script (in the debugger: go on; with the [[Web Server]] running: open the page in the browser) |
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |
@@ -71,7 +74,7 @@
 
 | Key | Action |
 |---|---|
-| **Enter** | open / fold |
+| **Enter** / double click | open a file / fold a folder (a click puts the bar on a file, and opens or folds a folder) |
 | **Ins** | new file |
 | **F7** | new folder |
 | **F2** | rename |
@@ -118,6 +121,22 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 | Key | Action |
 |---|---|
 | **Enter** / double click | go to the message's place |
+
+## Go to file and command palette
+
+| Key | Action |
+|---|---|
+| letters | keep what has them, in that order |
+| **↑ ↓** / **PgUp PgDn** | move the bar (the keys stay in the line) |
+| `>` at the start | the commands (deleting it: the files) |
+| **Enter** / double click | open the file / run the command |
+| **Esc** | close |
+
+## Find in files window
+
+| Key | Action |
+|---|---|
+| **Enter** / double click | open the file at the match, selected |
 
 ## Watches and Call stack windows
 

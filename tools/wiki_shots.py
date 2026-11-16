@@ -241,6 +241,28 @@ async def open_file():
         save(app, "open-history")
 
 @shot
+async def palette():
+    """Go to file (Ctrl+P), the command palette (a > in it) and Find in files with its window."""
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("ctrl+p"); await settle(pilot)
+        await pilot.press(*"card"); await settle(pilot)
+        save(app, "go-to-file")
+        await pilot.press("ctrl+a", ">", *"run"); await settle(pilot)
+        save(app, "command-palette")
+        await pilot.press("escape"); await settle(pilot)
+        await pilot.press("ctrl+shift+f"); await settle(pilot)
+        await pilot.press("ctrl+a", *"product"); await settle(pilot)
+        save(app, "find-in-files-dialog")
+        await pilot.press("enter")
+        await until(pilot, lambda: app.find_results_window() is not None)
+        await settle(pilot)
+        await pilot.press("down"); await settle(pilot)
+        save(app, "find-in-files")
+
+
+@shot
 async def dialector():
     app = Divide(DEMO, [DEMO / "erb.dialect"])
     async with app.run_test(size=SIZE) as pilot:

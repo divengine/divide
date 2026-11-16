@@ -91,7 +91,7 @@ from divide.ui.tracer import TraceMixin, TraceWindow
 from divide.ui.colors import ColorsMixin
 from divide.ui.outline import OutlineMixin, OutlineWindow
 from divide.ui.palette import PaletteMixin
-from divide.ui.findfiles import FindInFilesMixin
+from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide import lsp
@@ -1578,6 +1578,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return "Render-Trace"
         if isinstance(active, OutlineWindow):
             return "Outline"
+        if isinstance(active, FindResultsWindow):
+            return "Finding-Files-and-Commands"
         if isinstance(active, MessagesWindow):
             return "Checking-Templates"
         if isinstance(active, EditorWindow):
@@ -2069,6 +2071,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return
         if isinstance(active, OutlineWindow):
             status.set_hint(active.hint)
+            return
+        if isinstance(active, FindResultsWindow):
+            status.set_hint(FindResultsWindow.HINT)
             return
         self.follow_outline()
         if isinstance(active, HelpWindow):

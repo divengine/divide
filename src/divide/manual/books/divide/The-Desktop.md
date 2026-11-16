@@ -14,7 +14,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 |---|---|
 | **File** | New, Open (F3), Save (F2), Save as, Save all, Exit (Alt+X) |
 | **Edit** | Undo, Redo, Cut, Copy, Paste, Select all, Complete (Ctrl+Space) |
-| **Search** | Find, Replace, Search again, Go to line, Go to included template, Outline (Ctrl+O: see [[Outline]]), Previous / Next error |
+| **Search** | Find, Replace, Search again, Find in files (Ctrl+Shift+F), Go to line, Go to included template, Outline (Ctrl+O: see [[Outline]]), Go to file (Ctrl+P), Command palette (Ctrl+Shift+P): see [[Finding Files and Commands]], Previous / Next error |
 | **Run** | Run (Ctrl+F9: render a template, run a PHP script), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Web server, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
 | **Tools** | Dialector, Translate a template |

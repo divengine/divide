@@ -7,7 +7,7 @@ dialog's options: case sensitive, whole words only, regular expression. The
 files open in editors are searched as they are being edited, saved or not.
 
 What it finds goes to a window at the bottom, as Turbo Pascal's grep put it in
-the Messages window: ``parts/header.tpl(12): <the line>``, one line per match;
+the Messages window: ``parts/header.tpl(12): <the line>``, a row per line with a match;
 Enter (or a double click) opens the file there with the match selected.
 """
 
@@ -112,7 +112,7 @@ class FindInFilesDialog(_Dialog):
     """The text, the files to look in and the Find dialog's options."""
 
     DEFAULT_CSS = """
-    FindInFilesDialog { width: 62; height: 16; }
+    FindInFilesDialog { width: 62; height: 15; }
     FindInFilesDialog HistoryInput { margin-bottom: 1; }
     FindInFilesDialog CheckBoxes { width: 1fr; }
     """
@@ -154,19 +154,26 @@ class FindInFilesDialog(_Dialog):
 
 
 class FindResultsWindow(LocationsWindow):
-    """What Find in files found, one line per match."""
+    """What Find in files found, one row per line with a match."""
 
     EMPTY = "(nothing found)"
+    HINT = "Enter go to the match"
 
     def __init__(self, number: int = 0) -> None:
         super().__init__("Find in files", number=number)
 
 
 def result_items(root: Path, query: str, mask: str, hits: list[Hit], in_files: int) -> list[MessageItem]:
+    """The heading, then a row per line with a match (the first one on it is the one selected)."""
     many = len(hits) >= MAX_MATCHES
     count = f"{len(hits)}{'+' if many else ''} match{'es' if len(hits) != 1 else ''}"
     head = f'"{query}" in {mask}: {count} in {in_files} file{"s" if in_files != 1 else ""}'
-    return [MessageItem(head)] + [MessageItem(h.label, root / h.rel, h.start, h.end) for h in hits]
+    rows, seen = [MessageItem(head)], set()
+    for h in hits:
+        if (h.rel, h.line) not in seen:
+            seen.add((h.rel, h.line))
+            rows.append(MessageItem(h.label, root / h.rel, h.start, h.end))
+    return rows
 
 
 class FindInFilesMixin:

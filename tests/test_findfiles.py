@@ -4,7 +4,7 @@ import pytest
 
 from divide.app import Divide
 from divide.editor.search import SearchOptions, compile_pattern
-from divide.ui.findfiles import FindInFilesDialog, FindResultsWindow, masks, search, wanted
+from divide.ui.findfiles import FindInFilesDialog, FindResultsWindow, masks, result_items, search, wanted
 from divide.ui.windows import MessagesWindow
 
 
@@ -31,6 +31,8 @@ def test_search(tmp_path):
     assert [h.line for h in search(tmp_path, ["a.tpl"], whole)[0]] == [2, 3]
     # what an editor holds wins over the file
     assert search(tmp_path, ["b.php"], whole, edited={"b.php": "nothing"})[0] == []
+    rows = result_items(tmp_path, "title", "*", hits, in_files)
+    assert rows[0].text == '"title" in *: 4 matches in 2 files' and len(rows) == 4  # a row per line
     assert masks(" *.tpl; *.php ") == ["*.tpl", "*.php"] and masks("") == ["*"]
     assert wanted("parts/a.tpl", ["*.tpl"]) and wanted("parts/a.tpl", ["parts/*"]) and not wanted("a.php", ["*.tpl"])
 

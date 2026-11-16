@@ -9,6 +9,7 @@
 * [[Editing Templates]]
 * [[Editing PHP]]
 * [[Outline]]
+* [[Finding Files and Commands]]
 * [[Language Servers]]
 * [[Completion]]
 * [[Checking Templates]]

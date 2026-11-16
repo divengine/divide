@@ -4,7 +4,7 @@
 
 ![the local menu of the project window](images/project-menu.png)
 
-**Enter** opens a file, or folds and unfolds a folder. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
+**Enter** opens a file, or folds and unfolds a folder. With the mouse, a click puts the bar on a file and a double click opens it; a click on a folder folds or unfolds it. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
 
 ## File type marks
 
