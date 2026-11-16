@@ -34,6 +34,10 @@
     "title": "Div",
     "description": "El motor de plantillas Div: el lenguaje de las plantillas, los dialectos, la API de PHP.",
     "source": "https://github.com/divengine/help-div-es.wiki.git",
-    "path": "."
+    "path": ".",
+    "skip": [
+      "Home.md",
+      "_Sidebar.md"
+    ]
   }
 ]

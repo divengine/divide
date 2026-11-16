@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from divide import manual
 from divide.app import Divide
 from divide.ui.help import HelpWindow
@@ -10,7 +12,13 @@ async def settle(pilot, n=8):
         await pilot.pause()
 
 
-def test_every_cross_reference_leads_somewhere():
+@pytest.mark.parametrize("lang", manual.languages())
+def test_every_cross_reference_leads_somewhere(lang):
+    with manual.reading_in(lang):
+        check_cross_references()
+
+
+def check_cross_references():
     names = manual.page_names()
     assert {"divide:Home", "divide:Help", "divide:Dialector", "div:02.10 Lists (loops)"} <= set(names)
     generated = [manual.LIBRARY] + [f(b.id) for b in manual.books() for f in (manual.contents_of, manual.index_of)]
