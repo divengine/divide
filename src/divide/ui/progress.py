@@ -2,12 +2,15 @@
 
 ``ProgressDialog`` lists what runs (``Template: index.tpl``), a clock and, at
 the bottom, what to do: Esc stops the job while it runs; then the verdict
-("Success", "Errors") waits for any key. A success also closes by itself after
-a moment, so a quick render only flashes it.
+("Success", "Errors") and any key closes it. It also closes by itself after a
+moment (a success sooner: a quick render only flashes it), since what came
+out is behind it already (the output, the Messages window).
 
 Under the rows, a bar in Norton Commander's style, in CP437 blocks: ``█`` and
 ``▓`` fill a track of ``░`` while the job says how far it is (``progress``);
-a job that cannot say gets a block going back and forth over the track.
+a job that cannot say gets a block going back and forth over the track. A job
+that ended fills the bar, whatever its verdict: the bar says how far the job
+got, the verdict how it went; only a job stopped with Esc leaves it as it was.
 
 ``run_with_progress`` runs a coroutine under the box and returns its result
 (None when the user stopped it) as soon as it ends: the caller shows what
@@ -34,6 +37,7 @@ from divide.ui.shadow import install_shadows
 T = TypeVar("T")
 
 AUTO_CLOSE = 2.0  # seconds a success stays up
+AUTO_CLOSE_PROBLEMS = 5.0  # errors or warnings: a little longer, to be read
 TIME = "Time"
 BLOCK = "▓██▓"  # what goes back and forth while the job cannot say how far it is
 
@@ -61,7 +65,7 @@ def bar_text(width: int, fraction: float | None = None, phase: int = 0, *,
 
 class ProgressDialog(_Dialog):
     DEFAULT_CSS = """
-    ProgressDialog > .tv-window-content { margin: 1 2 0 2; }
+    ProgressDialog > .tv-window-content { margin: 1 2 1 2; }  /* the last row is the frame's */
     ProgressDialog .progress-rows { color: $text; background: $surface; width: 1fr; height: auto; }
     ProgressDialog .progress-bar { background: $surface; width: 1fr; height: 1; margin-top: 1; }
     ProgressDialog .progress-verdict { color: $text; background: $surface; width: 1fr; height: 1; margin-top: 1;
@@ -79,6 +83,7 @@ class ProgressDialog(_Dialog):
         self.running = True
         self.verdict = "Press Esc to stop" if stoppable else "Working..."
         self.ok: bool | None = None
+        self.stopped = False  # by Esc: the bar stays where it was
         self.fraction: float | None = None  # how far the job is, when it can say
         self._phase = 0
         self._started = time.monotonic()
@@ -112,9 +117,8 @@ class ProgressDialog(_Dialog):
         if self.running and self.fraction is None:
             return bar_text(width, None, self._phase)
         if not self.running and self.fraction is None:
-            # done: full on a success; empty track after errors or a stop
-            return bar_text(width, 1.0 if self.ok else 0.0)
-        fraction = 1.0 if self.ok and not self.running else self.fraction
+            return bar_text(width, 0.0 if self.stopped else 1.0)  # ended: full, whatever the verdict
+        fraction = self.fraction if self.running or self.stopped else 1.0
         bar = bar_text(width - 5, fraction)
         bar.append(f"{round(fraction * 100):4d}%", style=themes.current().colour("progress-text"))
         return bar
@@ -148,10 +152,11 @@ class ProgressDialog(_Dialog):
             self._fit()
         self._show()
 
-    def finish(self, verdict: str, ok: bool, rows: list[tuple[str, str]] | None = None) -> None:
-        """The job ended: final rows and ``verdict`` ("Success"), then any key closes."""
+    def finish(self, verdict: str, ok: bool, rows: list[tuple[str, str]] | None = None, *, stopped: bool = False) -> None:
+        """The job ended (or was ``stopped``): final rows and ``verdict`` ("Success"), then any key closes."""
         self.running = False
         self.ok = ok
+        self.stopped = stopped
         self.rows[TIME] = f"{time.monotonic() - self._started:.2f} s"
         for label, value in rows or []:
             self.rows[label] = value
@@ -220,10 +225,9 @@ async def run_with_progress(
         screen.close()
         raise
     if result is None:
-        dialog.finish("Stopped", False)
+        dialog.finish("Stopped", False, stopped=True)
     else:
         word, ok, rows = verdict(result)
         dialog.finish(word, ok, rows)
-        if ok:
-            app.set_timer(AUTO_CLOSE, screen.close)
+        app.set_timer(AUTO_CLOSE if ok else AUTO_CLOSE_PROBLEMS, screen.close)
     return result

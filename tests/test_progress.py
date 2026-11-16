@@ -45,7 +45,8 @@ async def test_the_box_shows_how_far_the_job_is(tmp_path):
         assert half.endswith("  50%") and len(half) == len(bar) and half.count("█") * 2 + half.count("▓") == len(bar) - 5
         step.set()
         await pilot.pause(0.2)
-        assert result == [3] and dialog._bar().plain == half  # kept: not a success
+        done = dialog._bar().plain
+        assert result == [3] and done.endswith(" 100%") and "░" not in done  # ended: full, whatever the verdict
 
 
 async def test_indexing_bar_in_the_status_line(tmp_path):

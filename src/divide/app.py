@@ -51,6 +51,7 @@ from divide.ui.dialogs import (
     confirm_save,
     information,
     replace_prompt,
+    shown_path,
 )
 from divide.ui.shadow import ShadowScreen
 from divide import config, themes
@@ -2097,7 +2098,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return
         win = self.active_editor()
         if win is None:
-            status.set_hint(str(self.root))
+            status.set_hint(shown_path(self.root))
             return
         ed = win.editor
         if ed.lang == "json":
