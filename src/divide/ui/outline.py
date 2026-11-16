@@ -32,7 +32,7 @@ class OutlineWindow(_ListWindow):
     HINT = PHP_HINT
 
     def __init__(self, number: int = 0) -> None:
-        super().__init__("Outline", number=number)
+        super().__init__(_('Outline'), number=number)
         self.source: EditorWindow | None = None
         self.symbols: list = []  # php.Symbol or div_outline.Entry: .text, .start, .end
         self.text: str | None = None  # the source's text the list was made from
@@ -58,7 +58,7 @@ class OutlineWindow(_ListWindow):
             else:
                 lines = [s.text for s in self.symbols] or [_('(no declarations)')]
         name = source.path.name if source is not None and source.path is not None else ""
-        self.title = f"Outline: {name}" if name else _('Outline')
+        self.title = _('Outline: {name}').format(name=name) if name else _('Outline')
         self.show(lines)
 
     def activate(self, index: int) -> None:

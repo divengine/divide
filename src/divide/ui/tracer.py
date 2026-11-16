@@ -166,7 +166,7 @@ class TraceMixin:
         template, engine, code, data_path, data = inputs
         dialog = ProgressDialog(_('Tracing'), [
             (_('Template'), self._relative(template)),
-            (_('Data'), self._relative(data_path) if data is not None else "(none)"),
+            (_('Data'), self._relative(data_path) if data is not None else _('(none)')),
             (_('Engine'), self._relative(engine)),
         ])
 

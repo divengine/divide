@@ -375,6 +375,25 @@ async def outline():
         await settle(pilot)
         save(app, "outline")
 
+
+@shot
+async def outline_tpl():
+    """Search > Outline on the shop's home page, on the products loop."""
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        await pilot.press("ctrl+o")
+        await settle(pilot)
+        window = app.outline_window()
+        index = next(i for i, line in enumerate(window.lines) if "[$products]" in line)
+        window.list.focus_item(index)
+        await pilot.press("enter")
+        await settle(pilot)
+        app.raise_window(window)
+        await settle(pilot)
+        save(app, "outline_tpl")
+
+
 @shot
 async def lsp():
     """Completion and signatures from a real language server, on Div's classes:

@@ -1286,7 +1286,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 if progress:
                     dialog = ProgressDialog(_('Rendering'), [
                         (_('Template'), self._relative(template)),
-                        (_('Data'), self._relative(data_path) if data is not None else "(none)"),
+                        (_('Data'), self._relative(data_path) if data is not None else _('(none)')),
                         (_('Engine'), self._relative(engine)),
                     ])
                     result = await run_with_progress(self, dialog, job, self._render_verdict)

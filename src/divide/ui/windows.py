@@ -891,7 +891,7 @@ class OutputWindow(_TVWindow):
     def show(self, template: Path, output: str, summary: str) -> None:
         self.template = template
         self.summary = summary
-        self.title = f"Output: {template.name}"
+        self.title = _('Output: {name}').format(name=template.name)
         self.view.load_text(output)
 
 

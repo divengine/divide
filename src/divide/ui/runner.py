@@ -227,7 +227,7 @@ class RunMixin:
         args = self.run_arguments(script)
         dialog = ProgressDialog(_('Running'), [
             (_('Script'), self._relative(script)),
-            (_('Parameters'), args or "(none)"),
+            (_('Parameters'), args or _('(none)')),
             (_('Output'), size_text(b"")),
         ])
 

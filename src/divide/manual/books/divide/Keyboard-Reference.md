@@ -31,7 +31,7 @@
 |---|---|
 | **Ctrl+Space** | completion |
 | **Ctrl+A** | select all |
-| **Ctrl+O** | outline of the PHP file, see [[Outline]] |
+| **Ctrl+O** | outline of the template or the PHP file, see [[Outline]] |
 | **Ctrl+Enter** / **Ctrl+J** / Ctrl+click | go to the included template; in PHP, open the file a string names, or go to the definition (with a language server) |
 | **Ctrl+F** / **Ctrl+R** | find / replace |
 | **Ctrl+L** | search again |

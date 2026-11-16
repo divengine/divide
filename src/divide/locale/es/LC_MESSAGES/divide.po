@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 09:25+0000\n"
+"POT-Creation-Date: 2026-11-16 12:28+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #, python-brace-format
 msgid "  ... and {changes} more"
@@ -53,6 +53,9 @@ msgstr "(sin declaraciones)"
 
 msgid "(no messages)"
 msgstr "(sin mensajes)"
+
+msgid "(none)"
+msgstr "(ninguno)"
 
 msgid "(not running)"
 msgstr "(no se ejecuta)"
@@ -936,11 +939,19 @@ msgstr "Otros libros"
 msgid "Outline"
 msgstr "Esquema"
 
+#, python-brace-format
+msgid "Outline: {name}"
+msgstr "Esquema: {name}"
+
 msgid "Output"
 msgstr "Salida"
 
 msgid "Output: what Div returns"
 msgstr "Salida: lo que devuelve Div"
+
+#, python-brace-format
+msgid "Output: {name}"
+msgstr "Salida: {name}"
 
 msgid "O~K~"
 msgstr "O~K~"
@@ -1745,8 +1756,8 @@ msgid ""
 "{?( expression )?} ... @else@ ... {/?}, and the conditional parts ?$show "
 "... $show?"
 msgstr ""
-"{?( expression )?} ... @else@ ... {/?}, y las partes condicionales ?$show "
-"... $show?"
+"{?( expression )?} ... @else@ ... {/?}, y las partes condicionales ?$show"
+" ... $show?"
 
 #, python-brace-format
 msgid ""
