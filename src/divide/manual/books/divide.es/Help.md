@@ -20,6 +20,10 @@ F1 en la propia ventana de ayuda muestra esta página.
 
 ![el índice: todos los temas y secciones, por orden alfabético](https://raw.githubusercontent.com/wiki/divengine/divide/images/help-index.png)
 
+## La ayuda en español
+
+Los libros están también en español: este manual y la documentación de Div, traducidos en wikis propias, [help-divide-es](https://github.com/divengine/help-divide-es/wiki) y [help-div-es](https://github.com/divengine/help-div-es/wiki). Cuando la interfaz está en español (ver [[El escritorio|The Desktop#idioma]]), la ayuda los muestra; una página aún sin traducir se muestra en inglés. Los temas son los mismos en los dos idiomas, así que **F1** y los enlaces llevan a los mismos sitios.
+
 ## Buscar en la ayuda
 
 **Ayuda > Buscar** encuentra las palabras que escribes en todos los libros, como un buscador web. Mientras escribes, lista las secciones que contienen las palabras, las mejores primero. Cada fila es una sección de una página, como `Breakpoints · Debugging PHP`, con las palabras que escribiste resaltadas, y las filas de la documentación de Div van marcadas con *Div*. El panel de abajo muestra el libro y la frase donde aparecen las palabras.

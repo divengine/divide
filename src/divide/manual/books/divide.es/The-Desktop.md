@@ -95,7 +95,7 @@ divide habla inglés y español. Toma el idioma del sistema (`LANG`, `LC_ALL`…
 
 ![Opciones > Idioma](https://raw.githubusercontent.com/wiki/divengine/divide/images/language-dialog.png)
 
-Los menús, diálogos, pistas, mensajes y la línea de estado están traducidos, con teclas rápidas propias en cada idioma (**Alt+A** abre *Archivo*, **Alt+J** abre *Ejecutar*). Las teclas de los comandos no cambian: **F2** guarda y **Ctrl+F9** ejecuta en cualquier idioma.
+Los menús, diálogos, pistas, mensajes y la línea de estado están traducidos, con teclas rápidas propias en cada idioma (**Alt+A** abre *Archivo*, **Alt+J** abre *Ejecutar*). Las teclas de los comandos no cambian: **F2** guarda y **Ctrl+F9** ejecuta en cualquier idioma. La ayuda sigue a la interfaz: en español, el manual y la documentación de Div se muestran en español (ver [[Ayuda|Help#la-ayuda-en-español]]).
 
 ![el menú Ejecutar en español](https://raw.githubusercontent.com/wiki/divengine/divide/images/interface-spanish.png)
 

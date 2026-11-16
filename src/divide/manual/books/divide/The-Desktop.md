@@ -95,7 +95,7 @@ divide speaks English and Spanish. It takes the language of the system (`LANG`, 
 
 ![Options > Language](images/language-dialog.png)
 
-Menus, dialogs, hints, messages and the status line are translated, with hotkeys of their own in each language (**Alt+A** opens *Archivo*, **Alt+J** opens *Ejecutar*). The keys of the commands stay the same: **F2** saves and **Ctrl+F9** runs in any language.
+Menus, dialogs, hints, messages and the status line are translated, with hotkeys of their own in each language (**Alt+A** opens *Archivo*, **Alt+J** opens *Ejecutar*). The keys of the commands stay the same: **F2** saves and **Ctrl+F9** runs in any language. The help follows the interface: in Spanish, the manual and Div's documentation are shown in Spanish (see [[Help#the-help-in-spanish]]).
 
 ![the Run menu in Spanish](images/interface-spanish.png)
 

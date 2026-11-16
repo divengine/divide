@@ -20,6 +20,10 @@ F1 in the help window itself shows this page.
 
 ![the index: every topic and section, alphabetically](images/help-index.png)
 
+## The help in Spanish
+
+The books are also in Spanish: this manual and Div's documentation, translated in wikis of their own, [help-divide-es](https://github.com/divengine/help-divide-es/wiki) and [help-div-es](https://github.com/divengine/help-div-es/wiki). When the interface is in Spanish (see [[The Desktop#language]]), the help shows them; a page not translated yet shows in English. The topics are the same in both languages, so **F1** and the links lead to the same places.
+
 ## Searching the help
 
 **Help > Search** finds the words you type in every book, like a web search engine. As you type, it lists the sections that contain the words, best first. Each row is one section of a page, such as `Breakpoints · Debugging PHP`, with the words you typed highlighted, and rows from Div's documentation are marked *Div*. The pane below shows the book and the sentence where the words appear.
@@ -27,7 +31,7 @@ F1 in the help window itself shows this page.
 ![Help > Search](images/help-search.png)
 
 - **The order.** Sections that contain all the words come first. A word in a page title counts most, then a word in a heading, then a word in the text. When no section has every word, sections with any of them are listed.
-- **Word forms.** Finished words also match their other forms: *configure* finds *configuration* and *configured*, *template* finds *templates*.
+- **Word forms.** Finished words also match their other forms: *configure* finds *configuration* and *configured*, *template* finds *templates*. In the Spanish books the words match as written, accents and capitals aside: *numero* finds *Número*.
 - **While you type.** The last word matches as the start of a word, so *itera* already finds *Iterations*.
 - **↑ ↓** (and **PgUp PgDn**) move the bar while you keep typing. **Enter** or a double click opens the help at that section. **Esc** closes.
 

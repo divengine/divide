@@ -69,9 +69,10 @@ def test_markdown_is_laid_out():
     assert text[row + 1].startswith(" " * text[row].index("the topic"))
     # external links are text; links to topics are cross references
     styles = {s.style for line in topic.lines for s in line}
-    assert {"url", "bold", "heading", "title"} <= styles and "link" not in styles
+    assert {"url", "bold", "heading", "title", "link"} <= styles
+    assert any(link.target == "divide:The-Desktop#language" for link in topic.links)
     # web pages are links too, opened by the browser
-    assert all(link.external for link in topic.links) and topic.links
+    assert any(link.external and link.target.startswith("https://github.com/divengine/help-") for link in topic.links)
     assert any(s.style == "link" for line in manual.layout("Dialector", 60).lines for s in line)
 
 
