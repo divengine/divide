@@ -15,7 +15,8 @@ Run it after the source changes:
 
 A book in another language is one more entry of books.json with the same
 "id" and its "language" (and its "source"; the rest is the original's). Its
-pages go to books/<id>.<language>, with the original's page names.
+pages go to books/<id>.<language>, with the original's page names. GitHub's
+placeholder page of a new wiki ("Welcome to the x wiki!") is not copied.
 
 After copying, it builds the help's full-text search indexes
 (src/divide/manual/search*.sqlite, see divide.manual.fulltext), one per language.
@@ -25,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -49,16 +51,23 @@ def folder(book: dict) -> str:
     return f"{book['id']}.{book['language']}" if book.get("translation") else book["id"]
 
 
+def placeholder(page: Path) -> bool:
+    """GitHub's first page of a new wiki ("Welcome to the x wiki!"): nothing to copy."""
+    return re.fullmatch(r"Welcome to the [\w.-]+ wiki!\s*", page.read_text(encoding="utf-8")) is not None
+
+
 def sync(book: dict, checkout: Path) -> int:
     root = checkout / book.get("path", ".")
     skip = set(book.get("skip", []))
     contents = book.get("contents")
-    pages = sorted(p for p in root.glob("*.md") if p.name not in skip)
+    pages = sorted(p for p in root.glob("*.md") if p.name not in skip and not placeholder(p))
     if contents and not contents.endswith(".md") and (root / contents).is_file():
         pages.append(root / contents)
-    if not pages:
+    if not pages and not book.get("translation"):
         print(f"no pages in {root}", file=sys.stderr)
         return 1
+    if not pages:
+        print(f"no pages translated yet in {root}: the original's are shown")
     target_dir = MANUAL / "books" / folder(book)
     target_dir.mkdir(parents=True, exist_ok=True)
     wanted = {p.name for p in pages}

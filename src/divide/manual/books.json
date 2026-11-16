@@ -7,7 +7,9 @@
     "path": ".",
     "home": "Home",
     "contents": "_Sidebar.md",
-    "skip": ["_Footer.md"]
+    "skip": [
+      "_Footer.md"
+    ]
   },
   {
     "id": "div",
@@ -18,5 +20,20 @@
     "home": "README",
     "contents": "book-order.txt",
     "skip": []
+  },
+  {
+    "id": "divide",
+    "language": "es",
+    "title": "divide",
+    "description": "Este IDE: el escritorio, la edición, la comprobación, el render, los archivos de datos, el dialector.",
+    "source": "https://github.com/divengine/help-divide-es.wiki.git"
+  },
+  {
+    "id": "div",
+    "language": "es",
+    "title": "Div",
+    "description": "El motor de plantillas Div: el lenguaje de las plantillas, los dialectos, la API de PHP.",
+    "source": "https://github.com/divengine/help-div-es.wiki.git",
+    "path": "."
   }
 ]

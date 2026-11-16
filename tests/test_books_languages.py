@@ -110,12 +110,31 @@ def test_sync_book_copies_a_translation(library, tmp_path, monkeypatch):
     (wiki / "Home.md").write_text("# La guía\n\nOtra vez.\n")
     (wiki / "Other-Files.md").write_text("# Otros archivos\n\nHojas de estilo.\n")
     (wiki / "_Footer.md").write_text("pie\n")
+    (wiki / "Getting-Started.md").write_text("Welcome to the guide-es wiki!\n")  # GitHub's placeholder: not copied
     monkeypatch.setattr("sys.argv", ["sync_book.py", "guide", str(wiki), "--language", "es"])
     assert sync_book.main() == 0
     copied = sorted(p.name for p in (library / "books" / "guide.es").iterdir())
-    assert copied == ["Home.md", "Other-Files.md"]  # as the wiki has it, without the skipped footer
+    assert copied == ["Home.md", "Other-Files.md"]  # as the wiki has it, without the footer and the placeholder
     assert sorted(p.name for p in (library / "books" / "guide").iterdir()) == \
         ["Getting-Started.md", "Home.md", "Other-Files.md", "_Sidebar.md"]  # the original untouched
     assert (library / "search.es.sqlite").is_file()
     db = sqlite3.connect(library / "search.es.sqlite")
     assert db.execute("SELECT count(*) FROM help WHERE page = 'Other-Files' AND title = 'Otros archivos'").fetchone()[0]
+
+
+def test_sync_book_a_translation_with_nothing_yet(library, tmp_path, monkeypatch):
+    """A new wiki has only GitHub's placeholder: the book is the original's, nothing fails."""
+    spec = importlib.util.spec_from_file_location("sync_book", ROOT / "tools" / "sync_book.py")
+    sync_book = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sync_book)
+    monkeypatch.setattr(sync_book, "MANUAL", library)
+    monkeypatch.setattr(sync_book, "REGISTRY", library / "books.json")
+    wiki = tmp_path / "guide-es.wiki"
+    wiki.mkdir()
+    (wiki / "Home.md").write_text("Welcome to the guide-es wiki!\n")
+    monkeypatch.setattr("sys.argv", ["sync_book.py", "guide", str(wiki), "--language", "es"])
+    assert sync_book.main() == 0
+    assert list((library / "books" / "guide.es").iterdir()) == []
+    in_language(monkeypatch, "es")
+    manual.use_root(library)
+    assert manual.title_of("guide:Home") == "The Guide" and manual.books()[0].title == "Guía"

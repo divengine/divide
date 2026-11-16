@@ -63,9 +63,11 @@ def test_index_file_is_current_or_rebuilt(tmp_path: Path, monkeypatch):
 
 
 def test_shipped_index_is_current():
-    """tools/sync_book.py --index after changing a book (the app would rebuild it in memory)."""
-    db = sqlite3.connect(fulltext.INDEX_FILE)
-    assert db.execute("SELECT value FROM meta").fetchone()[0] == fulltext.fingerprint()
+    """tools/sync_book.py --index after changing a book (the app would rebuild it in memory): each language's."""
+    for lang in manual.languages():
+        with manual.reading_in(lang):
+            db = sqlite3.connect(fulltext.index_file(lang))
+            assert db.execute("SELECT value FROM meta").fetchone()[0] == fulltext.fingerprint(), lang
 
 
 def test_lit():
