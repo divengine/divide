@@ -114,6 +114,7 @@ references.
 - [Web Server](https://github.com/divengine/divide/wiki/Web-Server)
 - [Data Files](https://github.com/divengine/divide/wiki/Data-Files)
 - [Project Window](https://github.com/divengine/divide/wiki/Project-Window)
+- [Finding Files and Commands](https://github.com/divengine/divide/wiki/Finding-Files-and-Commands)
 - [Dialector](https://github.com/divengine/divide/wiki/Dialector)
 - [Translating Templates](https://github.com/divengine/divide/wiki/Translating-Templates)
 - [Keyboard Reference](https://github.com/divengine/divide/wiki/Keyboard-Reference)
@@ -130,6 +131,10 @@ includes are not resolved, and Ctrl+F9 and Go to include ask you to save it
 first. Once a template has a file, its unsaved edits are always what Div gets.
 
 ## Development
+
+The technical documentation (vision, use cases, architecture, design, test
+plan, iterations), organised as Rational Unified Process artifacts, is in
+[docs/](docs/README.md).
 
 ```bash
 .venv/bin/pip install -e ".[dev]"

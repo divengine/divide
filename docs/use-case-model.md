@@ -1,0 +1,162 @@
+# Use-Case Model
+
+## 1. Actors
+
+| Actor | Kind | Description |
+|---|---|---|
+| **Developer** | primary, human | Edits, checks, renders and debugs templates and PHP from the keyboard (or the mouse). |
+| **Div engine** | secondary, system | The Div installation, reached through PHP and the bridge. It renders, resolves includes, decodes data, validates and loads dialects, traces and translates. |
+| **PHP** | secondary, system | The `php` binary: `php -l` checks, scripts, `php -S`, and the host of Div. |
+| **Xdebug** | secondary, system | Debugs PHP scripts and web requests over DBGp. |
+| **Language server** | secondary, system | phpactor, intelephense...: completion, hover, definitions, diagnostics over LSP. |
+| **Git** | secondary, system | Gives the project's file list to Go to file and Find in files. |
+| **Browser** | secondary, system | Shows the pages of the built-in web server. |
+
+## 2. Use-case diagram
+
+```mermaid
+flowchart LR
+    Dev([Developer])
+    Div([Div engine])
+    PHP([PHP])
+    XD([Xdebug])
+    LS([Language server])
+    Git([Git])
+    subgraph divide
+        UC1(UC1 Open and navigate a project)
+        UC2(UC2 Edit a Div template)
+        UC3(UC3 Check a template)
+        UC4(UC4 Render a template)
+        UC5(UC5 Trace a render)
+        UC6(UC6 Edit template data)
+        UC7(UC7 Build a dialect)
+        UC8(UC8 Translate a template)
+        UC9(UC9 Edit PHP)
+        UC10(UC10 Run a PHP script)
+        UC11(UC11 Debug PHP)
+        UC12(UC12 Serve the project on the web)
+        UC13(UC13 Find files, text and commands)
+        UC14(UC14 Read the help)
+        UC15(UC15 Configure divide)
+    end
+    Dev --- UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8 & UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15
+    UC3 --- Div
+    UC4 --- Div
+    UC5 --- Div
+    UC7 --- Div
+    UC8 --- Div
+    UC4 --- PHP
+    UC9 --- PHP
+    UC9 --- LS
+    UC10 --- PHP
+    UC11 --- XD
+    UC12 --- PHP
+    UC12 --- XD
+    UC13 --- Git
+```
+
+## 3. Use-case specifications
+
+Each specification gives the main flow and the main alternatives. The keys
+and screens are described in the [manual](https://github.com/divengine/divide/wiki).
+This document describes behaviour and responsibilities.
+
+### UC1 Open and navigate a project
+
+**Goal:** work on the files of one folder.
+**Trigger:** `divide [folder] [files...]`.
+1. divide opens the desktop with the given files in editor windows, or the project window if no file is given.
+2. The developer opens files from the project window (Enter or a double click), File > Open (F3, with the name history) or Go to file (UC13).
+3. Windows are moved, resized, zoomed (F5), tiled, cascaded, cycled (F6) and closed (Alt+F3). Unsaved changes are asked about before closing or quitting.
+- *Alt:* the project window creates, renames and deletes files and folders (Ins, F7, F2, Del, local menu).
+
+### UC2 Edit a Div template
+
+**Goal:** write a template with Div's structure visible.
+1. The editor highlights the template with the lexer built from its dialect (`@_DIALECT`, resolved like Div does).
+2. As the developer types, completion offers variables from the data file, loop item fields, includes and snippets (Ctrl+Space).
+3. Ctrl+Enter opens the included template under the cursor, as resolved by Div.
+4. Search > Outline lists the template's constructs, nested, and follows the edits.
+- *Alt:* an unknown dialect keeps the default tags and says so in the status line.
+
+### UC3 Check a template
+
+**Goal:** see errors before rendering.
+1. While the developer types, the static checker reports unclosed or orphan blocks, conditions without a closer, broken JSON in definitions, and tags Div would leave as text.
+2. Includes are resolved by Div in the background, and the unresolvable ones are reported.
+3. Alt+F9 runs the check under the progress box. The Messages window lists the results and Alt+F8 / Alt+F7 walk through them.
+
+### UC4 Render a template
+
+**Goal:** see the output Div produces.
+1. Ctrl+F9 sends the editor's text (unsaved edits included), its real path and its data file to the bridge.
+2. Div renders it. The Output window shows the result next to the code, and warnings and fatal errors go to the Messages window.
+- *Alt:* no engine is found, so divide asks for one (Options > Div engine).
+- *Alt:* Esc in the progress box stops the render.
+
+### UC5 Trace a render
+
+**Goal:** understand how the output came to be.
+1. Debug > Render trace (F7 in a template) asks the bridge for a traced render.
+2. The trace window lists Div's mutations in order. Each one shows the template before and after, and where in the source it happened.
+
+### UC6 Edit template data
+
+**Goal:** prepare the data a template is rendered with.
+1. The data file opens as Div JSON, highlighted and validated.
+2. Ctrl+T switches to a tree editor over the same buffer. Its edits are text edits, so undo, save and the dirty flag work as usual.
+- *Alt:* Run > Data file chooses another data file for the template.
+
+### UC7 Build a dialect
+
+**Goal:** a valid `.dialect` file.
+1. Tools > Dialector shows the dialect's tags by section, each with an example rendered in that dialect.
+2. Each change is validated by Div (`isValidCurrentDialect`) and the verdict is shown.
+3. The dialect can be imported from PHP `define()`s, checked against an example and saved.
+
+### UC8 Translate a template
+
+**Goal:** move a template from one dialect to another.
+1. Tools > Translate asks for the template, the source dialect and the target dialect.
+2. Div's `translate()` produces the result, which is previewed and then saved or opened.
+
+### UC9 Edit PHP
+
+**Goal:** write the PHP around the templates.
+1. tree-sitter's PHP grammar highlights the file. `php -l` checks it as the developer types.
+2. A language server, if one is installed, adds completion, signatures, hover (Ctrl+F1), definitions (Ctrl+click) and its own diagnostics.
+3. The outline lists namespaces, classes, members and functions.
+
+### UC10 Run a PHP script
+
+1. Ctrl+F9 runs the script with its parameters (Run > Parameters) under the progress box.
+2. Its output goes to the Output window and PHP's errors to the Messages window, located.
+- *Alt:* Run in terminal runs it outside divide, for interactive scripts.
+
+### UC11 Debug PHP
+
+1. With Xdebug available, F7 / F8 / F4 start the script under the debugger. Ctrl+F8 toggles breakpoints.
+2. When the script pauses, the current line is shown, along with Watches, the Call stack and Evaluate (Ctrl+F4).
+3. F7 traces into, F8 steps over, Shift+F8 steps out, Ctrl+F9 goes on and Ctrl+F2 resets.
+
+### UC12 Serve the project on the web
+
+1. Run > Web server starts `php -S` on the project, with a router if one is given. Its log goes to a window.
+2. With Xdebug, each request pauses at the first breakpoint and is debugged as in UC11 while the browser waits.
+
+### UC13 Find files, text and commands
+
+1. **Go to file** (Ctrl+P): the developer types a few letters and the project's files are matched fuzzily. Enter opens the chosen file.
+2. **Command palette** (Ctrl+Shift+P, or `>` in Go to file): every menu entry is matched the same way. Enter runs it.
+3. **Find / Replace** (Ctrl+F / Ctrl+R) work in the current file. **Find in files** (Ctrl+Shift+F) searches every project file, or those matching a mask, and lists the matching lines. Enter opens each one with the match selected.
+
+### UC14 Read the help
+
+1. F1 opens the topic for the active window. Contents, Index and Topic search browse the books (divide, Div).
+2. Links between topics are followed with Enter, Alt+F1 goes back, and web links open in the browser.
+
+### UC15 Configure divide
+
+1. Options > Colors chooses the theme, previewed live, and the colour depth.
+2. Options > Language servers, Div engine and Xdebug set the external tools. Options > File type marks changes the project tree.
+3. Settings, histories and choices are kept in `config.json` (see [deployment.md](deployment.md)).
