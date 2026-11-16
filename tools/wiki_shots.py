@@ -52,16 +52,21 @@ def key(name: str) -> str:
 from divide.app import Divide  # noqa: E402
 from divide.ui.progress import ProgressScreen  # noqa: E402
 
+def rasterise(svg: str, png: Path, work: Path) -> None:
+    """Textual's SVG screenshot as a PNG, drawn as the terminal draws it (see above)."""
+    svg = re.sub(r'font-family:[^;"]*', "font-family: Liberation Mono; letter-spacing: 0.2px", svg)
+    # rsvg drops a span's leading no-break space: plain spaces, preserved
+    svg = svg.replace("&#160;", " ").replace("<svg ", '<svg xml:space="preserve" ', 1)
+    tmp = work / (png.stem + ".svg")
+    tmp.write_text(svg)
+    subprocess.run(["rsvg-convert", str(tmp), "-o", str(png)], check=True)
+
+
 def save(app, name):
     svg = app.export_screenshot(title="divide")
     if os.environ.get("DIVIDE_SHOT_KEEP_SVG"):
         (Path(os.environ["DIVIDE_SHOT_KEEP_SVG"]) / f"{name}.svg").write_text(svg)
-    svg = re.sub(r'font-family:[^;"]*', "font-family: Liberation Mono; letter-spacing: 0.2px", svg)
-    # rsvg drops a span's leading no-break space: plain spaces, preserved
-    svg = svg.replace("&#160;", " ").replace("<svg ", '<svg xml:space="preserve" ', 1)
-    tmp = SVG_DIR / f"{name}.svg"
-    tmp.write_text(svg)
-    subprocess.run(["rsvg-convert", str(tmp), "-o", str(OUT / f"{name}.png")], check=True)
+    rasterise(svg, OUT / f"{name}.png", SVG_DIR)
     print("saved", name)
 
 async def settle(pilot, n=6):
