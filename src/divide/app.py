@@ -986,7 +986,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def _select(ed: DivEditor, start: int, end: int) -> None:
         doc = ed.document
         ed.selection = Selection(doc.get_location_from_index(start), doc.get_location_from_index(end))
-        ed.scroll_cursor_visible(center=True)
+        ed.reveal_cursor()
 
     async def search(self, win: EditorWindow, *, first: bool, change_all: bool = False) -> None:
         """Run the stored find / replace from the cursor (or the scope edge on the first run)."""
@@ -1516,7 +1516,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         ed = win.editor
         doc = ed.document
         ed.selection = Selection(doc.get_location_from_index(start), doc.get_location_from_index(end if end is not None else start))
-        ed.scroll_cursor_visible(center=True)
+        ed.reveal_cursor()
         ed.focus()
         messages = self.messages_window()
         if messages is not None:

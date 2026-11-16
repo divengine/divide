@@ -9,7 +9,7 @@ key. It understands Div the way Div does: it reads your dialect, checks your
 templates as you type, completes variables from your real data, and renders
 through the real Div engine, side by side with the code.
 
-![divide: project, template and rendered output side by side](https://raw.githubusercontent.com/wiki/divengine/divide/images/hero.png)
+![divide in under a minute: completion from the data, errors before rendering, a render with Div, the render trace, the data tree, the outline and the dialector](https://raw.githubusercontent.com/wiki/divengine/divide/images/tour.gif)
 
 ## What it does
 
@@ -38,8 +38,11 @@ through the real Div engine, side by side with the code.
 - **PHP next to the templates.** `.php` files are highlighted with
   tree-sitter's PHP grammar and checked by PHP itself (`php -l`) as you type.
   Ctrl+Enter on `new div('page.tpl')` opens the template.
-- **Outline.** Search > Outline (Ctrl+O) lists the classes, methods, properties
-  and functions of a PHP file; Enter goes to one.
+- **Outline.** Search > Outline (Ctrl+O) shows the shape of the file as a tree:
+  a template's loops, conditions, includes and capsules; a PHP file's classes
+  with their methods and properties; and the parts of HTML, Markdown, CSS,
+  JavaScript, SQL, JSON, YAML... Enter goes to one. The project window unfolds
+  each file into the same members, without opening it.
 - **Render trace.** Debug > Render trace (F7 in a template) replays how Div mutated the template
   into its output: every change, in Div's own words, with what it wrote and
   took away, sub-parses and fixed points; F7 / F8 step through them.
@@ -146,6 +149,8 @@ plan, iterations), organised as Rational Unified Process artifacts, is in
 ERB-like `erb.dialect`) used by
 the manual. `tools/wiki_shots.py --out <wiki clone>/images` retakes the
 manual's screenshots from the real app on it, so they follow UI changes.
+`tools/screencast.py --out <folder> tour` records the GIF above (and an MP4)
+the same way, scene by scene.
 `src/divide/manual/books.json` lists the help's books and where each is
 written; `tools/sync_book.py <book> <checkout>` copies a book's pages into
 `src/divide/manual/books/<book>/`, which the help window reads: run it after

@@ -101,7 +101,8 @@ class TraceWindow(_TVWindow):
             self.view.load_text(text)
         self.view.set_marks([(mark[0], mark[1], style)] if mark[1] > mark[0] else [])
         here = self.view.document.get_location_from_index(min(mark[0], len(text)))
-        self.view.move_cursor(here, center=True)
+        self.view.move_cursor(here)
+        self.view.reveal_cursor()
         frame = self.query_one(IndicatorFrame) if self.is_mounted else None
         if frame is not None:
             side = "before" if self.before and m.kind == "change" else "after"

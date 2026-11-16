@@ -67,6 +67,35 @@ class Recorder:
             await self.pilot.press(key)
             await self.snap(hold)
 
+    async def type(self, text: str, per: float = 0.12) -> None:
+        """Typed letter by letter, as a person types."""
+        for char in text:
+            await self.pilot.press(char)
+            await self.snap(per, 3)
+
+    async def until(self, pred, step: float = 0.25, tries: int = 80) -> None:
+        """Frames while the app works, until ``pred()``."""
+        for _ in range(tries):
+            if pred():
+                return
+            await self.snap(step, 2)
+        import inspect
+        raise SystemExit(f"timed out waiting for the app: lines {[f.lineno for f in inspect.stack()[1:3]]}, screen {self.app.screen!r}")
+
+    async def go_to_file(self, name: str) -> None:
+        """Ctrl+P and the file's name, as a person opens one."""
+        await self.pilot.press("ctrl+p")
+        await self.snap(0.4)
+        await self.type(name, 0.08)
+        await self.snap(0.6)
+        await self.pilot.press("enter")
+
+    async def box(self, hold: float = 1.2) -> None:
+        """The progress box until its verdict, then closed by a key."""
+        await self.until(lambda: isinstance(self.app.screen, ProgressScreen) and not self.app.screen.dialog.running)
+        await self.snap(hold)
+        await self.pilot.press("escape")
+
     def caption(self, text: str) -> None:
         """From now until the next caption (or the end)."""
         if self.captions and self.captions[-1][1] is None:
@@ -121,7 +150,112 @@ async def outline(rec_dir: Path) -> Recorder:
     return rec
 
 
-SCENES = {"outline": outline}
+async def tour(rec_dir: Path) -> Recorder:
+    """The fundamentals, for the README: completion from the data, errors before
+    rendering, a render, the render trace, the data tree, the outline, the dialector."""
+    from divide.ui.tracer import TraceWindow
+    index = DEMO / "index.tpl"
+    app = Divide(DEMO, [index])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        app.toggle_project()
+        await settle(pilot)
+        app.raise_window(app.window_for(index))
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption("divide: the IDE for Div templates and PHP, in your terminal")
+        await rec.snap(3.0, 10)
+
+        rec.caption("Completion from your data: {$ offers the keys of index.json")
+        ed = app.window_for(index).editor
+        original = ed.text
+        ed.move_cursor((8, 21))
+        await pilot.press("end", "enter")
+        await rec.snap(0.4)
+        await rec.type("<p>{$")
+        await rec.snap(1.6, 8)
+        await rec.press("down", "down", hold=0.5)
+        await pilot.press("enter")
+        await rec.snap(1.8)
+        for _ in range(20):  # back to the template as it was, off camera
+            if ed.text == original:
+                break
+            await pilot.press("ctrl+z")
+            await settle(pilot, 2)
+        if ed.text != original:
+            ed.load_text(original)
+        ed.move_cursor((10, 2))
+
+        rec.caption("Errors before you render: checkout.tpl is broken on purpose")
+        await rec.go_to_file("checkout")
+        await rec.until(lambda: app.window_for(DEMO / "checkout.tpl") is not None)
+        await rec.snap(2.0, 10)
+        rec.caption("Alt+F9 checks it; Alt+F8 walks through the errors")
+        await pilot.press("alt+f9")
+        await rec.box()
+        await rec.snap(1.5, 6)
+        await rec.press("alt+f8", "alt+f8", hold=1.0)
+
+        rec.caption("Ctrl+F9 renders with the real Div engine, unsaved edits included")
+        await rec.go_to_file("index.tpl")
+        await rec.snap(0.8, 6)
+        await pilot.press("ctrl+f9")
+        await rec.box()
+        await rec.snap(3.0, 8)
+
+        rec.caption("F7: the render trace replays how Div rewrote the template")
+        app.raise_window(app.window_for(index))
+        await rec.snap(0.5, 6)
+        await pilot.press("f7")
+        await rec.until(lambda: isinstance(app.active_window(), TraceWindow), tries=120)
+        await rec.snap(0.4)
+        if isinstance(app.screen, ProgressScreen):
+            await rec.box(0.6)
+        await rec.snap(1.2, 6)
+        await rec.press("f8", "f8", "f8", "f8", hold=0.9)
+        await rec.press("space", hold=1.6)
+
+        rec.caption("Ctrl+T: the data, as code or as a tree")
+        await rec.go_to_file("index.json")
+        await rec.snap(1.2, 8)
+        await pilot.press("ctrl+t")
+        await rec.snap(0.8, 6)
+        await rec.press("down", "down", "down", hold=0.3)
+        await rec.press("space", "down", "space", hold=0.6)
+        await rec.snap(1.2)
+
+        rec.caption("Ctrl+O: the outline of a template; Enter jumps to it")
+        for window in list(app.windows()):  # a tidy desktop again
+            if window is not app.window_for(index) and window is not app.project_window():
+                app.raise_window(window)
+                await settle(pilot, 2)
+                await pilot.press("alt+f3")
+                await settle(pilot, 4)
+        app.raise_window(app.window_for(index))
+        await rec.snap(0.5, 6)
+        await pilot.press("ctrl+o")
+        await rec.snap(1.6, 8)
+        await rec.press("down", "down", hold=0.5)
+        await pilot.press("enter")
+        await rec.snap(1.8)
+
+        rec.caption("Tools > Dialector: your own Div dialect, checked by Div as you build it")
+        await rec.go_to_file("erb.dialect")
+        await rec.snap(1.0, 8)
+        await pilot.press(wiki_shots.key("tools"))
+        await rec.snap(0.8)
+        await pilot.press("d")
+        await rec.snap(0.4, 8)
+        win = app.active_window()
+        await rec.until(lambda: getattr(win, "verdict", None) is not None)
+        await rec.press("down", "down", "down", "down", hold=0.6)
+        await rec.snap(3.0, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+SCENES = {"outline": outline, "tour": tour}
 
 
 # ------------------------------------------------------------------ output
@@ -190,11 +324,11 @@ def captioned(rec: Recorder, width: int, work: Path) -> str:
             f"ass={ass}")
 
 
-def make_gif(rec: Recorder, concat: Path, work: Path, out: Path, width: int = 1000) -> None:
+def make_gif(rec: Recorder, concat: Path, work: Path, out: Path, width: int = 900, colors: int = 64) -> None:
     # one GIF frame per frame of the scene, each with its own delay: a still screen costs nothing
     ffmpeg("-f", "concat", "-safe", "0", "-i", str(concat), "-vf",
            f"{captioned(rec, width, work)},"
-           "split[a][b];[a]palettegen=max_colors=128:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
+           f"split[a][b];[a]palettegen=max_colors={colors}:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
            "-fps_mode", "vfr", str(out))
 
 
@@ -217,6 +351,8 @@ def main() -> None:
     parser.add_argument("--out", required=True, type=Path, help="folder for the GIF, the MP4 and the SRT")
     parser.add_argument("--engine", help="Div engine (default: $DIVIDE_DIV_PHP)")
     parser.add_argument("--music", type=Path, help="music under the video (default: a placeholder chord)")
+    parser.add_argument("--gif-width", type=int, default=900, help="the GIF's width in pixels (default 900)")
+    parser.add_argument("--gif-colors", type=int, default=64, help="the GIF's palette (default 64 colours)")
     parser.add_argument("scene", nargs="?", default="outline", choices=sorted(SCENES))
     args = parser.parse_args()
     engine = args.engine or os.environ.get("DIVIDE_DIV_PHP")
@@ -240,7 +376,7 @@ def main() -> None:
         srt, concat = out / f"{args.scene}.srt", work / "frames.txt"
         write_srt(rec, srt)
         write_concat(rec, concat)
-        make_gif(rec, concat, work, out / f"{args.scene}.gif")
+        make_gif(rec, concat, work, out / f"{args.scene}.gif", args.gif_width, args.gif_colors)
         print("saved", out / f"{args.scene}.gif")
         music = args.music
         if music is None:

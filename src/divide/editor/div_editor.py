@@ -14,6 +14,7 @@ import bisect
 from pathlib import Path
 
 from rich.style import Style
+from textual.geometry import Region, Spacing
 from textual.message import Message
 from textual.widgets import TextArea
 
@@ -147,6 +148,21 @@ class DivEditor(TextArea):
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.apply_palette())
         if self.lang == "php":
             self.post_message(self.CheckRequested(self))
+
+    def reveal_cursor(self) -> None:
+        """The cursor in view with its line in the middle, and sideways only as far as needed,
+        with the selection's start too when both fit: TextArea's ``center=True`` centres the
+        column as well, scrolling away the start of a line that fits in the window."""
+        self._recompute_cursor_offset()
+        x, y = self._cursor_offset
+        start_x, start_y = self.wrapped_document.location_to_offset(self.selection.start)
+        left, right = x, x + 3
+        if start_y == y and abs(start_x - x) + 3 <= self.scrollable_content_region.width - self.gutter_width:
+            left, right = min(start_x, x), max(start_x, x) + 3
+        self.scroll_to_region(Region(left, y, right - left, 1), spacing=Spacing(right=self.gutter_width),
+                              animate=False, force=True)
+        self.scroll_to(y=max(0, y - self.scrollable_content_region.height // 2), animate=False, force=True,
+                       immediate=True)
 
     def div_blocks(self) -> list:
         """The constructs of the template as it is now (lexed again if the colours lag behind)."""
