@@ -52,7 +52,7 @@ class LanguageDialog(_Dialog):
     def compose_content(self) -> ComposeResult:
         yield Label(_("~L~anguage"), link=self.radio)
         yield self.radio
-        yield Static(_("It applies from the next start. The help books stay in English."),
+        yield Static(_("It applies from the next start."),
                      classes="lang-note", markup=False)
         with Horizontal(classes="dlg-buttons"):
             yield Button(_("O~K~"), Command.OK, is_default=True, id="ok")
