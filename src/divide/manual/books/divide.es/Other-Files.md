@@ -32,4 +32,4 @@ Los colores vienen del tema de **Opciones > Colores**: las cadenas, los números
 
 ## Lo que divide no hace con ellos
 
-Se colorean, no se verifican: divide lista errores solo para plantillas, Div JSON y PHP (consulta [[Verificación de plantillas|Checking Templates]]). El autocompletado, el esquema y los servidores de lenguaje también son para plantillas y PHP.
+Se colorean, no se verifican: divide lista errores solo para plantillas, Div JSON y PHP (consulta [[Verificación de plantillas|Checking Templates]]). El autocompletado y los servidores de lenguaje también son para plantillas y PHP. Cada uno tiene su [[esquema|Outline]]: los elementos de una página HTML, los encabezados de un archivo Markdown, las reglas de una hoja de estilos, las tablas de un script SQL, las claves de un archivo YAML o JSON...

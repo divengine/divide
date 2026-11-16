@@ -1,6 +1,6 @@
 # Esquema
 
-**Buscar > Esquema** (**Ctrl+O**) abre una ventana a la derecha del escritorio con la forma del archivo activo, una plantilla de Div o un archivo PHP, como un árbol: para ver cómo está hecho, plegar lo que no necesitas y saltar a cualquier parte de él.
+**Buscar > Esquema** (**Ctrl+O**) abre una ventana a la derecha del escritorio con la forma del archivo activo como un árbol, en cada lenguaje que divide colorea (una plantilla de Div, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...): para ver cómo está hecho, plegar lo que no necesitas y saltar a cualquier parte de él.
 
 ![el esquema de la página de inicio de la tienda, en el bucle de productos](images/outline_tpl.png)
 
@@ -45,6 +45,24 @@ Las clases, interfaces, traits y enums contienen sus miembros. Las closures y la
 
 Las declaraciones vienen de la gramática de PHP de [tree-sitter](https://tree-sitter.github.io/), la que colorea el editor (consulta [[Edición de PHP|Editing PHP]]), así que el esquema no necesita servidor de lenguaje y funciona mientras el archivo tiene errores.
 
+## En los demás archivos
+
+El mismo árbol, con aquello de lo que está hecho cada tipo de archivo. Las etiquetas también conservan aquí los colores del editor.
+
+| Archivo | Qué contiene el esquema |
+|---|---|
+| HTML | cada elemento (**<**), anidado como está escrito, por su etiqueta, id y clases: `main#main.page`; los scripts, enlaces e imágenes con su `src` o `href` |
+| XML | cada elemento (**<**), anidado, con su `name`, `id` o primer atributo: `testsuite name="unit"` |
+| Markdown | los encabezados (**#**), cada uno con los más profundos debajo |
+| CSS | las reglas (**s**) por sus selectores; `@media`, `@supports` y `@keyframes` (**@**) con sus reglas dentro; `@import` |
+| JavaScript | los imports (**u**), las clases con sus métodos y campos (los `#privados` marcados con **-**), las funciones, y las constantes (**k**) y variables (**v**) del archivo; una constante que guarda una función cuenta como función |
+| SQL | lo que crea el script: tablas (**t**) con sus columnas y tipos (**c**), vistas (**w**), índices (**x**), funciones |
+| JSON | las claves (**k**) con sus valores; los objetos (**o**) y las listas (**a**, con cuántos elementos tienen) con las suyas dentro; los objetos de una lista como `[0]`, `[1]`... con su primera clave al lado |
+| YAML, TOML | las claves del mismo modo; las tablas de TOML `[owner]` (**t**) y `[[products]]` (**a**) |
+| Scripts de shell, `.env` | las funciones y las variables que se asignan |
+| INI (`php.ini`) | las secciones (**[**) con sus claves y valores |
+| CSV | las columnas, por los nombres de la primera fila |
+
 ## Teclas
 
 | Tecla | Acción |
@@ -57,4 +75,4 @@ Las declaraciones vienen de la gramática de PHP de [tree-sitter](https://tree-s
 | clic en **►** / **▼** | plegar o desplegar |
 | **Ctrl+O** | volver al esquema desde el editor |
 
-El esquema te sigue: cambia cuando otro editor de plantilla o de PHP pasa al frente, y se rehace un momento después de que dejas de escribir, conservando lo que plegaste y la barra donde estaba. En cualquier otro archivo conserva el que mostraba; abierto solo desde otros archivos, dice que no hay esquema para ese tipo de archivo.
+El esquema te sigue: cambia cuando otro editor pasa al frente, y se rehace un momento después de que dejas de escribir, conservando lo que plegaste y la barra donde estaba. En un archivo de texto plano conserva el que mostraba; abierto solo desde esos archivos, dice que no hay esquema para ese tipo de archivo.
