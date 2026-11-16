@@ -3,11 +3,17 @@
 Every section of every page (the page's opening, then each ``##`` / ``###``
 heading with the text below it) is a row of an FTS5 table: the page title,
 the heading and the text, plus where it leads (``book:Page#anchor``). A
-query keeps the sections that have all the words typed (the last one as a
-prefix, as you type it), and ranks them with BM25, a match in a title worth
-more than one in a heading, which is worth more than one in the text. Words
-are stemmed (Porter): ``configure`` finds "configuring" and "configured".
-FTS5 also cuts the snippet that shows each match in its sentence.
+query keeps the sections that have all the words typed and ranks them with
+BM25, a match in a title worth more than one in a heading, which is worth
+more than one in the text.
+
+The words typed are of two kinds. The finished ones are stemmed (Porter):
+``configure`` finds "configuring" and "configured". The last one is still
+being typed, so it is a prefix; but a prefix of a stem is not a prefix of
+the word (*Iterations* is indexed as ``iter``: ``itera`` would find nothing),
+so the sections are indexed twice, stemmed (``help``) and as written
+(``help_raw``, same rows), and the last word may match either. FTS5 also
+cuts the snippet that shows each match in its sentence.
 
 The index is built by ``tools/sync_book.py`` when it copies a book, and is
 shipped beside the books (``manual/search.sqlite``). It records a
@@ -28,8 +34,9 @@ from pathlib import Path
 from divide import manual
 
 INDEX_FILE = manual.HERE / "search.sqlite"
-VERSION = "1"  # of the index's layout: a new one rebuilds the index
+VERSION = "2"  # of the index's layout: a new one rebuilds the index
 TOKENIZER = "porter unicode61 remove_diacritics 2"
+RAW_TOKENIZER = "unicode61 remove_diacritics 2"  # the words as written: for the prefix being typed
 WEIGHTS = (8.0, 4.0, 1.0)  # title, heading, text (BM25 column weights)
 MARK_START, MARK_END = "\x01", "\x02"  # around the words found, in the snippet
 SNIPPET_WORDS = 14
@@ -94,11 +101,12 @@ def fingerprint() -> str:
 # -------------------------------------------------------------------- index
 def _create(db: sqlite3.Connection) -> None:
     db.execute("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
-    db.execute(
-        "CREATE VIRTUAL TABLE help USING fts5("
-        "title, heading, body, book UNINDEXED, page UNINDEXED, anchor UNINDEXED, "
-        f"tokenize = '{TOKENIZER}')"
-    )
+    for table, tokenizer in (("help", TOKENIZER), ("help_raw", RAW_TOKENIZER)):
+        db.execute(
+            f"CREATE VIRTUAL TABLE {table} USING fts5("
+            "title, heading, body, book UNINDEXED, page UNINDEXED, anchor UNINDEXED, "
+            f"tokenize = '{tokenizer}')"
+        )
 
 
 def fill(db: sqlite3.Connection) -> int:
@@ -109,10 +117,13 @@ def fill(db: sqlite3.Connection) -> int:
             title = manual.title_of(name)
             page = manual.split(name)[1]
             for heading, anchor, body in sections(name):
-                db.execute("INSERT INTO help VALUES (?, ?, ?, ?, ?, ?)", (title, heading, body, book.id, page, anchor))
                 rows += 1
+                for table in ("help", "help_raw"):  # the same rowid in both
+                    db.execute(f"INSERT INTO {table}(rowid, title, heading, body, book, page, anchor) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                               (rows, title, heading, body, book.id, page, anchor))
     db.execute("INSERT INTO meta VALUES ('fingerprint', ?)", (fingerprint(),))
     db.execute("INSERT INTO help(help) VALUES ('optimize')")
+    db.execute("INSERT INTO help_raw(help_raw) VALUES ('optimize')")
     db.commit()
     return rows
 
@@ -159,38 +170,64 @@ def words(text: str) -> list[str]:
     return re.findall(r"\w+", text.lower())
 
 
-def fts_query(text: str, *, any_word: bool = False) -> str | None:
-    """The FTS5 query for what was typed: every word (or any, ``any_word``), the last
-    one a prefix; quoted, so FTS5's own operators are plain words."""
-    found = words(text)
-    if not found:
-        return None
-    terms = [f'"{w}"' for w in found[:-1]] + [f'"{found[-1]}"*']
-    return (" OR " if any_word else " ").join(terms)
+def _quoted(words: list[str], prefix_last: bool = False, op: str = " ") -> str:
+    """Quoted, so FTS5's own operators (AND, NEAR...) are plain words."""
+    terms = [f'"{w}"' for w in words]
+    if prefix_last and terms:
+        terms[-1] += "*"
+    return op.join(terms)
 
 
 def search(text: str, limit: int = MAX_RESULTS) -> list[Hit]:
-    """The sections that match ``text``, best first. All the words if any section has
-    them all, else any of them."""
+    """The sections that match ``text``, best first: all the words (the finished ones
+    stemmed, the last one a prefix of the word or of its stem) if any section has them
+    all, else any of them."""
+    found = words(text)
+    if not found:
+        return []
     db = connection()
-    sql = (
-        "SELECT book, page, anchor, title, heading, "
-        f"snippet(help, 2, '{MARK_START}', '{MARK_END}', '...', {SNIPPET_WORDS}), "
-        f"bm25(help, {', '.join(map(str, WEIGHTS))}) AS rank "
-        "FROM help WHERE help MATCH ? ORDER BY rank LIMIT ?"
+    weights = ", ".join(map(str, WEIGHTS))
+    done, typing = found[:-1], found[-1]
+    # the last word: a prefix of the word as written, or of its stem; each row's best rank
+    last = (
+        f"SELECT rowid, bm25(help_raw, {weights}) AS r FROM help_raw WHERE help_raw MATCH :typing_raw "
+        f"UNION ALL SELECT rowid, bm25(help, {weights}) FROM help WHERE help MATCH :typing"
     )
-    for any_word in (False, True):
-        query = fts_query(text, any_word=any_word)
-        if query is None:
-            return []
-        try:
-            rows = db.execute(sql, (query, limit)).fetchall()
-        except sqlite3.Error:
-            return []
-        if rows:
+    params = {"typing_raw": _quoted([typing], True), "typing": _quoted([typing], True), "limit": limit}
+    if done:
+        params["done"] = _quoted(done)
+        sql = (
+            f"WITH last AS (SELECT rowid, MIN(r) AS r FROM ({last}) GROUP BY rowid), "
+            f"done AS (SELECT rowid, bm25(help, {weights}) AS r FROM help WHERE help MATCH :done) "
+            "SELECT rowid, done.r + last.r AS rank FROM done JOIN last USING (rowid) ORDER BY rank LIMIT :limit"
+        )
+    else:
+        sql = f"SELECT rowid, MIN(r) AS rank FROM ({last}) GROUP BY rowid ORDER BY rank LIMIT :limit"
+    try:
+        ranked = db.execute(sql, params).fetchall()
+        if not ranked and done:  # no section has them all: any of them, as written
+            ranked = db.execute(
+                f"SELECT rowid, bm25(help_raw, {weights}) AS rank FROM help_raw WHERE help_raw MATCH ? "
+                "ORDER BY rank LIMIT ?", (_quoted(found, True, " OR "), limit)).fetchall()
+    except sqlite3.Error:
+        return []
+    return [_hit(db, rowid, rank, found) for rowid, rank in ranked]
+
+
+def _hit(db: sqlite3.Connection, rowid: int, rank: float, found: list[str]) -> Hit:
+    """The section ``rowid``, with the sentence where the words are."""
+    snip = f"snippet({{t}}, 2, '{MARK_START}', '{MARK_END}', '...', {SNIPPET_WORDS})"
+    row = None
+    # stemmed (lights "configuration" for "configure"), else as written (lights "Itera" of "Iterations")
+    for table, query in (("help", _quoted(found, True, " OR ")), ("help_raw", _quoted(found, True, " OR "))):
+        row = db.execute(
+            f"SELECT book, page, anchor, title, heading, {snip.format(t=table)} FROM {table} "
+            f"WHERE {table} MATCH ? AND rowid = ?", (query, rowid)).fetchone()
+        if row and MARK_START in row[5]:
             break
-    hits = []
-    for book, page, anchor, title, heading, snippet, rank in rows:
-        target = f"{book}:{page}" + (f"#{anchor}" if anchor else "")
-        hits.append(Hit(target, book, title, heading, re.sub(r"\s+", " ", snippet).strip(), rank))
-    return hits
+    if row is None:
+        row = db.execute("SELECT book, page, anchor, title, heading, substr(body, 1, 120) FROM help WHERE rowid = ?",
+                         (rowid,)).fetchone()
+    book, page, anchor, title, heading, snippet = row
+    target = f"{book}:{page}" + (f"#{anchor}" if anchor else "")
+    return Hit(target, book, title, heading, re.sub(r"\s+", " ", snippet).strip(), rank)

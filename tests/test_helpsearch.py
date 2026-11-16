@@ -30,6 +30,10 @@ def test_search_ranks_and_stems():
     assert [h.rank for h in hits] == sorted(h.rank for h in hits)  # best first
     # stems: "configure" finds "configuration"; the last word is a prefix while it is typed
     assert fulltext.search("configure") and fulltext.search("xdeb")
+    # a prefix of a word, not only of its stem: "itera" is no prefix of "iter" (Iterations, stemmed)
+    for typed in ("iter", "itera", "iteration", "iterations"):
+        assert any(h.label == "2.12 Iterations" for h in fulltext.search(typed)), typed
+    assert fulltext.search("configura") and fulltext.search("xdebug pa")
     # all the words when a section has them all, else any of them
     both = fulltext.search("xdebug path")
     assert both and all("xdebug" in (h.title + h.heading + h.snippet).lower() for h in both)
