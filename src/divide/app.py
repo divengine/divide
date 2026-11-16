@@ -10,6 +10,30 @@ from __future__ import annotations
 from divide import i18n
 from divide.i18n import _, ngettext
 
+from textual import events as _events
+from textual._ansi_sequences import ANSI_SEQUENCES_KEYS
+from textual._xterm_parser import XTermParser
+
+# Alt+letter opens a menu or goes to a dialog's control, in every language. A
+# terminal sends it as ESC and the letter, and Textual made two things of that:
+# - ESC f and ESC b were iTerm's word moves (Ctrl+Right, Ctrl+Left), so Alt+F
+#   (File) and Alt+B (Buscar) never arrived; without those entries they do;
+# - the key came with its letter as its character, so the editor and the input
+#   lines typed it before the menus saw it; without it no widget types it.
+for _sequence in ("\x1bf", "\x1bb"):
+    ANSI_SEQUENCES_KEYS.pop(_sequence, None)
+_keys_of = XTermParser._sequence_to_key_events
+
+
+def _alt_keys_type_nothing(self, sequence: str, alt: bool = False):
+    for event in _keys_of(self, sequence, alt):
+        if event.key.startswith("alt+") and len(event.key) == 5:
+            event = _events.Key(event.key, None)
+        yield event
+
+
+XTermParser._sequence_to_key_events = _alt_keys_type_nothing
+
 import argparse
 import os
 import re
