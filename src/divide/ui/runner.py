@@ -569,7 +569,7 @@ class RunMixin:
         window.styles.height = min(8, height)
         window.styles.offset = (half if side == "right" else 0, top)
         for other in self.windows():
-            if other.zoomed or isinstance(other, (_ListWindow,)) or type(other).__name__ in ("MessagesWindow", "ProjectWindow"):
+            if other.zoomed or isinstance(other, (_ListWindow,)) or type(other).__name__ in ("MessagesWindow", "FindResultsWindow", "ProjectWindow"):
                 continue
             y = int(other.styles.offset.y.value) if other.styles.offset.y else 0
             if y + (other.size.height or height) > top and top - y >= 5:

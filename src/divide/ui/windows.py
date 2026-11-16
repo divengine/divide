@@ -915,7 +915,7 @@ class MessageList(ListBox):
     def select_item(self, item: int) -> None:
         super().select_item(item)
         window = self.parent.parent if self.parent is not None else None
-        if isinstance(window, MessagesWindow):
+        if isinstance(window, LocationsWindow):
             window.activate(item)
 
     def on_click(self, event) -> None:
@@ -923,14 +923,14 @@ class MessageList(ListBox):
             self.select_item(self.focused)
 
 
-class MessagesWindow(_TVWindow):
-    """Turbo Pascal style message window: Div checks of the template and render messages.
+class LocationsWindow(_TVWindow):
+    """A list of lines, each one maybe a place in a file: Enter (or a double click)
+    on a located line jumps to it in the editor."""
 
-    Enter (or a double click) on a located message jumps to it in the editor.
-    """
+    EMPTY = "(empty)"
 
-    def __init__(self, number: int = 0) -> None:
-        super().__init__("Messages", number=number)
+    def __init__(self, title: str, number: int = 0) -> None:
+        super().__init__(title, number=number)
         self.list = MessageList([])
         self.items: list[MessageItem] = []
 
@@ -941,7 +941,7 @@ class MessagesWindow(_TVWindow):
         if items == self.items:
             return
         keep = self.list.focused if self.items and len(items) == len(self.items) else 0
-        self.items = items or [MessageItem("(no messages)")]
+        self.items = items or [MessageItem(self.EMPTY)]
         self.list.set_list([item.text for item in self.items])
         if keep:
             self.list.focus_item(min(keep, len(self.items) - 1))
@@ -952,3 +952,12 @@ class MessagesWindow(_TVWindow):
             if item.path is not None and item.start is not None:
                 # After the key (Enter) is done, or the editor would receive it.
                 self.app.call_later(self.app.goto_location, item.path, item.start, item.end)  # type: ignore[attr-defined]
+
+
+class MessagesWindow(LocationsWindow):
+    """Turbo Pascal style message window: Div checks of the template and render messages."""
+
+    EMPTY = "(no messages)"
+
+    def __init__(self, number: int = 0) -> None:
+        super().__init__("Messages", number=number)

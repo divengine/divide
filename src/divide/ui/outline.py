@@ -14,7 +14,7 @@ from __future__ import annotations
 from divide.lang import php
 from divide.lang.div import outline as div_outline
 from divide.ui.runner import DEBUG_CSS, _ListWindow
-from divide.ui.windows import EditorWindow, ProjectWindow
+from divide.ui.windows import EditorWindow, LocationsWindow, ProjectWindow
 
 WIDTH = 36
 LANGUAGES = ("php", "div")
@@ -93,7 +93,7 @@ class OutlineMixin:
         window.styles.height = "100%"
         window.styles.offset = (left, 0)
         for other in self.windows():
-            if other.zoomed or isinstance(other, (_ListWindow, ProjectWindow)) or type(other).__name__ == "MessagesWindow":
+            if other.zoomed or isinstance(other, (_ListWindow, ProjectWindow)) or isinstance(other, LocationsWindow):
                 continue
             x = int(other.styles.offset.x.value) if other.styles.offset.x else 0
             if x < left and x + (other.size.width or width) > left and left - x >= 20:

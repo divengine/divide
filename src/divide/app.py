@@ -91,13 +91,14 @@ from divide.ui.tracer import TraceMixin, TraceWindow
 from divide.ui.colors import ColorsMixin
 from divide.ui.outline import OutlineMixin, OutlineWindow
 from divide.ui.palette import PaletteMixin
+from divide.ui.findfiles import FindInFilesMixin
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide import lsp
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
 from divide.run.render import RenderMessage
-from divide.ui.windows import EditorWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
+from divide.ui.windows import EditorWindow, LocationsWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
 SAVE_FIRST = (
     "Save the template first (F2). divide hands Div templates that live in a file: "
@@ -157,6 +158,7 @@ CM_TRACE_RENDER = Command.USER + 91
 CM_OUTLINE = Command.USER + 92  # Ctrl+O
 CM_GOTO_FILE = Command.USER + 93  # Ctrl+P
 CM_COMMANDS = Command.USER + 94  # Ctrl+Shift+P
+CM_FIND_IN_FILES = Command.USER + 95  # Ctrl+Shift+F
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -191,6 +193,7 @@ COMMANDS: dict[str, int] = {
     "OUTLINE": CM_OUTLINE,
     "GOTO_FILE": CM_GOTO_FILE,
     "COMMANDS": CM_COMMANDS,
+    "FIND_IN_FILES": CM_FIND_IN_FILES,
     "STEP": CM_STEP,
     "STEP_OUT": CM_STEP_OUT,
     "GOTO_CURSOR": CM_GOTO_CURSOR,
@@ -293,7 +296,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, PaletteMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -320,6 +323,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         # VS Code's: Ctrl+Shift+P reaches only terminals that tell it from Ctrl+P (a > in Go to file does it too)
         Binding("ctrl+p", "command('GOTO_FILE')", "Go to file", show=False, priority=True),
         Binding("ctrl+shift+p", "command('COMMANDS')", "Commands", show=False, priority=True),
+        Binding("ctrl+shift+f", "command('FIND_IN_FILES')", "Find in files", show=False, priority=True),
         Binding("ctrl+f9", "command('RENDER')", "Run", show=False, priority=True),
         # The debugger, as in Turbo Pascal.
         Binding("f7", "command('TRACE')", "Trace into", show=False, priority=True),
@@ -418,6 +422,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     MenuItem("~F~ind...", CM_FIND, "Ctrl+F"),
                     MenuItem("~R~eplace...", CM_REPLACE, "Ctrl+R"),
                     MenuItem("~S~earch again", CM_SEARCH_AGAIN, "Ctrl+L"),
+                    MenuItem("Fin~d~ in files...", CM_FIND_IN_FILES, "Ctrl+Shift+F"),
                     Separator(),
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
                     MenuItem("Go to ~i~ncluded template", CM_GOTO_INCLUDE, "Ctrl+Enter"),
@@ -864,6 +869,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 await self.web_server_command()
             case _ if command == CM_XDEBUG:
                 await self.choose_xdebug()
+            case _ if command == CM_FIND_IN_FILES:
+                await self.find_in_files()
             case _ if command in (CM_GOTO_FILE, CM_COMMANDS):
                 await self.palette(commands=command == CM_COMMANDS)
             case _ if command == CM_OUTLINE:
@@ -1412,8 +1419,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if window is not None:
             window.show(self.message_items(template))
 
-    def _open_messages_window(self, *, layout: bool = True) -> MessagesWindow:
-        window = MessagesWindow(number=self._free_number())
+    def _open_messages_window(self, *, layout: bool = True, window: LocationsWindow | None = None) -> LocationsWindow:
+        """The Messages window (or ``window``, another list of places) along the bottom."""
+        window = window if window is not None else MessagesWindow(number=self._free_number())
         if layout and self.desktop is not None:
             project = self.project_window()
             left = ProjectWindow.WIDTH if project is not None and not project.zoomed else 0
