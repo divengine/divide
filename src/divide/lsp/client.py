@@ -25,6 +25,7 @@ from pygls.uris import from_fs_path, to_fs_path
 
 from divide import __version__
 from divide.lsp import ServerSpec, line_starts, to_offset, to_position
+from divide.run import children
 
 logging.getLogger("pygls").setLevel(logging.CRITICAL)  # the servers' quirks are not divide's errors
 
@@ -137,7 +138,9 @@ class LspSession:
         """Start the server and initialize it; False (and ``failed``) when it does not answer."""
         self.temp = server_temp_dir()
         try:
-            await self.client.start_io(*self.command, cwd=str(self.root), env={**os.environ, "TMPDIR": str(self.temp)})
+            await self.client.start_io(*self.command, cwd=str(self.root), env={**os.environ, "TMPDIR": str(self.temp)},
+                                       **children.options())
+            children.track(self.client._server)
         except OSError as exc:
             self.failed = _('cannot start {command}: {exc}').format(command=self.command[0], exc=exc.strerror or exc)
             return False

@@ -100,6 +100,7 @@ from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
+from divide.run import children
 from divide import lsp
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
@@ -542,6 +543,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 widget = DropMenuBar(menu=widget.menu)
                 self._menu_bar = widget
             yield widget
+
+    def on_unmount(self) -> None:
+        # however divide ends (Alt+X stops them politely first): nothing it started outlives it
+        children.kill_all()
 
     def on_mount(self) -> None:
         if self.initial_files:

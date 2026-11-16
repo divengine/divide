@@ -21,6 +21,7 @@ from pathlib import Path
 
 from divide.run.dbgp import DebugError, DebugSession
 from divide.run.script import _HEAD, LIMIT, ScriptMessage, php_messages
+from divide.run import children
 
 DEFAULT_ADDRESS = "127.0.0.1:8000"
 START_TIMEOUT = 5.0
@@ -151,10 +152,10 @@ class WebServer:
             )
             port = self._listener.sockets[0].getsockname()[1]
         argv = self.command(port)
-        self._proc = await asyncio.create_subprocess_exec(
+        self._proc = children.track(await asyncio.create_subprocess_exec(
             *argv, cwd=str(self.root), stdin=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-        )
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, **children.options()
+        ))
         self._pipes = [asyncio.create_task(self._pipe(self._proc.stdout)),  # type: ignore[arg-type]
                        asyncio.create_task(self._pipe(self._proc.stderr))]  # type: ignore[arg-type]
         loop = asyncio.get_running_loop()

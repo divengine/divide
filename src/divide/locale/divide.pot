@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 12:28+0000\n"
+"POT-Creation-Date: 2026-11-16 12:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,16 +41,13 @@ msgstr ""
 msgid "(between cycles)"
 msgstr ""
 
-msgid "(no Div tags)"
-msgstr ""
-
-msgid "(no PHP grammar: pip install tree-sitter-php)"
-msgstr ""
-
-msgid "(no declarations)"
+msgid "(no grammar for this language: pip install its tree-sitter package)"
 msgstr ""
 
 msgid "(no messages)"
+msgstr ""
+
+msgid "(no outline for this kind of file)"
 msgstr ""
 
 msgid "(none)"
@@ -65,7 +62,7 @@ msgstr ""
 msgid "(nothing found)"
 msgstr ""
 
-msgid "(the outline is for PHP files and Div templates)"
+msgid "(nothing to list)"
 msgstr ""
 
 msgid "16 colours (Windows console)"
@@ -487,13 +484,18 @@ msgstr ""
 msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
 msgstr ""
 
-msgid "Enter go to the declaration · + public  # protected  - private"
+msgid "Enter go there · Space fold · Left Right fold, unfold"
+msgstr ""
+
+msgid ""
+"Enter go to the declaration · Space fold · + public  # protected  - "
+"private"
 msgstr ""
 
 msgid "Enter go to the match"
 msgstr ""
 
-msgid "Enter go to the tag · below a block, what it holds"
+msgid "Enter go to the tag · Space fold · below a block, what it holds"
 msgstr ""
 
 msgid "Enter new line ~n~umber"

@@ -23,6 +23,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from divide.run.script import ERROR_INI, LIMIT, ScriptMessage, php_messages
+from divide.run import children
 
 NS = {"d": "urn:debugger_protocol_v1", "x": "https://xdebug.org/dbgp/xdebug"}
 CONNECT_TIMEOUT = 10.0
@@ -131,9 +132,9 @@ async def xdebug_ini(php: str | None = None, extension: str | None = None) -> li
     php = php or shutil.which("php")
     if not php:
         return None
-    proc = await asyncio.create_subprocess_exec(
-        php, "-m", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
-    )
+    proc = children.track(await asyncio.create_subprocess_exec(
+        php, "-m", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, **children.options()
+    ))
     out, _ = await proc.communicate()
     if "xdebug" in out.decode("utf-8", "replace").lower().split():
         return []
@@ -226,10 +227,10 @@ class DebugSession:
             "-d", "xdebug.log_level=0",
             str(self.script), *self.args,
         ]
-        self._proc = await asyncio.create_subprocess_exec(
+        self._proc = children.track(await asyncio.create_subprocess_exec(
             *argv, cwd=str(self.cwd), stdin=asyncio.subprocess.DEVNULL,
-            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-        )
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, **children.options()
+        ))
         self._pipes = [asyncio.create_task(self._pipe(self._proc.stdout, self._out)),  # type: ignore[arg-type]
                        asyncio.create_task(self._pipe(self._proc.stderr, self._err))]  # type: ignore[arg-type]
         exited = asyncio.ensure_future(self._proc.wait())

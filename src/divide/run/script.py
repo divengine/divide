@@ -19,6 +19,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from divide.run import children
+
 LIMIT = 4 * 1024 * 1024  # bytes kept of each stream
 ERROR_INI = ["-d", "display_errors=stderr", "-d", "html_errors=0", "-d", "log_errors=0"]
 
@@ -135,13 +137,13 @@ async def run_script(
     ``on_data(stdout, stderr)`` sees what came so far, each time more comes."""
     argv = command(script, args or [], php=php, ini=ini)
     started = time.monotonic()
-    proc = await asyncio.create_subprocess_exec(
+    proc = children.track(await asyncio.create_subprocess_exec(
         *argv,
         cwd=str(cwd or script.parent),
         stdin=asyncio.subprocess.DEVNULL,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
+        stderr=asyncio.subprocess.PIPE, **children.options()
+    ))
     out, err = bytearray(), bytearray()
     result = ScriptResult()
     seen = (lambda: on_data(bytes(out), bytes(err))) if on_data is not None else None

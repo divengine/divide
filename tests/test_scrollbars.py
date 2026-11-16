@@ -92,8 +92,8 @@ async def test_a_list_drives_its_bar(tmp_path):
         await settle(pilot)
         window = next(w for w in app.windows() if isinstance(w, OutlineWindow))
         bar = window.v_bar
-        assert bar.display and bar.max_val == len(window.symbols) - 1
+        assert bar.display and bar.max_val > 0
         wr = window.region
         await pilot.click(offset=(wr.right - 1, wr.bottom - 2))
         await settle(pilot, 3)
-        assert window.list.focused == 1 == bar.value
+        assert window.outline_tree.scroll_offset.y > 0

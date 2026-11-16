@@ -153,7 +153,7 @@ class DivEditor(TextArea):
         if self._blocks_text != self.text:
             self._update_dialect(self.text)
             lexer = _LEXERS.get(self.dialect)
-            lexer.tokenize(self.text)
+            self.tokens = lexer.tokenize(self.text)
             self.blocks, self._blocks_text = lexer.blocks, self.text
         return self.blocks
 

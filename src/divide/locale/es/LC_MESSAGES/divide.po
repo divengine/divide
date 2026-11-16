@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 12:28+0000\n"
+"POT-Creation-Date: 2026-11-16 12:48+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #, python-brace-format
 msgid "  ... and {changes} more"
@@ -42,17 +42,16 @@ msgstr "(Ins añade una vigilancia; las variables se ven con el depurador en pau
 msgid "(between cycles)"
 msgstr "(entre ciclos)"
 
-msgid "(no Div tags)"
-msgstr "(sin etiquetas de Div)"
-
-msgid "(no PHP grammar: pip install tree-sitter-php)"
-msgstr "(sin gramática de PHP: pip install tree-sitter-php)"
-
-msgid "(no declarations)"
-msgstr "(sin declaraciones)"
+msgid "(no grammar for this language: pip install its tree-sitter package)"
+msgstr ""
+"(sin gramática para este lenguaje: instala su paquete de tree-sitter con "
+"pip)"
 
 msgid "(no messages)"
 msgstr "(sin mensajes)"
+
+msgid "(no outline for this kind of file)"
+msgstr "(no hay esquema para este tipo de archivo)"
 
 msgid "(none)"
 msgstr "(ninguno)"
@@ -66,8 +65,8 @@ msgstr "(sin definir)"
 msgid "(nothing found)"
 msgstr "(no se encontró nada)"
 
-msgid "(the outline is for PHP files and Div templates)"
-msgstr "(el esquema es para archivos PHP y plantillas Div)"
+msgid "(nothing to list)"
+msgstr "(nada que listar)"
 
 msgid "16 colours (Windows console)"
 msgstr "16 colores (consola de Windows)"
@@ -508,14 +507,21 @@ msgstr ""
 msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
 msgstr "Enter editar · Ins añadir · Supr borrar · ^↑↓ mover · ^T código"
 
-msgid "Enter go to the declaration · + public  # protected  - private"
-msgstr "Enter ir a la declaración · + public  # protected  - private"
+msgid "Enter go there · Space fold · Left Right fold, unfold"
+msgstr "Enter ir allí · Espacio plegar · Izquierda Derecha plegar, desplegar"
+
+msgid ""
+"Enter go to the declaration · Space fold · + public  # protected  - "
+"private"
+msgstr ""
+"Enter ir a la declaración · Espacio plegar · + public  # protected  - "
+"private"
 
 msgid "Enter go to the match"
 msgstr "Enter ir a la coincidencia"
 
-msgid "Enter go to the tag · below a block, what it holds"
-msgstr "Enter ir a la etiqueta · bajo un bloque, lo que contiene"
+msgid "Enter go to the tag · Space fold · below a block, what it holds"
+msgstr "Enter ir a la etiqueta · Espacio plegar · bajo un bloque, lo que contiene"
 
 msgid "Enter new line ~n~umber"
 msgstr "~N~úmero de línea"
@@ -2340,3 +2346,20 @@ msgstr "── servidor web {address} ──"
 #~ msgid "~L~anguage of the interface"
 #~ msgstr "~I~dioma de la interfaz"
 
+#~ msgid "(no Div tags)"
+#~ msgstr "(sin etiquetas de Div)"
+
+#~ msgid "(no PHP grammar: pip install tree-sitter-php)"
+#~ msgstr "(sin gramática de PHP: pip install tree-sitter-php)"
+
+#~ msgid "(no declarations)"
+#~ msgstr "(sin declaraciones)"
+
+#~ msgid "(the outline is for PHP files and Div templates)"
+#~ msgstr "(el esquema es para archivos PHP y plantillas Div)"
+
+#~ msgid "Enter go to the declaration · + public  # protected  - private"
+#~ msgstr "Enter ir a la declaración · + public  # protected  - private"
+
+#~ msgid "Enter go to the tag · below a block, what it holds"
+#~ msgstr "Enter ir a la etiqueta · bajo un bloque, lo que contiene"

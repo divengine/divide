@@ -25,6 +25,7 @@ from pathlib import Path
 
 from divide.lang.div.dialect import lenient_json
 from divide.lang.divjson import references
+from divide.run import children
 
 BRIDGE = Path(__file__).with_name("bridge.php")
 ENV_ENGINE = "DIVIDE_DIV_PHP"
@@ -112,14 +113,14 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
     php = php or shutil.which("php")
     if not php:
         raise RenderError(_('php not found in PATH'))
-    proc = await asyncio.create_subprocess_exec(
+    proc = children.track(await asyncio.create_subprocess_exec(
         php,
         str(BRIDGE),
         cwd=str(cwd),
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
+        stderr=asyncio.subprocess.PIPE, **children.options()
+    ))
     try:
         out, err = await asyncio.wait_for(proc.communicate(json.dumps(request).encode()), timeout)
     except TimeoutError:
