@@ -63,9 +63,10 @@ divide index.tpl card.tpl # open files (their folder becomes the project)
 divide ~/sites/shop index.tpl
 divide --palette turbo-c  # start with a colour theme: turbo-pascal, turbo-c, free-pascal, modern-dark
 divide --colors truecolor # colour depth when the terminal says less than it can: auto, truecolor, 256, 16
+divide --language es      # the interface in Spanish for this run: en, es
 ```
 
-Both are also in **Options > Colors**, which remembers them (see [[The Desktop#colours]]).
+The first two are also in **Options > Colors**, which remembers them (see [[The Desktop#colours]]); the language is in **Options > Language** (see [[The Desktop#language]]).
 
 Use a terminal at least 80×25; 120 columns or more is comfortable for working side by side with the output.
 

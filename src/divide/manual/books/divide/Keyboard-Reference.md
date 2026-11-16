@@ -5,7 +5,7 @@
 | Key | Action |
 |---|---|
 | **F10** | menu bar (opens the first menu) |
-| **Alt+letter** | open that menu (Alt+F, Alt+E, Alt+S, Alt+R, Alt+D, Alt+W, Alt+T, Alt+O, Alt+H) |
+| **Alt+letter** | open that menu (Alt+F, Alt+E, Alt+S, Alt+R, Alt+D, Alt+W, Alt+T, Alt+O, Alt+H; in Spanish the red letters of its menus: see [[The Desktop#language]]) |
 | **F2** / **Ctrl+S** | save |
 | **F3** | open a file |
 | **Alt+F3** / **Ctrl+W** | close the window |
@@ -60,7 +60,7 @@
 | Key | Action |
 |---|---|
 | **Esc** | stop the render or the script while it runs |
-| any key | close the box after the verdict |
+| any key | close the box after the verdict (it also closes by itself: after 2 seconds on a success, 5 with warnings or errors) |
 
 ## Completion list
 

@@ -19,6 +19,7 @@
 * [[Debugging PHP]]
 * [[Web Server]]
 * [[Data Files]]
+* [[Other Files]]
 * [[Project Window]]
 * [[Dialector]]
 * [[Translating Templates]]

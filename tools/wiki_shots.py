@@ -555,6 +555,62 @@ async def trace():
         save(app, "trace-before")
 
 
+OTHER_FILES = {  # a few files of a PHP project besides templates and PHP (written to a temporary folder)
+    "README.md": "# Shop\n\nA *small* shop rendered with [Div](https://github.com/divengine/div).\n\n"
+                 "## Run it\n\n- `composer install`\n- open `index.tpl` and press **Ctrl+F9**\n\n"
+                 "```php\n$div = new div('index.tpl', 'index.json');\n```\n",
+    "phpunit.xml.dist": '<?xml version="1.0" encoding="UTF-8"?>\n<!-- the unit tests -->\n'
+                        '<phpunit bootstrap="vendor/autoload.php" colors="true">\n  <testsuites>\n'
+                        '    <testsuite name="unit">\n      <directory>tests</directory>\n    </testsuite>\n'
+                        '  </testsuites>\n</phpunit>\n',
+    "php.ini": "; settings for php -S\n[PHP]\nmemory_limit = 256M\ndisplay_errors = On\n"
+               "error_log = \"logs/php.log\"  ; next to the project\n\n[xdebug]\nxdebug.mode = debug\n"
+               "xdebug.start_with_request = trigger\n",
+    "products.csv": 'id,name,price,stock,category\n1,"Potato, red",1.50,120,vegetables\n2,Tomato,2.25,80,vegetables\n'
+                    '3,Apple,0.90,200,fruit\n4,"Cheese ""aged""",7.40,15,dairy\n5,Bread,1.10,40,bakery\n',
+}
+
+
+@shot
+async def other_files():
+    """Other files of a project, each in its colours: Markdown, XML, INI and CSV, tiled."""
+    with tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "shop"
+        root.mkdir()
+        for name, text in OTHER_FILES.items():
+            (root / name).write_text(text)
+        app = Divide(root, [root / name for name in OTHER_FILES])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            app.desktop.tile(); await settle(pilot, 10)
+            app.raise_window(app.window_for(root / "README.md")); await settle(pilot)
+            save(app, "other-files")
+
+
+@shot
+async def language():
+    """Options > Language (the interface's language), in English."""
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        await pilot.press("alt+o", "g"); await settle(pilot)
+        save(app, "language-dialog")
+
+
+@shot
+async def spanish():
+    """The Run menu in Spanish: a process of its own, the interface's language is chosen at start."""
+    if os.environ["DIVIDE_LANGUAGE"] != "es":  # (the module's default is English)
+        env = {**os.environ, "DIVIDE_LANGUAGE": "es"}
+        subprocess.run([sys.executable, __file__, "--out", str(OUT), "spanish"], env=env, check=True)
+        return
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        await pilot.press("alt+j"); await settle(pilot)
+        save(app, "interface-spanish")
+
+
 async def run(names: set[str]) -> None:
     for fn in SHOTS:
         if not names or fn.__name__ in names:

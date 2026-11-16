@@ -19,7 +19,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | Colors (the theme and the colour depth), plain symbols or file type marks, language servers, Div engine, Xdebug |
+| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, Xdebug |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Search (the books by words, ranked), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows
@@ -34,7 +34,7 @@ Every window has a number on its top border (**Alt+1…9** goes to it) and, for 
 
 The scroll bars are on the border of the active window, as in Turbo Pascal: the vertical one on the right border (`▲ ▒ ■ ▼`), the horizontal one on the bottom border after the `line:col` (`◄ ▒ ■ ►`), so the text keeps the column and the row a bar inside the window would take. An arrow moves a line, a click on the track a page, and the `■` can be dragged; the focus stays in the text. Windows in the background show a plain border, and a bar only shows when there is something to scroll.
 
-Kinds of windows: editors (templates, data, PHP, any text file), the [[Project Window]], the Output of a render or a script, the Messages window, the Watches and Call stack windows of the [[debugger|Debugging PHP]], the log of the [[Web Server]], the data tree, the [[Dialector]] and the [[Help]] window.
+Kinds of windows: editors (templates, data, PHP, and the [[other files|Other Files]] of a project: HTML, CSS, JavaScript, Markdown, YAML, CSV…), the [[Project Window]], the Output of a render or a script, the Messages window, the Watches and Call stack windows of the [[debugger|Debugging PHP]], the log of the [[Web Server]], the data tree, the [[Dialector]] and the [[Help]] window.
 
 ## Status line
 
@@ -42,6 +42,7 @@ The left side shows the keys that matter. The right side tells you about the win
 
 - in a template, `Div` (plus the dialect's name when it is not the default), or the error or warning under the cursor, or the count of problems;
 - in a data file, `JSON ok` or the JSON error with its line and column;
+- in any other file, its language (`Markdown`, `YAML`, `CSV`…);
 - in the Output window, which template and data file were rendered, or which script ran and its exit code, and how long it took;
 - while debugging, where the script is paused and the debugger's keys;
 - in the project window, the dialector and the help window, their keys;
@@ -87,3 +88,15 @@ Moving through the themes with the arrows paints the whole desktop in each one (
 divide sends its colours as the terminal says it can show them: true colour when it announces it (`COLORTERM=truecolor`, Windows Terminal, iTerm2, most Linux terminals), the 256-colour palette otherwise (`TERM=xterm-256color`), and the 16 ANSI colours on a basic terminal. In 16 colours each colour goes to the one it stands for in its theme (a light green stays light green). The operating system plays no part, only what the terminal says.
 
 Over ssh or inside tmux `COLORTERM` is often lost and the terminal looks like a 256-colour one. If it can do better, choose **True colour** under **Colour depth** in **Options > Colors** (it applies from the next start), or start with `divide --colors truecolor`. The dialog says what the terminal gets now.
+
+## Language
+
+divide speaks English and Spanish. It takes the language of the system (`LANG`, `LC_ALL`…) when it has it, English otherwise. **Options > Language** chooses another one, and divide remembers it; it applies from the next start.
+
+![Options > Language](images/language-dialog.png)
+
+Menus, dialogs, hints, messages and the status line are translated, with hotkeys of their own in each language (**Alt+A** opens *Archivo*, **Alt+J** opens *Ejecutar*). The keys of the commands stay the same: **F2** saves and **Ctrl+F9** runs in any language. The help books, this manual and Div's documentation, stay in English.
+
+![the Run menu in Spanish](images/interface-spanish.png)
+
+To use another language for one run only, start with `divide --language es` (or `--language en`); the variable `DIVIDE_LANGUAGE` does the same and wins over everything else.

@@ -32,7 +32,7 @@ DIV = Language("div", "Div", frozenset({".tpl", ".div"}), "Editing-Templates", c
 JSON = Language("json", "JSON", frozenset({".json", ".dialect"}), "Data-Files")
 PHP = Language("php", "PHP", frozenset({".php", ".phtml"}), "Editing-PHP", checked=True)
 
-OTHER = "The-Desktop"  # the help topic of the files divide only colours (until they have a page)
+OTHER = "Other-Files"  # the help topic of the files divide only colours
 
 HTML = Language("html", "HTML", frozenset({".html", ".htm"}), OTHER, treesitter=True)
 CSS = Language("css", "CSS", frozenset({".css"}), OTHER, treesitter=True)

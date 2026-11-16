@@ -8,7 +8,7 @@ In a PHP script, **Ctrl+F9** (Run > Run) runs it with `php`, as you would in a s
 
 A box like Turbo Pascal's *Compiling* box tells what is running: the script, its parameters, how much it has printed so far and the time. **Esc** stops the script.
 
-When it ends, the box gives the verdict: **Success**, **Warnings**, **Errors**, **Exit code N** or **Stopped**, with the exit code and the count of PHP's messages. The results are already on screen behind it, and any key closes the box. A success closes by itself after a moment.
+When it ends, the box gives the verdict: **Success**, **Warnings**, **Errors**, **Exit code N** or **Stopped**, with the exit code and the count of PHP's messages. The results are already on screen behind it, and any key closes the box. It also closes by itself: after two seconds on a success, after five otherwise.
 
 ## What you get
 
