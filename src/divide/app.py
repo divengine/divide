@@ -157,8 +157,8 @@ CM_XDEBUG = Command.USER + 90
 CM_TRACE_RENDER = Command.USER + 91
 CM_OUTLINE = Command.USER + 92  # Ctrl+O
 CM_GOTO_FILE = Command.USER + 93  # Ctrl+P
-CM_COMMANDS = Command.USER + 94  # Ctrl+Shift+P
-CM_FIND_IN_FILES = Command.USER + 95  # Ctrl+Shift+F
+CM_COMMANDS = Command.USER + 94  # Alt+P
+CM_FIND_IN_FILES = Command.USER + 95  # Shift+F2
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -320,10 +320,12 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         Binding("ctrl+l", "command('SEARCH_AGAIN')", "Search again", show=False),
         Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
         Binding("ctrl+o", "command('OUTLINE')", "Outline", show=False, priority=True),
-        # VS Code's: Ctrl+Shift+P reaches only terminals that tell it from Ctrl+P (a > in Go to file does it too)
         Binding("ctrl+p", "command('GOTO_FILE')", "Go to file", show=False, priority=True),
-        Binding("ctrl+shift+p", "command('COMMANDS')", "Commands", show=False, priority=True),
-        Binding("ctrl+shift+f", "command('FIND_IN_FILES')", "Find in files", show=False, priority=True),
+        # Windows Terminal keeps Ctrl+Shift+P (its palette) and Ctrl+Shift+F (its find), and many
+        # terminals send them as Ctrl+P / Ctrl+F: Alt+P (no menu has P) and Shift+F2, Borland
+        # Pascal's Tools > Grep. VS Code's keys stay for the terminals that do pass them.
+        Binding("alt+p,ctrl+shift+p", "command('COMMANDS')", "Commands", show=False, priority=True),
+        Binding("shift+f2,ctrl+shift+f", "command('FIND_IN_FILES')", "Find in files", show=False, priority=True),
         Binding("ctrl+f9", "command('RENDER')", "Run", show=False, priority=True),
         # The debugger, as in Turbo Pascal.
         Binding("f7", "command('TRACE')", "Trace into", show=False, priority=True),
@@ -422,13 +424,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     MenuItem("~F~ind...", CM_FIND, "Ctrl+F"),
                     MenuItem("~R~eplace...", CM_REPLACE, "Ctrl+R"),
                     MenuItem("~S~earch again", CM_SEARCH_AGAIN, "Ctrl+L"),
-                    MenuItem("Fin~d~ in files...", CM_FIND_IN_FILES, "Ctrl+Shift+F"),
+                    MenuItem("Fin~d~ in files...", CM_FIND_IN_FILES, "Shift+F2"),
                     Separator(),
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
                     MenuItem("Go to ~i~ncluded template", CM_GOTO_INCLUDE, "Ctrl+Enter"),
                     MenuItem("~O~utline", CM_OUTLINE, "Ctrl+O"),
                     MenuItem("Go to fi~l~e...", CM_GOTO_FILE, "Ctrl+P"),
-                    MenuItem("~C~ommand palette...", CM_COMMANDS, "Ctrl+Shift+P"),
+                    MenuItem("~C~ommand palette...", CM_COMMANDS, "Alt+P"),
                     Separator(),
                     MenuItem("~P~revious error", CM_PREV_ERROR, "Alt+F7"),
                     MenuItem("~N~ext error", CM_NEXT_ERROR, "Alt+F8"),

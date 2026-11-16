@@ -147,8 +147,8 @@ This document describes behaviour and responsibilities.
 ### UC13 Find files, text and commands
 
 1. **Go to file** (Ctrl+P): the developer types a few letters and the project's files are matched fuzzily. Enter opens the chosen file.
-2. **Command palette** (Ctrl+Shift+P, or `>` in Go to file): every menu entry is matched the same way. Enter runs it.
-3. **Find / Replace** (Ctrl+F / Ctrl+R) work in the current file. **Find in files** (Ctrl+Shift+F) searches every project file, or those matching a mask, and lists the matching lines. Enter opens each one with the match selected.
+2. **Command palette** (Alt+P, or `>` in Go to file): every menu entry is matched the same way. Enter runs it.
+3. **Find / Replace** (Ctrl+F / Ctrl+R) work in the current file. **Find in files** (Shift+F2) searches every project file, or those matching a mask, and lists the matching lines. Enter opens each one with the match selected.
 
 ### UC14 Read the help
 

@@ -25,7 +25,7 @@ UI has been reviewed. Dates are commit dates.
 | C1 | Construction | 2026-11-14 | Run PHP scripts; Xdebug debugger; progress box; built-in web server with per-request debugging. |
 | C2 | Construction | 2026-11-14 | Render trace (Div's mutations up to the fixed point); outline of PHP files; Turbo Pascal colours; ASCII/CP437-only screen. |
 | C3 | Construction | 2026-11-15 | Progress bar; frame scroll bars; colour themes (turbo-pascal, turbo-c, free-pascal, modern-dark) and colour depth; File > Open as Turbo Pascal's; input line histories. |
-| C4 | Construction | 2026-11-15 to 16 | Outline of Div templates; Go to file and the command palette; Find in files; double click to open in the project window; technical documentation (this folder). |
+| C4 | Construction | 2026-11-15 to 16 | Outline of Div templates; Go to file and the command palette; Find in files; double click to open in the project window; technical documentation (this folder); the manual's screenshots in the Free Pascal theme; Alt+P and Shift+F2 instead of Ctrl+Shift+P / Ctrl+Shift+F, which Windows Terminal keeps. |
 
 ## Current iteration (C5): plan
 
@@ -43,7 +43,7 @@ UI has been reviewed. Dates are commit dates.
 |---|---|---|---|
 | textual-vision is young (0.0.1) and may change or stall | medium | high | Pinned version; divide's additions are subclasses, not patches; divide could vendor it if needed. |
 | Div's internals used by the bridge (trace, translate, dialect checks) change between versions | medium | medium | Ask through public API where possible; the bridge reports Div's version; tests with a real Div checkout. |
-| Terminals differ in keys (Ctrl+Shift, Ctrl+Enter) and glyphs | high | medium | Every combination has an alternative (`>` in Go to file, Ctrl+J); ASCII/CP437 only; tested through SSH and tmux. |
+| Terminals differ in keys (Ctrl+Shift, Ctrl+Enter) and glyphs | high | medium | No command depends on Ctrl+Shift (Windows Terminal keeps Ctrl+Shift+P and Ctrl+Shift+F: Alt+P and Shift+F2 instead); Ctrl+J for Ctrl+Enter; ASCII/CP437 only; tested through SSH and tmux. |
 | Memory on small VMs (language servers, PHP, tests) | high | medium | On-demand processes, bounded algorithms, tests run one file at a time. |
 | Lexer drift from Div's real matching rules | low | high | `div.php` as the reference; design note [div-language.md](div-language.md); lexer tests; render and checks by Div itself. |
 | Scope creep (an IDE for everything) | medium | medium | The vision's scope; languages and books as plug-ins, so the core stays small. |

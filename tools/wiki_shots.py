@@ -258,7 +258,7 @@ async def palette():
         await pilot.press("ctrl+a", ">", *"run"); await settle(pilot)
         save(app, "command-palette")
         await pilot.press("escape"); await settle(pilot)
-        await pilot.press("ctrl+shift+f"); await settle(pilot)
+        await pilot.press("shift+f2"); await settle(pilot)
         await pilot.press("ctrl+a", *"product"); await settle(pilot)
         save(app, "find-in-files-dialog")
         await pilot.press("enter")

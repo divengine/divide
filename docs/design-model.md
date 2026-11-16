@@ -189,7 +189,7 @@ sequenceDiagram
     participant App as Divide (PaletteMixin)
     participant G as git ls-files
     participant D as PaletteDialog
-    Dev->>App: Ctrl+P (or Ctrl+Shift+P)
+    Dev->>App: Ctrl+P (or Alt+P)
     App->>G: project_files(root)
     G-->>App: relative paths
     App->>D: files, menu_items(menu bar), open files first

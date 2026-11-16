@@ -40,7 +40,10 @@ before it reaches the manual.
 - **Commands.** Each command has a `CM_*` constant in `app.py`, a menu entry
   (with a `~hotkey~` that is unique in its menu), a key in `BINDINGS` if it
   has one, and a case in `run_command`. Keys that some terminals cannot send
-  (Ctrl+Shift+..., Ctrl+Enter) always have an alternative.
+  (Ctrl+Enter) always have an alternative. Ctrl+Shift combinations are not
+  used as a command's key: Windows Terminal keeps several of them for itself
+  (Ctrl+Shift+P, Ctrl+Shift+F...), and many terminals send them without the
+  Shift. Prefer function keys and Alt with a letter no menu uses.
 - **Glyphs.** Only ASCII and CP437, single width: no Nerd Fonts, no emoji,
   no wide characters. `tests/test_glyphs.py` checks it.
 - **Colours.** Never hard-coded in widgets. They come from a palette role

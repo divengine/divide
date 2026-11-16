@@ -1,4 +1,7 @@
-"""Go to file (Ctrl+P) and the command palette (Ctrl+Shift+P), as VS Code's.
+"""Go to file (Ctrl+P) and the command palette (Alt+P), as VS Code's Ctrl+P and Ctrl+Shift+P.
+
+Windows Terminal keeps Ctrl+Shift+P for its own palette, so divide's is Alt+P
+(Ctrl+Shift+P still works where the terminal passes it on).
 
 One dialog, two modes: a line to type in and the list of what matches, best
 first, the letters that matched lit. In "Go to file" the list holds the

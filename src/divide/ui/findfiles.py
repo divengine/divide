@@ -1,4 +1,4 @@
-"""Search > Find in files: a text in every file of the project.
+"""Search > Find in files (Shift+F2, Borland Pascal's Tools > Grep): a text in every file of the project.
 
 Search > Find looks in the file being edited; this looks in all of the
 project's files (the same list Go to file holds: git's when the project is a

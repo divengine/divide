@@ -1,10 +1,8 @@
-"""Go to file (Ctrl+P) and the command palette (Ctrl+Shift+P, or a > in Go to file)."""
+"""Go to file (Ctrl+P) and the command palette (Alt+P, or a > in Go to file)."""
 
 import pytest
 
-from textual_vision.events import CommandMessage
-
-from divide.app import CM_ABOUT, CM_COMMANDS, Divide
+from divide.app import CM_ABOUT, Divide
 from divide.ui import history
 from divide.ui.dialogs import MessageBox
 from divide.ui.palette import (
@@ -93,7 +91,7 @@ async def test_go_to_file_and_commands(tmp_path):
         await pilot.press("escape")
         await settle(pilot)
         # a command run lately is the first one shown
-        app.post_message(CommandMessage(CM_COMMANDS))
+        await pilot.press("alt+p")
         await settle(pilot)
         dialog = app.screen.query_one(PaletteDialog)
         assert dialog.input.data == ">" and dialog.shown[0].text == "Help > About..."

@@ -45,7 +45,7 @@ async def test_find_in_files_window(tmp_path):
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
-        await pilot.press("ctrl+shift+f")
+        await pilot.press("shift+f2")
         await settle(pilot)
         dialog = app.screen.query_one(FindInFilesDialog)
         await pilot.press(*"header", "enter")

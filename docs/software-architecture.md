@@ -189,7 +189,8 @@ flowchart LR
 
 The terminal emulator may be on another machine, so fonts and key encodings
 are not under divide's control. This is why divide sticks to ASCII and CP437
-glyphs, and why Ctrl+Shift combinations always have an alternative. See
+glyphs, and why no command depends on a Ctrl+Shift combination (Windows
+Terminal keeps Ctrl+Shift+P and Ctrl+Shift+F for itself). See
 [deployment.md](deployment.md) for installation and configuration.
 
 ## 8. Data view

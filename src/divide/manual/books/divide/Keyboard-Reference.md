@@ -14,8 +14,8 @@
 | **Alt+1 … Alt+9** | go to window *n* |
 | **Ctrl+B** | project window |
 | **Ctrl+P** | go to file (a `>` first: the commands), see [[Finding Files and Commands]] |
-| **Ctrl+Shift+P** | command palette |
-| **Ctrl+Shift+F** | find in files |
+| **Alt+P** | command palette |
+| **Shift+F2** | find in files |
 | **Ctrl+F9** | run: render the template, run the PHP script (in the debugger: go on; with the [[Web Server]] running: open the page in the browser) |
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |

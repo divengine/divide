@@ -23,7 +23,9 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
 - **U1 Borland conventions.** Menus, keys (F2, F3, F5, F6, Alt+F3, Ctrl+F9,
   Alt+F9, Alt+F8...), dialogs, histories and colours follow Turbo
   Pascal / Turbo Vision. VS Code conventions are added only where the Borland
-  IDEs had nothing (Go to file, command palette, Find in files).
+  IDEs had nothing (Go to file, command palette, Find in files), with keys
+  every terminal passes on: Ctrl+P, Alt+P, Shift+F2 (Borland Pascal's Grep),
+  not VS Code's Ctrl+Shift+P / Ctrl+Shift+F, which Windows Terminal keeps.
 - **U2 Keyboard first, mouse too.** Everything can be done from the keyboard.
   The mouse moves, resizes and clicks. Opening a file in a list or tree takes
   a double click, so a single click only selects.

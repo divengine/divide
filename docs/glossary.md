@@ -22,7 +22,7 @@
 | **Command** | A Turbo Vision command number (`Command.*` or `CM_*`) posted by menus, keys and the status line, and handled in `Divide.run_command`. |
 | **Mixin** | A class that adds one feature area to the app (`RunMixin`, `LspMixin`, `PaletteMixin`...). The app is the composition of its mixins. |
 | **Palette (colours)** | A colour theme (`themes.Palette`): 16 ANSI slots, UI roles, syntax roles. Not to be confused with the command palette. |
-| **Command palette** | Ctrl+Shift+P: every menu entry, found by typing. |
+| **Command palette** | Alt+P: every menu entry, found by typing (VS Code's Ctrl+Shift+P, which Windows Terminal keeps for itself). |
 | **Go to file** | Ctrl+P: every project file, found by typing. |
 | **History (input line)** | Turbo Vision's THistory: what an input line accepted before, kept per kind of line in the config. |
 | **Help book** | A manual shown in the help window, copied from a wiki or a docs folder by `tools/sync_book.py`. divide has two: divide and Div. |

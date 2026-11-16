@@ -15,16 +15,17 @@ Three ways to get somewhere without the menus or the project tree: **Go to file*
 
 ## Command palette
 
-**Ctrl+Shift+P** (or **Search > Command palette**) holds every entry of the menu bar, named by its menu (`Run > Check`), with its key on the right. It works like Go to file: type a few letters and **Enter** runs the command, as if you had chosen it in the menu.
+**Alt+P** (or **Search > Command palette**) holds every entry of the menu bar, named by its menu (`Run > Check`), with its key on the right. It works like Go to file: type a few letters and **Enter** runs the command, as if you had chosen it in the menu.
 
 ![the command palette](images/command-palette.png)
 
-- A `>` at the start of the line in Go to file turns it into the command palette, and deleting the `>` goes back to the files. This is useful because many terminals send Ctrl+Shift+P as Ctrl+P, especially through tmux or SSH.
+- A `>` at the start of the line in Go to file turns it into the command palette, and deleting the `>` goes back to the files.
+- VS Code opens its palette with Ctrl+Shift+P, but Windows Terminal keeps that key for its own palette, and many terminals send it as Ctrl+P. That is why divide uses Alt+P. Where the terminal does pass Ctrl+Shift+P on, it works too.
 - With nothing typed, the commands you ran from the palette most recently come first.
 
 ## Find in files
 
-**Search > Find** looks in the file you are editing. **Search > Find in files** (**Ctrl+Shift+F**) looks in all of the project's files: the same list as Go to file.
+**Search > Find** looks in the file you are editing. **Search > Find in files** (**Shift+F2**, the key of Borland Pascal's Tools > Grep) looks in all of the project's files: the same list as Go to file. VS Code's Ctrl+Shift+F is Windows Terminal's own find, so it is only an alternative, for the terminals that pass it on.
 
 ![Find in files](images/find-in-files-dialog.png)
 
