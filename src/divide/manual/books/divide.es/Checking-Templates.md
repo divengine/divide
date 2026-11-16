@@ -2,7 +2,7 @@
 
 divide verifica tu plantilla en cada edición, con su dialecto, y te dice con qué tropezaría Div o qué dejaría en silencio como texto plano.
 
-![errores en el editor y en la ventana Mensajes](https://raw.githubusercontent.com/wiki/divengine/divide/images/diagnostics.png)
+![errores en el editor y en la ventana Mensajes](images/diagnostics.png)
 
 ## Qué se verifica
 

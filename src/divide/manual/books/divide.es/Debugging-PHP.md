@@ -2,7 +2,7 @@
 
 divide depura scripts PHP como Turbo Pascal depuraba programas: avanzas por el código línea a línea, la línea que está a punto de ejecutarse es una barra cian, los puntos de ruptura son barras rojas y la ventana Vigilancias muestra lo que contienen tus variables.
 
-![detenido en un punto de ruptura en index.php, con las ventanas Vigilancias y Pila de llamadas](https://raw.githubusercontent.com/wiki/divengine/divide/images/debug.png)
+![detenido en un punto de ruptura en index.php, con las ventanas Vigilancias y Pila de llamadas](images/debug.png)
 
 ## Qué necesita
 
@@ -34,7 +34,7 @@ Estas teclas pertenecen al depurador en los archivos PHP. En las plantillas, F7 
 
 Sin puntos de ruptura, Ctrl+F9 ejecuta el script hasta el final; con uno, inicia el depurador y se detiene ahí. Todas las formas de iniciar pasan los [[argumentos|Running PHP]] de Ejecutar > Argumentos.
 
-![el menú Depurar](https://raw.githubusercontent.com/wiki/divengine/divide/images/menu-debug.png)
+![el menú Depurar](images/menu-debug.png)
 
 ## Puntos de ruptura
 

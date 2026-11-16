@@ -4,7 +4,7 @@
 
 divide es un IDE a pantalla completa, pensado para el teclado, para plantillas [Div](https://github.com/divengine/div), hecho con el espíritu de los IDE de Borland: un escritorio de ventanas superpuestas, menús desplegables, diálogos con sombra y una línea de estado que siempre te dice la tecla siguiente. Entiende Div como lo entiende Div: lee tu dialecto, verifica tus plantillas mientras escribes, autocompleta tus variables a partir de tus datos reales y renderiza con el motor Div real, junto al código.
 
-![divide: proyecto, plantilla y salida renderizada lado a lado](https://raw.githubusercontent.com/wiki/divengine/divide/images/hero.png)
+![divide: proyecto, plantilla y salida renderizada lado a lado](images/hero.png)
 
 ## Por qué divide
 

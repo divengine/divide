@@ -6,7 +6,7 @@ Tres formas de llegar a algún sitio sin los menús ni el árbol del proyecto: *
 
 **Ctrl+P** (o **Buscar > Ir a archivo**) abre una línea donde escribir, con los archivos del proyecto debajo. Escribe unas pocas letras del nombre y la lista se queda con los archivos que las tienen, en ese orden, los mejores primero. Las letras que escribiste aparecen resaltadas, y las carpetas se atenúan para que destaquen los nombres de los archivos.
 
-![Ir a archivo](https://raw.githubusercontent.com/wiki/divengine/divide/images/go-to-file.png)
+![Ir a archivo](images/go-to-file.png)
 
 - Las letras no tienen que estar juntas: `phd` encuentra `parts/header.tpl`. Un archivo cuyo nombre las tiene al principio de sus palabras, o una tras otra, sale primero.
 - Sin nada escrito, primero salen los archivos abiertos en editores, el de encima primero.
@@ -17,7 +17,7 @@ Tres formas de llegar a algún sitio sin los menús ni el árbol del proyecto: *
 
 **Alt+P** (o **Buscar > Paleta de comandos**) contiene todas las entradas de la barra de menús, nombradas por su menú (`Run > Check`), con su tecla a la derecha. Funciona como Ir a archivo: escribe unas pocas letras y **Enter** ejecuta el comando, como si lo hubieras elegido en el menú.
 
-![la paleta de comandos](https://raw.githubusercontent.com/wiki/divengine/divide/images/command-palette.png)
+![la paleta de comandos](images/command-palette.png)
 
 - Un `>` al principio de la línea en Ir a archivo la convierte en la paleta de comandos, y borrar el `>` vuelve a los archivos.
 - VS Code abre su paleta con Ctrl+Shift+P, pero Windows Terminal reserva esa tecla para su propia paleta, y muchos terminales la envían como Ctrl+P. Por eso divide usa Alt+P. Donde el terminal sí deja pasar Ctrl+Shift+P, también funciona.
@@ -27,7 +27,7 @@ Tres formas de llegar a algún sitio sin los menús ni el árbol del proyecto: *
 
 **Buscar > Buscar** busca en el archivo que estás editando. **Buscar > Buscar en archivos** (**Shift+F2**, la tecla de Tools > Grep de Borland Pascal) busca en todos los archivos del proyecto: la misma lista que Ir a archivo. Ctrl+Shift+F de VS Code es la búsqueda propia de Windows Terminal, así que solo es una alternativa, para los terminales que la dejan pasar.
 
-![Buscar en archivos](https://raw.githubusercontent.com/wiki/divengine/divide/images/find-in-files-dialog.png)
+![Buscar en archivos](images/find-in-files-dialog.png)
 
 - **Texto a buscar**: lo que hay que buscar. Cuando hay texto seleccionado en una línea, se rellena con él.
 - **Archivos**: en qué archivos buscar, con comodines separados por `;` (`*.tpl;*.php`). Deja `*` para todos. Un comodín también puede incluir carpetas: `components/*`.
@@ -37,4 +37,4 @@ Las dos líneas recuerdan lo que escribiste en ellas (consulta [[El escritorio|T
 
 Lo que encuentra va a la ventana **Buscar en archivos**, abajo en el escritorio, como el grep de Turbo Pascal lo ponía en la ventana Mensajes. La primera línea dice cuántas coincidencias encontró y en cuántos archivos. Después hay una fila por cada línea con una coincidencia: `file(line): the line`. **Enter** o un doble clic abre el archivo ahí, con la coincidencia seleccionada. Hacer otra búsqueda reemplaza la lista.
 
-![la ventana Buscar en archivos](https://raw.githubusercontent.com/wiki/divengine/divide/images/find-in-files.png)
+![la ventana Buscar en archivos](images/find-in-files.png)

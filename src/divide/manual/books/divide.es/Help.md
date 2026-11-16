@@ -2,7 +2,7 @@
 
 divide lleva consigo su documentación, como libros: este manual y la propia documentación de Div. **F1** abre la ayuda en el tema de la ventana en la que estás, en una ventana de ayuda coloreada como la de Borland Pascal: negro sobre cian, referencias cruzadas en amarillo.
 
-![la ventana de ayuda en el tema Dialector](https://raw.githubusercontent.com/wiki/divengine/divide/images/help.png)
+![la ventana de ayuda en el tema Dialector](images/help.png)
 
 ## Abrir la ayuda
 
@@ -18,7 +18,7 @@ divide lleva consigo su documentación, como libros: este manual y la propia doc
 
 F1 en la propia ventana de ayuda muestra esta página.
 
-![el índice: todos los temas y secciones, por orden alfabético](https://raw.githubusercontent.com/wiki/divengine/divide/images/help-index.png)
+![el índice: todos los temas y secciones, por orden alfabético](images/help-index.png)
 
 ## La ayuda en español
 
@@ -28,7 +28,7 @@ Los libros están también en español: este manual y la documentación de Div, 
 
 **Ayuda > Buscar** encuentra las palabras que escribes en todos los libros, como un buscador web. Mientras escribes, lista las secciones que contienen las palabras, las mejores primero. Cada fila es una sección de una página, como `Breakpoints · Debugging PHP`, con las palabras que escribiste resaltadas, y las filas de la documentación de Div van marcadas con *Div*. El panel de abajo muestra el libro y la frase donde aparecen las palabras.
 
-![Ayuda > Buscar](https://raw.githubusercontent.com/wiki/divengine/divide/images/help-search.png)
+![Ayuda > Buscar](images/help-search.png)
 
 - **El orden.** Primero van las secciones que contienen todas las palabras. Una palabra en el título de una página es lo que más cuenta, después una palabra en un encabezado, después una palabra en el texto. Cuando ninguna sección tiene todas las palabras, se listan las secciones que tienen alguna.
 - **Acentos y mayúsculas.** Las palabras coinciden sin distinguir acentos ni mayúsculas: *numero* encuentra *Número*.
@@ -56,11 +56,11 @@ La ventana de ayuda es una ventana como las demás: **F5** la amplía, **F6** pa
 | divide | este manual | la [wiki de divide](https://github.com/divengine/divide/wiki) |
 | Div | el motor de plantillas: el lenguaje, los dialectos, la API de PHP | la [carpeta `docs` de Div](https://github.com/divengine/div/tree/master/docs) |
 
-![la documentación de Div en la ventana de ayuda](https://raw.githubusercontent.com/wiki/divengine/divide/images/help-div.png)
+![la documentación de Div en la ventana de ayuda](images/help-div.png)
 
 Un libro es una copia del lugar donde está escrito, así que cada documentación se escribe una sola vez. Las imágenes se omiten. Los enlaces a otros temas son referencias cruzadas, también entre libros. Los enlaces a páginas web van subrayados: **Tab** también llega a ellos, y **Enter** o un clic los abre en el navegador. Son además hipervínculos propios del terminal, así que Ctrl+clic (o el gesto del terminal para los enlaces) también los abre, incluso por SSH cuando el terminal es local.
 
-![la lista de libros](https://raw.githubusercontent.com/wiki/divengine/divide/images/help-books.png)
+![la lista de libros](images/help-books.png)
 
 ## Añadir un libro
 

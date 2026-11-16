@@ -2,7 +2,7 @@
 
 Div puede reescribir una plantilla de un dialecto a otro. **Herramientas > Traducir una plantilla...** lo convierte en un asistente. También está en el menú local del [[Dialector]], con el dialecto del dialector como destino.
 
-![traducción de index.tpl a un dialecto parecido a ERB](https://raw.githubusercontent.com/wiki/divengine/divide/images/translate.png)
+![traducción de index.tpl a un dialecto parecido a ERB](images/translate.png)
 
 ## Los tres campos
 

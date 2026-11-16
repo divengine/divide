@@ -2,7 +2,7 @@
 
 Un dialecto de Div cambia las etiquetas del lenguaje: `{$name}` puede pasar a ser `<%$name%>`, `[$list]` puede pasar a ser `<% each $list %>`. Escribir uno a mano supone acertar con unas 120 etiquetas y asegurarse de que ninguna choque con otra. El dialector es un asistente para eso. Es la versión de terminal del [dialector web](https://github.com/divengine/dialector), con una vista previa en vivo, y el propio Div verifica cada cambio.
 
-![el dialector: secciones, vista previa y veredicto de Div](https://raw.githubusercontent.com/wiki/divengine/divide/images/dialector.png)
+![el dialector: secciones, vista previa y veredicto de Div](images/dialector.png)
 
 ## Abrirlo
 
@@ -37,7 +37,7 @@ Unas líneas dividen la ventana en estos tres recuadros y la vista previa. Los p
 
 **OK** aplica los cambios, **Por defecto** devuelve al diálogo las etiquetas de Div y **Cancelar** descarta los cambios. **Tab** pasa de un campo a otro.
 
-![editar una sección](https://raw.githubusercontent.com/wiki/divengine/divide/images/dialector-section.png)
+![editar una sección](images/dialector-section.png)
 
 **Supr** devuelve la sección seleccionada a las etiquetas de Div por defecto (Ctrl+Z lo deshace).
 
@@ -54,7 +54,7 @@ El veredicto aparece debajo de las secciones y en cada diálogo de sección, y s
 
 **Alt+F10** (o Shift+F10):
 
-![el menú local](https://raw.githubusercontent.com/wiki/divengine/divide/images/dialector-menu.png)
+![el menú local](images/dialector-menu.png)
 
 | Elemento | |
 |---|---|

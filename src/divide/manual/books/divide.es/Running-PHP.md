@@ -2,7 +2,7 @@
 
 En un script PHP, **Ctrl+F9** (Ejecutar > Ejecutar) lo ejecuta con `php`, como lo harías en una shell, y muestra lo que imprimió. En una plantilla, la misma tecla la renderiza (ver [[Renderizado|Rendering]]).
 
-![Ctrl+F9 en index.php: el cuadro con el veredicto y la salida detrás](https://raw.githubusercontent.com/wiki/divengine/divide/images/run-php.png)
+![Ctrl+F9 en index.php: el cuadro con el veredicto y la salida detrás](images/run-php.png)
 
 ## Mientras se ejecuta
 

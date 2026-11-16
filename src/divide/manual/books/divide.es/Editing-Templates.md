@@ -23,7 +23,7 @@ Qué archivo es ese, y qué dice, es asunto de Div: divide le pide a Div que car
 
 Los diálogos son los clásicos: mayúsculas y minúsculas, palabras completas, expresiones regulares (con grupos `\1` en el reemplazo), hacia adelante o hacia atrás, desde el cursor o en todo el archivo, y *preguntar al reemplazar* para confirmar cada cambio. Se propone como texto a buscar el texto seleccionado, o la palabra bajo el cursor.
 
-![el diálogo Reemplazar](https://raw.githubusercontent.com/wiki/divengine/divide/images/replace.png)
+![el diálogo Reemplazar](images/replace.png)
 
 ## Teclas de edición
 

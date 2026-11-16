@@ -2,7 +2,7 @@
 
 Los archivos que terminan en `.php` (y `.phtml`) se abren en un editor de PHP: el código que llama a Div está junto a las plantillas, en el mismo escritorio.
 
-![un archivo PHP con un error de sintaxis encontrado por PHP](https://raw.githubusercontent.com/wiki/divengine/divide/images/php.png)
+![un archivo PHP con un error de sintaxis encontrado por PHP](images/php.png)
 
 ## Resaltado
 

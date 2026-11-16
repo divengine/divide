@@ -2,7 +2,7 @@
 
 Un servidor de lenguaje es un programa que conoce un lenguaje a fondo: lee el proyecto entero y responde a las preguntas de un editor sobre el código bajo el cursor. divide habla el Language Server Protocol, así que el trabajo de esas herramientas llega al escritorio de Turbo Vision. Para PHP usa [phpactor](https://phpactor.readthedocs.io) o [intelephense](https://intelephense.com).
 
-![autocompletado de un método de Div, con su documentación junto a la lista](https://raw.githubusercontent.com/wiki/divengine/divide/images/lsp.png)
+![autocompletado de un método de Div, con su documentación junto a la lista](images/lsp.png)
 
 ## Qué aporta
 
@@ -16,7 +16,7 @@ Un servidor de lenguaje es un programa que conoce un lenguaje a fondo: lee el pr
 
 El servidor se inicia cuando se abre el primer archivo PHP. Un indicador gira en la línea de estado mientras arranca y mientras indexa el proyecto; cuando el servidor dice cuánto lleva de indexación, una barra lo muestra: `phpactor: Indexing ████░░░░░░ 42%`; después la línea de estado nombra el servidor. Se detiene cuando divide sale.
 
-![la firma de div::parse mientras se escriben sus argumentos](https://raw.githubusercontent.com/wiki/divengine/divide/images/lsp-signature.png)
+![la firma de div::parse mientras se escriben sus argumentos](images/lsp-signature.png)
 
 ## Proyectos Composer
 

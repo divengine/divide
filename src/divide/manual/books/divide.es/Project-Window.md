@@ -2,7 +2,7 @@
 
 **Ctrl+B** abre el árbol del proyecto a la izquierda (y lo trae al frente, o lo cierra si ya está encima). Se abre solo cuando divide arranca sin archivos.
 
-![el menú local de la ventana de proyecto](https://raw.githubusercontent.com/wiki/divengine/divide/images/project-menu.png)
+![el menú local de la ventana de proyecto](images/project-menu.png)
 
 **Enter** abre un archivo, o pliega y despliega una carpeta. Con el ratón, un clic pone la barra sobre un archivo y un doble clic lo abre; un clic en una carpeta la pliega o la despliega. Las carpetas de control de versiones y de caché (`.git`, `__pycache__`, `.venv`, `node_modules`, cachés de herramientas) se ocultan; `vendor/` sigue visible.
 
@@ -10,7 +10,7 @@
 
 El árbol muestra las carpetas con los `►` y `▼` de Turbo Vision. **Opciones > Marcas de tipo de archivo** pone una marca de color delante de cada archivo, en la celda donde una carpeta tiene su flecha, así que el árbol mantiene su ancho. **Opciones > Símbolos simples** vuelve atrás. divide recuerda la elección.
 
-![la ventana de proyecto con marcas de tipo de archivo](https://raw.githubusercontent.com/wiki/divengine/divide/images/project-marks.png)
+![la ventana de proyecto con marcas de tipo de archivo](images/project-marks.png)
 
 | Marca | Archivos |
 |---|---|
@@ -42,7 +42,7 @@ Las marcas son ASCII simple a propósito: todos los terminales, fuentes y plataf
 | **Ctrl+R** | actualizar desde el disco |
 | **Alt+F10**, **Shift+F10**, clic derecho | el menú local con todo lo anterior |
 
-![creando un archivo](https://raw.githubusercontent.com/wiki/divengine/divide/images/project-new-file.png)
+![creando un archivo](images/project-new-file.png)
 
 Conviene saber:
 

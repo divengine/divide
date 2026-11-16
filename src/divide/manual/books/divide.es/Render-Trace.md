@@ -2,7 +2,7 @@
 
 **Depurar > Traza del render** (**F7** en una plantilla) renderiza la plantilla como lo hace [[Ctrl+F9|Rendering]], y guarda cada cambio que Div hizo por el camino, para que puedas reproducir cómo la plantilla se convirtió en su salida.
 
-![la fila donde Div decide una condición: lo que se queda, en verde](https://raw.githubusercontent.com/wiki/divengine/divide/images/trace.png)
+![la fila donde Div decide una condición: lo que se queda, en verde](images/trace.png)
 
 ## Por qué no línea a línea
 
@@ -23,7 +23,7 @@ Así que la traza no es una lista de líneas sino una lista de **mutaciones**: l
 
 **Espacio** muestra en cambio la plantilla *antes* de la mutación seleccionada, con lo que quitó marcado en rojo. Espacio otra vez vuelve a después.
 
-![la misma fila antes de la mutación: la condición que desapareció, en rojo](https://raw.githubusercontent.com/wiki/divengine/divide/images/trace-before.png)
+![la misma fila antes de la mutación: la condición que desapareció, en rojo](images/trace-before.png)
 
 ## Teclas
 

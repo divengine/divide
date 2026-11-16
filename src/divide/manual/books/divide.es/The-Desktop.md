@@ -2,13 +2,13 @@
 
 divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas superpuestas en el centro y una línea de estado abajo. Si usaste Turbo Pascal o Borland C++, tus dedos ya lo conocen.
 
-![Ventana > Mosaico con el proyecto, una plantilla y un componente](https://raw.githubusercontent.com/wiki/divengine/divide/images/window-tile.png)
+![Ventana > Mosaico con el proyecto, una plantilla y un componente](images/window-tile.png)
 
 ## Menús
 
 **F10** abre el primer menú, **Alt + la letra roja** abre un menú directamente (Alt+A Archivo, Alt+J Ejecutar, Alt+H Herramientas, Alt+V Ventana…). Dentro de un menú, las flechas mueven, la letra roja o **Enter** eligen y **Esc** cierra. El ratón también funciona.
 
-![el menú Ejecutar](https://raw.githubusercontent.com/wiki/divengine/divide/images/menu-run.png)
+![el menú Ejecutar](images/menu-run.png)
 
 | Menú | Qué hay |
 |---|---|
@@ -54,13 +54,13 @@ Los diálogos funcionan como en Turbo Vision: **Tab** / **Shift+Tab** van de un 
 
 **Archivo > Abrir** (F3) y **Guardar como** están dispuestos como los de Turbo Pascal: la línea del nombre arriba, los archivos de la carpeta debajo sobre cian con su propia barra de desplazamiento, los botones en una columna a la derecha, y un panel abajo con la carpeta (y su comodín) y el archivo bajo la barra, con su tamaño y fecha. Escribe un comodín (`*.php`) para listar otros archivos, el nombre de una carpeta o `..` para ir allí, o una ruta completa.
 
-![Archivo > Abrir](https://raw.githubusercontent.com/wiki/divengine/divide/images/open-file.png)
+![Archivo > Abrir](images/open-file.png)
 
 ### Historial de las líneas de entrada
 
 Las líneas de entrada recuerdan lo que aceptaste en ellas, como en Turbo Pascal: el `▐↓▌` a la derecha de una línea abre las entradas anteriores, la más reciente primero. **↓** en la línea (o un clic en la flecha) abre la lista, **Enter** o un clic devuelve una entrada a la línea, **Esc** cierra la lista. Cada tipo de línea tiene su propio historial: nombres de archivo, textos a buscar y a reemplazar, números de línea, los argumentos de un programa, expresiones a vigilar… Una entrada se recuerda cuando el diálogo termina con OK, no con Cancelar, y los historiales se guardan en la configuración para la siguiente sesión.
 
-![el historial del nombre de archivo](https://raw.githubusercontent.com/wiki/divengine/divide/images/open-history.png)
+![el historial del nombre de archivo](images/open-history.png)
 
 ## Colores
 
@@ -75,13 +75,13 @@ Las líneas de entrada recuerdan lo que aceptaste en ellas, como en Turbo Pascal
 
 Al recorrer los temas con las flechas, todo el escritorio se pinta en cada uno (también el diálogo y su muestra de una plantilla). **OK** conserva el tema, también para el próximo inicio; **Cancelar** vuelve al que tenías. `divide --palette modern-dark` arranca con un tema sin cambiar el elegido. Las imágenes de este manual usan el tema Free Pascal.
 
-![Opciones > Colores, con la vista previa de Moderno oscuro](https://raw.githubusercontent.com/wiki/divengine/divide/images/colors-dialog.png)
+![Opciones > Colores, con la vista previa de Moderno oscuro](images/colors-dialog.png)
 
-![Moderno oscuro](https://raw.githubusercontent.com/wiki/divengine/divide/images/theme-modern-dark.png)
+![Moderno oscuro](images/theme-modern-dark.png)
 
-![Turbo Pascal](https://raw.githubusercontent.com/wiki/divengine/divide/images/theme-turbo-pascal.png)
+![Turbo Pascal](images/theme-turbo-pascal.png)
 
-![Colores de Turbo C y el menú Ventana](https://raw.githubusercontent.com/wiki/divengine/divide/images/palette-turbo-c.png)
+![Colores de Turbo C y el menú Ventana](images/palette-turbo-c.png)
 
 ### Profundidad de color
 
@@ -93,10 +93,10 @@ Por ssh o dentro de tmux `COLORTERM` suele perderse y el terminal parece uno de 
 
 divide habla inglés y español. Toma el idioma del sistema (`LANG`, `LC_ALL`…) cuando lo tiene, inglés si no. **Opciones > Idioma** elige otro, y divide lo recuerda; se aplica desde el próximo inicio.
 
-![Opciones > Idioma](https://raw.githubusercontent.com/wiki/divengine/divide/images/language-dialog.png)
+![Opciones > Idioma](images/language-dialog.png)
 
 Los menús, diálogos, pistas, mensajes y la línea de estado están traducidos, con teclas rápidas propias en cada idioma (**Alt+A** abre *Archivo*, **Alt+J** abre *Ejecutar*). Las teclas de los comandos no cambian: **F2** guarda y **Ctrl+F9** ejecuta en cualquier idioma. La ayuda sigue a la interfaz: en español, el manual y la documentación de Div se muestran en español (ver [[Ayuda|Help#la-ayuda-en-español]]).
 
-![el menú Ejecutar en español](https://raw.githubusercontent.com/wiki/divengine/divide/images/interface-spanish.png)
+![el menú Ejecutar en español](images/interface-spanish.png)
 
 Para usar otro idioma en una sola ejecución, arranca con `divide --language es` (o `--language en`); la variable `DIVIDE_LANGUAGE` hace lo mismo y se impone a todo lo demás.

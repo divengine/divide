@@ -17,7 +17,7 @@ La lista se abre sola después de:
 
 Al escribir se acota la lista (primero por prefijo, luego en cualquier parte del nombre). **↑/↓**, **PgUp/PgDn** mueven, **Enter** o **Tab** inserta, **Esc** cierra, y un clic elige un elemento.
 
-![variables dentro de un bucle](https://raw.githubusercontent.com/wiki/divengine/divide/images/completion-variables.png)
+![variables dentro de un bucle](images/completion-variables.png)
 
 ## De dónde salen las variables
 
@@ -34,8 +34,8 @@ Cada entrada muestra su tipo a la derecha: `string`, `number`, `bool`, `array[3]
 
 **Ctrl+Space** (o Editar > Completar) abre la lista dondequiera que estés. Donde no se aplica ninguno de los casos anteriores, ofrece las construcciones de Div como fragmentos, escritas con las etiquetas de tu dialecto: reemplazo, bucle, condición (con y sin `@else@`), variable de plantilla, include, include preprocesado, fórmula, comentario, iteración, bloques ignore / txt / strip, location, macro, `@else@`, `@empty@`, `@break@`. Lo que escribiste antes del cursor los acota: `{?` deja las condiciones, `loop` el bucle.
 
-![etiquetas de Div como fragmentos](https://raw.githubusercontent.com/wiki/divengine/divide/images/completion-tags.png)
+![etiquetas de Div como fragmentos](images/completion-tags.png)
 
 Los fragmentos que abren algo siguen adelante: elegir el bucle escribe `[$` y lista las listas; elegir el include escribe `{% ` y lista las plantillas; elegir una carpeta lista lo que contiene.
 
-![rutas de include](https://raw.githubusercontent.com/wiki/divengine/divide/images/completion-includes.png)
+![rutas de include](images/completion-includes.png)

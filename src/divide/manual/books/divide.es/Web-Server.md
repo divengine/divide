@@ -2,7 +2,7 @@
 
 **Ejecutar > Servidor web…** inicia el servidor web integrado de PHP (`php -S`) para el proyecto. Abres las páginas en el navegador, y el [[depurador|Debugging PHP]] detiene sus peticiones en tus puntos de ruptura, como detiene un script.
 
-![Ejecutar > Servidor web: la dirección, la carpeta raíz y el enrutador](https://raw.githubusercontent.com/wiki/divengine/divide/images/web-server-dialog.png)
+![Ejecutar > Servidor web: la dirección, la carpeta raíz y el enrutador](images/web-server-dialog.png)
 
 ## Iniciarlo
 
@@ -32,7 +32,7 @@ Con Xdebug (consulta [[Depurar PHP|Debugging PHP]] para instalarlo), cada petici
 - **F8 o F7 sin ninguna petición pausada**, en un archivo que sirve el servidor: la siguiente petición se detiene en su primera línea. **F4** hace que se detenga en la línea del cursor. Ctrl+F2 lo cancela.
 - **Ctrl+F2** sobre una petición pausada la termina: el navegador recibe lo que la petición imprimió hasta entonces.
 
-![una petición de la tienda pausada en un punto de ruptura, con el registro del servidor debajo](https://raw.githubusercontent.com/wiki/divengine/divide/images/web-debug.png)
+![una petición de la tienda pausada en un punto de ruptura, con el registro del servidor debajo](images/web-debug.png)
 
 Sin Xdebug el servidor funciona igual, y sus páginas simplemente no se depuran.
 

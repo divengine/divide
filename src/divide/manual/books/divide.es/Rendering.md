@@ -2,7 +2,7 @@
 
 **Ctrl+F9** (Ejecutar > Ejecutar) en una plantilla la renderiza a través de PHP y del motor Div real, y muestra el resultado junto al código. (En un script PHP la misma tecla ejecuta el script: ver [[Ejecutar PHP|Running PHP]].)
 
-![plantilla y salida lado a lado](https://raw.githubusercontent.com/wiki/divengine/divide/images/hero.png)
+![plantilla y salida lado a lado](images/hero.png)
 
 ## El recuadro de progreso
 
@@ -10,9 +10,9 @@ Mientras Div trabaja, un recuadro como el *Compiling* de Turbo Pascal muestra la
 
 Debajo corre una barra al estilo de Norton Commander, dibujada con los bloques del propio juego de caracteres del PC: `█` y `▓` llenan una pista de `░`. Div no dice cuánto le falta, así que un bloque va y viene por la pista mientras trabaja; cuando termina, la barra se llena, sea cual sea el veredicto; solo una detención (**Esc**) deja la pista como estaba. El mismo recuadro, y la misma barra, aparecen al ejecutar PHP (ver [[Ejecutar PHP|Running PHP]]), al verificar (**Alt+F9**) y en la [[Traza del render|Render Trace]].
 
-![el recuadro de progreso mientras Div trabaja](https://raw.githubusercontent.com/wiki/divengine/divide/images/progress-running.png) Cuando termina, el recuadro da el veredicto, **Correcto**, **Avisos** o **Errores**, con la versión de Div, el tamaño de la salida y el número de mensajes. La salida ya está detrás; cualquier tecla cierra el recuadro. También se cierra solo: a los dos segundos si todo fue bien, a los cinco cuando hay avisos o errores, para que te dé tiempo a leerlos (también están en la ventana Mensajes).
+![el recuadro de progreso mientras Div trabaja](images/progress-running.png) Cuando termina, el recuadro da el veredicto, **Correcto**, **Avisos** o **Errores**, con la versión de Div, el tamaño de la salida y el número de mensajes. La salida ya está detrás; cualquier tecla cierra el recuadro. También se cierra solo: a los dos segundos si todo fue bien, a los cinco cuando hay avisos o errores, para que te dé tiempo a leerlos (también están en la ventana Mensajes).
 
-![el recuadro de progreso tras un render](https://raw.githubusercontent.com/wiki/divengine/divide/images/render-box.png)
+![el recuadro de progreso tras un render](images/render-box.png)
 
 ## Qué se renderiza
 

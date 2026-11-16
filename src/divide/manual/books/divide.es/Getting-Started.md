@@ -51,7 +51,7 @@ La ventana de proyecto se abre a la izquierda. Muévete con las flechas y pulsa 
 
 Dentro del bucle, escribe `{$`. Se abre una lista con lo que es visible ahí: `product`, `product.name`, `product.price`, los campos `name` y `price` directamente, y las variables de bucle de Div. Escribe para acotarla y pulsa **Enter** para insertar.
 
-![autocompletado dentro de un bucle](https://raw.githubusercontent.com/wiki/divengine/divide/images/completion-variables.png)
+![autocompletado dentro de un bucle](images/completion-variables.png)
 
 Más en [[Autocompletado|Completion]].
 

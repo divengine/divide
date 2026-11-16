@@ -2,7 +2,7 @@
 
 Un proyecto PHP es más que plantillas y PHP: un README, hojas de estilo, scripts para el navegador, la configuración de PHPUnit o del framework, un `php.ini`, un CSV con los datos que importar. divide los abre todos en el mismo editor, con sus colores, así que no tienes que salir de él para ver uno.
 
-![README.md, phpunit.xml.dist, php.ini y un CSV, en mosaico](https://raw.githubusercontent.com/wiki/divengine/divide/images/other-files.png)
+![README.md, phpunit.xml.dist, php.ini y un CSV, en mosaico](images/other-files.png)
 
 | Lenguaje | Archivos |
 |---|---|

@@ -2,7 +2,7 @@
 
 **Buscar > Esquema** (**Ctrl+O**) abre una ventana a la derecha del escritorio con las declaraciones del archivo PHP activo, para ver cómo está hecho el archivo y saltar a cualquier parte de él.
 
-![el esquema de la propia clase de Div, en parseMatches](https://raw.githubusercontent.com/wiki/divengine/divide/images/outline.png)
+![el esquema de la propia clase de Div, en parseMatches](images/outline.png)
 
 ## Qué lista
 
