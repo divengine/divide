@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 12:48+0000\n"
+"POT-Creation-Date: 2026-11-16 14:08+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -1049,6 +1049,14 @@ msgstr "Relativo a {name}/"
 
 msgid "Rename"
 msgstr "Renombrar"
+
+#, python-brace-format
+msgid ""
+"Rename and Delete work on files and folders: the bar is on a part of "
+"{name}"
+msgstr ""
+"Renombrar y Eliminar actúan sobre archivos y carpetas: la barra está "
+"sobre una parte de {name}"
 
 msgid "Render"
 msgstr "Renderizar"
@@ -2363,3 +2371,4 @@ msgstr "── servidor web {address} ──"
 
 #~ msgid "Enter go to the tag · below a block, what it holds"
 #~ msgstr "Enter ir a la etiqueta · bajo un bloque, lo que contiene"
+

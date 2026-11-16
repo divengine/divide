@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 12:48+0000\n"
+"POT-Creation-Date: 2026-11-16 14:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1013,6 +1013,12 @@ msgid "Relative to {name}/"
 msgstr ""
 
 msgid "Rename"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Rename and Delete work on files and folders: the bar is on a part of "
+"{name}"
 msgstr ""
 
 msgid "Render"
