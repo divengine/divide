@@ -72,13 +72,13 @@ Input lines remember what you accepted in them, as in Turbo Pascal: the `▐↓�
 | **Free Pascal** | Turbo Vision's layout in Windows Terminal's Campbell colours, as Free Pascal's IDE looks on Windows today |
 | **Modern dark** | deep grays, light text and a blue accent, high contrast |
 
-Moving through the themes with the arrows paints the whole desktop in each one (the dialog and its sample of a template too). **OK** keeps the theme, also for the next start; **Cancel** goes back to the one you had. `divide --palette modern-dark` starts with a theme without changing the one chosen.
+Moving through the themes with the arrows paints the whole desktop in each one (the dialog and its sample of a template too). **OK** keeps the theme, also for the next start; **Cancel** goes back to the one you had. `divide --palette modern-dark` starts with a theme without changing the one chosen. The pictures in this manual use the Free Pascal theme.
 
 ![Options > Colors, previewing Modern dark](images/colors-dialog.png)
 
 ![Modern dark](images/theme-modern-dark.png)
 
-![Free Pascal](images/theme-free-pascal.png)
+![Turbo Pascal](images/theme-turbo-pascal.png)
 
 ![Turbo C colours and the Window menu](images/palette-turbo-c.png)
 

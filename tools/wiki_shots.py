@@ -32,6 +32,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DEMO = ROOT / "examples" / "shop"
 SIZE = (120, 34)
+PALETTE = "free-pascal"  # the manual's pictures, unless a shot shows another theme
 OUT: Path = Path()
 SVG_DIR: Path = Path()
 
@@ -198,18 +199,23 @@ async def find():
 
 @shot
 async def turbo_c():
-    app = Divide(DEMO, [DEMO / "index.tpl", DEMO / "components" / "card.tpl"], palette="turbo-c")
-    async with app.run_test(size=SIZE) as pilot:
-        await settle(pilot)
-        app.toggle_project(); await settle(pilot)
-        app.desktop.tile(); await settle(pilot)
-        save(app, "window-tile")
-        await pilot.press("alt+w"); await settle(pilot)
-        save(app, "palette-turbo-c")
+    """Window > Tile in the manual's theme, then Turbo C's colours with the Window menu."""
+    for palette in (None, "turbo-c"):
+        app = Divide(DEMO, [DEMO / "index.tpl", DEMO / "components" / "card.tpl"], palette=palette)
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot)
+            app.toggle_project(); await settle(pilot)
+            app.desktop.tile(); await settle(pilot)
+            if palette is None:
+                save(app, "window-tile")
+                continue
+            await pilot.press("alt+w"); await settle(pilot)
+            save(app, "palette-turbo-c")
 
 @shot
 async def colors():
-    """Options > Colors previewing modern-dark, then the desktop in modern-dark and free-pascal."""
+    """Options > Colors previewing modern-dark, then the desktop in modern-dark and turbo-pascal
+    (free-pascal is in every other picture)."""
     app = Divide(DEMO, [DEMO / "index.tpl"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
@@ -217,7 +223,7 @@ async def colors():
         await pilot.press("m"); await settle(pilot, 10)  # the whole desktop previews it
         save(app, "colors-dialog")
         await pilot.press("escape"); await settle(pilot)
-    for name in ("modern-dark", "free-pascal"):
+    for name in ("modern-dark", "turbo-pascal"):
         app = Divide(DEMO, [DEMO / "index.tpl", DEMO / "components" / "card.tpl"], palette=name)
         async with app.run_test(size=SIZE) as pilot:
             await settle(pilot)
@@ -365,7 +371,8 @@ async def lsp():
     import json
     config_home = Path(tempfile.mkdtemp())
     (config_home / "divide").mkdir()
-    (config_home / "divide" / "config.json").write_text(json.dumps({"lsp": {"php": name}, "lsp_commands": {name: command}}))
+    (config_home / "divide" / "config.json").write_text(
+        json.dumps({"palette": PALETTE, "lsp": {"php": name}, "lsp_commands": {name: command}}))
     old = os.environ.get("XDG_CONFIG_HOME")
     os.environ["XDG_CONFIG_HOME"] = str(config_home)
     try:
@@ -458,7 +465,7 @@ async def debug():
         return
     config_home = Path(os.environ["XDG_CONFIG_HOME"])
     (config_home / "divide").mkdir(parents=True, exist_ok=True)
-    (config_home / "divide" / "config.json").write_text(json.dumps({"xdebug": xdebug or None}))
+    (config_home / "divide" / "config.json").write_text(json.dumps({"palette": PALETTE, "xdebug": xdebug or None}))
     app = Divide(DEMO, [DEMO / "index.php"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot, 10)
@@ -491,7 +498,7 @@ async def web():
         return
     config_home = Path(os.environ["XDG_CONFIG_HOME"])
     (config_home / "divide").mkdir(parents=True, exist_ok=True)
-    (config_home / "divide" / "config.json").write_text(json.dumps({"xdebug": xdebug or None}))
+    (config_home / "divide" / "config.json").write_text(json.dumps({"palette": PALETTE, "xdebug": xdebug or None}))
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
@@ -570,6 +577,8 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as work:  # removed afterwards: /tmp is often in RAM
         os.environ["XDG_CONFIG_HOME"] = str(Path(work) / "config")  # no personal settings in the pictures
+        (Path(work) / "config" / "divide").mkdir(parents=True)
+        (Path(work) / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}')
         SVG_DIR = Path(work)
         asyncio.run(run(set(args.shots)))
 
