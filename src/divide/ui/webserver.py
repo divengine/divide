@@ -25,7 +25,7 @@ from textual_vision.label import Label
 from divide import config
 from divide.run.dbgp import DebugError, xdebug_ini
 from divide.run.server import DEFAULT_ADDRESS, ServerError, WebServer, check_address
-from divide.ui.dialogs import MessageBox, _Dialog, browse_into, information
+from divide.ui.dialogs import MessageBox, _Dialog, browse_into, information, shown_path
 from divide.ui.runner import message_items
 from divide.editor.theme import OUTPUT
 from divide.ui.windows import OUTPUT_CSS, EditorView, MessageItem, _TVWindow
@@ -51,7 +51,7 @@ class WebServerDialog(_Dialog):
         self.address_input = InputLine(max_len=200)
         self.address_input.data = settings.get("address") or DEFAULT_ADDRESS
         self.root_input = InputLine(max_len=1024)
-        self.root_input.data = settings.get("root") or str(root)
+        self.root_input.data = settings.get("root") or shown_path(root)  # ~ for the home folder: it is expanded
         self.router_input = InputLine(max_len=1024)
         self.router_input.data = settings.get("router") or ""
         self.flags = CheckBoxes(["~O~pen in the browser"])

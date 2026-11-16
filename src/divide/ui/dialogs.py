@@ -193,6 +193,14 @@ class FileList(ListBox):
         return Strip([Segment(text, style)], width)
 
 
+def shown_path(path: Path) -> str:
+    """``path`` with the home folder as ``~``, as a shell shows it."""
+    try:
+        return "~/" + path.relative_to(Path.home()).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def file_info(path: Path, name: str, width: int) -> str:
     """Turbo Pascal's second line: ``NAME   size   May 4, 2019  10:16pm``."""
     try:
@@ -277,7 +285,7 @@ class FileDialog(_Dialog):
     def show_info(self, index: int | None = None) -> None:
         """The pane: the folder and its wildcard, then the entry under the bar."""
         width = max(10, (self.info.size.width or self.size.width or 64) - 2)
-        first = str(self.directory / self.pattern) if not self.folders else str(self.directory)
+        first = shown_path(self.directory / self.pattern if not self.folders else self.directory)
         if len(first) > width:
             first = "..." + first[-(width - 3):]
         second = ""

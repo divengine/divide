@@ -55,7 +55,7 @@ ASCII and CP437 glyphs and why it works with 16 colours as well as truecolour.
 | Own dialects | Dialector (build, validate with Div, import, export), template translation with Div's `translate()` |
 | PHP around the templates | `php -l` checks, run with arguments, Xdebug debugger (breakpoints, step, watches, call stack, evaluate), built-in web server with debugging per request |
 | Find your way | project window, Go to file, command palette, Find / Replace, Find in files, Go to included template |
-| Learn in place | help books (divide's manual, Div's documentation) inside the IDE, context help on F1 |
+| Learn in place | help books (divide's manual, Div's documentation) inside the IDE, context help on F1, full-text search of the books with ranking |
 | Comfortable for hours | colour themes (Turbo Pascal, Turbo C, Free Pascal, modern dark), drop shadows, input line histories |
 
 ## 5. Constraints

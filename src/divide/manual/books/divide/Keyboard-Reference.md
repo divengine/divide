@@ -22,7 +22,7 @@
 | **Alt+F8** / **Alt+F7** | next / previous error |
 | **Ctrl+T** | data tree ⇄ code |
 | **F1** | help on the active window |
-| **Shift+F1** / **Ctrl+F1** / **Alt+F1** | help index / topic search (in PHP with a language server: what the symbol is) / previous topic |
+| **Shift+F1** / **Ctrl+F1** / **Alt+F1** | help index / topic search: the topic of the word under the cursor, else Help > Search with it (in PHP with a language server: what the symbol is) / previous topic |
 | **Alt+X** / **Ctrl+Q** | exit |
 
 ## Editor
@@ -165,4 +165,13 @@ See [[Render Trace]].
 | **Tab** / **Shift+Tab** | next / previous cross reference |
 | **Enter** / click | follow it (a web page opens in the browser) |
 | **Alt+F1** / **Backspace** | previous topic |
+| **Esc** | close |
+
+## Help > Search
+
+| Key | Action |
+|---|---|
+| words | the sections that have them, best first |
+| **↑ ↓** / **PgUp PgDn** | move the bar (the keys stay in the line) |
+| **Enter** / double click | open the help at that section |
 | **Esc** | close |

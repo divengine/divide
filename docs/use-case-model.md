@@ -154,6 +154,9 @@ This document describes behaviour and responsibilities.
 
 1. F1 opens the topic for the active window. Contents, Index and Topic search browse the books (divide, Div).
 2. Links between topics are followed with Enter, Alt+F1 goes back, and web links open in the browser.
+3. **Help > Search** finds sections of every book by words, ranked. As the developer types, the matching sections are listed best first, each with the sentence where the words are. Enter opens the help at that section.
+- *Alt:* Ctrl+F1 on a word that names no topic opens Help > Search with that word.
+- *Alt:* the shipped index does not match the books (copied by hand), so it is rebuilt in memory on the first search.
 
 ### UC15 Configure divide
 

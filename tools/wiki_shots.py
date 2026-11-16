@@ -319,6 +319,10 @@ async def help():
         save(app, "help-div")
         app.help_window().open("_Books"); await settle(pilot, 10)
         save(app, "help-books")
+        await pilot.press("alt+h", "s"); await settle(pilot)
+        await pilot.press(*"include templ"); await settle(pilot)
+        await pilot.press("down"); await settle(pilot)
+        save(app, "help-search")
 
 
 @shot

@@ -37,6 +37,7 @@ skipped.
 | `test_render.py` | render, includes, data files through Div |
 | `test_dialector.py` | the dialect assistant and translation, by Div |
 | `test_help.py` | books, topics, links, the help window |
+| `test_helpsearch.py` | help full-text search: sections, ranking, stems and prefixes, stale index rebuilt, the shipped index current, the dialog and Ctrl+F1 |
 | `test_php.py` | PHP highlighting, `php -l`, outline |
 | `test_lsp.py` (+ `fake_lsp_server.py`) | LSP client and UI |
 | `test_run.py`, `test_progress.py` | running scripts, the progress box |

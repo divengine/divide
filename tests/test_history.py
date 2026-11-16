@@ -1,6 +1,7 @@
 """File > Open laid out as Turbo Pascal's, and THistory: input lines remember."""
 
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -32,6 +33,14 @@ def test_history_store():
     history.add("find", "needle")
     assert history.entries("find") == ["needle"]  # each line its own history
     assert set(config.load()["history"]) == {"file", "find"}
+
+
+def test_shown_path(monkeypatch, tmp_path):
+    from divide.ui.dialogs import shown_path
+
+    monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
+    assert shown_path(tmp_path / "work" / "*") == "~/work/*"
+    assert shown_path(Path("/elsewhere/x")) == "/elsewhere/x"
 
 
 def test_file_info(tmp_path):

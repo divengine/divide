@@ -132,6 +132,18 @@ items (lines of `Span`, with `Link` cross references) by `_Writer`. Books are
 copied from their sources by `tools/sync_book.py`, so documentation is
 written once, in its own repository.
 
+**Full-text search (`divide.manual.fulltext`).** `sections(name)` splits a
+page into its opening and its `#`-`###` sections, as plain words. `build()`
+writes them to `search.sqlite` in two FTS5 tables with the same rowids:
+`help` (Porter stemming) and `help_raw` (words as written). A `meta` table
+holds the pages' `fingerprint()`. `connection()` uses the shipped file when
+the fingerprint matches, else an in-memory index built on the spot.
+`search(text)` matches finished words in `help` and the last word as a prefix
+in either table, sums the BM25 ranks (title 8, heading 4, text 1), falls back
+to any word when no section has all of them, and returns `Hit` items (target
+`book:Page#anchor`, title, heading, a snippet with the words marked).
+`ui.helpsearch.HelpSearchDialog` shows them live as the developer types.
+
 ## 8. Themes (`divide.themes`)
 
 `Palette` holds the ANSI slots, the UI roles (`UI_ROLES`) and the syntax

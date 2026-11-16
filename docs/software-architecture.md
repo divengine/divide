@@ -83,7 +83,7 @@ flowchart TB
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. |
 | `divide.run` | Everything that runs PHP: render and resolve through the bridge, scripts, the web server, the DBGp debugger and the render trace. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
-| `divide.manual` | The help books: Markdown pages to help topics. |
+| `divide.manual` | The help books: Markdown pages to help topics; `fulltext`: their search index (SQLite FTS5). |
 | `divide.themes` | Every colour divide draws, as palettes with roles. |
 | `divide.config` | The settings file. |
 
@@ -202,6 +202,7 @@ divide has no database. Its persistent data:
 | Settings: palette, colours, icons, Div engine, Xdebug, LSP choices and commands, run arguments, web server, input histories | `$XDG_CONFIG_HOME/divide/config.json` | `divide.config` and the feature that uses each key |
 | Language server caches | `$XDG_CACHE_HOME/...` | `divide.lsp.client` |
 | Help books | `src/divide/manual/books/<id>/` (packaged) | `tools/sync_book.py` |
+| Help search index | `src/divide/manual/search.sqlite` (packaged; rebuilt in memory when stale) | `tools/sync_book.py` → `divide.manual.fulltext.build` |
 | Projects' files | the project folder | the developer; divide only reads and writes what is edited |
 
 ## 9. Size and performance
@@ -221,3 +222,6 @@ processes, bounded searches, and an incremental lexer cache. See the
 | Mixins on the app | A plug-in registry | Each feature needs the app's windows, dialogs and commands. Mixins keep each feature in one module with no extra indirection. |
 | Own fuzzy matcher | Textual's `FuzzySearch` | Textual's matcher enumerates every placement of the letters, which explodes on long paths and large projects. A linear matcher keeps memory and time bounded. |
 | git's file list for project search | Walking the tree | It respects `.gitignore` and is fast. The tree walk with the project window's hidden folders is the fallback. |
+| SQLite FTS5 for the help search | A hand-written inverted index and ranking; an external search engine | FTS5 ships with Python's `sqlite3`: BM25 ranking, Porter stemming, prefix queries and snippets, with no dependency. |
+| The help index built at sync time and shipped | Built at every start; built on the first search only | The books change only when synced, so the index is built once with them. A fingerprint of the pages detects a stale index, which is then rebuilt in memory (0.1 s), so results are never out of date. |
+| Two FTS5 tables (stemmed and as written) | One stemmed table | A prefix of a stem is not a prefix of the word (*Iterations* is stored as `iter`, so `itera*` would miss it). Finished words match stems; the word being typed matches either table. |

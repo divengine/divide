@@ -337,10 +337,12 @@ def recolour(theme: Theme, table: Mapping[str, str], name: str) -> Theme:
     return dataclasses.replace(theme, name=name, variables={k: swap(v) for k, v in theme.variables.items()}, **fields)
 
 
-# Turbo Pascal's chrome in Campbell's colours, but for the labels' hotkeys: Campbell's light yellow
-# vanishes on its light gray, so they are red, as the menus' are on the same gray.
+# Turbo Pascal's chrome in Campbell's colours, but for the labels: Campbell's light yellow and white
+# vanish on its light gray, so their hotkeys are red (as the menus' are on the same gray) and the
+# label of the control with the focus is blue.
 _fp = recolour(THEME_TURBO_PASCAL, CAMPBELL, "free-pascal")
-FREE_PASCAL_CHROME = dataclasses.replace(_fp, variables={**_fp.variables, "label-hotkey": CAMPBELL["red"]})
+FREE_PASCAL_CHROME = dataclasses.replace(
+    _fp, variables={**_fp.variables, "label-hotkey": CAMPBELL["red"], "label-highlight": CAMPBELL["blue"]})
 
 THEMES: dict[str, Palette] = {
     p.name: p

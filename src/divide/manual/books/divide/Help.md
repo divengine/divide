@@ -12,12 +12,24 @@ divide carries its documentation with it, as books: this manual, and Div's own d
 | | Help > Contents | the table of contents of the book on show (divide's when the help is closed) |
 | | Help > Books | the list of books |
 | **Shift+F1** | Help > Index | every topic and every section of the book on show, alphabetically |
-| **Ctrl+F1** | Help > Topic search | the topic of the word under the editor's cursor, in any book (for example *dialect*, *render*, *loops*); the index when no topic matches. In a PHP file with a [[language server|Language Servers]], what the server knows about the symbol instead |
+| **Ctrl+F1** | Help > Topic search | the topic of the word under the editor's cursor, in any book (for example *dialect*, *render*, *loops*). When no topic has that name, **Search** opens with the word. In a PHP file with a [[language server|Language Servers]], what the server knows about the symbol instead |
+| | Help > Search | the books by words: see below |
 | **Alt+F1** | Help > Previous topic | back to the topic you came from |
 
 F1 in the help window itself shows this page.
 
 ![the index: every topic and section, alphabetically](images/help-index.png)
+
+## Searching the help
+
+**Help > Search** finds the words you type in every book, like a web search engine. As you type, it lists the sections that contain the words, best first. Each row is one section of a page, such as `Breakpoints · Debugging PHP`, with the words you typed highlighted, and rows from Div's documentation are marked *Div*. The pane below shows the book and the sentence where the words appear.
+
+![Help > Search](images/help-search.png)
+
+- **The order.** Sections that contain all the words come first. A word in a page title counts most, then a word in a heading, then a word in the text. When no section has every word, sections with any of them are listed.
+- **Word forms.** Finished words also match their other forms: *configure* finds *configuration* and *configured*, *template* finds *templates*.
+- **While you type.** The last word matches as the start of a word, so *itera* already finds *Iterations*.
+- **↑ ↓** (and **PgUp PgDn**) move the bar while you keep typing. **Enter** or a double click opens the help at that section. **Esc** closes.
 
 ## Moving in the help window
 
@@ -63,4 +75,7 @@ Then copy the pages in with `tools/sync_book.py <id> <checkout of the source>`, 
 ```bash
 tools/sync_book.py divide path/to/divide.wiki
 tools/sync_book.py div path/to/div
+tools/sync_book.py --index          # only rebuild the search index
 ```
+
+After copying, the script rebuilds the index **Help > Search** uses (`src/divide/manual/search.sqlite`), from every book. If the pages ever differ from the index, for example when a book is copied by hand, divide rebuilds the index in memory the first time you search.

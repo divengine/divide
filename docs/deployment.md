@@ -69,12 +69,14 @@ Environment variables:
 
 ## 5. Packaged resources
 
-`pyproject.toml` ships `run/*.php` (the bridge), `manual/books.json` and the
-books' pages (`manual/books/*/*`) inside the package. The books are refreshed
-from their sources with:
+`pyproject.toml` ships `run/*.php` (the bridge), `manual/books.json`, the
+books' pages (`manual/books/*/*`) and the help's search index
+(`manual/search.sqlite`) inside the package. The books are refreshed from
+their sources, and the index rebuilt, with:
 
 ```sh
 .venv/bin/python tools/sync_book.py divide <path to divide.wiki clone>
+.venv/bin/python tools/sync_book.py --index     # only the search index
 ```
 
 ## 6. Release (Transition, planned)
