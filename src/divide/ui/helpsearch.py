@@ -9,6 +9,8 @@ click) opens the help at that section, Esc closes.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import re
 
 from rich.style import Style
@@ -26,8 +28,8 @@ from divide.ui.dialogs import _Dialog
 from divide.ui.palette import Item, PaletteList
 from divide.ui.windows import PassiveScrollBar
 
-TITLE = "Search the help"
-HINT = "Type words · Enter open · Esc close"
+TITLE = _('Search the help')
+HINT = _('Type words · Enter open · Esc close')
 
 
 def lit(label: str, words: list[str]) -> tuple[int, ...]:
@@ -103,7 +105,7 @@ class HelpSearchDialog(_Dialog):
             return
         self._shown_at = index
         if not self.hits:
-            self.info.update(HINT if not self.input.data.strip() else "Nothing found: fewer or other words")
+            self.info.update(HINT if not self.input.data.strip() else _('Nothing found: fewer or other words'))
             return
         hit = self.hits[index] if 0 <= index < len(self.hits) else self.hits[0]
         lit_style = themes.current().style("list-match-focused", bold=True)

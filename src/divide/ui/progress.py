@@ -19,6 +19,8 @@ came out behind the box, which stays up with its verdict.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import asyncio
 import time
 from collections.abc import Awaitable, Callable
@@ -38,7 +40,7 @@ T = TypeVar("T")
 
 AUTO_CLOSE = 2.0  # seconds a success stays up
 AUTO_CLOSE_PROBLEMS = 5.0  # errors or warnings: a little longer, to be read
-TIME = "Time"
+TIME = _("Time")
 BLOCK = "▓██▓"  # what goes back and forth while the job cannot say how far it is
 
 
@@ -81,7 +83,7 @@ class ProgressDialog(_Dialog):
         self.width = width
         self.stoppable = stoppable
         self.running = True
-        self.verdict = "Press Esc to stop" if stoppable else "Working..."
+        self.verdict = _('Press Esc to stop') if stoppable else "Working..."
         self.ok: bool | None = None
         self.stopped = False  # by Esc: the bar stays where it was
         self.fraction: float | None = None  # how far the job is, when it can say
@@ -161,7 +163,7 @@ class ProgressDialog(_Dialog):
         for label, value in rows or []:
             self.rows[label] = value
         self._fit()
-        self.verdict = f"{verdict}: press any key"
+        self.verdict = _('{verdict}: press any key').format(verdict=verdict)
         self._show()
 
 
@@ -225,7 +227,7 @@ async def run_with_progress(
         screen.close()
         raise
     if result is None:
-        dialog.finish("Stopped", False, stopped=True)
+        dialog.finish(_('Stopped'), False, stopped=True)
     else:
         word, ok, rows = verdict(result)
         dialog.finish(word, ok, rows)

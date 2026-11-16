@@ -7,6 +7,8 @@ expression, direction and origin.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import re
 from dataclasses import dataclass
 
@@ -27,7 +29,7 @@ class SearchError(ValueError):
 
 def compile_pattern(query: str, opts: SearchOptions) -> re.Pattern[str]:
     if not query:
-        raise SearchError("Empty search text")
+        raise SearchError(_('Empty search text'))
     body = query if opts.regex else re.escape(query)
     if opts.whole_words:
         body = rf"(?<!\w)(?:{body})(?!\w)"
@@ -35,7 +37,7 @@ def compile_pattern(query: str, opts: SearchOptions) -> re.Pattern[str]:
     try:
         return re.compile(body, flags)
     except re.error as exc:
-        raise SearchError(f"Bad regular expression: {exc}") from exc
+        raise SearchError(_('Bad regular expression: {exc}').format(exc=exc)) from exc
 
 
 def find(text: str, pattern: re.Pattern[str], pos: int, *, backward: bool = False) -> re.Match[str] | None:
@@ -66,7 +68,7 @@ def expand(match: re.Match[str], replacement: str, opts: SearchOptions) -> str:
     try:
         return match.expand(replacement)
     except (re.error, IndexError) as exc:
-        raise SearchError(f"Bad replacement: {exc}") from exc
+        raise SearchError(_('Bad replacement: {exc}').format(exc=exc)) from exc
 
 
 def replace_all(text: str, pattern: re.Pattern[str], replacement: str, opts: SearchOptions, start: int = 0) -> tuple[str, int]:

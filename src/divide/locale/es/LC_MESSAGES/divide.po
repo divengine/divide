@@ -1,0 +1,2163 @@
+# Spanish translations for divide.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the divide project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: divide VERSION\n"
+"Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
+"POT-Creation-Date: 2026-11-16 02:37+0000\n"
+"PO-Revision-Date: 2026-11-16 02:29+0000\n"
+"Last-Translator: divide\n"
+"Language: es\n"
+"Language-Team: Spanish\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#, python-brace-format
+msgid "  ... and {changes} more"
+msgstr "  ... y {changes} más"
+
+msgid " (no Xdebug: not debugged)"
+msgstr " (sin Xdebug: sin depurar)"
+
+#, python-brace-format
+msgid " ({count} names that are not Div tags are left out)"
+msgstr " (se omiten {count} nombres que no son etiquetas de Div)"
+
+msgid " on the same line"
+msgstr " en la misma línea"
+
+#, python-brace-format
+msgid "\"{query}\" in {mask}: {count} in {files}"
+msgstr "\"{query}\" en {mask}: {count} en {files}"
+
+msgid "(Ins adds a watch; variables show while the debugger is paused)"
+msgstr "(Ins añade una vigilancia; las variables se ven con el depurador en pausa)"
+
+msgid "(between cycles)"
+msgstr "(entre ciclos)"
+
+msgid "(no Div tags)"
+msgstr "(sin etiquetas de Div)"
+
+msgid "(no PHP grammar: pip install tree-sitter-php)"
+msgstr "(sin gramática de PHP: pip install tree-sitter-php)"
+
+msgid "(no declarations)"
+msgstr "(sin declaraciones)"
+
+msgid "(no messages)"
+msgstr "(sin mensajes)"
+
+msgid "(not running)"
+msgstr "(no se ejecuta)"
+
+msgid "(not set)"
+msgstr "(sin definir)"
+
+msgid "(nothing found)"
+msgstr "(no se encontró nada)"
+
+msgid "(the outline is for PHP files and Div templates)"
+msgstr "(el esquema es para archivos PHP y plantillas Div)"
+
+msgid "16 colours (Windows console)"
+msgstr "16 colores (consola de Windows)"
+
+msgid "About"
+msgstr "Acerca de"
+
+msgid "Add item"
+msgstr "Añadir elemento"
+
+msgid "Add watch"
+msgstr "Añadir vigilancia"
+
+msgid "Aggregate functions"
+msgstr "Funciones de agregación"
+
+msgid "As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them."
+msgstr "Como en un shell: las comillas conservan los espacios. Ctrl+F9 y el depurador los pasan."
+
+msgid "Asking Div..."
+msgstr "Preguntando a Div..."
+
+msgid "Assignment"
+msgstr "Asignación"
+
+msgid "Average"
+msgstr "Media"
+
+#, python-brace-format
+msgid "Bad regular expression: {exc}"
+msgstr "Expresión regular incorrecta: {exc}"
+
+#, python-brace-format
+msgid "Bad replacement: {exc}"
+msgstr "Reemplazo incorrecto: {exc}"
+
+msgid "Begin"
+msgstr "Inicio"
+
+msgid "Begin prefix"
+msgstr "Prefijo de inicio"
+
+msgid "Begin suffix"
+msgstr "Sufijo de inicio"
+
+msgid "Blocks"
+msgstr "Bloques"
+
+msgid "Break"
+msgstr "Interrupción"
+
+msgid "Breakpoints go on the lines of a saved PHP script"
+msgstr "Los puntos de ruptura van en las líneas de un script PHP guardado"
+
+msgid "Call stack"
+msgstr "Pila de llamadas"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+#, python-brace-format
+msgid "Cannot create {name}: {exc}"
+msgstr "No se puede crear {name}: {exc}"
+
+#, python-brace-format
+msgid "Cannot create {rel}: {exc}"
+msgstr "No se puede crear {rel}: {exc}"
+
+#, python-brace-format
+msgid "Cannot create {value}: {exc}"
+msgstr "No se puede crear {value}: {exc}"
+
+#, python-brace-format
+msgid "Cannot delete {rel}: {exc}"
+msgstr "No se puede eliminar {rel}: {exc}"
+
+#, python-brace-format
+msgid "Cannot open {name}: {exc}"
+msgstr "No se puede abrir {name}: {exc}"
+
+#, python-brace-format
+msgid "Cannot read the template {template}"
+msgstr "No se puede leer la plantilla {template}"
+
+#, python-brace-format
+msgid "Cannot read the {label} dialect {raw}"
+msgstr "No se puede leer el dialecto {label} {raw}"
+
+#, python-brace-format
+msgid "Cannot read {name}."
+msgstr "No se puede leer {name}."
+
+#, python-brace-format
+msgid "Cannot read {name}: {exc}"
+msgstr "No se puede leer {name}: {exc}"
+
+#, python-brace-format
+msgid "Cannot rename: {exc}"
+msgstr "No se puede renombrar: {exc}"
+
+#, python-brace-format
+msgid "Cannot write {name}: {exc}"
+msgstr "No se puede escribir {name}: {exc}"
+
+msgid "Capitalize first"
+msgstr "Primera en mayúscula"
+
+msgid "Capitalize words"
+msgstr "Palabras en mayúscula"
+
+msgid "Capsule begin prefix"
+msgstr "Prefijo de inicio de cápsula"
+
+msgid "Capsule begin suffix"
+msgstr "Sufijo de inicio de cápsula"
+
+msgid "Capsule end prefix"
+msgstr "Prefijo de fin de cápsula"
+
+msgid "Capsule end suffix"
+msgstr "Sufijo de fin de cápsula"
+
+msgid "Capsules and sub-parsers"
+msgstr "Cápsulas y sub-parsers"
+
+msgid "Carriage return"
+msgstr "Retorno de carro"
+
+msgid "Change ~a~ll"
+msgstr "Cambiar t~o~do"
+
+msgid "Changed: Preview again (Enter)"
+msgstr "Cambiado: previsualiza de nuevo (Enter)"
+
+msgid "Checking"
+msgstr "Verificando"
+
+msgid "Close a~l~l"
+msgstr "Cerrar ~t~odas"
+
+msgid "Colour ~d~epth (from the next start)"
+msgstr "Profun~d~idad de color (desde el próximo inicio)"
+
+msgid "Commands"
+msgstr "Comandos"
+
+msgid "Comment begin"
+msgstr "Inicio de comentario"
+
+msgid "Comment end"
+msgstr "Fin de comentario"
+
+msgid "Condition end"
+msgstr "Fin de condición"
+
+msgid "Condition prefix"
+msgstr "Prefijo de condición"
+
+msgid "Condition suffix"
+msgstr "Sufijo de condición"
+
+msgid "Conditions"
+msgstr "Condiciones"
+
+msgid "Confirm"
+msgstr "Confirmar"
+
+msgid "Content begin prefix"
+msgstr "Prefijo de inicio de contenido"
+
+msgid "Content begin suffix"
+msgstr "Sufijo de inicio de contenido"
+
+msgid "Content end prefix"
+msgstr "Prefijo de fin de contenido"
+
+msgid "Content end suffix"
+msgstr "Sufijo de fin de contenido"
+
+#, python-brace-format
+msgid "Could not ask Div: {exc}"
+msgstr "No se pudo preguntar a Div: {exc}"
+
+msgid "Count"
+msgstr "Cuenta"
+
+msgid "Count paragraphs"
+msgstr "Contar párrafos"
+
+msgid "Count sentences"
+msgstr "Contar oraciones"
+
+msgid "Count words"
+msgstr "Contar palabras"
+
+msgid "Co~m~plete"
+msgstr "Co~m~pletar"
+
+msgid "Cu~t~"
+msgstr "Cor~t~ar"
+
+msgid "C~a~scade"
+msgstr "~C~ascada"
+
+#, python-brace-format
+msgid "DBGp error {code}"
+msgstr "Error DBGp {code}"
+
+msgid "Data"
+msgstr "Datos"
+
+msgid "Data file"
+msgstr "Archivo de datos"
+
+#, python-brace-format
+msgid "Data for {name}"
+msgstr "Datos de {name}"
+
+msgid "Date prefix"
+msgstr "Prefijo de fecha"
+
+msgid "Date separator"
+msgstr "Separador de fecha"
+
+msgid "Date suffix"
+msgstr "Sufijo de fecha"
+
+#, python-brace-format
+msgid "Dates {/div.now:Y-m-d/}, numbers {#price:2.#} and formulas (# 1 + 2 #)"
+msgstr "Fechas {/div.now:Y-m-d/}, números {#price:2.#} y fórmulas (# 1 + 2 #)"
+
+msgid "Debug"
+msgstr "Depurar"
+
+msgid "Deep grays, light text and a blue accent, high contrast."
+msgstr "Grises profundos, texto claro y un acento azul, alto contraste."
+
+msgid "Default repl. begin"
+msgstr "Inicio de reempl. por defecto"
+
+msgid "Default repl. end"
+msgstr "Fin de reempl. por defecto"
+
+msgid "Del"
+msgstr "Supr"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+#, python-brace-format
+msgid "Delete the folder {rel}"
+msgstr "Eliminar la carpeta {rel}"
+
+#, python-brace-format
+msgid "Delete {path!s} and its {count} item(s)?"
+msgstr "¿Eliminar {path!s} y sus {count} elemento(s)?"
+
+msgid "De~l~ete..."
+msgstr "~E~liminar..."
+
+msgid "Dialect ~f~ile"
+msgstr "Archivo de ~d~ialecto"
+
+msgid "Dialector"
+msgstr "Dialector"
+
+msgid "Direction"
+msgstr "Dirección"
+
+msgid "Div"
+msgstr "Div"
+
+msgid "Div cannot decode it"
+msgstr "Div no puede decodificarlo"
+
+msgid "Div cannot decode it as a JSON object"
+msgstr "Div no puede decodificarlo como objeto JSON"
+
+#, python-brace-format
+msgid "Div cannot decode the target dialect {target}: {problem}"
+msgstr "Div no puede decodificar el dialecto de destino {target}: {problem}"
+
+#, python-brace-format
+msgid "Div cannot find the dialect file {ref}"
+msgstr "Div no encuentra el archivo de dialecto {ref}"
+
+#, python-brace-format
+msgid "Div cannot find the template {path}"
+msgstr "Div no encuentra la plantilla {path}"
+
+#, python-brace-format
+msgid "Div cannot find {path}. Create {rel}?"
+msgstr "Div no encuentra {path}. ¿Crear {rel}?"
+
+msgid "Div did not translate the template"
+msgstr "Div no tradujo la plantilla"
+
+msgid "Div engine (autoload.php or div.php)"
+msgstr "Motor Div (autoload.php o div.php)"
+
+#, python-brace-format
+msgid "Div engine: {chosen}"
+msgstr "Motor Div: {chosen}"
+
+msgid "Div gave no answer"
+msgstr "Div no respondió"
+
+#, python-brace-format
+msgid "Div reads line {line} otherwise: {strip}"
+msgstr "Div lee la línea {line} de otro modo: {strip}"
+
+#, python-brace-format
+msgid "Div syntax error at {frag!r}"
+msgstr "Error de sintaxis de Div en {frag!r}"
+
+#, python-brace-format
+msgid "Div translated {lines} lines · shown in the target dialect"
+msgstr "Div tradujo {lines} líneas · se muestran en el dialecto de destino"
+
+msgid "Div was not found (see Options > Div engine): only Div knows where an include leads."
+msgstr "No se encontró Div (ver Opciones > Motor Div): solo Div sabe adónde lleva un include."
+
+msgid ""
+"Div was not found.\n"
+"\n"
+"Install it in the project (composer require divengine/div) or set its path in Options > Div engine."
+msgstr ""
+"No se encontró Div.\n"
+"\n"
+"Instálalo en el proyecto (composer require divengine/div) o indica su ruta en Opciones > Motor Div."
+
+msgid "Div was not found: Div judges the dialect (Options > Div engine)."
+msgstr "No se encontró Div: es Div quien juzga el dialecto (Opciones > Motor Div)."
+
+msgid "Div was not found: Div translates the template (Options > Div engine)."
+msgstr "No se encontró Div: es Div quien traduce la plantilla (Opciones > Motor Div)."
+
+msgid "Div: valid √"
+msgstr "Div: válido √"
+
+#, python-brace-format
+msgid ""
+"Div: valid √\n"
+"It reads all {total} sections of the example back exactly."
+msgstr ""
+"Div: válido √\n"
+"Lee de vuelta exactamente las {total} secciones del ejemplo."
+
+msgid "Div: valid √ · reads this section back exactly"
+msgstr "Div: válido √ · lee de vuelta exactamente esta sección"
+
+#, python-brace-format
+msgid ""
+"Div: valid √ · reads {diffs}/{total} sections back\n"
+"!= {section}{more}, line {line}:\n"
+"wrote {strip}\n"
+"read  {strip2}"
+msgstr ""
+"Div: válido √ · lee de vuelta {diffs}/{total} secciones\n"
+"!= {section}{more}, línea {line}:\n"
+"escrito {strip}\n"
+"leído   {strip2}"
+
+msgid "Document root"
+msgstr "Carpeta raíz"
+
+msgid "Dollar symbol"
+msgstr "Símbolo de dólar"
+
+msgid "D~a~ta tree"
+msgstr "Árbol de dat~o~s"
+
+msgid "Edit item"
+msgstr "Editar elemento"
+
+msgid "Else"
+msgstr "Si no"
+
+msgid "Empty"
+msgstr "Vacío"
+
+msgid "Empty search text"
+msgstr "Texto de búsqueda vacío"
+
+msgid "Empty: only an Xdebug that php.ini loads"
+msgstr "Vacío: solo un Xdebug que cargue php.ini"
+
+msgid "End"
+msgstr "Fin"
+
+msgid "End prefix"
+msgstr "Prefijo de fin"
+
+msgid "End suffix"
+msgstr "Sufijo de fin"
+
+msgid "Engine"
+msgstr "Motor"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
+msgstr "Enter editar sección · Supr por defecto · Alt+F10 menú: transformar, PHP, ejemplo"
+
+msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
+msgstr "Enter editar · Ins añadir · Supr borrar · ^↑↓ mover · ^T código"
+
+msgid "Enter go to the declaration · + public  # protected  - private"
+msgstr "Enter ir a la declaración · + public  # protected  - private"
+
+msgid "Enter go to the match"
+msgstr "Enter ir a la coincidencia"
+
+msgid "Enter go to the tag · below a block, what it holds"
+msgstr "Enter ir a la etiqueta · bajo un bloque, lo que contiene"
+
+msgid "Enter new line ~n~umber"
+msgstr "~N~úmero de línea"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Errors"
+msgstr "Errores"
+
+msgid "Escape quotes"
+msgstr "Escapar comillas"
+
+msgid "Escapes for characters that are hard to write, and the teaser break"
+msgstr "Escapes para caracteres difíciles de escribir, y el corte de resumen"
+
+msgid "Evaluate"
+msgstr "Evaluar"
+
+msgid "Example template"
+msgstr "Plantilla de ejemplo"
+
+msgid "Exit code"
+msgstr "Código de salida"
+
+#, python-brace-format
+msgid "Exit code {exit_code}"
+msgstr "Código de salida {exit_code}"
+
+msgid "Export as ~P~HP code"
+msgstr "Exportar como código ~P~HP"
+
+msgid "E~x~it"
+msgstr "~S~alir"
+
+msgid "F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 reset"
+msgstr "F7 entrar · F8 paso · F4 al cursor · Ctrl+F9 ejecutar · Ctrl+F2 reiniciar"
+
+msgid "F8 step · F7 into · Shift+F8 out · Space before/after"
+msgstr "F8 paso · F7 entrar · Shift+F8 salir · Espacio antes/después"
+
+msgid "False begin prefix"
+msgstr "Prefijo de inicio falso"
+
+msgid "False begin suffix"
+msgstr "Sufijo de inicio falso"
+
+msgid "False end prefix"
+msgstr "Prefijo de fin falso"
+
+msgid "False end suffix"
+msgstr "Sufijo de fin falso"
+
+msgid "File"
+msgstr "Archivo"
+
+msgid "Find"
+msgstr "Buscar"
+
+msgid "Find in files"
+msgstr "Buscar en archivos"
+
+msgid "Finding in files"
+msgstr "Buscando en archivos"
+
+msgid "Fin~d~ in files..."
+msgstr "Buscar en arc~h~ivos..."
+
+#, python-brace-format
+msgid ""
+"Fix the JSON in the code editor first:\n"
+"{error}"
+msgstr ""
+"Corrige primero el JSON en el editor de código:\n"
+"{error}"
+
+#, python-brace-format
+msgid ""
+"Fix the dialect file first:\n"
+"{error}"
+msgstr ""
+"Corrige primero el archivo de dialecto:\n"
+"{error}"
+
+#, python-brace-format
+msgid "Fixed point: nothing changes after {n} cycle"
+msgid_plural "Fixed point: nothing changes after {n} cycles"
+msgstr[0] "Punto fijo: nada cambia tras {n} ciclo"
+msgstr[1] "Punto fijo: nada cambia tras {n} ciclos"
+
+msgid "Format (sprintf)"
+msgstr "Formato (sprintf)"
+
+msgid "Formats and formulas"
+msgstr "Formatos y fórmulas"
+
+msgid "Formula begin"
+msgstr "Inicio de fórmula"
+
+msgid "Formula end"
+msgstr "Fin de fórmula"
+
+msgid "Formula format"
+msgstr "Formato de fórmula"
+
+msgid "Forwar~d~"
+msgstr "Hacia a~d~elante"
+
+msgid "Friendly tag begin"
+msgstr "Inicio de etiqueta amigable"
+
+msgid "Friendly tag end"
+msgstr "Fin de etiqueta amigable"
+
+msgid "Function separator"
+msgstr "Separador de función"
+
+msgid "Go to File"
+msgstr "Ir a archivo"
+
+msgid "Go to Line Number"
+msgstr "Ir a la línea"
+
+msgid "Go to fi~l~e..."
+msgstr "Ir a ~a~rchivo..."
+
+msgid "Go to include"
+msgstr "Ir al include"
+
+msgid "Go to ~i~ncluded template"
+msgstr "Ir a la plantilla ~i~ncluida"
+
+msgid "HTML entities"
+msgstr "Entidades HTML"
+
+msgid "HTML to text begin"
+msgstr "Inicio de HTML a texto"
+
+msgid "HTML to text end"
+msgstr "Fin de HTML a texto"
+
+msgid "HTML to text width"
+msgstr "Ancho de HTML a texto"
+
+msgid "Horizontal tab"
+msgstr "Tabulación horizontal"
+
+msgid "Ignore begin"
+msgstr "Inicio de ignorar"
+
+msgid "Ignore end"
+msgstr "Fin de ignorar"
+
+msgid "Ignored code, comments, strip, HTML to text, friendly tags and macros"
+msgstr "Código ignorado, comentarios, strip, HTML a texto, etiquetas amigables y macros"
+
+msgid "Import tags"
+msgstr "Importar etiquetas"
+
+msgid "Include begin"
+msgstr "Inicio de include"
+
+msgid "Include end"
+msgstr "Fin de include"
+
+msgid "Includes and locations"
+msgstr "Includes y locations"
+
+msgid "Information"
+msgstr "Información"
+
+msgid "Ins"
+msgstr "Ins"
+
+msgid "Ins new file · F7 folder · F2 rename · Del delete · Alt+F10 menu"
+msgstr "Ins nuevo archivo · F7 carpeta · F2 renombrar · Supr eliminar · Alt+F10 menú"
+
+msgid "Interface language"
+msgstr "Idioma de la interfaz"
+
+msgid "Invalid name."
+msgstr "Nombre no válido."
+
+msgid "It applies from the next start. The help books stay in English."
+msgstr "Se aplica desde el próximo inicio. Los libros de ayuda siguen en inglés."
+
+msgid "Item variable separator"
+msgstr "Separador de variable del elemento"
+
+msgid "Iteration arguments"
+msgstr "Argumentos de iteración"
+
+msgid "Iteration end"
+msgstr "Fin de iteración"
+
+msgid "Iteration prefix"
+msgstr "Prefijo de iteración"
+
+msgid "Iteration suffix"
+msgstr "Sufijo de iteración"
+
+msgid "JSON encode"
+msgstr "Codificar JSON"
+
+#, python-brace-format
+msgid "JSON in template variable: {message}"
+msgstr "JSON en variable de plantilla: {message}"
+
+msgid "JSON ok"
+msgstr "JSON correcto"
+
+msgid "JavaScript code"
+msgstr "Código JavaScript"
+
+msgid "Language"
+msgstr "Lenguaje"
+
+#, python-brace-format
+msgid "Language server: {name}"
+msgstr "Servidor de lenguaje: {name}"
+
+msgid "Language servers"
+msgstr "Servidores de lenguaje"
+
+msgid "Lan~g~uage..."
+msgstr "~I~dioma..."
+
+msgid "Lines"
+msgstr "Líneas"
+
+msgid "Location begin"
+msgstr "Inicio de location"
+
+msgid "Location end"
+msgstr "Fin de location"
+
+msgid "Loops and iterations"
+msgstr "Bucles e iteraciones"
+
+msgid "Lower case"
+msgstr "Minúsculas"
+
+msgid "Macro begin"
+msgstr "Inicio de macro"
+
+msgid "Macro end"
+msgstr "Fin de macro"
+
+msgid "Maximum"
+msgstr "Máximo"
+
+msgid "Member delimiter"
+msgstr "Delimitador de miembro"
+
+msgid "Messages"
+msgstr "Mensajes"
+
+msgid "Minimum"
+msgstr "Mínimo"
+
+msgid "Modifiers"
+msgstr "Modificadores"
+
+msgid "Multi-repl. begin prefix"
+msgstr "Prefijo de inicio de multi-reempl."
+
+msgid "Multi-repl. begin suffix"
+msgstr "Sufijo de inicio de multi-reempl."
+
+msgid "Multi-repl. end prefix"
+msgstr "Prefijo de fin de multi-reempl."
+
+msgid "Multi-repl. end suffix"
+msgstr "Sufijo de fin de multi-reempl."
+
+msgid "Multiple modifiers"
+msgstr "Varios modificadores"
+
+msgid "Mutations"
+msgstr "Mutaciones"
+
+msgid "Nested folders are fine (a/b/c)"
+msgstr "Se admiten carpetas anidadas (a/b/c)"
+
+msgid "New dialect"
+msgstr "Dialecto nuevo"
+
+msgid "New file"
+msgstr "Archivo nuevo"
+
+msgid "New folder"
+msgstr "Carpeta nueva"
+
+msgid "New fol~d~er..."
+msgstr "Nueva ~c~arpeta..."
+
+msgid "New line"
+msgstr "Nueva línea"
+
+msgid "New line to <br>"
+msgstr "Nueva línea a <br>"
+
+msgid "New ~f~ile..."
+msgstr "~N~uevo archivo..."
+
+msgid "New ~n~ame"
+msgstr "~N~uevo nombre"
+
+msgid "Next page"
+msgstr "Página siguiente"
+
+msgid "No Xdebug: it serves, but requests cannot be debugged"
+msgstr "Sin Xdebug: sirve las páginas, pero las peticiones no se pueden depurar"
+
+msgid "No command matches"
+msgstr "Ningún comando coincide"
+
+msgid "No file matches"
+msgstr "Ningún archivo coincide"
+
+msgid "No program is being debugged"
+msgstr "No se está depurando ningún programa"
+
+#, python-brace-format
+msgid "No such file: {router}"
+msgstr "No existe el archivo: {router}"
+
+#, python-brace-format
+msgid "No such folder: {parent}"
+msgstr "No existe la carpeta: {parent}"
+
+#, python-brace-format
+msgid "No such folder: {root}"
+msgstr "No existe la carpeta: {root}"
+
+msgid "Not a line number"
+msgstr "No es un número de línea"
+
+msgid "Nothing found: fewer or other words"
+msgstr "No se encontró nada: prueba con menos palabras o con otras"
+
+msgid "Number prefix"
+msgstr "Prefijo de número"
+
+msgid "Number separator"
+msgstr "Separador de número"
+
+msgid "Number suffix"
+msgstr "Sufijo de número"
+
+msgid "N~u~ll"
+msgstr "N~u~lo"
+
+#, python-brace-format
+msgid "One-character transformations: {^name}, {_name}, {%name}, {html:name}..."
+msgstr "Transformaciones de un carácter: {^name}, {_name}, {%name}, {html:name}..."
+
+msgid "Open a Div template (.tpl) to render it."
+msgstr "Abre una plantilla Div (.tpl) para renderizarla."
+
+msgid "Open a Div template first"
+msgstr "Abre primero una plantilla Div"
+
+msgid "Open a Div template first."
+msgstr "Abre primero una plantilla Div."
+
+msgid "Open a PHP script (.php) first."
+msgstr "Abre primero un script PHP (.php)."
+
+msgid "Open a PHP script (.php) to run it."
+msgstr "Abre un script PHP (.php) para ejecutarlo."
+
+msgid "Open a file"
+msgstr "Abrir un archivo"
+
+msgid "Operator"
+msgstr "Operador"
+
+msgid "Options"
+msgstr "Opciones"
+
+msgid "Op~e~n"
+msgstr "~A~brir"
+
+msgid "Origin"
+msgstr "Origen"
+
+msgid "Outline"
+msgstr "Esquema"
+
+msgid "Output"
+msgstr "Salida"
+
+msgid "Output: what Div returns"
+msgstr "Salida: lo que devuelve Div"
+
+msgid "O~K~"
+msgstr "O~K~"
+
+msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
+msgstr "PHP terminó antes de que Xdebug conectara: ¿está cargado Xdebug?\n"
+
+msgid "PHP · no errors"
+msgstr "PHP · sin errores"
+
+msgid "PHP · php not found in PATH: not checked"
+msgstr "PHP · php no está en el PATH: sin verificar"
+
+msgid "Parameters"
+msgstr "Argumentos"
+
+msgid "Paths relative to the project · an empty dialect is Div's default"
+msgstr "Rutas relativas al proyecto · un dialecto vacío es el de Div por defecto"
+
+#, python-brace-format
+msgid "Paused at {place}{request} · {debug_hint}"
+msgstr "En pausa en {place}{request} · {debug_hint}"
+
+msgid "Plain ~s~ymbols"
+msgstr "~S~ímbolos simples"
+
+msgid "Pre-processed begin"
+msgstr "Inicio de preprocesado"
+
+msgid "Pre-processed data"
+msgstr "Datos preprocesados"
+
+msgid "Pre-processed end"
+msgstr "Fin de preprocesado"
+
+msgid "Prefix"
+msgstr "Prefijo"
+
+msgid "Press Esc to stop"
+msgstr "Pulsa Esc para detener"
+
+msgid "Preview shows the template as Div translates it."
+msgstr "La vista previa muestra la plantilla tal como Div la traduce."
+
+msgid "Pre~v~ious"
+msgstr "~A~nterior"
+
+msgid "Program parameters"
+msgstr "Argumentos del programa"
+
+msgid "Progra~m~ reset"
+msgstr "~R~einiciar programa"
+
+msgid "Property separator"
+msgstr "Separador de propiedad"
+
+msgid "Protector"
+msgstr "Protector"
+
+msgid "Put every tag back to Div's default?"
+msgstr "¿Devolver todas las etiquetas a las de Div por defecto?"
+
+msgid "Put the cursor on a line of a PHP script"
+msgstr "Pon el cursor en una línea de un script PHP"
+
+msgid "Put the cursor on a symbol or on a string with a file name (no language server: Options > Language servers)"
+msgstr "Pon el cursor en un símbolo o en una cadena con un nombre de archivo (sin servidor de lenguaje: Opciones > Servidores de lenguaje)"
+
+#, python-brace-format, python-format
+msgid "Put the cursor on a {% %} or {%% %%} include"
+msgstr "Pon el cursor en un include {% %} o {%% %%}"
+
+msgid "Raw URL encode"
+msgstr "Codificar URL (raw)"
+
+msgid "Refre~s~h"
+msgstr "Ac~t~ualizar"
+
+msgid "Relative to the project; an existing file is opened"
+msgstr "Relativo al proyecto; si el archivo existe, se abre"
+
+#, python-brace-format
+msgid "Relative to {name}/"
+msgstr "Relativo a {name}/"
+
+msgid "Rename"
+msgstr "Renombrar"
+
+msgid "Render"
+msgstr "Renderizar"
+
+msgid "Render failed: "
+msgstr "Falló el render: "
+
+msgid "Render trace"
+msgstr "Traza del render"
+
+#, python-brace-format
+msgid "Render trace: {name}"
+msgstr "Traza del render: {name}"
+
+msgid "Rendered "
+msgstr "Renderizado "
+
+msgid "Rendering"
+msgstr "Renderizando"
+
+msgid "Replace"
+msgstr "Reemplazar"
+
+msgid "Replace this occurrence?"
+msgstr "¿Reemplazar esta coincidencia?"
+
+msgid "Replacements"
+msgstr "Reemplazos"
+
+msgid "Restore ~a~ll defaults"
+msgstr "Restaurar t~o~do"
+
+msgid "Router script"
+msgstr "Script enrutador"
+
+msgid "Router ~s~cript (optional: every request goes to it)"
+msgstr "Script ~e~nrutador (opcional: recibe todas las peticiones)"
+
+msgid "Ro~u~ter..."
+msgstr "Enru~t~ador..."
+
+msgid "Run in terminal"
+msgstr "Ejecutar en terminal"
+
+msgid "Run in termi~n~al"
+msgstr "Ejecutar en ter~m~inal"
+
+msgid "Running"
+msgstr "Ejecutando"
+
+msgid "Save a~l~l"
+msgstr "Guardar ~t~odo"
+
+msgid "Save e~x~ample template..."
+msgstr "Guardar plantilla de e~j~emplo..."
+
+#, python-brace-format
+msgid "Save failed: {exc}"
+msgstr "No se pudo guardar: {exc}"
+
+msgid "Save file as"
+msgstr "Guardar archivo como"
+
+msgid "Save the script first (F2): PHP runs files."
+msgstr "Guarda primero el script (F2): PHP ejecuta archivos."
+
+msgid "Save the template first (F2). divide hands Div templates that live in a file: Div finds the includes and the data file from the template's folder."
+msgstr "Guarda primero la plantilla (F2). divide le pasa a Div plantillas que están en un archivo: Div busca los includes y el archivo de datos desde la carpeta de la plantilla."
+
+msgid "Save translation"
+msgstr "Guardar traducción"
+
+msgid "Save translation as"
+msgstr "Guardar traducción como"
+
+msgid "Save ~a~s..."
+msgstr "Guardar ~c~omo..."
+
+msgid "Script"
+msgstr "Script"
+
+msgid "Search string not found."
+msgstr "No se encontró el texto buscado."
+
+msgid "Search the help"
+msgstr "Buscar en la ayuda"
+
+msgid "Select ~a~ll"
+msgstr "~S~eleccionar todo"
+
+msgid "Separator"
+msgstr "Separador"
+
+#, python-brace-format
+msgid "Server for {upper} files"
+msgstr "Servidor para archivos {upper}"
+
+#, python-brace-format
+msgid "Serving {url} · not debugged (no Xdebug)"
+msgstr "Sirviendo {url} · sin depurar (sin Xdebug)"
+
+#, python-brace-format
+msgid "Serving {url} · requests stop at breakpoints · F8 stops the next one"
+msgstr "Sirviendo {url} · las peticiones se detienen en los puntos de ruptura · F8 detiene la siguiente"
+
+#, python-brace-format
+msgid "Serving {url} · the next request stops"
+msgstr "Sirviendo {url} · la siguiente petición se detiene"
+
+msgid "Simple replacement"
+msgstr "Reemplazo simple"
+
+msgid "Space"
+msgstr "Espacio"
+
+msgid "Special characters"
+msgstr "Caracteres especiales"
+
+msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
+msgstr "Inicia primero el script en el depurador (F7, F8 o F4) y detente en una línea."
+
+#, python-brace-format
+msgid "Starting php -S {address}..."
+msgstr "Iniciando php -S {address}..."
+
+#, python-brace-format
+msgid "Starting {name} in the debugger..."
+msgstr "Iniciando {name} en el depurador..."
+
+msgid "Step o~u~t"
+msgstr "~S~alir de la función"
+
+msgid "Stepping"
+msgstr "Paso a paso"
+
+msgid "Stopped"
+msgstr "Detenido"
+
+msgid "String length"
+msgstr "Longitud de la cadena"
+
+msgid "Strip begin"
+msgstr "Inicio de strip"
+
+msgid "Strip end"
+msgstr "Fin de strip"
+
+msgid "Sub-parser begin prefix"
+msgstr "Prefijo de inicio de sub-parser"
+
+msgid "Sub-parser begin suffix"
+msgstr "Sufijo de inicio de sub-parser"
+
+msgid "Sub-parser end prefix"
+msgstr "Prefijo de fin de sub-parser"
+
+msgid "Sub-parser end suffix"
+msgstr "Sufijo de fin de sub-parser"
+
+msgid "Subfolders are created too (parts/menu.tpl)"
+msgstr "También se crean las subcarpetas (parts/menu.tpl)"
+
+msgid "Substring range"
+msgstr "Rango de subcadena"
+
+msgid "Substring separator"
+msgstr "Separador de subcadena"
+
+msgid "Success"
+msgstr "Correcto"
+
+msgid "Suffix"
+msgstr "Sufijo"
+
+msgid "Suggested: Div's default dialect (the template has no @_DIALECT)"
+msgstr "Sugerido: el dialecto de Div por defecto (la plantilla no tiene @_DIALECT)"
+
+#, python-brace-format
+msgid "Suggested: the template's @_DIALECT = {ref}"
+msgstr "Sugerido: el @_DIALECT de la plantilla = {ref}"
+
+#, python-brace-format
+msgid "Suggested: the template's @_DIALECT = {ref} (Div not found to resolve it)"
+msgstr "Sugerido: el @_DIALECT de la plantilla = {ref} (no se encontró Div para resolverlo)"
+
+msgid "Sum"
+msgstr "Suma"
+
+msgid "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
+msgstr "Tab siguiente enlace · Enter ir · Alt+F1 atrás · Shift+F1 índice · Esc cerrar"
+
+#, python-brace-format
+msgid "Take {count} tags from {name}{note}? Tags it does not mention go back to Div's defaults."
+msgstr "¿Tomar {count} etiquetas de {name}{note}? Las etiquetas que no menciona vuelven a las de Div por defecto."
+
+msgid "Teaser break"
+msgstr "Corte de resumen"
+
+msgid "Template"
+msgstr "Plantilla"
+
+msgid "Template variables"
+msgstr "Variables de plantilla"
+
+msgid "Terminal IDE for the Divengine projects."
+msgstr "IDE de terminal para los proyectos Divengine."
+
+msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
+msgstr "La dirección es host:puerto, como 127.0.0.1:8000 o localhost:8080."
+
+msgid ""
+"The debugger needs Xdebug, the PHP extension.\n"
+"\n"
+"Install it (Debian/Ubuntu: sudo apt install php-xdebug; elsewhere: pecl install xdebug) or give the path of xdebug.so in Options > Xdebug."
+msgstr ""
+"El depurador necesita Xdebug, la extensión de PHP.\n"
+"\n"
+"Instálala (Debian/Ubuntu: sudo apt install php-xdebug; en otros sistemas: pecl install xdebug) o indica la ruta de xdebug.so en Opciones > Xdebug."
+
+#, python-brace-format
+msgid "The dialect file is not valid JSON: {exc}"
+msgstr "El archivo de dialecto no es JSON válido: {exc}"
+
+#, python-brace-format
+msgid "The dialector rewrites {display_name} as standard JSON with only the tags that differ from Div's: comments and other tags are dropped. Continue?"
+msgstr "El dialector reescribe {display_name} como JSON estándar con solo las etiquetas que difieren de las de Div: se pierden los comentarios y las demás etiquetas. ¿Continuar?"
+
+msgid "The key is empty"
+msgstr "La clave está vacía"
+
+#, python-brace-format
+msgid "The next request to {url} stops {where}"
+msgstr "La siguiente petición a {url} se detiene {where}"
+
+msgid "The next request will not stop"
+msgstr "La siguiente petición no se detendrá"
+
+msgid "The script is running: Ctrl+F2 stops it"
+msgstr "El script se está ejecutando: Ctrl+F2 lo detiene"
+
+#, python-brace-format
+msgid "This terminal cannot be handed over: {exc}"
+msgstr "No se puede ceder este terminal: {exc}"
+
+#, python-brace-format
+msgid "This terminal gets {shown} now."
+msgstr "Este terminal recibe ahora {shown}."
+
+msgid "Time"
+msgstr "Tiempo"
+
+msgid "Toggle ~b~reakpoint"
+msgstr "Punto de ~r~uptura"
+
+msgid "Trace"
+msgstr "Traza"
+
+msgid "Tracing"
+msgstr "Trazando"
+
+msgid "Transform all tags"
+msgstr "Transformar todas las etiquetas"
+
+msgid "Translate a template"
+msgstr "Traducir una plantilla"
+
+msgid "Trans~l~ate a template..."
+msgstr "Tra~d~ucir una plantilla..."
+
+msgid "True begin prefix"
+msgstr "Prefijo de inicio verdadero"
+
+msgid "True begin suffix"
+msgstr "Sufijo de inicio verdadero"
+
+msgid "True end prefix"
+msgstr "Prefijo de fin verdadero"
+
+msgid "True end suffix"
+msgstr "Sufijo de fin verdadero"
+
+msgid "Truncate"
+msgstr "Truncar"
+
+msgid "Turbo C 2.01's: as Turbo Pascal, white-on-black menu hotkeys."
+msgstr "Los de Turbo C 2.01: como Turbo Pascal, con las teclas de los menús en blanco sobre negro."
+
+msgid "Turbo Vision's colours: gray menus, blue windows, yellow text."
+msgstr "Los colores de Turbo Vision: menús grises, ventanas azules, texto amarillo."
+
+msgid "Turbo Vision's layout in Windows Terminal's Campbell colours."
+msgstr "El diseño de Turbo Vision con los colores Campbell de Windows Terminal."
+
+msgid "Turbo ~C~"
+msgstr "Turbo ~C~"
+
+msgid "Turbo ~P~ascal"
+msgstr "Turbo ~P~ascal"
+
+msgid "Type a command · delete the > for the files · Enter run · Esc close"
+msgstr "Escribe un comando · borra el > para los archivos · Enter ejecutar · Esc cerrar"
+
+msgid "Type a file name · > for the commands · Enter open · Esc close"
+msgstr "Escribe un nombre de archivo · > para los comandos · Enter abrir · Esc cerrar"
+
+msgid "Type a name."
+msgstr "Escribe un nombre."
+
+msgid "Type what to find in the tags, and what to write instead."
+msgstr "Escribe qué buscar en las etiquetas y qué poner en su lugar."
+
+msgid "Type words · Enter open · Esc close"
+msgstr "Escribe palabras · Enter abrir · Esc cerrar"
+
+msgid "T~o~ dialect"
+msgstr "Dialecto de ~d~estino"
+
+msgid "T~y~pe"
+msgstr "~T~ipo"
+
+msgid "URL encode"
+msgstr "Codificar URL"
+
+msgid "Upper case"
+msgstr "Mayúsculas"
+
+msgid "Use a name inside the project folder."
+msgstr "Usa un nombre dentro de la carpeta del proyecto."
+
+#, python-brace-format
+msgid "Variables defined in the template: {= products: [...] =}, and default replacements"
+msgstr "Variables definidas en la plantilla: {= products: [...] =}, y reemplazos por defecto"
+
+msgid "Vertical tab"
+msgstr "Tabulación vertical"
+
+msgid "Warning"
+msgstr "Aviso"
+
+msgid "Warnings"
+msgstr "Avisos"
+
+msgid "Web server"
+msgstr "Servidor web"
+
+#, python-brace-format
+msgid "Web server {address} stopped"
+msgstr "Servidor web {address} detenido"
+
+#, python-brace-format
+msgid "Web server: {url} ({state})"
+msgstr "Servidor web: {url} ({state})"
+
+msgid "Which template? Type its path."
+msgstr "¿Qué plantilla? Escribe su ruta."
+
+msgid "Word wrap"
+msgstr "Ajuste de líneas"
+
+msgid "Xdebug"
+msgstr "Xdebug"
+
+msgid "Xdebug closed the connection"
+msgstr "Xdebug cerró la conexión"
+
+#, python-brace-format
+msgid "Xdebug connection failed: {exc}"
+msgstr "Falló la conexión con Xdebug: {exc}"
+
+#, python-brace-format
+msgid "Xdebug did not connect in {timeout:.0f}s"
+msgstr "Xdebug no conectó en {timeout:.0f} s"
+
+msgid "Xdebug found: requests stop at the breakpoints"
+msgstr "Xdebug encontrado: las peticiones se detienen en los puntos de ruptura"
+
+msgid "Xdebug sent no init packet"
+msgstr "Xdebug no envió el paquete de inicio"
+
+msgid "Your choice (the template's own @_DIALECT is ignored)"
+msgstr "Tu elección (se ignora el @_DIALECT de la propia plantilla)"
+
+msgid "a reference looks like name or person.name"
+msgstr "una referencia tiene la forma name o person.name"
+
+msgid "an object member needs a key"
+msgstr "un miembro de objeto necesita una clave"
+
+#, python-brace-format
+msgid "at line {target} of {name}"
+msgstr "en la línea {target} de {name}"
+
+#, python-brace-format
+msgid "bad escape \\{nxt}"
+msgstr "escape incorrecto \\{nxt}"
+
+msgid "break the loop"
+msgstr "interrumpir el bucle"
+
+msgid "can only insert into an object or an array"
+msgstr "solo se puede insertar en un objeto o en un array"
+
+#, python-brace-format
+msgid "cannot start {command}: {exc}"
+msgstr "no se puede iniciar {command}: {exc}"
+
+msgid "close loop"
+msgstr "cerrar el bucle"
+
+msgid "colour depth (default: what the terminal says it supports)"
+msgstr "profundidad de color (por defecto: la que el terminal dice admitir)"
+
+msgid "colour theme (default: the one chosen in Options > Colors, else turbo-pascal)"
+msgstr "tema de color (por defecto: el elegido en Opciones > Colores; si no, turbo-pascal)"
+
+msgid "condition with else"
+msgstr "condición con else"
+
+#, python-brace-format
+msgid "condition {shown} is never closed with {close}"
+msgstr "la condición {shown} nunca se cierra con {close}"
+
+#, python-brace-format
+msgid "could not ask Div: {exc}"
+msgstr "no se pudo preguntar a Div: {exc}"
+
+#, python-brace-format
+msgid "data is not valid JSON ({exc}); Div will render without data"
+msgstr "los datos no son JSON válido ({exc}); Div renderizará sin datos"
+
+msgid "data must be a JSON object; Div will render without data"
+msgstr "los datos deben ser un objeto JSON; Div renderizará sin datos"
+
+msgid "default replacement"
+msgstr "reemplazo por defecto"
+
+msgid "default: (empty)"
+msgstr "por defecto: (vacío)"
+
+msgid "divide will speak the language chosen the next time it starts."
+msgstr "divide usará el idioma elegido la próxima vez que se inicie."
+
+#, python-brace-format
+msgid ""
+"divide {version}\n"
+"\n"
+"Terminal IDE for the Divengine projects.\n"
+"https://github.com/divengine"
+msgstr ""
+"divide {version}\n"
+"\n"
+"IDE de terminal para los proyectos Divengine.\n"
+"https://github.com/divengine"
+
+msgid "empty document"
+msgstr "documento vacío"
+
+#, python-brace-format
+msgid "exit code {exit_code}"
+msgstr "código de salida {exit_code}"
+
+#, python-brace-format
+msgid "expected ':' after the key {key!r}"
+msgstr "se esperaba ':' tras la clave {key!r}"
+
+msgid "friendly tag"
+msgstr "etiqueta amigable"
+
+msgid "if var is false"
+msgstr "si la variable es falsa"
+
+msgid "if var is true"
+msgstr "si la variable es verdadera"
+
+msgid "ignore block"
+msgstr "bloque ignorado"
+
+msgid "it did not start"
+msgstr "no se inició"
+
+#, python-brace-format
+msgid "item of {name}"
+msgstr "elemento de {name}"
+
+#, python-brace-format
+msgid "key {key!r} already exists"
+msgstr "la clave {key!r} ya existe"
+
+#, python-brace-format
+msgid "key {new_key!r} already exists"
+msgstr "la clave {new_key!r} ya existe"
+
+msgid "language of the interface for this run (default: Options > Language, else the system's)"
+msgstr "idioma de la interfaz para esta ejecución (por defecto: Opciones > Idioma; si no, el del sistema)"
+
+msgid "loop is empty"
+msgstr "el bucle está vacío"
+
+#, python-brace-format
+msgid "loop {opened} is never closed with {loop_e}{key}{loop_es}"
+msgstr "el bucle {opened} nunca se cierra con {loop_e}{key}{loop_es}"
+
+msgid "no data"
+msgstr "sin datos"
+
+msgid "no language server (Options > Language servers)"
+msgstr "sin servidor de lenguaje (Opciones > Servidores de lenguaje)"
+
+#, python-brace-format
+msgid "no language server: install {names}, or set one in Options > Language servers"
+msgstr "sin servidor de lenguaje: instala {names} o indica uno en Opciones > Servidores de lenguaje"
+
+msgid "none"
+msgstr "ninguno"
+
+msgid "not connected"
+msgstr "sin conexión"
+
+msgid "number format"
+msgstr "formato de número"
+
+msgid "on its first line"
+msgstr "en su primera línea"
+
+#, python-brace-format
+msgid "php -S did not start in {timeout:.0f}s"
+msgstr "php -S no se inició en {timeout:.0f} s"
+
+#, python-brace-format
+msgid "php -S ended with exit code {returncode}"
+msgstr "php -S terminó con código de salida {returncode}"
+
+#, python-brace-format
+msgid "php bridge failed (exit {returncode}): {detail}"
+msgstr "falló el puente de php (salida {returncode}): {detail}"
+
+msgid "php not found in PATH"
+msgstr "php no está en el PATH"
+
+#, python-brace-format
+msgid "php took longer than {timeout:.0f}s and was stopped"
+msgstr "php tardó más de {timeout:.0f} s y se detuvo"
+
+msgid "php was not found in the PATH."
+msgstr "php no está en el PATH."
+
+msgid "php.ini loads Xdebug already: leave it empty"
+msgstr "php.ini ya carga Xdebug: déjalo vacío"
+
+msgid "plain text"
+msgstr "texto plano"
+
+msgid "preprocessed include"
+msgstr "include preprocesado"
+
+msgid "program reset"
+msgstr "programa reiniciado"
+
+msgid "project folder and/or files to open"
+msgstr "carpeta del proyecto y/o archivos que abrir"
+
+msgid "strip block"
+msgstr "bloque strip"
+
+msgid "template var"
+msgstr "variable de plantilla"
+
+msgid "template variable"
+msgstr "variable de plantilla"
+
+msgid "text block"
+msgstr "bloque de texto"
+
+#, python-brace-format
+msgid "the data uses {names}: Div decodes a data file before any variable exists, so these come out empty (they work in {{= var: {{...}} =}} inside templates)"
+msgstr "los datos usan {names}: Div decodifica un archivo de datos antes de que exista ninguna variable, así que salen vacías (funcionan en {{= var: {{...}} =}} dentro de las plantillas)"
+
+msgid "the root has no parent"
+msgstr "la raíz no tiene padre"
+
+msgid "too long: cut"
+msgstr "demasiado largo: recortado"
+
+msgid "true colour"
+msgstr "color real"
+
+msgid "txt block"
+msgstr "bloque txt"
+
+msgid "unexpected end, expected ']'"
+msgstr "final inesperado, se esperaba ']'"
+
+msgid "unexpected end, expected '}'"
+msgstr "final inesperado, se esperaba '}'"
+
+msgid "unexpected end, expected a key"
+msgstr "final inesperado, se esperaba una clave"
+
+msgid "unexpected end, expected a value"
+msgstr "final inesperado, se esperaba un valor"
+
+#, python-brace-format
+msgid "unexpected {c!r}, expected a key"
+msgstr "{c!r} inesperado, se esperaba una clave"
+
+#, python-brace-format
+msgid "unexpected {c!r}, expected a value"
+msgstr "{c!r} inesperado, se esperaba un valor"
+
+#, python-brace-format
+msgid "unexpected {pos!r} after the value"
+msgstr "{pos!r} inesperado tras el valor"
+
+#, python-brace-format
+msgid "unknown type {type}"
+msgstr "tipo desconocido {type}"
+
+msgid "unterminated string"
+msgstr "cadena sin terminar"
+
+#, python-brace-format
+msgid ""
+"{about}\n"
+"{changed} of {count} tags changed · Enter to edit"
+msgstr ""
+"{about}\n"
+"{changed} de {count} etiquetas cambiadas · Enter para editar"
+
+#, python-brace-format
+msgid "{changes} in {n} parse"
+msgid_plural "{changes} in {n} parses"
+msgstr[0] "{changes} en {n} análisis"
+msgstr[1] "{changes} en {n} análisis"
+
+#, python-brace-format
+msgid "{close} closes a condition that was never opened"
+msgstr "{close} cierra una condición que nunca se abrió"
+
+#, python-brace-format
+msgid "{count} occurrences replaced"
+msgstr "{count} coincidencias reemplazadas"
+
+#, python-brace-format
+msgid "{count} to look at"
+msgstr "{count} que revisar"
+
+#, python-brace-format
+msgid "{display_name}: no {editor} errors"
+msgstr "{display_name}: sin errores de {editor}"
+
+#, python-brace-format
+msgid "{errors} error(s), {warnings} warning(s)"
+msgstr "{errors} error(es), {warnings} aviso(s)"
+
+#, python-brace-format
+msgid "{expression}: (not running)"
+msgstr "{expression}: (no se ejecuta)"
+
+#, python-brace-format
+msgid "{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})"
+msgstr "{frag} cierra un bucle que nunca se abrió ({loop_b}{key}{loop_bs})"
+
+#, python-brace-format
+msgid "{ignore_b} is never closed with {ignore_e}"
+msgstr "{ignore_b} nunca se cierra con {ignore_e}"
+
+#, python-brace-format
+msgid "{name} did not answer"
+msgstr "{name} no respondió"
+
+#, python-brace-format
+msgid "{name} does not know where this is defined"
+msgstr "{name} no sabe dónde está definido"
+
+#, python-brace-format
+msgid "{name} exists. Replace it?"
+msgstr "{name} ya existe. ¿Reemplazarlo?"
+
+#, python-brace-format
+msgid "{name} has been modified. Save?"
+msgstr "{name} ha cambiado. ¿Guardar?"
+
+#, python-brace-format
+msgid "{name} has no Div tags."
+msgstr "{name} no tiene etiquetas de Div."
+
+#, python-brace-format
+msgid "{name} is ready"
+msgstr "{name} está listo"
+
+#, python-brace-format
+msgid "{name} knows nothing about {this}"
+msgstr "{name} no sabe nada de {this}"
+
+#, python-brace-format
+msgid "{name} renders with {name2}"
+msgstr "{name} se renderiza con {name2}"
+
+#, python-brace-format
+msgid "{name} {strip} has no closing {strip2}{where}"
+msgstr "{name} {strip} no tiene cierre {strip2}{where}"
+
+#, python-brace-format
+msgid "{name}: no such file next to {display_name} or in the project"
+msgstr "{name}: no existe ese archivo junto a {display_name} ni en el proyecto"
+
+#, python-brace-format
+msgid "{name}: no {editor} errors"
+msgstr "{name}: sin errores de {editor}"
+
+#, python-brace-format
+msgid "{n} error"
+msgid_plural "{n} errors"
+msgstr[0] "{n} error"
+msgstr[1] "{n} errores"
+
+#, python-brace-format
+msgid "{n} file"
+msgid_plural "{n} files"
+msgstr[0] "{n} archivo"
+msgstr[1] "{n} archivos"
+
+#, python-brace-format
+msgid "{n} item"
+msgid_plural "{n} items"
+msgstr[0] "{n} elemento"
+msgstr[1] "{n} elementos"
+
+#, python-brace-format
+msgid "{n} match"
+msgid_plural "{n} matches"
+msgstr[0] "{n} coincidencia"
+msgstr[1] "{n} coincidencias"
+
+#, python-brace-format
+msgid "{n} tag change:"
+msgid_plural "{n} tags change:"
+msgstr[0] "{n} etiqueta cambia:"
+msgstr[1] "{n} etiquetas cambian:"
+
+#, python-brace-format
+msgid "{n} warning"
+msgid_plural "{n} warnings"
+msgstr[0] "{n} aviso"
+msgstr[1] "{n} avisos"
+
+#, python-brace-format
+msgid "{n} window with unsaved changes kept open"
+msgid_plural "{n} windows with unsaved changes kept open"
+msgstr[0] "{n} ventana con cambios sin guardar sigue abierta"
+msgstr[1] "{n} ventanas con cambios sin guardar siguen abiertas"
+
+#, python-brace-format
+msgid "{root} is not a folder"
+msgstr "{root} no es una carpeta"
+
+#, python-brace-format
+msgid "{router} is not a file"
+msgstr "{router} no es un archivo"
+
+#, python-brace-format
+msgid "{size} bytes, {n} line"
+msgid_plural "{size} bytes, {n} lines"
+msgstr[0] "{size} bytes, {n} línea"
+msgstr[1] "{size} bytes, {n} líneas"
+
+#, python-brace-format
+msgid "{target} already exists."
+msgstr "{target} ya existe."
+
+#, python-brace-format
+msgid "{text!r} is not a number"
+msgstr "{text!r} no es un número"
+
+#, python-brace-format
+msgid "{value} is not a file."
+msgstr "{value} no es un archivo."
+
+#, python-brace-format
+msgid "{verdict}: press any key"
+msgstr "{verdict}: pulsa una tecla"
+
+msgid "~1~6 colours (ANSI)"
+msgstr "~1~6 colores (ANSI)"
+
+msgid "~2~56 colours"
+msgstr "~2~56 colores"
+
+msgid "~Alt+F3~ Close"
+msgstr "~Alt+F3~ Cerrar"
+
+msgid "~Alt+X~ Exit"
+msgstr "~Alt+X~ Salir"
+
+msgid "~A~bout..."
+msgstr "Acerca ~d~e..."
+
+msgid "~A~dd watch..."
+msgstr "~A~ñadir vigilancia..."
+
+msgid "~A~ddress (host:port)"
+msgstr "~D~irección (host:puerto)"
+
+msgid "~A~ll"
+msgstr "~T~odas"
+
+msgid "~A~rray"
+msgstr "~A~rray"
+
+msgid "~A~utomatic (the system's)"
+msgstr "~A~utomático (el del sistema)"
+
+msgid "~A~utomatic (what the terminal says)"
+msgstr "~A~utomática (la que diga el terminal)"
+
+msgid "~A~utomatic: the first one found"
+msgstr "~A~utomático: el primero que se encuentre"
+
+msgid "~B~ackward"
+msgstr "~H~acia atrás"
+
+msgid "~B~ooks"
+msgstr "~L~ibros"
+
+msgid "~B~rowse..."
+msgstr "~E~xaminar..."
+
+msgid "~C~all stack"
+msgstr "~P~ila de llamadas"
+
+msgid "~C~ancel"
+msgstr "~C~ancelar"
+
+msgid "~C~ase sensitive"
+msgstr "~M~ayúsculas y minúsculas"
+
+msgid "~C~heck"
+msgstr "~V~erificar"
+
+msgid "~C~heck with Div"
+msgstr "~V~erificar con Div"
+
+msgid "~C~lose"
+msgstr "Ce~r~rar"
+
+msgid "~C~olors..."
+msgstr "~C~olores..."
+
+msgid "~C~ommand of the server chosen (empty: the project's or the PATH's)"
+msgstr "~C~omando del servidor elegido (vacío: el del proyecto o el del PATH)"
+
+msgid "~C~ommand palette..."
+msgstr "Paleta de ~c~omandos..."
+
+msgid "~C~ontents"
+msgstr "~C~ontenido"
+
+msgid "~C~opy"
+msgstr "~C~opiar"
+
+msgid "~D~ata file..."
+msgstr "Archivo de ~d~atos..."
+
+msgid "~D~ebug"
+msgstr "~D~epurar"
+
+msgid "~D~efaults"
+msgstr "~P~or defecto"
+
+msgid "~D~ialector..."
+msgstr "~D~ialector..."
+
+msgid "~D~iv engine..."
+msgstr "Motor ~D~iv..."
+
+msgid "~D~ocument root"
+msgstr "Carpeta ~r~aíz"
+
+msgid "~E~dit"
+msgstr "~E~ditar"
+
+msgid "~E~dit data"
+msgstr "Editar d~a~tos"
+
+msgid "~E~dit section..."
+msgstr "~E~ditar sección..."
+
+msgid "~E~ntire scope"
+msgstr "Todo el te~x~to"
+
+msgid "~E~valuate..."
+msgstr "~E~valuar..."
+
+msgid "~E~xpression"
+msgstr "~E~xpresión"
+
+msgid "~F10~ Menu"
+msgstr "~F10~ Menú"
+
+msgid "~F2~ Save"
+msgstr "~F2~ Guardar"
+
+msgid "~F3~ Open"
+msgstr "~F3~ Abrir"
+
+msgid "~F5~ Zoom"
+msgstr "~F5~ Zoom"
+
+msgid "~F6~ Next"
+msgstr "~F6~ Siguiente"
+
+msgid "~F~alse"
+msgstr "~F~also"
+
+msgid "~F~ile"
+msgstr "~A~rchivo"
+
+msgid "~F~ile type marks"
+msgstr "~M~arcas de tipo de archivo"
+
+msgid "~F~iles"
+msgstr "A~r~chivos"
+
+msgid "~F~iles (*.tpl;*.php)"
+msgstr "~A~rchivos (*.tpl;*.php)"
+
+msgid "~F~ind in the tags"
+msgstr "~B~uscar en las etiquetas"
+
+msgid "~F~ind..."
+msgstr "~B~uscar..."
+
+msgid "~F~olders"
+msgstr "~C~arpetas"
+
+msgid "~F~ree Pascal"
+msgstr "~F~ree Pascal"
+
+msgid "~F~rom cursor"
+msgstr "Desde el ~c~ursor"
+
+msgid "~F~rom dialect"
+msgstr "Dialecto de ~o~rigen"
+
+msgid "~G~o to cursor"
+msgstr "Ir al ~c~ursor"
+
+msgid "~G~o to line number..."
+msgstr "Ir a ~l~ínea..."
+
+msgid "~H~elp"
+msgstr "A~y~uda"
+
+msgid "~I~mport tags..."
+msgstr "~I~mportar etiquetas..."
+
+msgid "~I~ndex"
+msgstr "Índ~i~ce"
+
+msgid "~K~ey"
+msgstr "~C~lave"
+
+msgid "~L~anguage"
+msgstr "~I~dioma"
+
+msgid "~L~anguage servers..."
+msgstr "Servidores de ~l~enguaje..."
+
+msgid "~M~essages"
+msgstr "~M~ensajes"
+
+msgid "~M~odern dark"
+msgstr "~M~oderno oscuro"
+
+msgid "~N~ame"
+msgstr "~N~ombre"
+
+msgid "~N~ame (. is the folder below)"
+msgstr "~N~ombre (. es la carpeta de abajo)"
+
+#, python-brace-format
+msgid "~N~ame (in {where}/)"
+msgstr "~N~ombre (en {where}/)"
+
+msgid "~N~ew"
+msgstr "~N~uevo"
+
+msgid "~N~ew text"
+msgstr "Texto ~n~uevo"
+
+msgid "~N~ext"
+msgstr "Si~g~uiente"
+
+msgid "~N~ext error"
+msgstr "Error ~s~iguiente"
+
+msgid "~N~o"
+msgstr "~N~o"
+
+msgid "~N~one"
+msgstr "~N~inguno"
+
+msgid "~N~umber"
+msgstr "~N~úmero"
+
+msgid "~O~K"
+msgstr "~O~K"
+
+msgid "~O~bject"
+msgstr "~O~bjeto"
+
+msgid "~O~pen"
+msgstr "~A~brir"
+
+msgid "~O~pen in browser"
+msgstr "~A~brir en el navegador"
+
+msgid "~O~pen in the browser"
+msgstr "Abrir en el ~n~avegador"
+
+msgid "~O~pen..."
+msgstr "~A~brir..."
+
+msgid "~O~ptions"
+msgstr "~O~pciones"
+
+msgid "~O~utline"
+msgstr "~E~squema"
+
+msgid "~O~utput"
+msgstr "Sa~l~ida"
+
+#, python-brace-format
+msgid "~P~arameters of {name}"
+msgstr "~A~rgumentos de {name}"
+
+msgid "~P~arameters..."
+msgstr "Ar~g~umentos..."
+
+msgid "~P~aste"
+msgstr "~P~egar"
+
+msgid "~P~ath of xdebug.so"
+msgstr "~R~uta de xdebug.so"
+
+msgid "~P~review"
+msgstr "~V~ista previa"
+
+msgid "~P~revious error"
+msgstr "Error an~t~erior"
+
+msgid "~P~revious topic"
+msgstr "Tema ~a~nterior"
+
+msgid "~P~roject"
+msgstr "~P~royecto"
+
+msgid "~P~rompt on replace"
+msgstr "Pre~g~untar al reemplazar"
+
+msgid "~R~edo"
+msgstr "~R~ehacer"
+
+msgid "~R~eference"
+msgstr "~R~eferencia"
+
+msgid "~R~egular expression"
+msgstr "Expresión ~r~egular"
+
+msgid "~R~ename..."
+msgstr "~R~enombrar..."
+
+msgid "~R~ender trace"
+msgstr "~T~raza del render"
+
+msgid "~R~eplace with"
+msgstr "~R~eemplazar por"
+
+msgid "~R~eplace..."
+msgstr "~R~eemplazar..."
+
+msgid "~R~estore section defaults"
+msgstr "~R~estaurar la sección"
+
+msgid "~R~oot..."
+msgstr "~C~arpeta..."
+
+msgid "~R~un"
+msgstr "E~j~ecutar"
+
+msgid "~S~ave"
+msgstr "~G~uardar"
+
+msgid "~S~ave as..."
+msgstr "Guardar ~c~omo..."
+
+msgid "~S~earch"
+msgstr "~B~uscar"
+
+msgid "~S~earch again"
+msgstr "Buscar de ~n~uevo"
+
+msgid "~S~earch..."
+msgstr "~B~uscar..."
+
+msgid "~S~tart"
+msgstr "~I~niciar"
+
+msgid "~S~tep over"
+msgstr "~P~asar por encima"
+
+msgid "~S~top server"
+msgstr "~D~etener el servidor"
+
+msgid "~S~tring"
+msgstr "Te~x~to"
+
+msgid "~T~emplate"
+msgstr "Plan~t~illa"
+
+msgid "~T~ext to find"
+msgstr "~T~exto a buscar"
+
+msgid "~T~heme"
+msgstr "~T~ema"
+
+msgid "~T~ile"
+msgstr "Mo~s~aico"
+
+msgid "~T~ools"
+msgstr "~H~erramientas"
+
+msgid "~T~opic search"
+msgstr "Buscar ~t~ema"
+
+msgid "~T~race into"
+msgstr "~T~razar dentro"
+
+msgid "~T~ransform all tags..."
+msgstr "~T~ransformar todas las etiquetas..."
+
+msgid "~T~ranslate a template..."
+msgstr "~T~raducir una plantilla..."
+
+msgid "~T~rue"
+msgstr "~V~erdadero"
+
+msgid "~T~rue colour (24-bit)"
+msgstr "Color ~r~eal (24 bits)"
+
+msgid "~U~ndo"
+msgstr "~D~eshacer"
+
+msgid "~U~sing help"
+msgstr "~U~so de la ayuda"
+
+msgid "~W~atch expression"
+msgstr "~E~xpresión a vigilar"
+
+msgid "~W~atches"
+msgstr "~V~igilancias"
+
+msgid "~W~eb server..."
+msgstr "Servidor ~w~eb..."
+
+msgid "~W~hole words only"
+msgstr "~P~alabras completas"
+
+msgid "~W~indow"
+msgstr "~V~entana"
+
+msgid "~X~debug..."
+msgstr "~X~debug..."
+
+msgid "~Y~es"
+msgstr "~S~í"
+
+msgid "~Z~oom"
+msgstr "~Z~oom"
+
+msgid "── local variables ──"
+msgstr "── variables locales ──"
+
+#, python-brace-format
+msgid "── render of {name} ──"
+msgstr "── render de {name} ──"
+
+#, python-brace-format
+msgid "── run of {name}: {split} ──"
+msgstr "── ejecución de {name}: {split} ──"
+
+#, python-brace-format
+msgid "── web server {address} ──"
+msgstr "── servidor web {address} ──"
+
+#~ msgid "~L~anguage of the interface"
+#~ msgstr "~I~dioma de la interfaz"
+

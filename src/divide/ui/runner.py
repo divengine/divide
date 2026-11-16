@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import shutil
 import subprocess
 from pathlib import Path
@@ -33,12 +35,10 @@ from divide.ui.progress import ProgressDialog, run_with_progress
 from divide.ui.windows import MessageItem, _TVWindow
 
 NO_XDEBUG = (
-    "The debugger needs Xdebug, the PHP extension.\n\n"
-    "Install it (Debian/Ubuntu: sudo apt install php-xdebug; elsewhere: pecl install xdebug) "
-    "or give the path of xdebug.so in Options > Xdebug."
+    _('The debugger needs Xdebug, the PHP extension.\n\nInstall it (Debian/Ubuntu: sudo apt install php-xdebug; elsewhere: pecl install xdebug) or give the path of xdebug.so in Options > Xdebug.')
 )
-NOT_PAUSED = "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
-DEBUG_HINT = "F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 reset"
+NOT_PAUSED = _('Start the script in the debugger first (F7, F8 or F4) and stop at a line.')
+DEBUG_HINT = _('F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 reset')
 
 
 # Turbo Pascal's debugger windows: all cyan, black text, the chosen line white on red
@@ -121,7 +121,7 @@ class CallStackWindow(_ListWindow):
     DEFAULT_CSS = DEBUG_CSS.format(name="CallStackWindow")
 
     def __init__(self, number: int = 0) -> None:
-        super().__init__("Call stack", number=number)
+        super().__init__(_('Call stack'), number=number)
 
     def activate(self, index: int) -> None:
         self.app.run_worker(self.app.select_frame(index), group="command")  # type: ignore[attr-defined]
@@ -187,15 +187,15 @@ class RunMixin:
         script: Path | None = None
         if win is not None and win.editor.lang == "php":
             if win.path is None:
-                await self.run_dialog(information(title, "Save the script first (F2): PHP runs files."))
+                await self.run_dialog(information(title, _('Save the script first (F2): PHP runs files.')))
                 return None
             script = win.path
         script = script or self.last_script
         if script is None:
-            await self.run_dialog(information(title, "Open a PHP script (.php) to run it."))
+            await self.run_dialog(information(title, _('Open a PHP script (.php) to run it.')))
             return None
         if not shutil.which("php"):
-            await self.run_dialog(information(title, "php was not found in the PATH."))
+            await self.run_dialog(information(title, _('php was not found in the PATH.')))
             return None
         for other in self.editor_windows():  # PHP runs what is on disk
             if other.dirty and other.path is not None and other.editor.lang == "php" and not await self.save(other):
@@ -225,32 +225,32 @@ class RunMixin:
         if script is None:
             return
         args = self.run_arguments(script)
-        dialog = ProgressDialog("Running", [
-            ("Script", self._relative(script)),
-            ("Parameters", args or "(none)"),
-            ("Output", size_text(b"")),
+        dialog = ProgressDialog(_('Running'), [
+            (_('Script'), self._relative(script)),
+            (_('Parameters'), args or "(none)"),
+            (_('Output'), size_text(b"")),
         ])
 
         def progress(out: bytes, err: bytes) -> None:
-            dialog.set("Output", size_text(out))
+            dialog.set(_('Output'), size_text(out))
             if err:
-                dialog.set("Errors", size_text(err))
+                dialog.set(_('Errors'), size_text(err))
 
         def verdict(result: ScriptResult) -> tuple[str, bool, list[tuple[str, str]]]:
             errors = sum(m.level == "error" for m in result.messages)
             warnings = len(result.messages) - errors
-            rows = [("Exit code", str(result.exit_code)), ("Messages", f"{errors} error(s), {warnings} warning(s)")]
+            rows = [(_('Exit code'), str(result.exit_code)), (_("Messages"), _("{errors} error(s), {warnings} warning(s)").format(errors=errors, warnings=warnings))]
             if result.stopped:
-                return "Stopped", False, rows
+                return _("Stopped"), False, rows
             if errors or result.exit_code:
-                return "Errors" if errors else f"Exit code {result.exit_code}", False, rows
-            return ("Warnings" if warnings else "Success"), not warnings, rows
+                return _("Errors") if errors else _('Exit code {exit_code}').format(exit_code=result.exit_code), False, rows
+            return (_("Warnings") if warnings else _("Success")), not warnings, rows
 
         job = run_script(script, split_args(args), on_data=progress)
         result = await run_with_progress(self, dialog, job, verdict)
         if result is None:
             return
-        state = "stopped" if result.stopped else f"exit code {result.exit_code}"
+        state = "stopped" if result.stopped else _('exit code {exit_code}').format(exit_code=result.exit_code)
         summary = f"{script.name} · {state} · {result.seconds:.2f}s · {size_text(result.output)}"
         self.show_script_result(script, result.output, result.errors, result.messages, summary)
 
@@ -259,7 +259,7 @@ class RunMixin:
         from divide.ui.windows import OutputWindow
 
         self.last_script = script
-        self.run_messages = [MessageItem(f"── run of {script.name}: {summary.split(' · ', 1)[-1]} ──"),
+        self.run_messages = [MessageItem(_('── run of {name}: {split} ──').format(name=script.name, split=summary.split(' · ', 1)[-1])),
                              *message_items(messages, self._text_of)]
         text = output + (f"\n── stderr ──\n{errors}" if errors.strip() else "")
         output_win = self.output_window()
@@ -292,10 +292,10 @@ class RunMixin:
         win = self.active_editor()
         script = win.path if win is not None and win.editor.lang == "php" and win.path else self.last_script
         if script is None:
-            await self.run_dialog(information("Parameters", "Open a PHP script (.php) first."))
+            await self.run_dialog(information(_('Parameters'), _('Open a PHP script (.php) first.')))
             return
-        dialog = InputDialog("Program parameters", f"~P~arameters of {script.name}", self.run_arguments(script),
-                             hint="As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them.",
+        dialog = InputDialog(_('Program parameters'), _('~P~arameters of {name}').format(name=script.name), self.run_arguments(script),
+                             hint=_('As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them.'),
                              allow_empty=True)
         await self.run_dialog(dialog)
         if dialog.value is None:  # cancelled
@@ -311,7 +311,7 @@ class RunMixin:
 
     async def run_in_terminal(self) -> None:
         """Run > Run in terminal: the script gets the real terminal (it may read the keyboard)."""
-        script = await self._script_to_run("Run in terminal")
+        script = await self._script_to_run(_('Run in terminal'))
         if script is None:
             return
         argv = command(script, split_args(self.run_arguments(script)))
@@ -324,7 +324,7 @@ class RunMixin:
                 except EOFError:
                     pass
         except Exception as exc:  # SuspendNotSupported (no real terminal)
-            await self.run_dialog(information("Run in terminal", f"This terminal cannot be handed over: {exc}"))
+            await self.run_dialog(information(_('Run in terminal'), _('This terminal cannot be handed over: {exc}').format(exc=exc)))
 
     # --------------------------------------------------------- debugger
     async def debug_start(self) -> bool:
@@ -337,15 +337,15 @@ class RunMixin:
         try:
             ini = await xdebug_ini(extension=config.load().get("xdebug"))
             if ini is None:
-                await self.run_dialog(information("Debug", NO_XDEBUG))
+                await self.run_dialog(information(_('Debug'), NO_XDEBUG))
                 return False
             session = DebugSession(script, split_args(self.run_arguments(script)), ini=ini,
                                    on_data=lambda: self._debug_output(create=True))
             try:
-                with self.busy(f"Starting {script.name} in the debugger..."):
+                with self.busy(_('Starting {name} in the debugger...').format(name=script.name)):
                     await session.start()
             except DebugError as exc:
-                await self.run_dialog(information("Debug", str(exc)))
+                await self.run_dialog(information(_('Debug'), str(exc)))
                 return False
             self.session, self.last_script = session, script
             return True
@@ -369,13 +369,13 @@ class RunMixin:
     async def debug_resume(self, how: str) -> None:
         """``run``, ``step_into``, ``step_over``, ``step_out`` or ``cursor`` (F4)."""
         if self.session is not None and self.session.state == "running":
-            self.notify("The script is running: Ctrl+F2 stops it", timeout=2)
+            self.notify(_('The script is running: Ctrl+F2 stops it'), timeout=2)
             return
         target = None
         if how == "cursor":
             win = self.active_editor()
             if win is None or win.path is None or win.editor.lang != "php":
-                self.notify("Put the cursor on a line of a PHP script", timeout=2)
+                self.notify(_('Put the cursor on a line of a PHP script'), timeout=2)
                 return
             target = (win.path, win.editor.cursor_location[0] + 1)
         if not self.debugging:
@@ -393,7 +393,7 @@ class RunMixin:
             if target is not None:
                 await session.set_breakpoint(*target, temporary=True)
                 how = "run"
-            label = "Running" if how == "run" else "Stepping"
+            label = _('Running') if how == "run" else _('Stepping')
             with self.busy(f"{label} {session.request or session.script.name}... (Ctrl+F2 stops)"):
                 location = await session.resume(how)
         except (DebugError, OSError):
@@ -426,7 +426,7 @@ class RunMixin:
             self.notify(f"{session.request}: {'ended (program reset)' if reset else 'done'}", timeout=2)
             self.update_status()
             return
-        state = "program reset" if reset else f"exit code {session.exit_code}"
+        state = _('program reset') if reset else _('exit code {exit_code}').format(exit_code=session.exit_code)
         summary = f"{session.script.name} · {state} · {size_text(session.output)}"
         self.show_script_result(session.script, session.output, session.errors, session.messages, summary)
         self.notify(f"{session.script.name}: {state}", timeout=2)
@@ -436,10 +436,10 @@ class RunMixin:
         if self.session is None:
             if self.web_next is not None:  # type: ignore[attr-defined]
                 self.web_next = None
-                self.notify("The next request will not stop", timeout=1.5)
+                self.notify(_('The next request will not stop'), timeout=1.5)
                 self.update_status()
                 return
-            self.notify("No program is being debugged", timeout=1.5)
+            self.notify(_('No program is being debugged'), timeout=1.5)
             return
         await self.session.stop()
         await self._debug_ended(reset=True)
@@ -473,7 +473,7 @@ class RunMixin:
         where = session.location
         place = f"{where.file.name}:{where.line}" if where and where.file else "?"
         request = f" ({session.request})" if session.request else ""
-        return f"Paused at {place}{request} · {DEBUG_HINT}"
+        return _('Paused at {place}{request} · {debug_hint}').format(place=place, request=request, debug_hint=DEBUG_HINT)
 
     def refresh_debug_marks(self) -> None:
         location = self.session.location if self.paused and self.session is not None else None
@@ -489,7 +489,7 @@ class RunMixin:
         """Ctrl+F8 on the cursor's line."""
         win = self.active_editor()
         if win is None or win.editor.lang != "php" or win.path is None:
-            self.notify("Breakpoints go on the lines of a saved PHP script", timeout=2)
+            self.notify(_('Breakpoints go on the lines of a saved PHP script'), timeout=2)
             return
         line = win.editor.cursor_location[0] + 1
         lines = self.breakpoints.setdefault(win.path, set())
@@ -522,9 +522,9 @@ class RunMixin:
     async def evaluate(self) -> None:
         """Ctrl+F4: what PHP says an expression is, where the script stopped."""
         if not self.paused or self.session is None:
-            await self.run_dialog(information("Evaluate", NOT_PAUSED))
+            await self.run_dialog(information(_('Evaluate'), NOT_PAUSED))
             return
-        dialog = InputDialog("Evaluate", "~E~xpression", self._word_at_cursor(), hint="Any PHP expression: $total * 2, count($items)")
+        dialog = InputDialog(_('Evaluate'), _('~E~xpression'), self._word_at_cursor(), hint="Any PHP expression: $total * 2, count($items)")
         await self.run_dialog(dialog)
         if not dialog.value:
             return
@@ -534,11 +534,11 @@ class RunMixin:
             text = "\n".join(lines[:20] + (["..."] if len(lines) > 20 else []))
         except DebugError as exc:
             text = f"{dialog.value}: {exc}"
-        await self.run_dialog(information("Evaluate", text))
+        await self.run_dialog(information(_('Evaluate'), text))
 
     async def add_watch(self) -> None:
         """Ctrl+F7: an expression the Watches window shows at every stop."""
-        dialog = InputDialog("Add watch", "~W~atch expression", self._word_at_cursor())
+        dialog = InputDialog(_('Add watch'), _('~W~atch expression'), self._word_at_cursor())
         await self.run_dialog(dialog)
         if not dialog.value:
             return
@@ -600,7 +600,7 @@ class RunMixin:
             rows: list[int | None] = []
             for index, expression in enumerate(self.watches):
                 if session is None:
-                    found = [f"{expression}: (not running)"]
+                    found = [_('{expression}: (not running)').format(expression=expression)]
                 else:
                     try:
                         found = (await session.evaluate(expression, self.debug_frame)).lines(depth=1)
@@ -609,7 +609,7 @@ class RunMixin:
                 lines += found
                 rows += [index] * len(found)
             if session is not None:
-                lines.append("── local variables ──")
+                lines.append(_('── local variables ──'))
                 rows.append(None)
                 try:
                     for var in await session.variables(self.debug_frame):
@@ -619,7 +619,7 @@ class RunMixin:
                 except DebugError:
                     pass
             if not lines:
-                lines, rows = ["(Ins adds a watch; variables show while the debugger is paused)"], [None]
+                lines, rows = [_('(Ins adds a watch; variables show while the debugger is paused)')], [None]
             watches.rows = rows
             watches.show(lines)
         if stack is not None:
@@ -633,7 +633,7 @@ class RunMixin:
             stack.show([
                 f"{'►' if f.level == self.debug_frame else ' '} {f.where}  {f.file.name if f.file else '?'}:{f.line}"
                 for f in frames
-            ] or ["(not running)"])
+            ] or [_('(not running)')])
 
     async def select_frame(self, index: int) -> None:
         """Enter on a call: show its line; Watches and Evaluate look from there."""
@@ -653,13 +653,13 @@ class RunMixin:
         """Options > Xdebug: the xdebug.so to load when php.ini does not load it."""
         current = config.load().get("xdebug") or ""
         loaded = await xdebug_ini()
-        hint = "php.ini loads Xdebug already: leave it empty" if loaded == [] else "Empty: only an Xdebug that php.ini loads"
-        dialog = InputDialog("Xdebug", "~P~ath of xdebug.so", current, hint=hint, browse=("*.so", Path("/usr/lib/php")),
+        hint = _('php.ini loads Xdebug already: leave it empty') if loaded == [] else _('Empty: only an Xdebug that php.ini loads')
+        dialog = InputDialog(_('Xdebug'), _('~P~ath of xdebug.so'), current, hint=hint, browse=("*.so", Path("/usr/lib/php")),
                              allow_empty=True)
         await self.run_dialog(dialog)
         if dialog.value is None:
             return
         if dialog.value and not Path(dialog.value).expanduser().is_file():
-            await self.run_dialog(information("Xdebug", f"{dialog.value} is not a file."))
+            await self.run_dialog(information(_('Xdebug'), _('{value} is not a file.').format(value=dialog.value)))
             return
         config.set_value("xdebug", dialog.value or None)

@@ -7,6 +7,9 @@ textual-vision, with first-class support for Div templates
 
 from __future__ import annotations
 
+from divide import i18n
+from divide.i18n import _, ngettext
+
 import argparse
 import os
 import re
@@ -93,6 +96,7 @@ from divide.ui.tracer import TraceMixin, TraceWindow
 from divide.ui.colors import ColorsMixin
 from divide.ui.outline import OutlineMixin, OutlineWindow
 from divide.ui.palette import PaletteMixin
+from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
@@ -103,8 +107,7 @@ from divide.run.render import RenderMessage
 from divide.ui.windows import EditorWindow, LocationsWindow, MessageItem, MessagesWindow, OutputWindow, ProjectTree, ProjectWindow
 
 SAVE_FIRST = (
-    "Save the template first (F2). divide hands Div templates that live in a file: "
-    "Div finds the includes and the data file from the template's folder."
+    _("Save the template first (F2). divide hands Div templates that live in a file: Div finds the includes and the data file from the template's folder.")
 )
 
 PALETTES = {name: p.label for name, p in themes.THEMES.items()}
@@ -162,6 +165,7 @@ CM_GOTO_FILE = Command.USER + 93  # Ctrl+P
 CM_COMMANDS = Command.USER + 94  # Alt+P
 CM_FIND_IN_FILES = Command.USER + 95  # Shift+F2
 CM_HELP_FULLTEXT = Command.USER + 96  # Help > Search
+CM_LANGUAGE = Command.USER + 97  # Options > Language
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -299,7 +303,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -401,115 +405,117 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         return Menu(
             items=[
                 SubMenu(
-                    "~F~ile",
-                    MenuItem("~N~ew", Command.NEW),
-                    MenuItem("~O~pen...", Command.OPEN, "F3"),
-                    MenuItem("~S~ave", Command.SAVE, "F2"),
-                    MenuItem("Save ~a~s...", Command.SAVE_AS),
-                    MenuItem("Save a~l~l", Command.SAVE_ALL),
+                    _('~F~ile'),
+                    MenuItem(_('~N~ew'), Command.NEW),
+                    MenuItem(_('~O~pen...'), Command.OPEN, "F3"),
+                    MenuItem(_('~S~ave'), Command.SAVE, "F2"),
+                    MenuItem(_('Save ~a~s...'), Command.SAVE_AS),
+                    MenuItem(_('Save a~l~l'), Command.SAVE_ALL),
                     Separator(),
-                    MenuItem("E~x~it", Command.QUIT, "Alt+X"),
+                    MenuItem(_('E~x~it'), Command.QUIT, "Alt+X"),
                 ),
                 SubMenu(
-                    "~E~dit",
-                    MenuItem("~U~ndo", Command.UNDO, "Ctrl+Z"),
-                    MenuItem("~R~edo", Command.REDO, "Ctrl+Y"),
+                    _('~E~dit'),
+                    MenuItem(_('~U~ndo'), Command.UNDO, "Ctrl+Z"),
+                    MenuItem(_('~R~edo'), Command.REDO, "Ctrl+Y"),
                     Separator(),
-                    MenuItem("Cu~t~", Command.CUT, "Ctrl+X"),
-                    MenuItem("~C~opy", Command.COPY, "Ctrl+C"),
-                    MenuItem("~P~aste", Command.PASTE, "Ctrl+V"),
+                    MenuItem(_('Cu~t~'), Command.CUT, "Ctrl+X"),
+                    MenuItem(_('~C~opy'), Command.COPY, "Ctrl+C"),
+                    MenuItem(_('~P~aste'), Command.PASTE, "Ctrl+V"),
                     Separator(),
-                    MenuItem("Select ~a~ll", CM_SELECT_ALL, "Ctrl+A"),
-                    MenuItem("Co~m~plete", CM_COMPLETE, "Ctrl+Space"),
+                    MenuItem(_('Select ~a~ll'), CM_SELECT_ALL, "Ctrl+A"),
+                    MenuItem(_('Co~m~plete'), CM_COMPLETE, "Ctrl+Space"),
                 ),
                 SubMenu(
-                    "~S~earch",
-                    MenuItem("~F~ind...", CM_FIND, "Ctrl+F"),
-                    MenuItem("~R~eplace...", CM_REPLACE, "Ctrl+R"),
-                    MenuItem("~S~earch again", CM_SEARCH_AGAIN, "Ctrl+L"),
-                    MenuItem("Fin~d~ in files...", CM_FIND_IN_FILES, "Shift+F2"),
+                    _('~S~earch'),
+                    MenuItem(_('~F~ind...'), CM_FIND, "Ctrl+F"),
+                    MenuItem(_('~R~eplace...'), CM_REPLACE, "Ctrl+R"),
+                    MenuItem(_('~S~earch again'), CM_SEARCH_AGAIN, "Ctrl+L"),
+                    MenuItem(_('Fin~d~ in files...'), CM_FIND_IN_FILES, "Shift+F2"),
                     Separator(),
-                    MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
-                    MenuItem("Go to ~i~ncluded template", CM_GOTO_INCLUDE, "Ctrl+Enter"),
-                    MenuItem("~O~utline", CM_OUTLINE, "Ctrl+O"),
-                    MenuItem("Go to fi~l~e...", CM_GOTO_FILE, "Ctrl+P"),
-                    MenuItem("~C~ommand palette...", CM_COMMANDS, "Alt+P"),
+                    MenuItem(_('~G~o to line number...'), CM_GOTO_LINE, "Ctrl+G"),
+                    MenuItem(_('Go to ~i~ncluded template'), CM_GOTO_INCLUDE, "Ctrl+Enter"),
+                    MenuItem(_('~O~utline'), CM_OUTLINE, "Ctrl+O"),
+                    MenuItem(_('Go to fi~l~e...'), CM_GOTO_FILE, "Ctrl+P"),
+                    MenuItem(_('~C~ommand palette...'), CM_COMMANDS, "Alt+P"),
                     Separator(),
-                    MenuItem("~P~revious error", CM_PREV_ERROR, "Alt+F7"),
-                    MenuItem("~N~ext error", CM_NEXT_ERROR, "Alt+F8"),
+                    MenuItem(_('~P~revious error'), CM_PREV_ERROR, "Alt+F7"),
+                    MenuItem(_('~N~ext error'), CM_NEXT_ERROR, "Alt+F8"),
                 ),
                 SubMenu(
-                    "~R~un",
-                    MenuItem("~R~un", CM_RENDER, "Ctrl+F9"),
-                    MenuItem("~S~tep over", CM_STEP, "F8"),
-                    MenuItem("~T~race into", CM_TRACE, "F7"),
-                    MenuItem("Step o~u~t", CM_STEP_OUT, "Shift+F8"),
-                    MenuItem("~G~o to cursor", CM_GOTO_CURSOR, "F4"),
-                    MenuItem("Progra~m~ reset", CM_RESET, "Ctrl+F2"),
-                    MenuItem("~P~arameters...", CM_RUN_ARGS),
-                    MenuItem("Run in termi~n~al", CM_RUN_TERMINAL),
-                    MenuItem("~W~eb server...", CM_WEB_SERVER),
+                    _('~R~un'),
+                    MenuItem(_('~R~un'), CM_RENDER, "Ctrl+F9"),
+                    MenuItem(_('~S~tep over'), CM_STEP, "F8"),
+                    MenuItem(_('~T~race into'), CM_TRACE, "F7"),
+                    MenuItem(_('Step o~u~t'), CM_STEP_OUT, "Shift+F8"),
+                    MenuItem(_('~G~o to cursor'), CM_GOTO_CURSOR, "F4"),
+                    MenuItem(_('Progra~m~ reset'), CM_RESET, "Ctrl+F2"),
+                    MenuItem(_('~P~arameters...'), CM_RUN_ARGS),
+                    MenuItem(_('Run in termi~n~al'), CM_RUN_TERMINAL),
+                    MenuItem(_('~W~eb server...'), CM_WEB_SERVER),
                     Separator(),
-                    MenuItem("~C~heck", CM_CHECK, "Alt+F9"),
-                    MenuItem("~O~utput", CM_OUTPUT, "Alt+F5"),
+                    MenuItem(_('~C~heck'), CM_CHECK, "Alt+F9"),
+                    MenuItem(_('~O~utput'), CM_OUTPUT, "Alt+F5"),
                     Separator(),
-                    MenuItem("~D~ata file...", CM_DATA_FILE),
-                    MenuItem("~E~dit data", CM_EDIT_DATA),
-                    MenuItem("D~a~ta tree", CM_DATA_TREE, "Ctrl+T"),
+                    MenuItem(_('~D~ata file...'), CM_DATA_FILE),
+                    MenuItem(_('~E~dit data'), CM_EDIT_DATA),
+                    MenuItem(_('D~a~ta tree'), CM_DATA_TREE, "Ctrl+T"),
                 ),
                 SubMenu(
-                    "~D~ebug",
-                    MenuItem("~E~valuate...", CM_EVALUATE, "Ctrl+F4"),
-                    MenuItem("~W~atches", CM_WATCHES),
-                    MenuItem("~C~all stack", CM_CALL_STACK, "Ctrl+F3"),
+                    _('~D~ebug'),
+                    MenuItem(_('~E~valuate...'), CM_EVALUATE, "Ctrl+F4"),
+                    MenuItem(_('~W~atches'), CM_WATCHES),
+                    MenuItem(_('~C~all stack'), CM_CALL_STACK, "Ctrl+F3"),
                     Separator(),
-                    MenuItem("~A~dd watch...", CM_ADD_WATCH, "Ctrl+F7"),
-                    MenuItem("Toggle ~b~reakpoint", CM_BREAKPOINT, "Ctrl+F8"),
+                    MenuItem(_('~A~dd watch...'), CM_ADD_WATCH, "Ctrl+F7"),
+                    MenuItem(_('Toggle ~b~reakpoint'), CM_BREAKPOINT, "Ctrl+F8"),
                     Separator(),
-                    MenuItem("~R~ender trace", CM_TRACE_RENDER, "F7"),
+                    MenuItem(_('~R~ender trace'), CM_TRACE_RENDER, "F7"),
                 ),
                 SubMenu(
-                    "~W~indow",
-                    MenuItem("~P~roject", CM_PROJECT, "Ctrl+B"),
-                    MenuItem("~M~essages", CM_MESSAGES),
+                    _('~W~indow'),
+                    MenuItem(_('~P~roject'), CM_PROJECT, "Ctrl+B"),
+                    MenuItem(_('~M~essages'), CM_MESSAGES),
                     Separator(),
-                    MenuItem("~T~ile", Command.TILE),
-                    MenuItem("C~a~scade", Command.CASCADE),
+                    MenuItem(_('~T~ile'), Command.TILE),
+                    MenuItem(_('C~a~scade'), Command.CASCADE),
                     Separator(),
-                    MenuItem("~Z~oom", Command.ZOOM, "F5"),
-                    MenuItem("~N~ext", Command.NEXT, "F6"),
-                    MenuItem("Pre~v~ious", Command.PREV, "Shift+F6"),
-                    MenuItem("~C~lose", Command.CLOSE, "Alt+F3"),
-                    MenuItem("Close a~l~l", Command.CLOSE_ALL),
+                    MenuItem(_('~Z~oom'), Command.ZOOM, "F5"),
+                    MenuItem(_('~N~ext'), Command.NEXT, "F6"),
+                    MenuItem(_('Pre~v~ious'), Command.PREV, "Shift+F6"),
+                    MenuItem(_('~C~lose'), Command.CLOSE, "Alt+F3"),
+                    MenuItem(_('Close a~l~l'), Command.CLOSE_ALL),
                 ),
                 # Flat: textual-vision 0.0.1 does not move keyboard focus into nested sub-menus.
                 SubMenu(
-                    "~T~ools",
-                    MenuItem("~D~ialector...", CM_DIALECTOR),
-                    MenuItem("~T~ranslate a template...", CM_TRANSLATE),
+                    _('~T~ools'),
+                    MenuItem(_('~D~ialector...'), CM_DIALECTOR),
+                    MenuItem(_('~T~ranslate a template...'), CM_TRANSLATE),
                 ),
                 SubMenu(
-                    "~O~ptions",
-                    MenuItem("~C~olors...", CM_COLORS),
+                    _('~O~ptions'),
+                    MenuItem(_('~C~olors...'), CM_COLORS),
                     Separator(),
-                    MenuItem("Plain ~s~ymbols", CM_ICONS, param=icons_mod.PLAIN),
-                    MenuItem("~F~ile type marks", CM_ICONS, param=icons_mod.MARKS),
+                    MenuItem(_('Plain ~s~ymbols'), CM_ICONS, param=icons_mod.PLAIN),
+                    MenuItem(_('~F~ile type marks'), CM_ICONS, param=icons_mod.MARKS),
                     Separator(),
-                    MenuItem("~L~anguage servers...", CM_LSP_SERVERS),
-                    MenuItem("~D~iv engine...", CM_DIV_ENGINE),
-                    MenuItem("~X~debug...", CM_XDEBUG),
+                    MenuItem(_('~L~anguage servers...'), CM_LSP_SERVERS),
+                    MenuItem(_('~D~iv engine...'), CM_DIV_ENGINE),
+                    MenuItem(_('~X~debug...'), CM_XDEBUG),
+                    Separator(),
+                    MenuItem(_('Lan~g~uage...'), CM_LANGUAGE),
                 ),
                 SubMenu(
-                    "~H~elp",
-                    MenuItem("~C~ontents", CM_HELP_CONTENTS),
-                    MenuItem("~B~ooks", CM_HELP_BOOKS),
-                    MenuItem("~I~ndex", CM_HELP_INDEX, "Shift+F1"),
-                    MenuItem("~T~opic search", CM_HELP_SEARCH, "Ctrl+F1"),
-                    MenuItem("~S~earch...", CM_HELP_FULLTEXT),
-                    MenuItem("~P~revious topic", CM_HELP_BACK, "Alt+F1"),
-                    MenuItem("~U~sing help", CM_HELP, "F1"),
+                    _('~H~elp'),
+                    MenuItem(_('~C~ontents'), CM_HELP_CONTENTS),
+                    MenuItem(_('~B~ooks'), CM_HELP_BOOKS),
+                    MenuItem(_('~I~ndex'), CM_HELP_INDEX, "Shift+F1"),
+                    MenuItem(_('~T~opic search'), CM_HELP_SEARCH, "Ctrl+F1"),
+                    MenuItem(_('~S~earch...'), CM_HELP_FULLTEXT),
+                    MenuItem(_('~P~revious topic'), CM_HELP_BACK, "Alt+F1"),
+                    MenuItem(_('~U~sing help'), CM_HELP, "F1"),
                     Separator(),
-                    MenuItem("~A~bout...", CM_ABOUT),
+                    MenuItem(_('~A~bout...'), CM_ABOUT),
                 ),
             ]
         )
@@ -517,13 +523,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def init_status_line(self) -> list[StatusDef]:
         # Empty key codes: the keys are bindings, the status line only shows them.
         items = [
-            StatusItem("~F2~ Save", "", Command.SAVE),
-            StatusItem("~F3~ Open", "", Command.OPEN),
-            StatusItem("~Alt+F3~ Close", "", Command.CLOSE),
-            StatusItem("~F5~ Zoom", "", Command.ZOOM),
-            StatusItem("~F6~ Next", "", Command.NEXT),
-            StatusItem("~F10~ Menu", "", Command.MENU),
-            StatusItem("~Alt+X~ Exit", "", Command.QUIT),
+            StatusItem(_('~F2~ Save'), "", Command.SAVE),
+            StatusItem(_('~F3~ Open'), "", Command.OPEN),
+            StatusItem(_('~Alt+F3~ Close'), "", Command.CLOSE),
+            StatusItem(_('~F5~ Zoom'), "", Command.ZOOM),
+            StatusItem(_('~F6~ Next'), "", Command.NEXT),
+            StatusItem(_('~F10~ Menu'), "", Command.MENU),
+            StatusItem(_('~Alt+X~ Exit'), "", Command.QUIT),
         ]
         return [StatusDef(0, 0xFFFF, items)]
 
@@ -605,7 +611,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         try:
             text = path.read_text(encoding="utf-8") if path.exists() else ""
         except (OSError, UnicodeDecodeError) as exc:
-            self.notify(f"Cannot open {path.name}: {exc}", severity="error")
+            self.notify(_('Cannot open {name}: {exc}').format(name=path.name, exc=exc), severity="error")
             return None
         win = EditorWindow(path, text, roots=[self.root], number=self._free_number())
         self._relabel(win)
@@ -652,7 +658,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         try:
             win.path.write_text(win.editor.text, encoding="utf-8")
         except OSError as exc:
-            self.notify(f"Save failed: {exc}", severity="error")
+            self.notify(_('Save failed: {exc}').format(exc=exc), severity="error")
             return False
         win.saved_text = win.editor.text
         win.refresh_indicator()
@@ -666,7 +672,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     async def save(self, win: EditorWindow, *, ask_name: bool = False) -> bool:
         if win.path is None or ask_name:
             start = win.path.parent if win.path else self.root
-            dialog = FileDialog("Save file as", start, name=win.path.name if win.path else "", ok_label="~O~K")
+            dialog = FileDialog(_('Save file as'), start, name=win.path.name if win.path else "", ok_label=_('~O~K'))
             if await self.run_dialog(dialog) != Command.OK or dialog.chosen is None:
                 return False
             win.path = dialog.chosen
@@ -757,7 +763,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 self.new_file()
             case Command.OPEN:
                 start = editor.path.parent if editor and editor.path else self.root
-                dialog = FileDialog("Open a file", start)
+                dialog = FileDialog(_('Open a file'), start)
                 if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
                     self.open_file(dialog.chosen)
             case Command.SAVE if editor or isinstance(win, (JsonTreeWindow, DialectorWindow)):
@@ -813,6 +819,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 self.toggle_project()
             case _ if command == CM_COLORS:
                 await self.choose_colors()
+            case _ if command == CM_LANGUAGE:
+                await self.choose_language()
             case _ if command == CM_ICONS and info in icons_mod.MODES:
                 self.set_icons(info)
             case _ if command == CM_LSP_SERVERS:
@@ -954,7 +962,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         try:
             pattern = compile_pattern(self.search_query, opts)
         except SearchError as exc:
-            await self.run_dialog(information("Error", str(exc)))
+            await self.run_dialog(information(_('Error'), str(exc)))
             return
         doc, text = ed.document, ed.text
         if first and opts.entire_scope:
@@ -971,12 +979,12 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 if m:
                     self._select(ed, m.start(), m.end())
         except SearchError as exc:
-            await self.run_dialog(information("Error", str(exc)))
+            await self.run_dialog(information(_('Error'), str(exc)))
             return
         if not found:
-            await self.run_dialog(information("Information", "Search string not found."))
+            await self.run_dialog(information(_('Information'), _('Search string not found.')))
         elif count > 1:
-            self.notify(f"{count} occurrences replaced", timeout=2)
+            self.notify(_('{count} occurrences replaced').format(count=count), timeout=2)
 
     async def _replace(self, ed: DivEditor, pattern: re.Pattern[str], pos: int, change_all: bool) -> tuple[int, bool]:
         """Replace one occurrence, or all of them with ``change_all``. Returns (replaced, found)."""
@@ -1147,7 +1155,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         except RenderError:
             return None
         if loaded.file is None:
-            return Dialect(name=ref, error=f"Div cannot find the dialect file {ref}")
+            return Dialect(name=ref, error=_('Div cannot find the dialect file {ref}').format(ref=ref))
         if loaded.tags is None:
             return Dialect(name=ref, source=loaded.file, error=f"{loaded.problem}: {self._project_relative(loaded.file)}")
         return Dialect.from_overrides(loaded.tags, name=loaded.file.stem, source=loaded.file)
@@ -1183,14 +1191,14 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         offset = ed.document.get_index_from_location(ed.selection.end)
         hit = include_at(ed.text, ed.tokens, ed.dialect, offset)
         if hit is None:
-            self.notify("Put the cursor on a {% %} or {%% %%} include", timeout=2)
+            self.notify(_('Put the cursor on a {% %} or {%% %%} include'), timeout=2)
             return
         raw = hit[2]
         if win.path is None:
-            await self.run_dialog(information("Go to include", SAVE_FIRST))
+            await self.run_dialog(information(_('Go to include'), SAVE_FIRST))
             return
         if self._include_engine(win.path) is None:
-            await self.run_dialog(information("Go to include", "Div was not found (see Options > Div engine): only Div knows where an include leads."))
+            await self.run_dialog(information(_('Go to include'), _('Div was not found (see Options > Div engine): only Div knows where an include leads.')))
             return
         targets = await self._resolve(ed, [raw])
         target = (targets or {}).get(raw)
@@ -1203,13 +1211,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         name = target.path if target.path.endswith(".tpl") else target.path + ".tpl"
         new = (win.path.parent / name).resolve()
         rel = self._project_relative(new)
-        if await self.run_dialog(confirm("Go to include", f"Div cannot find {target.path}. Create {rel}?")) != Command.YES:
+        if await self.run_dialog(confirm(_('Go to include'), _('Div cannot find {path}. Create {rel}?').format(path=target.path, rel=rel))) != Command.YES:
             return
         try:
             new.parent.mkdir(parents=True, exist_ok=True)
             new.touch()
         except OSError as exc:
-            await self.run_dialog(information("Go to include", f"Cannot create {rel}: {exc.strerror or exc}"))
+            await self.run_dialog(information(_('Go to include'), _('Cannot create {rel}: {exc}').format(rel=rel, exc=exc.strerror or exc)))
             return
         self.refresh_project()
         self.recheck_includes()
@@ -1228,7 +1236,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 break
         if not name:
             if not await self.lsp_definition(win):
-                self.notify("Put the cursor on a symbol or on a string with a file name (no language server: Options > Language servers)", timeout=3)
+                self.notify(_('Put the cursor on a symbol or on a string with a file name (no language server: Options > Language servers)'), timeout=3)
             return
         bases = ([win.path.parent] if win.path is not None else []) + [self.root]
         for base in bases:
@@ -1237,7 +1245,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 if path.is_file():
                     self.open_file(path)
                     return
-        self.notify(f"{name}: no such file next to {win.display_name} or in the project", timeout=3)
+        self.notify(_('{name}: no such file next to {display_name} or in the project').format(name=name, display_name=win.display_name), timeout=3)
 
     def _render_layout(self, template: Path, output: OutputWindow, messages: MessagesWindow | None) -> None:
         """First render: template on the left, output on the right, messages below."""
@@ -1266,7 +1274,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if not keep_focus and active is not None and active.path is None and active.editor.div_enabled:
             # Convention: templates are saved before Div sees them. Div could take the
             # code alone, but its includes and data file are found from where it lives.
-            await self.run_dialog(information("Render", SAVE_FIRST))
+            await self.run_dialog(information(_('Render'), SAVE_FIRST))
             return
         inputs = await self.render_inputs("Render")
         if inputs is None:
@@ -1276,10 +1284,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             with self.busy(f"Rendering {template.name}..."):
                 job = render(engine, template, code, data, cwd=self.root)
                 if progress:
-                    dialog = ProgressDialog("Rendering", [
-                        ("Template", self._relative(template)),
-                        ("Data", self._relative(data_path) if data is not None else "(none)"),
-                        ("Engine", self._relative(engine)),
+                    dialog = ProgressDialog(_('Rendering'), [
+                        (_('Template'), self._relative(template)),
+                        (_('Data'), self._relative(data_path) if data is not None else "(none)"),
+                        (_('Engine'), self._relative(engine)),
                     ])
                     result = await run_with_progress(self, dialog, job, self._render_verdict)
                     if result is None:
@@ -1287,10 +1295,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 else:
                     result = await job
         except RenderError as exc:
-            await self.run_dialog(information("Render", str(exc)))
+            await self.run_dialog(information(_('Render'), str(exc)))
             return
         self.last_template = template
-        data_note = data_path.name if data is not None else "no data"
+        data_note = data_path.name if data is not None else _('no data')
         summary = f"{template.name} + {data_note} · Div {result.version or '?'} · {result.seconds:.2f}s"
         output = self.output_window()
         first = output is None
@@ -1312,7 +1320,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             self.raise_window(output)
             if serious and messages is not None:
                 self.raise_window(messages)
-        self.notify(("Render failed: " if result.fatal else "Rendered ") + summary, timeout=3,
+        self.notify((_('Render failed: ') if result.fatal else _("Rendered ")) + summary, timeout=3,
                     severity="error" if result.fatal else "information")
         self.update_status()
 
@@ -1321,21 +1329,20 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         (None after telling why not)."""
         template = self.render_target()
         if template is None:
-            await self.run_dialog(information(title, "Open a Div template (.tpl) to render it."))
+            await self.run_dialog(information(title, _('Open a Div template (.tpl) to render it.')))
             return None
         engine = find_engine([template.parent, self.root], config.load().get("div_engine"))
         if engine is None:
             await self.run_dialog(
                 information(
                     title,
-                    "Div was not found.\n\nInstall it in the project (composer require divengine/div) "
-                    "or set its path in Options > Div engine.",
+                    _('Div was not found.\n\nInstall it in the project (composer require divengine/div) or set its path in Options > Div engine.'),
                 )
             )
             return None
         code = self._text_of(template)
         if code is None:
-            await self.run_dialog(information(title, f"Cannot read {template.name}."))
+            await self.run_dialog(information(title, _('Cannot read {name}.').format(name=template.name)))
             return None
         data_path = self.data_file_for(template)
         data = self._text_of(data_path) if data_path.exists() or self.window_for(data_path) else None
@@ -1344,11 +1351,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     @staticmethod
     def _render_verdict(result) -> tuple[str, bool, list[tuple[str, str]]]:
         serious = result.serious
-        rows = [("Engine", f"Div {result.version or '?'}"), ("Output", size_text(result.output)),
-                ("Messages", f"{len(serious)} to look at" if serious else "none")]
+        rows = [(_("Engine"), f"Div {result.version or '?'}"), (_("Output"), size_text(result.output)),
+                (_("Messages"), _('{count} to look at').format(count=len(serious)) if serious else _("none"))]
         if result.fatal:
-            return "Errors", False, rows
-        return ("Warnings", False, rows) if serious else ("Success", True, rows)
+            return _("Errors"), False, rows
+        return (_("Warnings"), False, rows) if serious else (_("Success"), True, rows)
 
     async def check_command(self) -> None:
         """Alt+F9: check the file under the progress box, then the Messages window."""
@@ -1369,15 +1376,15 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         def verdict(diagnostics: list) -> tuple[str, bool, list[tuple[str, str]]]:
             errors = sum(d.severity == "error" for d in diagnostics)
             warnings = len(diagnostics) - errors
-            rows = [("Errors", str(errors)), ("Warnings", str(warnings))]
+            rows = [(_("Errors"), str(errors)), (_("Warnings"), str(warnings))]
             if errors:
-                return "Errors", False, rows
-            return ("Warnings", False, rows) if warnings else ("Success", True, rows)
+                return _("Errors"), False, rows
+            return (_("Warnings"), False, rows) if warnings else (_("Success"), True, rows)
 
-        dialog = ProgressDialog("Checking", [
-            ("File", target.display_name),
-            ("Language", self._lang_title(ed)),
-            ("Lines", f"{ed.document.line_count:,}"),
+        dialog = ProgressDialog(_('Checking'), [
+            (_('File'), target.display_name),
+            (_('Language'), self._lang_title(ed)),
+            (_('Lines'), f"{ed.document.line_count:,}"),
         ])
         if await run_with_progress(self, dialog, job(), verdict) is None:
             return
@@ -1399,7 +1406,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     @staticmethod
     def _lang_title(editor: DivEditor) -> str:
         info = languages.language(editor.lang)
-        return info.title if info else "plain text"
+        return info.title if info else _('plain text')
 
     def message_items(self, template: Path | None = None) -> list[MessageItem]:
         win = self.window_for(template) if template is not None else self._check_target()
@@ -1409,15 +1416,15 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             text = win.editor.text
             for d in win.editor.diagnostics:
                 line, col = line_col(text, d.start)
-                label = "Error" if d.severity == "error" else "Warning"
+                label = _('Error') if d.severity == "error" else _('Warning')
                 items.append(MessageItem(f"{name}({line},{col}): {label}: {d.message}", win.path, d.start, d.end))
             if not win.editor.diagnostics:
-                items.append(MessageItem(f"{name}: no {self._lang_title(win.editor)} errors"))
+                items.append(MessageItem(_('{name}: no {editor} errors').format(name=name, editor=self._lang_title(win.editor))))
         items.extend(self.run_items(win.path if win is not None else template))
         rendered = win.path if win is not None else template
         if self.render_messages and rendered is not None and rendered == self.last_template:
             order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3, "NOTE": 4}
-            items.append(MessageItem(f"── render of {rendered.name} ──"))
+            items.append(MessageItem(_('── render of {name} ──').format(name=rendered.name)))
             for m in sorted(self.render_messages, key=lambda m: order.get(m.level, 9)):
                 items.append(MessageItem(f"{m.level}: {m.text}"))
         return items
@@ -1459,7 +1466,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             errors = sum(d.severity == "error" for d in target.editor.diagnostics)
             warnings = len(target.editor.diagnostics) - errors
             self.notify(
-                f"{target.display_name}: {errors} error(s), {warnings} warning(s)" if errors or warnings else f"{target.display_name}: no {self._lang_title(target.editor)} errors",
+                f"{target.display_name}: {errors} error(s), {warnings} warning(s)" if errors or warnings else _('{display_name}: no {editor} errors').format(display_name=target.display_name, editor=self._lang_title(target.editor)),
                 timeout=2,
                 severity="error" if errors else "information",
             )
@@ -1517,19 +1524,19 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     async def choose_data_file(self) -> None:
         template = self.render_target()
         if template is None:
-            await self.run_dialog(information("Data file", "Open a Div template first."))
+            await self.run_dialog(information(_('Data file'), _('Open a Div template first.')))
             return
         current = self.data_file_for(template)
-        dialog = FileDialog(f"Data for {template.name}", current.parent, name=current.name, pattern="*.json", ok_label="~O~K")
+        dialog = FileDialog(_('Data for {name}').format(name=template.name), current.parent, name=current.name, pattern="*.json", ok_label=_('~O~K'))
         if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
             self.data_files[template] = dialog.chosen
-            self.notify(f"{template.name} renders with {dialog.chosen.name}", timeout=2)
+            self.notify(_('{name} renders with {name2}').format(name=template.name, name2=dialog.chosen.name), timeout=2)
 
     def edit_data(self) -> None:
         """Open the template's data file (a new one if it does not exist yet)."""
         template = self.render_target()
         if template is None:
-            self.notify("Open a Div template first", severity="warning")
+            self.notify(_('Open a Div template first'), severity="warning")
             return
         win = self.open_file(self.data_file_for(template))
         if win is not None and not win.path.exists() and not win.editor.text:
@@ -1641,8 +1648,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             source = self.open_file(active.editor.dialect.source)
         else:
             dialog = InputDialog(
-                "New dialect", "Dialect ~f~ile", "my.dialect",
-                hint="Relative to the project; an existing file is opened", select=(0, 2),
+                _('New dialect'), _('Dialect ~f~ile'), "my.dialect",
+                hint=_('Relative to the project; an existing file is opened'), select=(0, 2),
                 browse=("*.dialect", self.root),
             )
             if await self.run_dialog(dialog) != Command.OK or not dialog.value:
@@ -1656,7 +1663,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_text("{}\n", encoding="utf-8")
                 except OSError as exc:
-                    await self.run_dialog(information("Dialector", f"Cannot create {path.name}: {exc.strerror or exc}"))
+                    await self.run_dialog(information(_('Dialector'), _('Cannot create {name}: {exc}').format(name=path.name, exc=exc.strerror or exc)))
                     return
                 self.refresh_project()
             source = self.open_file(path)
@@ -1679,16 +1686,16 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             try:
                 value = divjson.loads(text)
             except divjson.DivJsonError as exc:
-                return None, f"The dialect file is not valid JSON: {exc}"
+                return None, _('The dialect file is not valid JSON: {exc}').format(exc=exc)
             if not isinstance(value, dict):
                 return None, 'A dialect is a JSON object: { "DIV_TAG_...": "..." }'
             return {k: str(v) for k, v in value.items() if isinstance(k, str)}, None
         try:
             loaded = await load_dialect(engine, cwd=self.root, code=text)
         except RenderError as exc:
-            return None, f"Could not ask Div: {exc}"
+            return None, _('Could not ask Div: {exc}').format(exc=exc)
         if loaded.tags is None:
-            return None, loaded.problem or "Div cannot decode it as a JSON object"
+            return None, loaded.problem or _('Div cannot decode it as a JSON object')
         return loaded.tags, None
 
     async def dialector_verdict(self, tags: dict[str, str]) -> DialectVerdict | None:
@@ -1703,7 +1710,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 sample=dx.example(changed).text, expected=dx.example({}).text,
             )
         except RenderError as exc:
-            return DialectVerdict(f"could not ask Div: {exc}")
+            return DialectVerdict(_('could not ask Div: {exc}').format(exc=exc))
 
     def dialector_action(self, win: DialectorWindow, action: str) -> None:
         self._dialector_action(win, action)
@@ -1715,18 +1722,18 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             from divide.ui.explorer import LocalMenu
 
             menu = Menu(items=[
-                Item("~E~dit section...", CM_DX_EDIT, "Enter"),
-                Item("~R~estore section defaults", CM_DX_RESTORE, "Del"),
+                Item(_('~E~dit section...'), CM_DX_EDIT, _('Enter')),
+                Item(_('~R~estore section defaults'), CM_DX_RESTORE, _('Del')),
                 Sep(),
-                Item("~T~ransform all tags...", CM_DX_TRANSFORM),
-                Item("Restore ~a~ll defaults", CM_DX_ALL_DEFAULTS),
+                Item(_('~T~ransform all tags...'), CM_DX_TRANSFORM),
+                Item(_('Restore ~a~ll defaults'), CM_DX_ALL_DEFAULTS),
                 Sep(),
-                Item("~I~mport tags...", CM_DX_IMPORT),
-                Item("Export as ~P~HP code", CM_DX_PHP),
+                Item(_('~I~mport tags...'), CM_DX_IMPORT),
+                Item(_('Export as ~P~HP code'), CM_DX_PHP),
                 Sep(),
-                Item("Save e~x~ample template...", CM_DX_EXAMPLE),
-                Item("Trans~l~ate a template...", CM_DX_TRANSLATE),
-                Item("~C~heck with Div", CM_DX_CHECK),
+                Item(_('Save e~x~ample template...'), CM_DX_EXAMPLE),
+                Item(_('Trans~l~ate a template...'), CM_DX_TRANSLATE),
+                Item(_('~C~heck with Div'), CM_DX_CHECK),
             ])
             region = win.sections.content_region
             at = (region.x + 2, region.y + max(0, win.section_index - win.sections.scroll_offset.y))
@@ -1755,7 +1762,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     win.apply(dialog.changes)
             case "all_defaults":
                 if await win.can_rewrite() and await self.run_dialog(
-                    confirm("Dialector", "Put every tag back to Div's default?")
+                    confirm(_('Dialector'), _("Put every tag back to Div's default?"))
                 ) == Command.YES:
                     win.apply(dict(DEFAULT_TAGS))
             case "php":
@@ -1786,13 +1793,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return
         default = source.path.stem + ".example.tpl"
         dialog = InputDialog(
-            "Example template", "~F~ile", default, hint=f"Relative to {source.path.parent.name}/",
+            _('Example template'), _('~F~ile'), default, hint=_('Relative to {name}/').format(name=source.path.parent.name),
             select=(0, len(source.path.stem)), browse=("*.tpl", source.path.parent),
         )
         if await self.run_dialog(dialog) != Command.OK or not dialog.value:
             return
         target = (source.path.parent / dialog.value).resolve()
-        if target.exists() and await self.run_dialog(confirm("Example template", f"{target.name} exists. Replace it?")) != Command.YES:
+        if target.exists() and await self.run_dialog(confirm(_('Example template'), _('{name} exists. Replace it?').format(name=target.name))) != Command.YES:
             return
         try:
             ref = source.path.relative_to(target.parent)
@@ -1802,7 +1809,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         try:
             target.write_text(text, encoding="utf-8")
         except OSError as exc:
-            await self.run_dialog(information("Example template", f"Cannot write {target.name}: {exc.strerror or exc}"))
+            await self.run_dialog(information(_('Example template'), _('Cannot write {name}: {exc}').format(name=target.name, exc=exc.strerror or exc)))
             return
         self.refresh_project()
         existing = self.window_for(target)
@@ -1814,7 +1821,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     async def import_dialect(self, win: DialectorWindow) -> None:
         """Take the tags of another dialect file, or of PHP define() lines."""
         start = win.source.path.parent if win.source.path else self.root
-        dialog = FileDialog("Import tags", start, pattern="*.dialect")
+        dialog = FileDialog(_('Import tags'), start, pattern="*.dialect")
         if await self.run_dialog(dialog) != Command.OK or dialog.chosen is None:
             return
         php_file = dialog.chosen.suffix.lower() == ".php"
@@ -1824,21 +1831,21 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 # A dialect file is decoded by Div's own jsonDecode(), as when Div loads it.
                 loaded = await load_dialect(engine, cwd=self.root, file=dialog.chosen)
                 if loaded.tags is None:
-                    raise ValueError(loaded.problem or "Div cannot decode it")
+                    raise ValueError(loaded.problem or _('Div cannot decode it'))
                 tags = {k: v for k, v in loaded.tags.items() if k in DEFAULT_TAGS}
                 unknown = [k for k in loaded.tags if k not in DEFAULT_TAGS]
             else:  # PHP define() lines (Div does not read those), or no Div at hand
                 text = dialog.chosen.read_text(encoding="utf-8")
                 tags, unknown = dx.parse_import(text, php=php_file)
         except (OSError, UnicodeDecodeError, ValueError, RenderError) as exc:
-            await self.run_dialog(information("Import tags", f"Cannot read {dialog.chosen.name}: {exc}"))
+            await self.run_dialog(information(_('Import tags'), _('Cannot read {name}: {exc}').format(name=dialog.chosen.name, exc=exc)))
             return
         if not tags:
-            await self.run_dialog(information("Import tags", f"{dialog.chosen.name} has no Div tags."))
+            await self.run_dialog(information(_('Import tags'), _('{name} has no Div tags.').format(name=dialog.chosen.name)))
             return
-        note = f" ({len(unknown)} names that are not Div tags are left out)" if unknown else ""
-        text = f"Take {len(tags)} tags from {dialog.chosen.name}{note}? Tags it does not mention go back to Div's defaults."
-        if await self.run_dialog(confirm("Import tags", text)) != Command.YES or not await win.can_rewrite():
+        note = _(' ({count} names that are not Div tags are left out)').format(count=len(unknown)) if unknown else ""
+        text = _("Take {count} tags from {name}{note}? Tags it does not mention go back to Div's defaults.").format(count=len(tags), name=dialog.chosen.name, note=note)
+        if await self.run_dialog(confirm(_('Import tags'), text)) != Command.YES or not await win.can_rewrite():
             return
         win.apply({**DEFAULT_TAGS, **tags})
 
@@ -1854,20 +1861,20 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         The ``@_DIALECT`` property of the result points at the target dialect."""
         tpl = self._project_path(template)
         if tpl is None:
-            raise ValueError("Which template? Type its path.")
+            raise ValueError(_('Which template? Type its path.'))
         code = self._text_of(tpl)
         if code is None:
-            raise ValueError(f"Cannot read the template {template}")
+            raise ValueError(_('Cannot read the template {template}').format(template=template))
         texts: list[str] = []
         for label, raw in (("source", source), ("target", target)):
             path = self._project_path(raw)
             text = "" if path is None else self._text_of(path)
             if text is None:
-                raise ValueError(f"Cannot read the {label} dialect {raw}")
+                raise ValueError(_('Cannot read the {label} dialect {raw}').format(label=label, raw=raw))
             texts.append(text)
         engine = self._include_engine(tpl)
         if engine is None:
-            raise ValueError("Div was not found: Div translates the template (Options > Div engine).")
+            raise ValueError(_('Div was not found: Div translates the template (Options > Div engine).'))
         try:
             translated = await translate_template(engine, code, texts[0], texts[1], cwd=self.root)
         except RenderError as exc:
@@ -1883,7 +1890,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             except RenderError:
                 loaded = None
             if loaded is not None and loaded.tags is None:
-                raise ValueError(f"Div cannot decode the target dialect {target}: {loaded.problem}")
+                raise ValueError(_('Div cannot decode the target dialect {target}: {problem}').format(target=target, problem=loaded.problem))
             tags = loaded.tags if loaded is not None else {}
         dialect = Dialect.from_overrides(tags, name=target_path.stem if target_path else "default", source=target_path)
         return dx.set_dialect_property(translated, ref), dialect
@@ -1900,18 +1907,18 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return "", ""
         prop = template_properties(text).get("DIALECT")
         if prop is None or not prop[0].strip():
-            return "", "Suggested: Div's default dialect (the template has no @_DIALECT)"
+            return "", _("Suggested: Div's default dialect (the template has no @_DIALECT)")
         ref = prop[0].strip()
         engine = self._include_engine(tpl)
         if engine is None:
-            return ref, f"Suggested: the template's @_DIALECT = {ref} (Div not found to resolve it)"
+            return ref, _("Suggested: the template's @_DIALECT = {ref} (Div not found to resolve it)").format(ref=ref)
         try:
             found = (await resolve_includes(engine, tpl, [ref], cwd=self.root)).get(ref)
         except RenderError:
             found = None
         if found is None or found.file is None:
             return ref, f"[!] The template says @_DIALECT = {ref}, but Div cannot find that file"
-        return self._project_relative(found.file), f"Suggested: the template's @_DIALECT = {ref}"
+        return self._project_relative(found.file), _("Suggested: the template's @_DIALECT = {ref}").format(ref=ref)
 
     async def translate_wizard(self, *, template: str = "", source: str = "", target: str = "") -> None:
         """Tools > Translate a template: choose, preview, save as or open."""
@@ -1931,13 +1938,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         suffix = dialog.target_dialect.source.stem if dialog.target_dialect and dialog.target_dialect.source else "div"
         default = f"{tpl.stem}.{suffix}{tpl.suffix or '.tpl'}"
         name = InputDialog(
-            "Save translation as", "~F~ile", default, hint=f"Relative to {tpl.parent.name}/", select=(0, len(default) - 4),
+            _('Save translation as'), _('~F~ile'), default, hint=_('Relative to {name}/').format(name=tpl.parent.name), select=(0, len(default) - 4),
             browse=("*.tpl", tpl.parent),
         )
         if await self.run_dialog(name) != Command.OK or not name.value:
             return
         out = (tpl.parent / name.value).resolve()
-        if out.exists() and await self.run_dialog(confirm("Save translation", f"{out.name} exists. Replace it?")) != Command.YES:
+        if out.exists() and await self.run_dialog(confirm(_('Save translation'), _('{name} exists. Replace it?').format(name=out.name))) != Command.YES:
             return
         text = dialog.text
         if dialog.target_dialect and dialog.target_dialect.source is not None:
@@ -1946,7 +1953,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(text, encoding="utf-8")
         except OSError as exc:
-            await self.run_dialog(information("Save translation", f"Cannot write {out.name}: {exc.strerror or exc}"))
+            await self.run_dialog(information(_('Save translation'), _('Cannot write {name}: {exc}').format(name=out.name, exc=exc.strerror or exc)))
             return
         self.refresh_project()
         self.open_file(out)
@@ -1981,10 +1988,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     async def choose_engine(self) -> None:
         current = find_engine([self.root], config.load().get("div_engine"))
         start = current.parent if current else self.root
-        dialog = FileDialog("Div engine (autoload.php or div.php)", start, name=current.name if current else "", pattern="*.php", ok_label="~O~K")
+        dialog = FileDialog(_('Div engine (autoload.php or div.php)'), start, name=current.name if current else "", pattern="*.php", ok_label=_('~O~K'))
         if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
             config.set_value("div_engine", str(dialog.chosen))
-            self.notify(f"Div engine: {dialog.chosen}", timeout=3)
+            self.notify(_('Div engine: {chosen}').format(chosen=dialog.chosen), timeout=3)
 
     def _cycle(self, *, forward: bool) -> None:
         """F6 brings the bottom window up; Shift+F6 sends the top one down."""
@@ -2105,7 +2112,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             if ed.json_error is not None:
                 hint = f"JSON [!] {ed.json_error}"
             else:
-                hint = "JSON ok"
+                hint = _('JSON ok')
             if ed.json_refs:
                 hint += f" · {len(ed.json_refs)} $ref" + ("s" if len(ed.json_refs) > 1 else "")
             status.set_hint(hint)
@@ -2119,11 +2126,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 status.set_hint(diag.message)
                 return
             if not shutil.which("php"):
-                hint = "PHP · php not found in PATH: not checked"
+                hint = _('PHP · php not found in PATH: not checked')
             elif ed.diagnostics:
                 hint = f"PHP · {ed.diagnostics[0].message} (Alt+F8)"
             else:
-                hint = "PHP · no errors"
+                hint = _('PHP · no errors')
             status.set_hint(f"{hint} · {self.lsp_status('php')}")
             return
         if ed.div_enabled:
@@ -2132,21 +2139,24 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 status.set_hint(("Error: " if diag.severity == "error" else "Warning: ") + diag.message)
                 return
             d = ed.dialect
-            hint = "Div" + ("" if d.name == "default" else f" · {d.name}")
+            hint = _('Div') + ("" if d.name == "default" else f" · {d.name}")
             errors = sum(x.severity == "error" for x in ed.diagnostics)
             warnings = len(ed.diagnostics) - errors
             if errors or warnings:
-                hint += f" · {errors} error{'s' if errors != 1 else ''}, {warnings} warning{'s' if warnings != 1 else ''} (Alt+F8)"
+                hint += " · " + ngettext("{n} error", "{n} errors", errors).format(n=errors) + ", " + ngettext(
+                    "{n} warning", "{n} warnings", warnings).format(n=warnings) + " (Alt+F8)"
         else:
-            hint = "plain text"
+            hint = _('plain text')
         status.set_hint(hint)
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(prog="divide", description="Terminal IDE for the Divengine projects.")
-    parser.add_argument("paths", nargs="*", help="project folder and/or files to open")
-    parser.add_argument("--palette", choices=sorted(PALETTES), help="colour theme (default: the one chosen in Options > Colors, else turbo-pascal)")
-    parser.add_argument("--colors", choices=list(themes.DEPTHS), help="colour depth (default: what the terminal says it supports)")
+    parser = argparse.ArgumentParser(prog="divide", description=_('Terminal IDE for the Divengine projects.'))
+    parser.add_argument("paths", nargs="*", help=_('project folder and/or files to open'))
+    parser.add_argument("--palette", choices=sorted(PALETTES), help=_('colour theme (default: the one chosen in Options > Colors, else turbo-pascal)'))
+    parser.add_argument("--colors", choices=list(themes.DEPTHS), help=_('colour depth (default: what the terminal says it supports)'))
+    parser.add_argument("--language", choices=["auto", *i18n.available()],
+                        help=_("language of the interface for this run (default: Options > Language, else the system's)"))
     args = parser.parse_args(argv)
     root = Path.cwd()
     files: list[Path] = []

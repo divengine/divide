@@ -11,6 +11,8 @@ Engine packets are ``<length>\\0<xml>\\0``; commands are one line ending in
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import asyncio
 import base64
 import shutil
@@ -99,7 +101,7 @@ def variable(node: ET.Element) -> Variable:
         case "null":
             value = "null"
         case "uninitialized":
-            value = "(not set)"
+            value = _('(not set)')
         case "bool":
             value = "true" if _text(node) == "1" else "false"
         case _:
@@ -205,7 +207,7 @@ class DebugSession:
     async def start(self, timeout: float = CONNECT_TIMEOUT) -> None:
         """Start PHP and wait for Xdebug to connect (the script waits on its first line)."""
         if not self.php:
-            raise DebugError("php not found in PATH")
+            raise DebugError(_('php not found in PATH'))
         loop = asyncio.get_running_loop()
         self._connected = loop.create_future()
 
@@ -231,13 +233,13 @@ class DebugSession:
         self._pipes = [asyncio.create_task(self._pipe(self._proc.stdout, self._out)),  # type: ignore[arg-type]
                        asyncio.create_task(self._pipe(self._proc.stderr, self._err))]  # type: ignore[arg-type]
         exited = asyncio.ensure_future(self._proc.wait())
-        done, _ = await asyncio.wait({self._connected, exited}, timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
+        done, _pending = await asyncio.wait({self._connected, exited}, timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
         if self._connected not in done:
             exited.cancel()
             await self._shutdown()
             if not done:
-                raise DebugError(f"Xdebug did not connect in {timeout:.0f}s")
-            raise DebugError("PHP ended before Xdebug connected: is Xdebug loaded?\n" + self.errors.strip())
+                raise DebugError(_('Xdebug did not connect in {timeout:.0f}s').format(timeout=timeout))
+            raise DebugError(_('PHP ended before Xdebug connected: is Xdebug loaded?\n') + self.errors.strip())
         exited.cancel()
         self._reader, self._writer = self._connected.result()
         await self._handshake()
@@ -252,7 +254,7 @@ class DebugSession:
             init = await asyncio.wait_for(session._handshake(), CONNECT_TIMEOUT)
         except (DebugError, TimeoutError, OSError, ET.ParseError) as exc:
             await session._shutdown()
-            raise DebugError(f"Xdebug connection failed: {exc}") from None
+            raise DebugError(_('Xdebug connection failed: {exc}').format(exc=exc)) from None
         session.script = uri_path(init.get("fileuri")) or session.script
         session.cwd = session.script.parent
         return session
@@ -260,7 +262,7 @@ class DebugSession:
     async def _handshake(self) -> ET.Element:
         init = await self._packet()
         if init.tag != f"{{{NS['d']}}}init":
-            raise DebugError("Xdebug sent no init packet")
+            raise DebugError(_('Xdebug sent no init packet'))
         self.state = "starting"
         for name, value in (("max_depth", "1"), ("max_children", "100"), ("max_data", "2048")):
             await self.command("feature_set", "-n", name, "-v", value)
@@ -271,7 +273,7 @@ class DebugSession:
         while not self._ready:
             chunk = await self._reader.read(65536)
             if not chunk:
-                raise DebugError("Xdebug closed the connection")
+                raise DebugError(_('Xdebug closed the connection'))
             self._buffer.extend(chunk)
             self._ready.extend(packets(self._buffer))
         return ET.fromstring(self._ready.pop(0))
@@ -279,7 +281,7 @@ class DebugSession:
     async def command(self, name: str, *args: str, data: str | None = None, timeout: float = REPLY_TIMEOUT) -> ET.Element:
         """Send one DBGp command and return its ``<response>``."""
         if self._writer is None:
-            raise DebugError("not connected")
+            raise DebugError(_('not connected'))
         async with self._lock:
             self._tx += 1
             tx = str(self._tx)
@@ -299,7 +301,7 @@ class DebugSession:
         if error is None:
             return None
         message = error.find("d:message", NS)
-        return (message.text if message is not None else None) or f"DBGp error {error.get('code')}"
+        return (message.text if message is not None else None) or _('DBGp error {code}').format(code=error.get('code'))
 
     # ------------------------------------------------------- breakpoints
     async def set_breakpoint(self, file: Path, line: int, *, temporary: bool = False) -> str | None:

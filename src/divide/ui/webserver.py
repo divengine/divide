@@ -11,6 +11,8 @@ log; PHP's errors in it go to the Messages window.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 from pathlib import Path
 
 from textual.app import ComposeResult
@@ -46,7 +48,7 @@ class WebServerDialog(_Dialog):
     """
 
     def __init__(self, root: Path, settings: dict, *, debugger: bool) -> None:
-        super().__init__(title="Web server")
+        super().__init__(title=_('Web server'))
         self.project = root
         self.address_input = InputLine(max_len=200)
         self.address_input.data = settings.get("address") or DEFAULT_ADDRESS
@@ -54,11 +56,11 @@ class WebServerDialog(_Dialog):
         self.root_input.data = settings.get("root") or shown_path(root)  # ~ for the home folder: it is expanded
         self.router_input = InputLine(max_len=1024)
         self.router_input.data = settings.get("router") or ""
-        self.flags = CheckBoxes(["~O~pen in the browser"])
+        self.flags = CheckBoxes([_('~O~pen in the browser')])
         self.flags.value = 1 if settings.get("browser", True) else 0
         self.hint = (
-            "Xdebug found: requests stop at the breakpoints" if debugger
-            else "No Xdebug: it serves, but requests cannot be debugged"
+            _('Xdebug found: requests stop at the breakpoints') if debugger
+            else _('No Xdebug: it serves, but requests cannot be debugged')
         )
         self.address = ""
         self.root: Path = root
@@ -66,19 +68,19 @@ class WebServerDialog(_Dialog):
         self.browser = True
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~A~ddress (host:port)", link=self.address_input)
+        yield Label(_('~A~ddress (host:port)'), link=self.address_input)
         yield self.address_input
-        yield Label("~D~ocument root", link=self.root_input)
+        yield Label(_('~D~ocument root'), link=self.root_input)
         yield self.root_input
-        yield Label("Router ~s~cript (optional: every request goes to it)", link=self.router_input)
+        yield Label(_('Router ~s~cript (optional: every request goes to it)'), link=self.router_input)
         yield self.router_input
         yield self.flags
         yield Static(self.hint, classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
-            yield Button("~S~tart", Command.OK, is_default=True, id="ok")
-            yield Button("~R~oot...", CM_BROWSE_ROOT, id="browse-root")
-            yield Button("Ro~u~ter...", CM_BROWSE_ROUTER, id="browse-router")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('~S~tart'), Command.OK, is_default=True, id="ok")
+            yield Button(_('~R~oot...'), CM_BROWSE_ROOT, id="browse-root")
+            yield Button(_('Ro~u~ter...'), CM_BROWSE_ROUTER, id="browse-router")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.address_input.select_all)
@@ -92,10 +94,10 @@ class WebServerDialog(_Dialog):
     async def _browse(self, command: int) -> None:
         if command == CM_BROWSE_ROOT:
             line, ok = self.root_input, await browse_into(
-                self, self.root_input, "Document root", "*", self.project, folders=True)
+                self, self.root_input, _('Document root'), "*", self.project, folders=True)
         else:
             line, ok = self.router_input, await browse_into(
-                self, self.router_input, "Router script", "*.php", Path(self.root_input.data or self.project))
+                self, self.router_input, _('Router script'), "*.php", Path(self.root_input.data or self.project))
         if ok:
             line.tv_select_self()
             line.focus()
@@ -111,9 +113,9 @@ class WebServerDialog(_Dialog):
         root = self._path(self.root_input.data or ".")
         router = self._path(self.router_input.data) if self.router_input.data.strip() else None
         if problem is None and not root.is_dir():
-            problem = f"No such folder: {root}"
+            problem = _('No such folder: {root}').format(root=root)
         if problem is None and router is not None and not router.is_file():
-            problem = f"No such file: {router}"
+            problem = _('No such file: {router}').format(router=router)
         if problem is not None:
             self.app.notify(problem, severity="error")
             return False
@@ -128,7 +130,7 @@ class ServerLogWindow(_TVWindow):
     DEFAULT_CSS = OUTPUT_CSS.replace("{name}", "ServerLogWindow")
 
     def __init__(self, number: int = 0) -> None:
-        super().__init__("Web server", number=number)
+        super().__init__(_('Web server'), number=number)
         self.view = EditorView("", read_only=True, kind=OUTPUT)
 
     def compose_content(self) -> ComposeResult:
@@ -136,7 +138,7 @@ class ServerLogWindow(_TVWindow):
 
     def show(self, server: WebServer) -> None:
         state = "serving" if server.running else "stopped"
-        self.title = f"Web server: {server.url} ({state})"
+        self.title = _('Web server: {url} ({state})').format(url=server.url, state=state)
         lines = server.log.rstrip("\n").split("\n")[-LOG_LINES:]
         text = "\n".join(lines)
         if text != self.view.text:
@@ -178,10 +180,10 @@ class WebMixin:
         server = self.web
         if server is not None and server.running:
             box = MessageBox(
-                "Web server",
+                _('Web server'),
                 f"Serving {server.url}\nfrom {server.root}" + (f"\nthrough {server.router.name}" if server.router else ""),
-                [("~O~pen in browser", Command.YES, "open"), ("~S~top server", Command.NO, "stop"),
-                 ("Cancel", Command.CANCEL, "cancel")],
+                [(_('~O~pen in browser'), Command.YES, "open"), (_('~S~top server'), Command.NO, "stop"),
+                 (_('Cancel'), Command.CANCEL, "cancel")],
                 width=60,
             )
             answer = await self.run_dialog(box)
@@ -206,10 +208,10 @@ class WebMixin:
             await self.web_stop()
         server = WebServer(address, root, router, ini=ini, on_log=self._web_logged)
         try:
-            with self.busy(f"Starting php -S {address}..."):
+            with self.busy(_('Starting php -S {address}...').format(address=address)):
                 await server.start()
         except ServerError as exc:
-            await self.run_dialog(information("Web server", str(exc)))
+            await self.run_dialog(information(_('Web server'), str(exc)))
             return False
         self.web = server
         self.web_next = None
@@ -220,7 +222,7 @@ class WebMixin:
         self._web_timer = self.set_interval(0.3, self._web_tick, name="web-log")
         if server.debugging:
             self.run_worker(self._serve_requests(server), group="web", exit_on_error=False)
-        self.notify(f"Serving {server.url}" + ("" if server.debugging else " (no Xdebug: not debugged)"), timeout=3)
+        self.notify(f"Serving {server.url}" + ("" if server.debugging else _(' (no Xdebug: not debugged)')), timeout=3)
         if browser:
             self.open_url(server.url)
         self.update_status()
@@ -244,7 +246,7 @@ class WebMixin:
         if window is not None:
             window.show(server)
         self.refresh_messages()
-        self.notify(f"Web server {server.address} stopped", timeout=2)
+        self.notify(_('Web server {address} stopped').format(address=server.address), timeout=2)
         self.update_status()
 
     # -------------------------------------------------------- requests
@@ -278,8 +280,8 @@ class WebMixin:
     def arm_next_request(self, how: str, target: tuple[Path, int] | None) -> None:
         """F7 / F8 / F4 with no request paused: the next request stops."""
         self.web_next = ("run" if target else "step_into", target)
-        where = f"at line {target[1]} of {target[0].name}" if target else "on its first line"
-        self.notify(f"The next request to {self.web.url} stops {where}", timeout=3)  # type: ignore[union-attr]
+        where = _('at line {target} of {name}').format(target=target[1], name=target[0].name) if target else _('on its first line')
+        self.notify(_('The next request to {url} stops {where}').format(url=self.web.url, where=where), timeout=3)  # type: ignore[union-attr]
         self.update_status()
 
     def open_page(self, path: Path) -> None:
@@ -294,10 +296,10 @@ class WebMixin:
         server = self.web
         assert server is not None
         if not server.debugging:
-            return f"Serving {server.url} · not debugged (no Xdebug)"
+            return _('Serving {url} · not debugged (no Xdebug)').format(url=server.url)
         if self.web_next is not None:
-            return f"Serving {server.url} · the next request stops"
-        return f"Serving {server.url} · requests stop at breakpoints · F8 stops the next one"
+            return _('Serving {url} · the next request stops').format(url=server.url)
+        return _('Serving {url} · requests stop at breakpoints · F8 stops the next one').format(url=server.url)
 
     # ------------------------------------------------------------- log
     def server_log_window(self) -> ServerLogWindow | None:
@@ -333,4 +335,4 @@ class WebMixin:
         messages = self.web.messages
         if not messages:
             return []
-        return [MessageItem(f"── web server {self.web.address} ──"), *message_items(messages, self._text_of)]
+        return [MessageItem(_('── web server {address} ──').format(address=self.web.address)), *message_items(messages, self._text_of)]

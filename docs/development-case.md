@@ -49,6 +49,14 @@ before it reaches the manual.
 - **Colours.** Never hard-coded in widgets. They come from a palette role
   (`$divide-<role>` in CSS, `Palette.style(role)` in code), and new roles are
   added to `themes.UI_ROLES` and to every theme.
+- **Texts.** Every text the interface shows is written in English and
+  marked `_("...")` (`from divide.i18n import _`), with `{named}`
+  placeholders and `.format()` rather than f-strings, and `ngettext()` for
+  plurals. Texts that are data (Div's log markers, file contents, help topic
+  names, snippet labels) are not marked. No function that calls `_()` may
+  also assign `_` (`x, _ = ...`). After changing texts, `tools/i18n.py all`
+  updates the catalogues; each translation keeps the placeholders and one
+  `~hotkey~` letter unique in its menu or dialog (`tests/test_i18n.py`).
 - **Div.** Div is never modified and its behaviour is never reimplemented.
   Questions go through `run/bridge.php`.
 - **Documentation.** The manual (wiki) documents divide and links to Div's

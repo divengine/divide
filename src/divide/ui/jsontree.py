@@ -8,6 +8,8 @@ rebuilds the tree, keeping the expanded nodes and the cursor.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 from typing import Any
 
 from rich.text import Text
@@ -100,7 +102,7 @@ class EditItemDialog(_Dialog):
         self.has_key = key is not None
         self.key_input = InputLine(max_len=256)
         self.key_input.data = key or ""
-        self.types = RadioButtons(["~S~tring", "~N~umber", "~T~rue", "~F~alse", "N~u~ll", "~R~eference", "~O~bject", "~A~rray"], columns=2)
+        self.types = RadioButtons([_('~S~tring'), _('~N~umber'), _('~T~rue'), _('~F~alse'), _('N~u~ll'), _('~R~eference'), _('~O~bject'), _('~A~rray')], columns=2)
         type_ = type_ or divjson.type_name(value)
         self.types.value = 1 << divjson.TYPES.index(type_)
         self.value_input = InputLine(max_len=4096)
@@ -113,15 +115,15 @@ class EditItemDialog(_Dialog):
 
     def compose_content(self) -> ComposeResult:
         if self.has_key:
-            yield Label("~K~ey", link=self.key_input)
+            yield Label(_('~K~ey'), link=self.key_input)
             yield self.key_input
-        yield Label("T~y~pe", link=self.types)
+        yield Label(_('T~y~pe'), link=self.types)
         yield self.types
         yield Label("~V~alue (text, number or $reference)", link=self.value_input)
         yield self.value_input
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         first = self.key_input if self.has_key and not self.key_input.data else self.value_input
@@ -136,7 +138,7 @@ class EditItemDialog(_Dialog):
             return True
         key = self.key_input.data.strip()
         if self.has_key and not key:
-            self.app.notify("The key is empty", severity="error")
+            self.app.notify(_('The key is empty'), severity="error")
             return False
         try:
             self.result_value = divjson.make_value(self.selected_type(), self.value_input.data, self.original)
@@ -207,7 +209,7 @@ class JsonTree(Tree[Path_], TVViewMixin):
 class JsonTreeWindow(_TVWindow):
     """Tree view of a JSON editor window's buffer."""
 
-    HINT = "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
+    HINT = _('Enter edit · Ins add · Del del · ^↑↓ move · ^T code')
 
     def __init__(self, source: EditorWindow, number: int = 0) -> None:
         self.source = source
@@ -304,17 +306,17 @@ class JsonTreeWindow(_TVWindow):
         app = self.app
         if self.error is not None:
             await app.run_dialog(  # type: ignore[attr-defined]
-                _info("Data", f"Fix the JSON in the code editor first:\n{self.error}")
+                _info(_("Data"), _('Fix the JSON in the code editor first:\n{error}').format(error=self.error))
             )
             return False
         if not self._rewrite_ok and divjson.has_extensions(self.source.editor.text):
             from divide.ui.dialogs import MessageBox
 
             box = MessageBox(
-                "Data",
+                _('Data'),
                 f"Visual editing rewrites {self.source.display_name} as standard JSON: comments, "
                 "single quotes and unquoted keys are lost ($references are kept). Continue?",
-                [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no")],
+                [(_('~Y~es'), Command.YES, "yes"), (_('~N~o'), Command.NO, "no")],
                 width=56,
             )
             if await app.run_dialog(box) != Command.YES:  # type: ignore[attr-defined]
@@ -339,7 +341,7 @@ class JsonTreeWindow(_TVWindow):
         path = self._cursor_path()
         current = divjson.get_at(self.value, path)
         is_member = bool(path) and isinstance(path[-1], str)
-        dialog = EditItemDialog("Edit item", key=path[-1] if is_member else None, value=current)
+        dialog = EditItemDialog(_('Edit item'), key=path[-1] if is_member else None, value=current)
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
         try:
@@ -365,7 +367,7 @@ class JsonTreeWindow(_TVWindow):
         else:
             container, after = path[:-1], path[-1]
         parent = divjson.get_at(self.value, container)
-        dialog = EditItemDialog("Add item", key="" if isinstance(parent, dict) else None, value="", type_="String")
+        dialog = EditItemDialog(_('Add item'), key="" if isinstance(parent, dict) else None, value="", type_="String")
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
         try:
@@ -387,9 +389,9 @@ class JsonTreeWindow(_TVWindow):
             from divide.ui.dialogs import MessageBox
 
             box = MessageBox(
-                "Delete",
-                f"Delete {path[-1]!s} and its {len(current)} item(s)?",
-                [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no")],
+                _('Delete'),
+                _('Delete {path!s} and its {count} item(s)?').format(path=path[-1], count=len(current)),
+                [(_('~Y~es'), Command.YES, "yes"), (_('~N~o'), Command.NO, "no")],
                 width=48,
             )
             if await self.app.run_dialog(box) != Command.YES:  # type: ignore[attr-defined]

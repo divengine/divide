@@ -16,6 +16,8 @@ source of truth, so F2, undo and the unsaved-changes checks work as usual.
 
 from __future__ import annotations
 
+from divide.i18n import _, ngettext
+
 import json
 from pathlib import Path
 
@@ -64,26 +66,24 @@ def _verdict_text(verdict, tags: dict[str, str], section: dx.Section | None = No
 
     For a ``section``, only what concerns it; otherwise the whole example."""
     if verdict is None:
-        return "Div was not found: Div judges the dialect (Options > Div engine).", True
+        return _('Div was not found: Div judges the dialect (Options > Div engine).'), True
     if verdict.reason:
         return f"[!] Div: {verdict.reason}", True
     if verdict.translated is None:
-        return "Div: valid √", False
+        return _('Div: valid √'), False
     diffs = dx.differences(tags, verdict.translated)
     if section is not None:
         mine = next((d for d in diffs if d.section == section.title), None)
         if mine is None:
-            return "Div: valid √ · reads this section back exactly", False
-        return f"Div reads line {mine.line} otherwise: {mine.read.strip()}", True
+            return _('Div: valid √ · reads this section back exactly'), False
+        return _('Div reads line {line} otherwise: {strip}').format(line=mine.line, strip=mine.read.strip()), True
     total = len(dx.SECTIONS)
     if not diffs:
-        return f"Div: valid √\nIt reads all {total} sections of the example back exactly.", False
+        return _('Div: valid √\nIt reads all {total} sections of the example back exactly.').format(total=total), False
     d = diffs[0]
     more = f" (+{len(diffs) - 1} more)" if len(diffs) > 1 else ""
     return (
-        f"Div: valid √ · reads {total - len(diffs)}/{total} sections back\n"
-        f"!= {d.section}{more}, line {d.line}:\n"
-        f"wrote {d.wrote.strip()}\nread  {d.read.strip()}"
+        _('Div: valid √ · reads {diffs}/{total} sections back\n!= {section}{more}, line {line}:\nwrote {strip}\nread  {strip2}').format(diffs=total - len(diffs), total=total, section=d.section, more=more, line=d.line, strip=d.wrote.strip(), strip2=d.read.strip())
     ), True
 
 
@@ -132,7 +132,7 @@ class SectionList(ListBox):
 class DialectorWindow(_TVWindow):
     """Sections | preview, with Div's verdict below the sections."""
 
-    HINT = "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
+    HINT = _('Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example')
     BINDINGS = [
         Binding("delete", "restore_section", show=False),
         Binding("ctrl+z", "undo", show=False),
@@ -154,7 +154,7 @@ class DialectorWindow(_TVWindow):
         self.section_index = 0
         self.sections = SectionList(self)
         self.about = Static("", classes="dx-about", markup=False)
-        self.verdict_box = Static("Asking Div...", classes="dx-verdict", markup=False)
+        self.verdict_box = Static(_('Asking Div...'), classes="dx-verdict", markup=False)
         self.preview = _preview_view()
         self._written: str | None = None
         self._rewrite_ok = False
@@ -210,7 +210,7 @@ class DialectorWindow(_TVWindow):
         if self.source.editor.text != text:
             return  # changed meanwhile: a newer reload follows
         if value is None:
-            self.error = problem or "Div cannot decode it as a JSON object"
+            self.error = problem or _('Div cannot decode it as a JSON object')
             self.title = self._make_title(invalid=True)
             self._set_verdict(f"[!] {self.error}\nFix it in the code (Ctrl+T on the file shows it as a tree).", True)
             return
@@ -240,16 +240,15 @@ class DialectorWindow(_TVWindow):
 
     async def can_rewrite(self) -> bool:
         if self.error is not None:
-            await self.app.run_dialog(_message("Dialector", f"Fix the dialect file first:\n{self.error}"))  # type: ignore[attr-defined]
+            await self.app.run_dialog(_message("Dialector", _('Fix the dialect file first:\n{error}').format(error=self.error)))  # type: ignore[attr-defined]
             return False
         if not self._rewrite_ok and _rewrite_loses(self.source.editor.text):
             from divide.ui.dialogs import confirm
 
             text = (
-                f"The dialector rewrites {self.source.display_name} as standard JSON with only "
-                "the tags that differ from Div's: comments and other tags are dropped. Continue?"
+                _("The dialector rewrites {display_name} as standard JSON with only the tags that differ from Div's: comments and other tags are dropped. Continue?").format(display_name=self.source.display_name)
             )
-            if await self.app.run_dialog(confirm("Dialector", text)) != Command.YES:  # type: ignore[attr-defined]
+            if await self.app.run_dialog(confirm(_('Dialector'), text)) != Command.YES:  # type: ignore[attr-defined]
                 return False
         self._rewrite_ok = True
         return True
@@ -292,11 +291,11 @@ class DialectorWindow(_TVWindow):
         self.section_index = index
         section = self.section
         changed = dx.changed_in(section, self.tags)
-        self.about.update(f"{section.about}\n{changed} of {len(section.keys)} tags changed · Enter to edit")
+        self.about.update(_('{about}\n{changed} of {count} tags changed · Enter to edit').format(about=section.about, changed=changed, count=len(section.keys)))
         filled = dx.example(dx.overrides(self.tags))
         marks = [(a, b, "dialector.focus") for key in section.keys for a, b in filled.spans.get(key, [])]
         _show(self.preview, filled, self.tags, marks)
-        start, _ = filled.sections[section.title]
+        start, _end = filled.sections[section.title]
         row = filled.text.count("\n", 0, start)
         self.call_after_refresh(lambda: self.preview.scroll_to(y=row, animate=False))
 
@@ -409,16 +408,16 @@ class SectionDialog(_Dialog):
                     yield Label(label, link=self.inputs[key], classes="tr-label")
                     yield self.inputs[key]
                     default = DEFAULT_TAGS[key]
-                    yield Static(f"default: {default}" if default else "default: (empty)", classes="tr-default", markup=False)
+                    yield Static(f"default: {default}" if default else _('default: (empty)'), classes="tr-default", markup=False)
         yield HRule()
         yield self.preview
         yield HRule()
         yield self.verdict
         yield HRule()
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("~D~efaults", CM_DEFAULTS, id="defaults")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('~D~efaults'), CM_DEFAULTS, id="defaults")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.update_preview)
@@ -477,34 +476,34 @@ class TransformDialog(_Dialog):
     """
 
     def __init__(self, tags: dict[str, str]) -> None:
-        super().__init__(title="Transform all tags")
+        super().__init__(title=_('Transform all tags'))
         self.tags = tags
         self.find_input = InputLine(max_len=32)
         self.replace_input = InputLine(max_len=32)
-        self.summary = Static("Type what to find in the tags, and what to write instead.", classes="tf-summary", markup=False)
+        self.summary = Static(_('Type what to find in the tags, and what to write instead.'), classes="tf-summary", markup=False)
         self.changes: dict[str, str] = {}
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~F~ind in the tags", link=self.find_input)
+        yield Label(_('~F~ind in the tags'), link=self.find_input)
         yield self.find_input
-        yield Label("~R~eplace with", link=self.replace_input)
+        yield Label(_('~R~eplace with'), link=self.replace_input)
         yield self.replace_input
         yield self.summary
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_input_line_changed(self, message) -> None:
         message.stop()
         self.changes = dx.transform(self.tags, self.find_input.data, self.replace_input.data)
         if not self.find_input.data:
-            self.summary.update("Type what to find in the tags, and what to write instead.")
+            self.summary.update(_('Type what to find in the tags, and what to write instead.'))
             return
-        lines = [f"{len(self.changes)} tag{'s' if len(self.changes) != 1 else ''} change:"]
+        lines = [ngettext("{n} tag change:", "{n} tags change:", len(self.changes)).format(n=len(self.changes))]
         for key, value in list(self.changes.items())[:5]:
             lines.append(f"  {dx.LABELS[key]:<24} {self.tags[key]:>8}  →  {value}")
         if len(self.changes) > 5:
-            lines.append(f"  ... and {len(self.changes) - 5} more")
+            lines.append(_('  ... and {changes} more').format(changes=len(self.changes) - 5))
         self.summary.update("\n".join(lines))
 
 
@@ -538,7 +537,7 @@ class TranslateDialog(_Dialog):
     """
 
     def __init__(self, template: str = "", source: str = "", target: str = "", *, root: Path | None = None) -> None:
-        super().__init__(title="Translate a template")
+        super().__init__(title=_('Translate a template'))
         self.root = root or Path.cwd()
         self.template_input = InputLine(max_len=1024)
         self.template_input.data = template
@@ -548,7 +547,7 @@ class TranslateDialog(_Dialog):
         self.target_input.data = target
         self.preview = _preview_view()
         self.preview.add_class("tr-preview")
-        self.status = Static("Preview shows the template as Div translates it.", classes="tr-status", markup=False)
+        self.status = Static(_('Preview shows the template as Div translates it.'), classes="tr-status", markup=False)
         self.source_note = Static("", classes="tr-note", markup=False)
         self.text: str | None = None
         self.target_dialect: Dialect | None = None
@@ -558,8 +557,8 @@ class TranslateDialog(_Dialog):
 
     def compose_content(self) -> ComposeResult:
         for label, line, command in (
-            ("~T~emplate", self.template_input, CM_BROWSE_TEMPLATE),
-            ("~F~rom dialect", self.source_input, CM_BROWSE_SOURCE),
+            (_('~T~emplate'), self.template_input, CM_BROWSE_TEMPLATE),
+            (_('~F~rom dialect'), self.source_input, CM_BROWSE_SOURCE),
         ):
             with Horizontal(classes="tr-row"):
                 yield Label(label, link=line)
@@ -567,17 +566,17 @@ class TranslateDialog(_Dialog):
                 yield Button("...", command, id=f"browse-{command - CM_BROWSE_TEMPLATE}")
         yield self.source_note
         with Horizontal(classes="tr-row"):
-            yield Label("T~o~ dialect", link=self.target_input)
+            yield Label(_('T~o~ dialect'), link=self.target_input)
             yield self.target_input
             yield Button("...", CM_BROWSE_TARGET, id="browse-2")
-        yield Static("Paths relative to the project · an empty dialect is Div's default", classes="tr-note", markup=False)
+        yield Static(_("Paths relative to the project · an empty dialect is Div's default"), classes="tr-note", markup=False)
         yield self.preview
         yield self.status
         with Horizontal(classes="dlg-buttons"):
-            yield Button("~P~review", CM_PREVIEW, is_default=True, id="preview")
-            yield Button("~S~ave as...", CM_SAVE_TRANSLATION, id="save")
-            yield Button("Op~e~n", CM_OPEN_TRANSLATION, id="open")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('~P~review'), CM_PREVIEW, is_default=True, id="preview")
+            yield Button(_('~S~ave as...'), CM_SAVE_TRANSLATION, id="save")
+            yield Button(_('Op~e~n'), CM_OPEN_TRANSLATION, id="open")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.styles.height = max(20, min(36, self.app.size.height - 2))
@@ -605,7 +604,7 @@ class TranslateDialog(_Dialog):
     async def run_translation(self, then: Command | None = None) -> None:
         asked = self.fields()
         self.status.set_class(False, "-bad")
-        self.status.update("Asking Div...")
+        self.status.update(_('Asking Div...'))
         try:
             text, dialect = await self.app.translate_for_dialog(*asked)  # type: ignore[attr-defined]
         except ValueError as exc:
@@ -617,7 +616,7 @@ class TranslateDialog(_Dialog):
         self.preview.forced_dialect = dialect
         self.preview.load_text(text)
         lines = text.count("\n") + 1
-        self.status.update(f"Div translated {lines} lines · shown in the target dialect")
+        self.status.update(_('Div translated {lines} lines · shown in the target dialect').format(lines=lines))
         if then is not None:
             self.end_modal(then)
 
@@ -626,12 +625,12 @@ class TranslateDialog(_Dialog):
         now = self.fields()
         if now[1] != self._last[1] and now[1] != self._suggested:
             self._suggested = None  # the user chose the source: no more suggestions
-            self.source_note.update("Your choice (the template's own @_DIALECT is ignored)")
+            self.source_note.update(_("Your choice (the template's own @_DIALECT is ignored)"))
         if now[0] != self._last[0]:
             self.suggest()
         self._last = now
         if self._asked is not None and now != self._asked:
-            self.status.update("Changed: Preview again (Enter)")
+            self.status.update(_('Changed: Preview again (Enter)'))
 
     @work(exclusive=True, group="translate-browse")
     async def browse(self, command: int) -> None:
@@ -646,7 +645,7 @@ class TranslateDialog(_Dialog):
         line.focus()
         if line is self.source_input:
             self._suggested = None
-            self.source_note.update("Your choice (the template's own @_DIALECT is ignored)")
+            self.source_note.update(_("Your choice (the template's own @_DIALECT is ignored)"))
         self._last = self.fields()
         # a chosen file is a clear intent: preview right away (a new template: its dialect first)
         if line is self.template_input:

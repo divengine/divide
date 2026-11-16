@@ -6,6 +6,8 @@ dialogs); ``LocalMenu`` is the Borland-style local menu (Alt+F10 / right click).
 
 from __future__ import annotations
 
+from divide.i18n import _, ngettext
+
 import shutil
 from pathlib import Path
 
@@ -34,20 +36,20 @@ LOCAL_ACTIONS = {
     CM_TREE_REFRESH: "refresh",
 }
 
-TREE_HINT = "Ins new file · F7 folder · F2 rename · Del delete · Alt+F10 menu"
+TREE_HINT = _('Ins new file · F7 folder · F2 rename · Del delete · Alt+F10 menu')
 
 
 def local_menu(has_selection: bool) -> Menu:
     return Menu(
         items=[
-            MenuItem("~O~pen", CM_TREE_OPEN, "Enter", disabled=not has_selection),
+            MenuItem(_('~O~pen'), CM_TREE_OPEN, _('Enter'), disabled=not has_selection),
             Separator(),
-            MenuItem("New ~f~ile...", CM_TREE_NEW_FILE, "Ins"),
-            MenuItem("New fol~d~er...", CM_TREE_NEW_FOLDER, "F7"),
-            MenuItem("~R~ename...", CM_TREE_RENAME, "F2", disabled=not has_selection),
-            MenuItem("De~l~ete...", CM_TREE_DELETE, "Del", disabled=not has_selection),
+            MenuItem(_('New ~f~ile...'), CM_TREE_NEW_FILE, _('Ins')),
+            MenuItem(_('New fol~d~er...'), CM_TREE_NEW_FOLDER, "F7"),
+            MenuItem(_('~R~ename...'), CM_TREE_RENAME, "F2", disabled=not has_selection),
+            MenuItem(_('De~l~ete...'), CM_TREE_DELETE, _('Del'), disabled=not has_selection),
             Separator(),
-            MenuItem("Refre~s~h", CM_TREE_REFRESH, "Ctrl+R"),
+            MenuItem(_('Refre~s~h'), CM_TREE_REFRESH, "Ctrl+R"),
         ]
     )
 
@@ -110,11 +112,11 @@ class LocalMenu(ModalScreen[int | None]):
 
 def _bad_name(name: str) -> str | None:
     if not name or name in (".", ".."):
-        return "Type a name."
+        return _('Type a name.')
     if Path(name).is_absolute() or ".." in Path(name).parts:
-        return "Use a name inside the project folder."
+        return _('Use a name inside the project folder.')
     if "\0" in name:
-        return "Invalid name."
+        return _('Invalid name.')
     return None
 
 
@@ -164,9 +166,9 @@ class ExplorerMixin:
     async def create_entry(self, tree: ProjectTree, *, folder: bool) -> Path | None:
         base = tree.target_folder
         where = self._project_relative(base)
-        title = "New folder" if folder else "New file"
-        hint = "Subfolders are created too (parts/menu.tpl)" if not folder else "Nested folders are fine (a/b/c)"
-        dialog = InputDialog(title, f"~N~ame (in {where}/)" if where != "." else "~N~ame", "", hint=hint)
+        title = _('New folder') if folder else _('New file')
+        hint = _('Subfolders are created too (parts/menu.tpl)') if not folder else _('Nested folders are fine (a/b/c)')
+        dialog = InputDialog(title, _('~N~ame (in {where}/)').format(where=where) if where != "." else _('~N~ame'), "", hint=hint)
         if await self.run_dialog(dialog) != Command.OK or not dialog.value:  # type: ignore[attr-defined]
             return None
         if error := _bad_name(dialog.value):
@@ -174,7 +176,7 @@ class ExplorerMixin:
             return None
         target = base / dialog.value
         if target.exists():
-            await self.run_dialog(information(title, f"{self._project_relative(target)} already exists."))  # type: ignore[attr-defined]
+            await self.run_dialog(information(title, _('{target} already exists.').format(target=self._project_relative(target))))  # type: ignore[attr-defined]
             return None
         try:
             if folder:
@@ -183,7 +185,7 @@ class ExplorerMixin:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.touch()
         except OSError as exc:
-            await self.run_dialog(information(title, f"Cannot create {dialog.value}: {exc.strerror or exc}"))  # type: ignore[attr-defined]
+            await self.run_dialog(information(title, _('Cannot create {value}: {exc}').format(value=dialog.value, exc=exc.strerror or exc)))  # type: ignore[attr-defined]
             return None
         await tree.reveal(target)
         if not folder:
@@ -194,9 +196,9 @@ class ExplorerMixin:
         path = tree.selected_path
         if path is None:
             return None
-        title = "Rename"
+        title = _('Rename')
         stem = len(path.stem) if path.is_file() and path.suffix else len(path.name)
-        dialog = InputDialog(title, "New ~n~ame", path.name, hint=self._project_relative(path), select=(0, stem))
+        dialog = InputDialog(title, _('New ~n~ame'), path.name, hint=self._project_relative(path), select=(0, stem))
         if await self.run_dialog(dialog) != Command.OK or not dialog.value or dialog.value == path.name:  # type: ignore[attr-defined]
             return None
         if error := _bad_name(dialog.value):
@@ -204,13 +206,13 @@ class ExplorerMixin:
             return None
         target = path.parent / dialog.value
         if target.exists() and target.resolve() != path.resolve():
-            await self.run_dialog(information(title, f"{self._project_relative(target)} already exists."))  # type: ignore[attr-defined]
+            await self.run_dialog(information(title, _('{target} already exists.').format(target=self._project_relative(target))))  # type: ignore[attr-defined]
             return None
         try:
             target.parent.mkdir(parents=True, exist_ok=True)
             path.rename(target)
         except OSError as exc:
-            await self.run_dialog(information(title, f"Cannot rename: {exc.strerror or exc}"))  # type: ignore[attr-defined]
+            await self.run_dialog(information(title, _('Cannot rename: {exc}').format(exc=exc.strerror or exc)))  # type: ignore[attr-defined]
             return None
         self.paths_moved(path, target)
         await tree.reveal(target)
@@ -246,10 +248,10 @@ class ExplorerMixin:
         rel = self._project_relative(path)
         if path.is_dir() and not path.is_symlink():
             count = sum(1 for _ in path.rglob("*"))
-            text = f"Delete the folder {rel}" + (f" and the {count} item{'s' if count != 1 else ''} in it?" if count else "?")
+            text = _('Delete the folder {rel}').format(rel=rel) + (f" and the {count} item{'s' if count != 1 else ''} in it?" if count else "?")
         else:
             text = f"Delete {rel}?"
-        if await self.run_dialog(confirm("Delete", text)) != Command.YES:  # type: ignore[attr-defined]
+        if await self.run_dialog(confirm(_('Delete'), text)) != Command.YES:  # type: ignore[attr-defined]
             return False
         try:
             if path.is_dir() and not path.is_symlink():
@@ -257,7 +259,7 @@ class ExplorerMixin:
             else:
                 path.unlink()
         except OSError as exc:
-            await self.run_dialog(information("Delete", f"Cannot delete {rel}: {exc.strerror or exc}"))  # type: ignore[attr-defined]
+            await self.run_dialog(information(_('Delete'), _('Cannot delete {rel}: {exc}').format(rel=rel, exc=exc.strerror or exc)))  # type: ignore[attr-defined]
             await tree.reload()
             return False
         # Windows of deleted files close, unless they hold unsaved changes.
@@ -270,7 +272,8 @@ class ExplorerMixin:
                 else:
                     self._remove_window(win)  # type: ignore[attr-defined]
         if kept:
-            self.notify(f"{kept} window{'s' if kept > 1 else ''} with unsaved changes kept open", severity="warning")  # type: ignore[attr-defined]
+            self.notify(ngettext("{n} window with unsaved changes kept open", "{n} windows with unsaved changes kept open",
+                                 kept).format(n=kept), severity="warning")  # type: ignore[attr-defined]
         await tree.reload()
         return True
 

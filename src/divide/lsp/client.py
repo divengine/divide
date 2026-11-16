@@ -8,6 +8,8 @@ server publishes on its own (diagnostics) goes to a callback.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import asyncio
 import logging
 import os
@@ -137,7 +139,7 @@ class LspSession:
         try:
             await self.client.start_io(*self.command, cwd=str(self.root), env={**os.environ, "TMPDIR": str(self.temp)})
         except OSError as exc:
-            self.failed = f"cannot start {self.command[0]}: {exc.strerror or exc}"
+            self.failed = _('cannot start {command}: {exc}').format(command=self.command[0], exc=exc.strerror or exc)
             return False
         process = self.client._server
         if process is not None and process.stderr is not None:
@@ -181,7 +183,7 @@ class LspSession:
     def _why(self, exc: Exception) -> str:
         detail = self.stderr[-1].strip() if self.stderr else ""
         if isinstance(exc, asyncio.TimeoutError):
-            return f"{self.server.name} did not answer" + (f": {detail}" if detail else "")
+            return _('{name} did not answer').format(name=self.server.name) + (f": {detail}" if detail else "")
         return f"{self.server.name}: {detail or exc}"
 
     async def _drain(self, stream: asyncio.StreamReader) -> None:

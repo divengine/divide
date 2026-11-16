@@ -20,6 +20,8 @@ another and, for files, the file name over its folders.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import os
 import subprocess
 from dataclasses import dataclass
@@ -44,10 +46,10 @@ from divide.ui.dialogs import _Dialog
 from divide.ui.windows import HIDDEN_NAMES, PassiveScrollBar
 
 COMMANDS_PREFIX = ">"
-FILES_TITLE = "Go to File"
-COMMANDS_TITLE = "Commands"
-FILES_HINT = "Type a file name · > for the commands · Enter open · Esc close"
-COMMANDS_HINT = "Type a command · delete the > for the files · Enter run · Esc close"
+FILES_TITLE = _('Go to File')
+COMMANDS_TITLE = _('Commands')
+FILES_HINT = _('Type a file name · > for the commands · Enter open · Esc close')
+COMMANDS_HINT = _('Type a command · delete the > for the files · Enter run · Esc close')
 RECENT_COMMANDS = "commands"  # the history of the commands run from here
 MAX_FILES = 20000  # what a project lists at most
 MAX_SHOWN = 500  # rows of the list
@@ -328,7 +330,7 @@ class PaletteDialog(_Dialog):
         if self.shown:
             self.hint.update(COMMANDS_HINT if commands else FILES_HINT)
         else:
-            self.hint.update("No command matches" if commands else "No file matches")
+            self.hint.update(_('No command matches') if commands else _('No file matches'))
 
     def on_input_line_changed(self, message: InputLine.Changed) -> None:
         message.stop()

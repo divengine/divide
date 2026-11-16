@@ -11,6 +11,8 @@ The server has one worker: while a request is paused, the next ones wait.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import asyncio
 import re
 import shutil
@@ -46,7 +48,7 @@ def check_address(address: str) -> str | None:
     """Why ``host:port`` cannot be served, or None."""
     host, colon, port = address.strip().rpartition(":")
     if not colon or not host or not port.isdigit() or not 0 < int(port) < 65536:
-        return "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
+        return _('The address is host:port, as in 127.0.0.1:8000 or localhost:8080.')
     return None
 
 
@@ -120,7 +122,7 @@ class WebServer:
 
     def command(self, port: int | None = None) -> list[str]:
         if not self.php:
-            raise ServerError("php not found in PATH")
+            raise ServerError(_('php not found in PATH'))
         argv = [self.php, "-d", "log_errors=1"]
         if self.ini is not None and port is not None:
             argv += [
@@ -139,9 +141,9 @@ class WebServer:
         if (problem := check_address(self.address)) is not None:
             raise ServerError(problem)
         if not self.root.is_dir():
-            raise ServerError(f"{self.root} is not a folder")
+            raise ServerError(_('{root} is not a folder').format(root=self.root))
         if self.router is not None and not self.router.is_file():
-            raise ServerError(f"{self.router} is not a file")
+            raise ServerError(_('{router} is not a file').format(router=self.router))
         port = None
         if self.ini is not None:
             self._listener = await asyncio.start_server(
@@ -160,8 +162,8 @@ class WebServer:
         while b") started" not in self._log:
             if self._proc.returncode is not None or loop.time() > deadline:
                 await self.stop()
-                said = self.log.strip() or f"php -S ended with exit code {self._proc.returncode}"
-                raise ServerError(said if self._proc.returncode is not None else f"php -S did not start in {timeout:.0f}s")
+                said = self.log.strip() or _('php -S ended with exit code {returncode}').format(returncode=self._proc.returncode)
+                raise ServerError(said if self._proc.returncode is not None else _('php -S did not start in {timeout:.0f}s').format(timeout=timeout))
             await asyncio.sleep(0.05)
 
     async def next_request(self) -> DebugSession:

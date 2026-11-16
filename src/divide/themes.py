@@ -22,6 +22,8 @@ terminal) or the 16 ANSI colours, by what the terminal says it supports
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import dataclasses
 from dataclasses import dataclass, field
 from typing import Mapping
@@ -347,14 +349,14 @@ FREE_PASCAL_CHROME = dataclasses.replace(
 THEMES: dict[str, Palette] = {
     p.name: p
     for p in (
-        Palette("turbo-pascal", "Turbo ~P~ascal", "Turbo Vision's colours: gray menus, blue windows, yellow text.",
+        Palette("turbo-pascal", _('Turbo ~P~ascal'), _("Turbo Vision's colours: gray menus, blue windows, yellow text."),
                 CGA, THEME_TURBO_PASCAL, BORLAND_UI, BORLAND_SYNTAX),
-        Palette("turbo-c", "Turbo ~C~", "Turbo C 2.01's: as Turbo Pascal, white-on-black menu hotkeys.",
+        Palette("turbo-c", _('Turbo ~C~'), _("Turbo C 2.01's: as Turbo Pascal, white-on-black menu hotkeys."),
                 CGA, THEME_TURBO_C, BORLAND_UI, BORLAND_SYNTAX),
-        Palette("free-pascal", "~F~ree Pascal", "Turbo Vision's layout in Windows Terminal's Campbell colours.",
+        Palette("free-pascal", _('~F~ree Pascal'), _("Turbo Vision's layout in Windows Terminal's Campbell colours."),
                 CAMPBELL, FREE_PASCAL_CHROME,
                 FREE_PASCAL_UI, FREE_PASCAL_SYNTAX),
-        Palette("modern-dark", "~M~odern dark", "Deep grays, light text and a blue accent, high contrast.",
+        Palette("modern-dark", _('~M~odern dark'), _('Deep grays, light text and a blue accent, high contrast.'),
                 MODERN, MODERN_CHROME, MODERN_UI, MODERN_SYNTAX),
     )
 }
@@ -393,5 +395,5 @@ def use(name: str) -> Palette:
 
 # Colour depth: what Rich (and so Textual) sends to the terminal.
 DEPTHS = {"auto": "auto", "truecolor": "truecolor", "256": "256", "16": "standard"}
-DEPTH_LABELS = {"auto": "~A~utomatic (what the terminal says)", "truecolor": "~T~rue colour (24-bit)",
-                "256": "~2~56 colours", "16": "~1~6 colours (ANSI)"}
+DEPTH_LABELS = {"auto": _('~A~utomatic (what the terminal says)'), "truecolor": _('~T~rue colour (24-bit)'),
+                "256": _('~2~56 colours'), "16": _('~1~6 colours (ANSI)')}

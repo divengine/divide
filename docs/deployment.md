@@ -31,7 +31,7 @@ tmux).
 ## 3. Running
 
 ```sh
-divide [folder] [files...] [--palette NAME] [--colors auto|truecolor|256|16]
+divide [folder] [files...] [--palette NAME] [--colors auto|truecolor|256|16] [--language auto|en|es]
 ```
 
 - `folder`: the project, by default the current folder.
@@ -39,6 +39,8 @@ divide [folder] [files...] [--palette NAME] [--colors auto|truecolor|256|16]
   `modern-dark`). The default is the one chosen in Options > Colors.
 - `--colors`: forces the colour depth. By default it is what the terminal
   reports.
+- `--language`: the interface's language for this run. By default it is the
+  one chosen in Options > Language, else the system's.
 
 ## 4. Configuration
 
@@ -56,6 +58,7 @@ hand is possible while divide is closed.
 | `lsp`, `lsp_commands` | Options > Language servers | which server per language, and custom commands |
 | `run_args` | Run > Parameters | the arguments of each script |
 | `web` | Run > Web server | address, document root, router, browser |
+| `language` | Options > Language | the interface's language: `auto` (the system's), `en`, `es` (applies at the next start) |
 | `history` | every input line with `▐↓▌` | the input histories, by kind (`file`, `find`, `find-files`, `commands`...), 20 entries each |
 
 Environment variables:
@@ -64,14 +67,18 @@ Environment variables:
 |---|---|
 | `XDG_CONFIG_HOME` | where `divide/config.json` lives |
 | `XDG_CACHE_HOME` | caches of language servers |
+| `DIVIDE_LANGUAGE` | the interface's language for this run, over everything else (the tests and screenshots set `en`) |
+| `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG` | the system's language, used when nothing else chooses |
 | `DIVIDE_DIV_PHP` | tests and screenshots: the Div engine to use |
 | `DIVIDE_SHOT_XDEBUG`, `DIVIDE_SHOT_LSP`, `DIVIDE_SHOT_KEEP_SVG` | screenshots only (`tools/wiki_shots.py`) |
 
 ## 5. Packaged resources
 
 `pyproject.toml` ships `run/*.php` (the bridge), `manual/books.json`, the
-books' pages (`manual/books/*/*`) and the help's search index
-(`manual/search.sqlite`) inside the package. The books are refreshed from
+books' pages (`manual/books/*/*`), the help's search index
+(`manual/search.sqlite`) and the compiled translations
+(`locale/*/LC_MESSAGES/*.mo`) inside the package. After changing texts,
+`tools/i18n.py all` extracts, merges and compiles the catalogues. The books are refreshed from
 their sources, and the index rebuilt, with:
 
 ```sh

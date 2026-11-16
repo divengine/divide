@@ -36,6 +36,7 @@ PALETTE = "free-pascal"  # the manual's pictures, unless a shot shows another th
 OUT: Path = Path()
 SVG_DIR: Path = Path()
 
+os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in English
 from divide.app import Divide  # noqa: E402
 from divide.ui.progress import ProgressScreen  # noqa: E402
 

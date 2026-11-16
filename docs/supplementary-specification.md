@@ -64,6 +64,13 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
 
 - **S1 Same look in every terminal.** divide's own glyphs are ASCII or
   CP437, single width, with no Nerd Fonts and no emoji (`tests/test_glyphs.py`).
+  Translations may also use the Latin-1 letters CP437 lacks (Á, Í, Ó, Ú...):
+  they are one cell wide in every font (`tests/test_i18n.py`).
+- **S5 Interface languages.** The interface (menus, dialogs, hints,
+  messages) is translatable with gettext, and ships in English and Spanish.
+  The language is the system's, Options > Language, `--language` or
+  `DIVIDE_LANGUAGE`, and applies at start. The help books, and what Div,
+  PHP, Xdebug and language servers say, are not part of it.
 - **S2 Colour depth.** Truecolour, 256 and 16 colours. On 16-colour
   terminals each colour maps to its own ANSI slot. `--colors` can force a
   depth.

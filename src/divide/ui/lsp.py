@@ -12,6 +12,8 @@ or none, and the command to run it when it is not in the project or the PATH.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import asyncio
 import re
 from pathlib import Path
@@ -112,10 +114,10 @@ class LspMixin:
         self._lsp_starting.pop(server.name, None)
         if ok:
             self._lsp[server.name] = session
-            self.notify(f"{server.name} is ready", timeout=2)  # type: ignore[attr-defined]
+            self.notify(_('{name} is ready').format(name=server.name), timeout=2)  # type: ignore[attr-defined]
         else:
-            self._lsp_failed[server.name] = session.failed or "it did not start"
-            self.notify(f"Language server: {self._lsp_failed[server.name]}", severity="warning", timeout=5)  # type: ignore[attr-defined]
+            self._lsp_failed[server.name] = session.failed or _('it did not start')
+            self.notify(_('Language server: {name}').format(name=self._lsp_failed[server.name]), severity="warning", timeout=5)  # type: ignore[attr-defined]
             session = None
         future.set_result(session)
         if session is not None:
@@ -302,7 +304,7 @@ class LspMixin:
         text = clean_hover(lsp.plain_markup(hover.contents) if hover else "")
         word = _WORD.search(ed.text[:offset]).group(0) + re.match(r"\w*", ed.text[offset:]).group(0)  # type: ignore[union-attr]
         if not text:
-            self.notify(f"{session.server.name} knows nothing about {word or 'this'}", timeout=2)  # type: ignore[attr-defined]
+            self.notify(_('{name} knows nothing about {this}').format(name=session.server.name, this=word or 'this'), timeout=2)  # type: ignore[attr-defined]
             return True
         await self.run_dialog(information(word or session.server.name, text))  # type: ignore[attr-defined]
         return True
@@ -318,7 +320,7 @@ class LspMixin:
         with self.busy(f"Asking {session.server.name}..."):  # type: ignore[attr-defined]
             found = await session.definition(win.path, offset)
         if not found:
-            self.notify(f"{session.server.name} does not know where this is defined", timeout=2)  # type: ignore[attr-defined]
+            self.notify(_('{name} does not know where this is defined').format(name=session.server.name), timeout=2)  # type: ignore[attr-defined]
             return True
         text = ed.text
         word = (re.search(r"[\w$]*$", text[:offset]).group(0) + re.match(r"\w*", text[offset:]).group(0)).lstrip("$")  # type: ignore[union-attr]
@@ -342,11 +344,11 @@ class LspMixin:
         """For the status line and messages: which server, or why none."""
         found = self.lsp_server_for(language)
         if found is None:
-            choice, _ = lsp_settings()
+            choice, _servers = lsp_settings()
             if choice.get(language) == lsp.OFF:
-                return "no language server (Options > Language servers)"
+                return _('no language server (Options > Language servers)')
             names = " or ".join(s.name for s in lsp.servers_for(language))
-            return f"no language server: install {names}, or set one in Options > Language servers"
+            return _('no language server: install {names}, or set one in Options > Language servers').format(names=names)
         server = found[0]
         if server.name in self._lsp_failed:
             return f"{server.name} failed: {self._lsp_failed[server.name]}"
@@ -464,14 +466,14 @@ class ServersDialog(_Dialog):
     """
 
     def __init__(self, language: str, root: Path) -> None:
-        super().__init__(title="Language servers")
+        super().__init__(title=_('Language servers'))
         self.language = language
         self.root = root
         self.servers = lsp.servers_for(language)
         choice, commands = lsp_settings()
         self.commands = commands
         names = [lsp.AUTO] + [s.name for s in self.servers] + [lsp.OFF]
-        labels = ["~A~utomatic: the first one found"] + [f"~{s.name[0]}~{s.name[1:]}" for s in self.servers] + ["~N~one"]
+        labels = [_('~A~utomatic: the first one found')] + [f"~{s.name[0]}~{s.name[1:]}" for s in self.servers] + [_('~N~one')]
         self.names = names
         self.radio = RadioButtons(labels)
         current = choice.get(language, lsp.AUTO)
@@ -494,15 +496,15 @@ class ServersDialog(_Dialog):
         return "\n".join(parts)
 
     def compose_content(self) -> ComposeResult:
-        yield Label(f"Server for {self.language.upper()} files", link=self.radio)
+        yield Label(_('Server for {upper} files').format(upper=self.language.upper()), link=self.radio)
         yield self.radio
-        yield Label("~C~ommand of the server chosen (empty: the project's or the PATH's)", link=self.input)
+        yield Label(_("~C~ommand of the server chosen (empty: the project's or the PATH's)"), link=self.input)
         yield self.input
         yield Static(self._found(), classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("~B~rowse...", CM_LSP_BROWSE, id="browse")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('~B~rowse...'), CM_LSP_BROWSE, id="browse")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_command_message(self, message) -> None:
         if message.command == CM_LSP_BROWSE:

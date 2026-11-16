@@ -12,6 +12,8 @@ to true colour, 256 or 16 colours, for a terminal that says less than it can
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 from pathlib import Path
 
 from textual.app import ComposeResult
@@ -31,7 +33,7 @@ SAMPLE = """{= title: "Colours" =}
 [$items]{?( $price > 10 )?}<b>{$name}</b>{/?}[/$items]
 {% card.tpl %}  {$total:2.} 42"""
 
-DETECTED = {"truecolor": "true colour", "256": "256 colours", "standard": "16 colours", "windows": "16 colours (Windows console)"}
+DETECTED = {"truecolor": _('true colour'), "256": "256 colours", "standard": "16 colours", "windows": _('16 colours (Windows console)')}
 
 
 def depth_setting() -> str:
@@ -78,19 +80,19 @@ class ColorsDialog(_Dialog):
         self.detected = detected
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~T~heme", link=self.themes)
+        yield Label(_('~T~heme'), link=self.themes)
         yield self.themes
         yield self.about
         sample = EditorView(SAMPLE, path=Path("sample.tpl"), read_only=True, classes="colors-sample")
         sample.can_focus = False
         yield sample
-        yield Label("Colour ~d~epth (from the next start)", link=self.depth_radio)
+        yield Label(_('Colour ~d~epth (from the next start)'), link=self.depth_radio)
         yield self.depth_radio
         shown = DETECTED.get(self.detected or "", "no colours")
-        yield Static(f"This terminal gets {shown} now.", classes="dlg-hint", markup=False)
+        yield Static(_('This terminal gets {shown} now.').format(shown=shown), classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def _chosen(self, radio: RadioButtons, names: list[str]) -> str:
         return names[max(0, radio.value.bit_length() - 1)]

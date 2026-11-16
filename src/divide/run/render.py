@@ -12,6 +12,8 @@ the configured path, then ``vendor/autoload.php`` (with
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import asyncio
 import json
 import os
@@ -100,16 +102,16 @@ def check_data(text: str) -> str | None:
     try:
         value = lenient_json(stripped)
     except ValueError as exc:
-        return f"data is not valid JSON ({exc}); Div will render without data"
+        return _('data is not valid JSON ({exc}); Div will render without data').format(exc=exc)
     if not isinstance(value, (dict, list)):
-        return "data must be a JSON object; Div will render without data"
+        return _('data must be a JSON object; Div will render without data')
     return None
 
 
 async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: float) -> dict:
     php = php or shutil.which("php")
     if not php:
-        raise RenderError("php not found in PATH")
+        raise RenderError(_('php not found in PATH'))
     proc = await asyncio.create_subprocess_exec(
         php,
         str(BRIDGE),
@@ -123,7 +125,7 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
     except TimeoutError:
         proc.kill()
         await proc.wait()
-        raise RenderError(f"php took longer than {timeout:.0f}s and was stopped") from None
+        raise RenderError(_('php took longer than {timeout:.0f}s and was stopped').format(timeout=timeout)) from None
     except asyncio.CancelledError:  # stopped from the progress box
         proc.kill()
         await asyncio.shield(proc.wait())
@@ -132,7 +134,7 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
         reply = json.loads(out.decode("utf-8", "replace"))
     except ValueError:
         detail = (err or out).decode("utf-8", "replace").strip()[:500]
-        raise RenderError(f"php bridge failed (exit {proc.returncode}): {detail}") from None
+        raise RenderError(_('php bridge failed (exit {returncode}): {detail}').format(returncode=proc.returncode, detail=detail)) from None
     return reply if isinstance(reply, dict) else {}
 
 
@@ -200,8 +202,7 @@ async def render(
         result.messages.append(
             RenderMessage(
                 "NOTE",
-                f"the data uses {names}: Div decodes a data file before any variable exists, "
-                "so these come out empty (they work in {= var: {...} =} inside templates)",
+                _('the data uses {names}: Div decodes a data file before any variable exists, so these come out empty (they work in {{= var: {{...}} =}} inside templates)').format(names=names),
             )
         )
     return result
@@ -245,7 +246,7 @@ async def check_dialect(
     valid = reply.get("valid")
     version = reply.get("version")
     if valid is not True:
-        return DialectVerdict(str(valid or "Div gave no answer"), version=version)
+        return DialectVerdict(str(valid or _('Div gave no answer')), version=version)
     if sample is None or expected is None:
         return DialectVerdict(None, version=version)
     try:
@@ -275,7 +276,7 @@ async def translate_template(
     translated = reply.get("translated")
     if not isinstance(translated, str):
         problems = [m.get("text", "") for m in reply.get("messages", []) if m.get("level") in ("FATAL", "PHP")]
-        raise RenderError(problems[0] if problems else "Div did not translate the template")
+        raise RenderError(problems[0] if problems else _('Div did not translate the template'))
     return translated
 
 

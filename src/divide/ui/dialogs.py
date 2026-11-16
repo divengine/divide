@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import fnmatch
 from datetime import datetime
 from pathlib import Path
@@ -128,17 +130,17 @@ class MessageBox(_Dialog):
 
 def confirm_save(name: str) -> MessageBox:
     return MessageBox(
-        "Confirm",
-        f"{name} has been modified. Save?",
-        [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no"), ("~C~ancel", Command.CANCEL, "cancel")],
+        _('Confirm'),
+        _('{name} has been modified. Save?').format(name=name),
+        [(_('~Y~es'), Command.YES, "yes"), (_('~N~o'), Command.NO, "no"), (_('~C~ancel'), Command.CANCEL, "cancel")],
     )
 
 
 def about_box(version: str) -> MessageBox:
     return MessageBox(
-        "About",
-        f"divide {version}\n\nTerminal IDE for the Divengine projects.\nhttps://github.com/divengine",
-        [("O~K~", Command.OK, "ok")],
+        _('About'),
+        _('divide {version}\n\nTerminal IDE for the Divengine projects.\nhttps://github.com/divengine').format(version=version),
+        [(_('O~K~'), Command.OK, "ok")],
         width=48,
     )
 
@@ -244,7 +246,7 @@ class FileDialog(_Dialog):
     """
 
     def __init__(
-        self, title: str, directory: Path, *, name: str = "", pattern: str = "*", ok_label: str = "~O~pen",
+        self, title: str, directory: Path, *, name: str = "", pattern: str = "*", ok_label: str = _('~O~pen'),
         folders: bool = False,
     ) -> None:
         super().__init__(title=title)
@@ -268,15 +270,15 @@ class FileDialog(_Dialog):
     def compose_content(self) -> ComposeResult:
         with Horizontal(classes="fd-body"):
             with Vertical(classes="fd-left"):
-                yield Label("~N~ame (. is the folder below)" if self.folders else "~N~ame", link=self.input)
+                yield Label(_('~N~ame (. is the folder below)') if self.folders else _('~N~ame'), link=self.input)
                 yield HistoryInput(self.input, "folder" if self.folders else "file")
-                yield Label("~F~olders" if self.folders else "~F~iles", link=self.list, classes="fd-files-label")
+                yield Label(_('~F~olders') if self.folders else _('~F~iles'), link=self.list, classes="fd-files-label")
                 with Horizontal(classes="fd-files"):
                     yield self.list
                     yield self.bar
             with Vertical(classes="fd-buttons"):
                 yield Button(self.ok_label, Command.OK, is_default=True, id="ok")
-                yield Button("Cancel", Command.CANCEL, id="cancel")
+                yield Button(_('Cancel'), Command.CANCEL, id="cancel")
         yield self.info
 
     def on_mount(self) -> None:
@@ -353,7 +355,7 @@ class FileDialog(_Dialog):
             self._load()
             return
         if not target.parent.is_dir():
-            self.app.notify(f"No such folder: {target.parent}", severity="error")
+            self.app.notify(_('No such folder: {parent}').format(parent=target.parent), severity="error")
             return
         self.chosen = target.resolve()
         self.end_modal(Command.OK)
@@ -391,48 +393,48 @@ class SearchDialog(_Dialog):
     """
 
     def __init__(self, *, replace: bool, query: str, replacement: str, options: SearchOptions) -> None:
-        super().__init__(title="Replace" if replace else "Find")
+        super().__init__(title=_("Replace") if replace else _("Find"))
         self.replace = replace
         self.styles.height = 19 if replace else 16
         self.query_input = InputLine(max_len=1024)
         self.query_input.data = query
         self.replace_input = InputLine(max_len=1024)
         self.replace_input.data = replacement
-        flags = ["~C~ase sensitive", "~W~hole words only", "~R~egular expression"]
+        flags = [_('~C~ase sensitive'), _('~W~hole words only'), _('~R~egular expression')]
         if replace:
-            flags.append("~P~rompt on replace")
+            flags.append(_('~P~rompt on replace'))
         self.flags = CheckBoxes(flags)
         self.flags.value = (
             int(options.case_sensitive) | int(options.whole_words) << 1 | int(options.regex) << 2 | int(options.prompt) << 3
         ) & ((1 << len(flags)) - 1)
-        self.direction = RadioButtons(["Forwar~d~", "~B~ackward"])
+        self.direction = RadioButtons([_('Forwar~d~'), _('~B~ackward')])
         self.direction.value = 2 if options.backward else 1
-        self.origin = RadioButtons(["~F~rom cursor", "~E~ntire scope"])
+        self.origin = RadioButtons([_('~F~rom cursor'), _('~E~ntire scope')])
         self.origin.value = 2 if options.entire_scope else 1
         self.search_text = query
         self.replacement = replacement
         self.options = options
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~T~ext to find", link=self.query_input)
+        yield Label(_('~T~ext to find'), link=self.query_input)
         yield HistoryInput(self.query_input, "find")
         if self.replace:
-            yield Label("~N~ew text", link=self.replace_input)
+            yield Label(_('~N~ew text'), link=self.replace_input)
             yield HistoryInput(self.replace_input, "replace")
         with Horizontal(classes="sd-row"):
             with Vertical(classes="sd-col"):
-                yield Label("Options", link=self.flags)
+                yield Label(_('Options'), link=self.flags)
                 yield self.flags
             with Vertical(classes="sd-col"):
-                yield Label("Direction", link=self.direction)
+                yield Label(_('Direction'), link=self.direction)
                 yield self.direction
-                yield Label("Origin", link=self.origin)
+                yield Label(_('Origin'), link=self.origin)
                 yield self.origin
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
             if self.replace:
-                yield Button("Change ~a~ll", CM_CHANGE_ALL, id="all")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+                yield Button(_('Change ~a~ll'), CM_CHANGE_ALL, id="all")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.query_input.select_all)
@@ -462,15 +464,15 @@ class SearchDialog(_Dialog):
 
 def replace_prompt() -> MessageBox:
     return MessageBox(
-        "Replace",
-        "Replace this occurrence?",
-        [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no"), ("~A~ll", CM_CHANGE_ALL, "all"), ("Cancel", Command.CANCEL, "cancel")],
+        _('Replace'),
+        _('Replace this occurrence?'),
+        [(_('~Y~es'), Command.YES, "yes"), (_('~N~o'), Command.NO, "no"), (_('~A~ll'), CM_CHANGE_ALL, "all"), (_('Cancel'), Command.CANCEL, "cancel")],
         width=50,
     )
 
 
 def information(title: str, text: str) -> MessageBox:
-    return MessageBox(title, text, [("O~K~", Command.OK, "ok")], width=max(36, min(70, len(text) + 8)))
+    return MessageBox(title, text, [(_('O~K~'), Command.OK, "ok")], width=max(36, min(70, len(text) + 8)))
 
 
 class GotoLineDialog(_Dialog):
@@ -480,17 +482,17 @@ class GotoLineDialog(_Dialog):
     """
 
     def __init__(self, line: int) -> None:
-        super().__init__(title="Go to Line Number")
+        super().__init__(title=_('Go to Line Number'))
         self.input = InputLine(max_len=9)
         self.input.data = str(line)
         self.line: int | None = None
 
     def compose_content(self) -> ComposeResult:
-        yield Label("Enter new line ~n~umber", link=self.input)
+        yield Label(_('Enter new line ~n~umber'), link=self.input)
         yield HistoryInput(self.input, "line")
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.input.select_all)
@@ -501,7 +503,7 @@ class GotoLineDialog(_Dialog):
         try:
             self.line = int(self.input.data.strip())
         except ValueError:
-            self.app.notify("Not a line number", severity="error")
+            self.app.notify(_('Not a line number'), severity="error")
             return False
         return self.line >= 1
 
@@ -525,7 +527,7 @@ async def browse_into(
             start = here
         elif here.parent.is_dir():
             start = here.parent
-    chooser = FileDialog(title, start, pattern=pattern, ok_label="~O~K", folders=folders)
+    chooser = FileDialog(title, start, pattern=pattern, ok_label=_('~O~K'), folders=folders)
     if await dialog.app.push_screen_wait(DialogScreen(chooser)) != Command.OK or chooser.chosen is None:
         return False
     line.data = str(chooser.chosen)
@@ -574,10 +576,10 @@ class InputDialog(_Dialog):
         yield HistoryInput(self.input, self.history)
         yield Static(self.hint, classes="dlg-hint", markup=False)
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
             if self.browse is not None:
-                yield Button("~B~rowse...", CM_BROWSE, id="browse")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+                yield Button(_('~B~rowse...'), CM_BROWSE, id="browse")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self._place_cursor)
@@ -609,4 +611,4 @@ class InputDialog(_Dialog):
 
 
 def confirm(title: str, text: str) -> MessageBox:
-    return MessageBox(title, text, [("~Y~es", Command.YES, "yes"), ("~N~o", Command.NO, "no")], width=max(40, min(64, len(text) + 8)))
+    return MessageBox(title, text, [(_('~Y~es'), Command.YES, "yes"), (_('~N~o'), Command.NO, "no")], width=max(40, min(64, len(text) + 8)))

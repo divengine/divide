@@ -16,6 +16,8 @@ that started this one.
 
 from __future__ import annotations
 
+from divide.i18n import _, ngettext
+
 from pathlib import Path
 
 from textual import events
@@ -56,10 +58,10 @@ def row_text(m: Mutation) -> str:
 class TraceWindow(_TVWindow):
     """The view of the template at a row, the rule, the rows."""
 
-    HINT = "F8 step · F7 into · Shift+F8 out · Space before/after"
+    HINT = _('F8 step · F7 into · Shift+F8 out · Space before/after')
 
     def __init__(self, number: int = 0) -> None:
-        super().__init__("Render trace", number=number)
+        super().__init__(_('Render trace'), number=number)
         self.view = EditorView("", read_only=True)
         self.list = TraceList([])
         self.template: Path | None = None
@@ -75,7 +77,7 @@ class TraceWindow(_TVWindow):
     # ------------------------------------------------------------ load
     def load(self, template: Path, trace: RenderTrace) -> None:
         self.template, self.trace = template, trace
-        self.title = f"Render trace: {template.name}"
+        self.title = _('Render trace: {name}').format(name=template.name)
         self.rows = list(trace.mutations)
         if trace.result.output or not self.rows:
             self.rows.append(Mutation("output", 0, 0, 0, self.rows[-1].after if self.rows else "", trace.result.output))
@@ -158,32 +160,32 @@ class TraceMixin:
         return next((w for w in self.windows() if isinstance(w, TraceWindow)), None)
 
     async def trace_render_command(self) -> None:
-        inputs = await self.render_inputs("Render trace")
+        inputs = await self.render_inputs(_('Render trace'))
         if inputs is None:
             return
         template, engine, code, data_path, data = inputs
-        dialog = ProgressDialog("Tracing", [
-            ("Template", self._relative(template)),
-            ("Data", self._relative(data_path) if data is not None else "(none)"),
-            ("Engine", self._relative(engine)),
+        dialog = ProgressDialog(_('Tracing'), [
+            (_('Template'), self._relative(template)),
+            (_('Data'), self._relative(data_path) if data is not None else "(none)"),
+            (_('Engine'), self._relative(engine)),
         ])
 
         def verdict(trace: RenderTrace) -> tuple[str, bool, list[tuple[str, str]]]:
             changes = sum(m.kind == "change" for m in trace.mutations)
             parses = sum(m.kind == "start" for m in trace.mutations)
-            rows = [("Mutations", f"{changes} in {parses} parse{'s' if parses != 1 else ''}"),
-                    ("Output", size_text(trace.result.output))]
+            rows = [(_("Mutations"), ngettext("{changes} in {n} parse", "{changes} in {n} parses", parses).format(changes=changes, n=parses)),
+                    (_("Output"), size_text(trace.result.output))]
             if trace.truncated:
-                rows.append(("Trace", "too long: cut"))
+                rows.append((_("Trace"), _('too long: cut')))
             if trace.result.fatal:
-                return "Errors", False, rows
-            return "Success", not trace.truncated, rows
+                return _("Errors"), False, rows
+            return _("Success"), not trace.truncated, rows
 
         try:
             with self.busy(f"Tracing {template.name}..."):
                 trace = await run_with_progress(self, dialog, trace_render(engine, template, code, data, cwd=self.root), verdict)
         except RenderError as exc:
-            await self.run_dialog(information("Render trace", str(exc)))
+            await self.run_dialog(information(_('Render trace'), str(exc)))
             return
         if trace is None:
             return

@@ -144,14 +144,27 @@ to any word when no section has all of them, and returns `Hit` items (target
 `book:Page#anchor`, title, heading, a snippet with the words marked).
 `ui.helpsearch.HelpSearchDialog` shows them live as the developer types.
 
-## 8. Themes (`divide.themes`)
+## 8. Interface languages (`divide.i18n`)
+
+Texts are written in English and marked `_("...")`, or `ngettext(singular,
+plural, n)` for plurals, with `{named}` placeholders filled by
+`.format()`. `i18n` picks the language once, at import (`DIVIDE_LANGUAGE`,
+then `--language` read from `sys.argv`, then the config's `language`, then
+`LANGUAGE` / `LC_ALL` / `LC_MESSAGES` / `LANG`) and loads
+`locale/<lang>/LC_MESSAGES/divide.mo`, or uses English when there is none.
+`ui.language.LanguageDialog` (Options > Language) writes the config's choice.
+`tools/i18n.py` extracts `locale/divide.pot`, merges it into each
+`divide.po` and compiles the `.mo` files with Babel. `tools/i18n_mark.py`
+is the codemod that marked the texts, kept for new modules.
+
+## 9. Themes (`divide.themes`)
 
 `Palette` holds the ANSI slots, the UI roles (`UI_ROLES`) and the syntax
 roles (`SYNTAX_ROLES`, fed by `TOKENS`). It produces a Textual theme with the
 `$divide-<role>` variables and the rich styles for painted widgets.
 `THEMES`: turbo-pascal, turbo-c, free-pascal, modern-dark.
 
-## 9. Key collaborations
+## 10. Key collaborations
 
 ### 9.1 Render a template (UC4)
 

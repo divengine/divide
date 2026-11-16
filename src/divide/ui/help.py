@@ -10,6 +10,8 @@ opens them in the browser, and they are the terminal's own hyperlinks too
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
@@ -51,7 +53,7 @@ def help_styles(palette: themes.Palette) -> dict[str, Style]:
         _styles[key] = styles
     return _styles[key]
 
-HINT = "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
+HINT = _('Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close')
 
 
 class HelpView(ScrollView, TVViewMixin):

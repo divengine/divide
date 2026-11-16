@@ -8,6 +8,8 @@ script's output and divide can read them back as messages with a location.
 
 from __future__ import annotations
 
+from divide.i18n import _, ngettext
+
 import asyncio
 import re
 import shlex
@@ -101,7 +103,7 @@ def split_args(text: str) -> list[str]:
 def command(script: Path, args: list[str], *, php: str | None = None, ini: list[str] | None = None) -> list[str]:
     php = php or shutil.which("php")
     if not php:
-        raise ScriptError("php not found in PATH")
+        raise ScriptError(_('php not found in PATH'))
     return [php, *ERROR_INI, *(ini or []), str(script), *args]
 
 
@@ -116,7 +118,7 @@ async def _read(stream: asyncio.StreamReader, sink: bytearray, on_data: Callable
 def size_text(data: str | bytes) -> str:
     """``1,234 bytes, 40 lines``"""
     lines = data.count("\n" if isinstance(data, str) else b"\n")
-    return f"{len(data):,} bytes, {lines:,} line{'s' if lines != 1 else ''}"
+    return ngettext("{size} bytes, {n} line", "{size} bytes, {n} lines", lines).format(size=f"{len(data):,}", n=f"{lines:,}")
 
 
 async def run_script(

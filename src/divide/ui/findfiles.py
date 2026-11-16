@@ -13,6 +13,8 @@ Enter (or a double click) opens the file there with the match selected.
 
 from __future__ import annotations
 
+from divide.i18n import _, ngettext
+
 import asyncio
 import fnmatch
 import re
@@ -118,27 +120,27 @@ class FindInFilesDialog(_Dialog):
     """
 
     def __init__(self, query: str, options: SearchOptions) -> None:
-        super().__init__(title="Find in files")
+        super().__init__(title=_('Find in files'))
         self.query_input = InputLine(max_len=1024)
         self.query_input.data = query
         self.mask_input = InputLine(max_len=256)
         self.mask_input.data = "*"
-        self.flags = CheckBoxes(["~C~ase sensitive", "~W~hole words only", "~R~egular expression"])
+        self.flags = CheckBoxes([_('~C~ase sensitive'), _('~W~hole words only'), _('~R~egular expression')])
         self.flags.value = int(options.case_sensitive) | int(options.whole_words) << 1 | int(options.regex) << 2
         self.search_text = query
         self.mask = "*"
         self.options = options
 
     def compose_content(self) -> ComposeResult:
-        yield Label("~T~ext to find", link=self.query_input)
+        yield Label(_('~T~ext to find'), link=self.query_input)
         yield HistoryInput(self.query_input, "find")
-        yield Label("~F~iles (*.tpl;*.php)", link=self.mask_input)
+        yield Label(_('~F~iles (*.tpl;*.php)'), link=self.mask_input)
         yield HistoryInput(self.mask_input, "find-files")
-        yield Label("Options", link=self.flags)
+        yield Label(_('Options'), link=self.flags)
         yield self.flags
         with Horizontal(classes="dlg-buttons"):
-            yield Button("O~K~", Command.OK, is_default=True, id="ok")
-            yield Button("Cancel", Command.CANCEL, id="cancel")
+            yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.query_input.select_all)
@@ -156,18 +158,19 @@ class FindInFilesDialog(_Dialog):
 class FindResultsWindow(LocationsWindow):
     """What Find in files found, one row per line with a match."""
 
-    EMPTY = "(nothing found)"
-    HINT = "Enter go to the match"
+    EMPTY = _('(nothing found)')
+    HINT = _('Enter go to the match')
 
     def __init__(self, number: int = 0) -> None:
-        super().__init__("Find in files", number=number)
+        super().__init__(_('Find in files'), number=number)
 
 
 def result_items(root: Path, query: str, mask: str, hits: list[Hit], in_files: int) -> list[MessageItem]:
     """The heading, then a row per line with a match (the first one on it is the one selected)."""
     many = len(hits) >= MAX_MATCHES
-    count = f"{len(hits)}{'+' if many else ''} match{'es' if len(hits) != 1 else ''}"
-    head = f'"{query}" in {mask}: {count} in {in_files} file{"s" if in_files != 1 else ""}'
+    count = ngettext("{n} match", "{n} matches", len(hits)).format(n=f"{len(hits)}{'+' if many else ''}")
+    files = ngettext("{n} file", "{n} files", in_files).format(n=in_files)
+    head = _('"{query}" in {mask}: {count} in {files}').format(query=query, mask=mask, count=count, files=files)
     rows, seen = [MessageItem(head)], set()
     for h in hits:
         if (h.rel, h.line) not in seen:
@@ -191,7 +194,7 @@ class FindInFilesMixin:
         try:
             pattern = compile_pattern(dialog.search_text, dialog.options)
         except SearchError as exc:
-            await self.run_dialog(information("Find in files", str(exc)))
+            await self.run_dialog(information(_('Find in files'), str(exc)))
             return
         self.search_query = dialog.search_text
         root = self.root.resolve()
@@ -201,7 +204,7 @@ class FindInFilesMixin:
             path = window.path.resolve() if window.path is not None else None
             if path is not None and path.is_relative_to(root):
                 edited[path.relative_to(root).as_posix()] = window.editor.text
-        with self.busy("Finding in files"):
+        with self.busy(_('Finding in files')):
             files = await asyncio.to_thread(project_files, root)
             files = [f for f in files if wanted(f, patterns)]
             hits, in_files = await asyncio.to_thread(search, root, files, pattern, edited=edited)

@@ -86,6 +86,7 @@ flowchart TB
 | `divide.manual` | The help books: Markdown pages to help topics; `fulltext`: their search index (SQLite FTS5). |
 | `divide.themes` | Every colour divide draws, as palettes with roles. |
 | `divide.config` | The settings file. |
+| `divide.i18n` | The interface's language: gettext catalogues in `locale/`, `_()` and `ngettext()`. |
 
 ### 4.1 Key mechanisms
 
@@ -222,6 +223,8 @@ processes, bounded searches, and an incremental lexer cache. See the
 | Mixins on the app | A plug-in registry | Each feature needs the app's windows, dialogs and commands. Mixins keep each feature in one module with no extra indirection. |
 | Own fuzzy matcher | Textual's `FuzzySearch` | Textual's matcher enumerates every placement of the letters, which explodes on long paths and large projects. A linear matcher keeps memory and time bounded. |
 | git's file list for project search | Walking the tree | It respects `.gitignore` and is fast. The tree walk with the project window's hidden folders is the fallback. |
+| gettext for the interface's languages | Own JSON catalogues; Fluent | gettext is in the standard library, handles plurals, and every translation tool (Poedit, Weblate, Crowdin) reads its `.po` files. Babel is needed only to extract and compile, as a development tool. |
+| The language chosen at start | Switching live | Many texts are module constants (titles, hints, theme names). Choosing at start keeps them simple values; Options > Language applies at the next start, like the colour depth. |
 | SQLite FTS5 for the help search | A hand-written inverted index and ranking; an external search engine | FTS5 ships with Python's `sqlite3`: BM25 ranking, Porter stemming, prefix queries and snippets, with no dependency. |
 | The help index built at sync time and shipped | Built at every start; built on the first search only | The books change only when synced, so the index is built once with them. A fingerprint of the pages detects a stale index, which is then rebuilt in memory (0.1 s), so results are never out of date. |
 | Two FTS5 tables (stemmed and as written) | One stemmed table | A prefix of a stem is not a prefix of the word (*Iterations* is stored as `iter`, so `itera*` would miss it). Finished words match stems; the word being typed matches either table. |

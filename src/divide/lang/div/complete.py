@@ -17,6 +17,8 @@ offsets into the text.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -168,7 +170,7 @@ def scope_variables(
     for loop, scope in zip(reversed(loops), reversed(scopes[1:])):
         assert isinstance(scope, dict)
         item = scope.get(loop.item)
-        add(loop.item, f"item of {loop.name}" + (f" · {type_label(item)}" if item is not None else ""))
+        add(loop.item, _('item of {name}').format(name=loop.name) + (f" · {type_label(item)}" if item is not None else ""))
         for name, value in flatten(item, loop.item + sep, sep).items():
             add(name, type_label(value))
         if isinstance(item, dict):
@@ -183,7 +185,7 @@ def scope_variables(
     # template variables and the variables already used
     for i, tok in enumerate(tokens):
         if tok.kind == "div.var.def" and i and text[tokens[i - 1].start : tokens[i - 1].end] == dialect["DIV_TAG_TPLVAR_BEGIN"]:
-            add(text[tok.start : tok.end].lstrip(dialect["DIV_TAG_TPLVAR_PROTECTOR"] or "*"), "template var")
+            add(text[tok.start : tok.end].lstrip(dialect["DIV_TAG_TPLVAR_PROTECTOR"] or "*"), _('template var'))
     for tok in tokens:
         if tok.kind == "div.var" and not (tok.start <= offset <= tok.end):
             name = text[tok.start : tok.end].lstrip("$")
@@ -247,25 +249,25 @@ def tag_snippets(T: Dialect) -> list[Completion]:
     cb, cs, ce = T["DIV_TAG_CONDITIONS_BEGIN_PREFIX"], T["DIV_TAG_CONDITIONS_BEGIN_SUFFIX"], T["DIV_TAG_CONDITIONS_END"]
     add(f"{cb} expr {cs} ... {ce}", f"{cb} {c} {cs}{ce}", "condition", False, "DIV_TAG_CONDITIONS_BEGIN_PREFIX")
     if T["DIV_TAG_ELSE"]:
-        add(f"{cb} expr {cs} ... {T['DIV_TAG_ELSE']} ... {ce}", f"{cb} {c} {cs}{T['DIV_TAG_ELSE']}{ce}", "condition with else", False, "DIV_TAG_CONDITIONS_BEGIN_PREFIX")
+        add(f"{cb} expr {cs} ... {T['DIV_TAG_ELSE']} ... {ce}", f"{cb} {c} {cs}{T['DIV_TAG_ELSE']}{ce}", _('condition with else'), False, "DIV_TAG_CONDITIONS_BEGIN_PREFIX")
     tp, tf = T["DIV_TAG_CONDITIONAL_TRUE_BEGIN_PREFIX"], T["DIV_TAG_CONDITIONAL_FALSE_BEGIN_PREFIX"]
-    add(f"{tp}var ... {T['DIV_TAG_CONDITIONAL_TRUE_END_PREFIX']}var{T['DIV_TAG_CONDITIONAL_TRUE_END_SUFFIX']}", f"{tp}{c}", "if var is true", True, "DIV_TAG_CONDITIONAL_TRUE_BEGIN_PREFIX")
-    add(f"{tf}var ... {T['DIV_TAG_CONDITIONAL_FALSE_END_PREFIX']}var{T['DIV_TAG_CONDITIONAL_FALSE_END_SUFFIX']}", f"{tf}{c}", "if var is false", True, "DIV_TAG_CONDITIONAL_FALSE_BEGIN_PREFIX")
+    add(f"{tp}var ... {T['DIV_TAG_CONDITIONAL_TRUE_END_PREFIX']}var{T['DIV_TAG_CONDITIONAL_TRUE_END_SUFFIX']}", f"{tp}{c}", _('if var is true'), True, "DIV_TAG_CONDITIONAL_TRUE_BEGIN_PREFIX")
+    add(f"{tf}var ... {T['DIV_TAG_CONDITIONAL_FALSE_END_PREFIX']}var{T['DIV_TAG_CONDITIONAL_FALSE_END_SUFFIX']}", f"{tf}{c}", _('if var is false'), True, "DIV_TAG_CONDITIONAL_FALSE_BEGIN_PREFIX")
     vb, ve, op = T["DIV_TAG_TPLVAR_BEGIN"], T["DIV_TAG_TPLVAR_END"], T["DIV_TAG_TPLVAR_ASSIGN_OPERATOR"]
-    add(f"{vb} name{op} value {ve}", f"{vb} {c}{op}  {ve}", "template variable", False, "DIV_TAG_TPLVAR_BEGIN")
+    add(f"{vb} name{op} value {ve}", f"{vb} {c}{op}  {ve}", _('template variable'), False, "DIV_TAG_TPLVAR_BEGIN")
     add(f"{T['DIV_TAG_INCLUDE_BEGIN']}path{T['DIV_TAG_INCLUDE_END']}", f"{T['DIV_TAG_INCLUDE_BEGIN']}{c}", "include", True, "DIV_TAG_INCLUDE_BEGIN")
-    add(f"{T['DIV_TAG_PREPROCESSED_BEGIN']}path{T['DIV_TAG_PREPROCESSED_END']}", f"{T['DIV_TAG_PREPROCESSED_BEGIN']}{c}", "preprocessed include", True, "DIV_TAG_PREPROCESSED_BEGIN")
+    add(f"{T['DIV_TAG_PREPROCESSED_BEGIN']}path{T['DIV_TAG_PREPROCESSED_END']}", f"{T['DIV_TAG_PREPROCESSED_BEGIN']}{c}", _('preprocessed include'), True, "DIV_TAG_PREPROCESSED_BEGIN")
     add(f"{T['DIV_TAG_FORMULA_BEGIN']} expr {T['DIV_TAG_FORMULA_END']}", f"{T['DIV_TAG_FORMULA_BEGIN']} {c} {T['DIV_TAG_FORMULA_END']}", "formula", False, "DIV_TAG_FORMULA_BEGIN")
-    add(f"{T['DIV_TAG_DEFAULT_REPLACEMENT_BEGIN']} ... {T['DIV_TAG_DEFAULT_REPLACEMENT_END']}", f"{T['DIV_TAG_DEFAULT_REPLACEMENT_BEGIN']}{c}{T['DIV_TAG_DEFAULT_REPLACEMENT_END']}", "default replacement", False, "DIV_TAG_DEFAULT_REPLACEMENT_BEGIN")
+    add(f"{T['DIV_TAG_DEFAULT_REPLACEMENT_BEGIN']} ... {T['DIV_TAG_DEFAULT_REPLACEMENT_END']}", f"{T['DIV_TAG_DEFAULT_REPLACEMENT_BEGIN']}{c}{T['DIV_TAG_DEFAULT_REPLACEMENT_END']}", _('default replacement'), False, "DIV_TAG_DEFAULT_REPLACEMENT_BEGIN")
     add(f"{T['DIV_TAG_COMMENT_BEGIN']} ... {T['DIV_TAG_COMMENT_END']}", f"{T['DIV_TAG_COMMENT_BEGIN']} {c} {T['DIV_TAG_COMMENT_END']}", "comment", False, "DIV_TAG_COMMENT_BEGIN")
     ib, ie = T["DIV_TAG_ITERATION_BEGIN_PREFIX"], T["DIV_TAG_ITERATION_BEGIN_SUFFIX"]
     add(f"{ib}1,10{ie} ... {T['DIV_TAG_ITERATION_END']}", f"{ib}1,10{ie}{c}{T['DIV_TAG_ITERATION_END']}", "iteration", False, "DIV_TAG_ITERATION_BEGIN_PREFIX")
-    for key, name in (("IGNORE", "ignore block"), ("TXT", "text block"), ("STRIP", "strip block")):
+    for key, name in (("IGNORE", _('ignore block')), ("TXT", _('text block')), ("STRIP", _('strip block'))):
         b, e = T[f"DIV_TAG_{key}_BEGIN"], T[f"DIV_TAG_{key}_END"]
         add(f"{b} ... {e}", f"{b}{c}{e}", name, False, f"DIV_TAG_{key}_BEGIN")
     add(f"{T['DIV_TAG_LOCATION_BEGIN']}name{T['DIV_TAG_LOCATION_END']}", f"{T['DIV_TAG_LOCATION_BEGIN']}{c}{T['DIV_TAG_LOCATION_END']}", "location", False, "DIV_TAG_LOCATION_BEGIN")
     add(f"{T['DIV_TAG_MACRO_BEGIN']} php {T['DIV_TAG_MACRO_END']}", f"{T['DIV_TAG_MACRO_BEGIN']} {c} {T['DIV_TAG_MACRO_END']}", "macro", False, "DIV_TAG_MACRO_BEGIN")
-    for key, name in (("ELSE", "else"), ("EMPTY", "loop is empty"), ("BREAK", "break the loop")):
+    for key, name in (("ELSE", "else"), ("EMPTY", _('loop is empty')), ("BREAK", _('break the loop'))):
         add(T[f"DIV_TAG_{key}"], T[f"DIV_TAG_{key}"], name, False, f"DIV_TAG_{key}")
     return [Completion(label, insert, detail, retrigger=r) for label, insert, detail, r in snippets]
 
@@ -331,7 +333,7 @@ def complete(
         # [/$ : the loop to close
         if le.endswith(simple) and (pre + simple).endswith(le):
             loops = open_loops(text, tokens, offset - len(prefix) - len(le), dialect)
-            items = [Completion(loop.name, loop.name, "close loop", after="" if rest.startswith(les) else les) for loop in reversed(loops)]
+            items = [Completion(loop.name, loop.name, _('close loop'), after="" if rest.startswith(les) else les) for loop in reversed(loops)]
             return CompletionResult(start, prefix, _filter(items, prefix), "close") if items or explicit else None
 
         variables = scope_variables(text, tokens, offset, dialect, data)

@@ -15,6 +15,8 @@ Div's own words for the steps that ran since the engine's previous note.
 
 from __future__ import annotations
 
+from divide.i18n import _, ngettext
+
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,7 +24,7 @@ from pathlib import Path
 from divide.run.render import RenderMessage, RenderResult, _call_bridge, references
 
 TIMEOUT = 60.0
-_START = ("Parsing all...", "Parsing from the original source", "Parsing with '")
+_START = ("Parsing all...", "Parsing from the original source", "Parsing with '")  # Div's log: not translated
 _CYCLE = "Template | size:"
 _END = "Parser duration:"
 _QUIET = (_CYCLE, "Parsing all...", "Parsing from the original source", "Parsing with '", _END)
@@ -59,9 +61,10 @@ class Mutation:
         if self.kind == "start":
             return ("Template" if self.level <= 1 else "Sub-parse") + (f": {self.context}" if self.context else "")
         if self.kind == "output":
-            return "Output: what Div returns"
+            return _('Output: what Div returns')
         if self.kind == "end":
-            return f"Fixed point: nothing changes after {self.cycle} cycle{'s' if self.cycle != 1 else ''}"
+            return ngettext("Fixed point: nothing changes after {n} cycle", "Fixed point: nothing changes after {n} cycles",
+                            self.cycle).format(n=self.cycle)
         return cause_text(self.causes)
 
     @property
@@ -108,12 +111,12 @@ def cause_text(causes: list[str]) -> str:
     items = sum(m.startswith("Parsing item ") for m in causes)
     steps = [m for m in causes if not m.startswith(_QUIET + ("Parsing item ", "Checking logical order"))]
     if not steps:
-        return "(between cycles)"
+        return _('(between cycles)')
     detail = list(dict.fromkeys(_step(m) for m in steps))
     # "Parsing conditions..." then "Parsing condition: x" then "The condition x is true": keep the last two
     text = " > ".join(detail[-2:])
     if items:
-        text += f" ({items} item{'s' if items != 1 else ''})"
+        text += " (" + ngettext("{n} item", "{n} items", items).format(n=items) + ")"
     return text
 
 

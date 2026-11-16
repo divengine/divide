@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # before divide makes its texts: the tests read them in English
+
 import json
 
 import pytest

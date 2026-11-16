@@ -19,6 +19,8 @@ Positions are code-point offsets into the text.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import bisect
 import re
 from collections.abc import Mapping
@@ -38,18 +40,18 @@ ERROR, WARNING = "error", "warning"
 # (name, begin key, end key)
 _PAIRS = [
     ("comment", "DIV_TAG_COMMENT_BEGIN", "DIV_TAG_COMMENT_END"),
-    ("template variable", "DIV_TAG_TPLVAR_BEGIN", "DIV_TAG_TPLVAR_END"),
-    ("default replacement", "DIV_TAG_DEFAULT_REPLACEMENT_BEGIN", "DIV_TAG_DEFAULT_REPLACEMENT_END"),
+    (_('template variable'), "DIV_TAG_TPLVAR_BEGIN", "DIV_TAG_TPLVAR_END"),
+    (_('default replacement'), "DIV_TAG_DEFAULT_REPLACEMENT_BEGIN", "DIV_TAG_DEFAULT_REPLACEMENT_END"),
     ("condition", "DIV_TAG_CONDITIONS_BEGIN_PREFIX", "DIV_TAG_CONDITIONS_BEGIN_SUFFIX"),
     ("formula", "DIV_TAG_FORMULA_BEGIN", "DIV_TAG_FORMULA_END"),
-    ("number format", "DIV_TAG_NUMBER_FORMAT_PREFIX", "DIV_TAG_NUMBER_FORMAT_SUFFIX"),
+    (_('number format'), "DIV_TAG_NUMBER_FORMAT_PREFIX", "DIV_TAG_NUMBER_FORMAT_SUFFIX"),
     ("include", "DIV_TAG_INCLUDE_BEGIN", "DIV_TAG_INCLUDE_END"),
-    ("preprocessed include", "DIV_TAG_PREPROCESSED_BEGIN", "DIV_TAG_PREPROCESSED_END"),
+    (_('preprocessed include'), "DIV_TAG_PREPROCESSED_BEGIN", "DIV_TAG_PREPROCESSED_END"),
     ("iteration", "DIV_TAG_ITERATION_BEGIN_PREFIX", "DIV_TAG_ITERATION_BEGIN_SUFFIX"),
     ("location", "DIV_TAG_LOCATION_BEGIN", "DIV_TAG_LOCATION_END"),
-    ("txt block", "DIV_TAG_TXT_BEGIN", "DIV_TAG_TXT_END"),
-    ("strip block", "DIV_TAG_STRIP_BEGIN", "DIV_TAG_STRIP_END"),
-    ("friendly tag", "DIV_TAG_FRIENDLY_BEGIN", "DIV_TAG_FRIENDLY_END"),
+    (_('txt block'), "DIV_TAG_TXT_BEGIN", "DIV_TAG_TXT_END"),
+    (_('strip block'), "DIV_TAG_STRIP_BEGIN", "DIV_TAG_STRIP_END"),
+    (_('friendly tag'), "DIV_TAG_FRIENDLY_BEGIN", "DIV_TAG_FRIENDLY_END"),
 ]
 
 # Inside these, begin tags are not Div code (or are already explained). HTML
@@ -112,7 +114,7 @@ class _Checker:
             frag = text[tok.start : tok.end]
             if loop_e and frag.startswith(loop_e):
                 key = frag[len(loop_e) : len(frag) - len(loop_es)] if loop_es else frag[len(loop_e) :]
-                self.add(tok.start, tok.end, ERROR, f"{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})")
+                self.add(tok.start, tok.end, ERROR, _('{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})').format(frag=frag, loop_b=loop_b, key=key, loop_bs=loop_bs))
             elif loop_b and frag == loop_b:
                 # [$ <var> ] : the variable and the suffix are the next tokens
                 end = tok.end
@@ -121,13 +123,13 @@ class _Checker:
                     key = text[tokens[i + 1].start : tokens[i + 1].end]
                     end = tokens[i + 1].end + len(loop_bs)
                 opened = text[tok.start : end]
-                self.add(tok.start, end, ERROR, f"loop {opened} is never closed with {loop_e}{key}{loop_es}")
+                self.add(tok.start, end, ERROR, _('loop {opened} is never closed with {loop_e}{key}{loop_es}').format(opened=opened, loop_e=loop_e, key=key, loop_es=loop_es))
             elif ignore_b and frag == ignore_b:
-                self.add(tok.start, tok.end, ERROR, f"{ignore_b} is never closed with {ignore_e}")
+                self.add(tok.start, tok.end, ERROR, _('{ignore_b} is never closed with {ignore_e}').format(ignore_b=ignore_b, ignore_e=ignore_e))
             elif frag.strip() == loop_bs:
                 continue  # suffix of an unclosed loop, already reported
             else:
-                self.add(tok.start, tok.end, ERROR, f"Div syntax error at {frag!r}")
+                self.add(tok.start, tok.end, ERROR, _('Div syntax error at {frag!r}').format(frag=frag))
 
     def unclosed_pairs(self) -> None:
         text = self.text
@@ -141,8 +143,8 @@ class _Checker:
                 if pos not in self.starts and not self._in_opaque(pos):
                     limit = _line_end(text, pos) if single_line else len(text)
                     if text.find(end, pos + len(begin), limit) < 0:
-                        where = " on the same line" if single_line else ""
-                        self.add(pos, pos + len(begin), ERROR, f"{name} {begin.strip()} has no closing {end.strip()}{where}")
+                        where = _(' on the same line') if single_line else ""
+                        self.add(pos, pos + len(begin), ERROR, _('{name} {strip} has no closing {strip2}{where}').format(name=name, strip=begin.strip(), strip2=end.strip(), where=where))
                 pos = text.find(begin, pos + len(begin))
 
     def condition_balance(self) -> None:
@@ -161,13 +163,13 @@ class _Checker:
                 if stack:
                     stack.pop()
                 else:
-                    self.add(tok.start, tok.end, ERROR, f"{close} closes a condition that was never opened")
+                    self.add(tok.start, tok.end, ERROR, _('{close} closes a condition that was never opened').format(close=close))
         suffix = self.T["DIV_TAG_CONDITIONS_BEGIN_SUFFIX"]
         for tok in stack:
             eol = _line_end(text, tok.start)
             stop = text.find(suffix, tok.start, eol) if suffix else -1
             shown = text[tok.start : stop + len(suffix)] if stop >= 0 else text[tok.start : min(eol, tok.start + 40)].strip()
-            self.add(tok.start, tok.end, ERROR, f"condition {shown} is never closed with {close}")
+            self.add(tok.start, tok.end, ERROR, _('condition {shown} is never closed with {close}').format(shown=shown, close=close))
 
     def includes(self) -> None:
         if not self.resolved:
@@ -175,7 +177,7 @@ class _Checker:
         for start, end, raw in include_paths(self.text, self.tokens, self.dialect):
             target = self.resolved.get(raw)
             if target is not None and target.file is None:
-                self.add(start, end, WARNING, f"Div cannot find the template {target.path}")
+                self.add(start, end, WARNING, _('Div cannot find the template {path}').format(path=target.path))
 
     def dialect_error(self) -> None:
         if not self.dialect.error:
@@ -227,7 +229,7 @@ class _Checker:
             divjson.loads(value)
         except divjson.DivJsonError as exc:
             at = offset + exc.offset
-            self.add(at, min(at + 1, end), WARNING, f"JSON in template variable: {exc.message}")
+            self.add(at, min(at + 1, end), WARNING, _('JSON in template variable: {message}').format(message=exc.message))
 
 
 def check(

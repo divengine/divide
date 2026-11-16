@@ -26,6 +26,7 @@
 | **Go to file** | Ctrl+P: every project file, found by typing. |
 | **History (input line)** | Turbo Vision's THistory: what an input line accepted before, kept per kind of line in the config. |
 | **Search index** | `manual/search.sqlite`: the help books' sections in SQLite FTS5 tables (stemmed and as written), built by `tools/sync_book.py`, ranked with BM25 by Help > Search. |
+| **Catalogue (translation)** | `locale/<lang>/LC_MESSAGES/divide.po` (and its compiled `.mo`): the interface's texts in one language, made with gettext. |
 | **Help book** | A manual shown in the help window, copied from a wiki or a docs folder by `tools/sync_book.py`. divide has two: divide and Div. |
 | **Language** | An entry in `divide.lang`: its name, extensions, help topic and whether divide checks it. |
 | **LSP / language server** | A Language Server Protocol server (phpactor, intelephense...) that gives completion, hover, definitions and diagnostics. |

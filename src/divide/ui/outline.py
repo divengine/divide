@@ -11,6 +11,8 @@ double click) goes there. The list follows the active editor and its edits.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 from divide.lang import php
 from divide.lang.div import outline as div_outline
 from divide.ui.runner import DEBUG_CSS, _ListWindow
@@ -18,9 +20,9 @@ from divide.ui.windows import EditorWindow, LocationsWindow, ProjectWindow
 
 WIDTH = 36
 LANGUAGES = ("php", "div")
-NO_OUTLINE = "(the outline is for PHP files and Div templates)"
-PHP_HINT = "Enter go to the declaration · + public  # protected  - private"
-DIV_HINT = "Enter go to the tag · below a block, what it holds"
+NO_OUTLINE = _('(the outline is for PHP files and Div templates)')
+PHP_HINT = _('Enter go to the declaration · + public  # protected  - private')
+DIV_HINT = _('Enter go to the tag · below a block, what it holds')
 
 
 class OutlineWindow(_ListWindow):
@@ -46,17 +48,17 @@ class OutlineWindow(_ListWindow):
         elif lang == "div":
             self.hint = DIV_HINT
             self.symbols = div_outline.outline(source.editor.text, source.editor.div_blocks())
-            lines = [s.text for s in self.symbols] or ["(no Div tags)"]
+            lines = [s.text for s in self.symbols] or [_('(no Div tags)')]
         else:
             self.hint = PHP_HINT
             found = php.outline(source.editor.text)
             self.symbols = found or []
             if found is None:
-                lines = ["(no PHP grammar: pip install tree-sitter-php)"]
+                lines = [_('(no PHP grammar: pip install tree-sitter-php)')]
             else:
-                lines = [s.text for s in self.symbols] or ["(no declarations)"]
+                lines = [s.text for s in self.symbols] or [_('(no declarations)')]
         name = source.path.name if source is not None and source.path is not None else ""
-        self.title = f"Outline: {name}" if name else "Outline"
+        self.title = f"Outline: {name}" if name else _('Outline')
         self.show(lines)
 
     def activate(self, index: int) -> None:

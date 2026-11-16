@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -957,7 +959,7 @@ class LocationsWindow(_TVWindow):
 class MessagesWindow(LocationsWindow):
     """Turbo Pascal style message window: Div checks of the template and render messages."""
 
-    EMPTY = "(no messages)"
+    EMPTY = _('(no messages)')
 
     def __init__(self, number: int = 0) -> None:
         super().__init__("Messages", number=number)

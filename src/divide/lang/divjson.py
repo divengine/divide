@@ -16,6 +16,8 @@ write them back unquoted.
 
 from __future__ import annotations
 
+from divide.i18n import _
+
 import json
 import re
 from dataclasses import dataclass
@@ -107,11 +109,11 @@ class _Parser:
     def document(self) -> Any:
         self.ws()
         if self.pos >= len(self.text):
-            raise self.fail("empty document")
+            raise self.fail(_('empty document'))
         value = self.value()
         self.ws()
         if self.pos < len(self.text):
-            raise self.fail(f"unexpected {self.text[self.pos]!r} after the value")
+            raise self.fail(_('unexpected {pos!r} after the value').format(pos=self.text[self.pos]))
         return value
 
     def value(self) -> Any:
@@ -138,8 +140,8 @@ class _Parser:
             self.pos = m.end()
             return _CONST[m.group().lower()]
         if not c:
-            raise self.fail("unexpected end, expected a value")
-        raise self.fail(f"unexpected {c!r}, expected a value")
+            raise self.fail(_('unexpected end, expected a value'))
+        raise self.fail(_('unexpected {c!r}, expected a value').format(c=c))
 
     def string(self) -> str:
         quote = self.text[self.pos]
@@ -148,7 +150,7 @@ class _Parser:
         out: list[str] = []
         while True:
             if self.pos >= len(self.text):
-                raise self.fail("unterminated string", start)
+                raise self.fail(_('unterminated string'), start)
             c = self.text[self.pos]
             if c == quote:
                 self.pos += 1
@@ -163,9 +165,9 @@ class _Parser:
                     out.append(_ESCAPES[nxt])
                     self.pos += 2
                     continue
-                raise self.fail(f"bad escape \\{nxt}")
+                raise self.fail(_('bad escape \\{nxt}').format(nxt=nxt))
             if c == "\n":
-                raise self.fail("unterminated string", start)
+                raise self.fail(_('unterminated string'), start)
             out.append(c)
             self.pos += 1
 
@@ -175,7 +177,7 @@ class _Parser:
             return self.string()
         m = _IDENT.match(self.text, self.pos)
         if not m:
-            raise self.fail(f"unexpected {c!r}, expected a key" if c else "unexpected end, expected a key")
+            raise self.fail(_('unexpected {c!r}, expected a key').format(c=c) if c else _('unexpected end, expected a key'))
         self.pos = m.end()
         return m.group()
 
@@ -190,7 +192,7 @@ class _Parser:
             key = self.key()
             self.ws()
             if self.peek() != ":":
-                raise self.fail(f"expected ':' after the key {key!r}")
+                raise self.fail(_("expected ':' after the key {key!r}").format(key=key))
             self.pos += 1
             self.ws()
             result[key] = self.value()
@@ -202,7 +204,7 @@ class _Parser:
                 self.pos += 1
                 return result
             else:
-                raise self.fail("expected ',' or '}'" if c else "unexpected end, expected '}'")
+                raise self.fail("expected ',' or '}'" if c else _("unexpected end, expected '}'"))
 
     def array(self) -> list[Any]:
         self.pos += 1
@@ -221,7 +223,7 @@ class _Parser:
                 self.pos += 1
                 return result
             else:
-                raise self.fail("expected ',' or ']'" if c else "unexpected end, expected ']'")
+                raise self.fail("expected ',' or ']'" if c else _("unexpected end, expected ']'"))
 
 
 def loads(text: str) -> Any:
@@ -275,7 +277,7 @@ def get_at(root: Any, path: Path_) -> Any:
 
 def _parent(root: Any, path: Path_) -> tuple[Any, Any]:
     if not path:
-        raise ValueError("the root has no parent")
+        raise ValueError(_('the root has no parent'))
     return get_at(root, path[:-1]), path[-1]
 
 
@@ -299,7 +301,7 @@ def rename_key(root: Any, path: Path_, new_key: str) -> Path_:
     if new_key == old:
         return path
     if new_key in parent:
-        raise ValueError(f"key {new_key!r} already exists")
+        raise ValueError(_('key {new_key!r} already exists').format(new_key=new_key))
     items = [(new_key if k == old else k, v) for k, v in parent.items()]
     parent.clear()
     parent.update(items)
@@ -315,11 +317,11 @@ def insert_after(root: Any, container_path: Path_, after: Any, key: str | None, 
         container.insert(index, value)
         return container_path + (index,)
     if not isinstance(container, dict):
-        raise ValueError("can only insert into an object or an array")
+        raise ValueError(_('can only insert into an object or an array'))
     if not key:
-        raise ValueError("an object member needs a key")
+        raise ValueError(_('an object member needs a key'))
     if key in container:
-        raise ValueError(f"key {key!r} already exists")
+        raise ValueError(_('key {key!r} already exists').format(key=key))
     items = list(container.items())
     index = len(items) if after is None else [k for k, _ in items].index(after) + 1
     items.insert(index, (key, value))
@@ -376,19 +378,19 @@ def make_value(type_: str, text: str, current: Any = None) -> Any:
         try:
             return int(text) if re.fullmatch(r"-?\d+", text.strip()) else float(text)
         except ValueError:
-            raise ValueError(f"{text!r} is not a number") from None
+            raise ValueError(_('{text!r} is not a number').format(text=text)) from None
     if type_ in ("True", "False", "Null"):
         return {"True": True, "False": False, "Null": None}[type_]
     if type_ == "Reference":
         path = text.strip().lstrip("$")
         if not _REF.fullmatch("$" + path):
-            raise ValueError("a reference looks like name or person.name")
+            raise ValueError(_('a reference looks like name or person.name'))
         return Ref(path)
     if type_ == "Object":
         return current if isinstance(current, dict) else {}
     if type_ == "Array":
         return current if isinstance(current, list) else []
-    raise ValueError(f"unknown type {type_}")
+    raise ValueError(_('unknown type {type}').format(type=type_))
 
 
 def value_text(value: Any) -> str:
