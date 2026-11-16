@@ -186,7 +186,7 @@ async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
         tree = app.project_window().project_tree
         lines = lambda: [tree.render_line(y).text.rstrip() for y in range(4)]
         plain = lines()
-        assert tree.icons == icons.PLAIN and plain[2].endswith("   a.php")
+        assert tree.icons == icons.PLAIN and plain[2].endswith(" ► a.php")  # it unfolds into its members
         app.set_icons(icons.MARKS)
         await pilot.pause()
         marked = lines()

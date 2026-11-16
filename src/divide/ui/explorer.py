@@ -136,7 +136,18 @@ class ExplorerMixin:
             if command is None:
                 return
             action = LOCAL_ACTIONS[command]
+        member = tree.member
+        if member is not None and action in ("rename", "delete"):
+            # a class, a method, a heading: part of a file, not a file
+            self.notify(_('Rename and Delete work on files and folders: the bar is on a part of {name}').format(  # type: ignore[attr-defined]
+                name=tree.selected_path.name), severity="warning", timeout=3)
+            return
         match action:
+            case "open" if member is not None:
+                win = self.open_file(tree.selected_path)  # type: ignore[attr-defined]
+                if win is not None:
+                    self._select_in(win, member.start, member.end)  # type: ignore[attr-defined]
+                return
             case "open":
                 path = tree.selected_path
                 if path is not None and path.is_file():

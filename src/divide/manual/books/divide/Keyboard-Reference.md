@@ -74,7 +74,8 @@
 
 | Key | Action |
 |---|---|
-| **Enter** / double click | open a file / fold a folder (a click puts the bar on a file, and opens or folds a folder) |
+| **Enter** / double click | open a file / fold a folder (a click puts the bar on a file, and opens or folds a folder); on a member of a file, open the file there |
+| **→** / **←** | unfold / fold a folder, or a file into its members (on a folded one, **←** goes up to what holds it) |
 | **Ins** | new file |
 | **F7** | new folder |
 | **F2** | rename |

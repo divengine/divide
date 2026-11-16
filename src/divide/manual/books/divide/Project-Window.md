@@ -4,7 +4,18 @@
 
 ![the local menu of the project window](images/project-menu.png)
 
-**Enter** opens a file, or folds and unfolds a folder. With the mouse, a click puts the bar on a file and a double click opens it; a click on a folder folds or unfolds it. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
+**Enter** opens a file, or folds and unfolds a folder. **→** unfolds a folder (or a file, below) and **←** folds it, or goes up to the folder that holds the bar. With the mouse, a click puts the bar on a file and a double click opens it; a click on a folder folds or unfolds it. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
+
+## A file's members
+
+A file in a language with an [[Outline]] (templates, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...) has a `►` too: unfolded, it shows its members below it, the same tree as **Search > Outline**: a PHP file its classes, their methods and properties, its functions; a template its tags; a Markdown file its headings; a JSON file its keys...
+
+- **→** or a click on the `►` unfolds the file, without opening it; a class or a block unfolds the same way. A file holding a single class or namespace shows it unfolded at once.
+- **Enter** or a double click on a member opens the file with that member selected. On the file itself, Enter opens the file, as always.
+- The members are read when the file is unfolded: from its window if it is open (unsaved changes too), from the disk if not. Saving the file updates them, keeping what was unfolded.
+- **F2** and **Del** on a member do nothing to the file: they only rename and delete files and folders.
+
+With file type marks (below), a file that unfolds shows its mark while folded, and `▼` in the mark's colour while unfolded; a click on the mark unfolds it.
 
 ## File type marks
 

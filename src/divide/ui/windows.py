@@ -18,6 +18,8 @@ from textual.message import Message
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import DirectoryTree
+from textual.widgets._directory_tree import DirEntry
+from textual.widgets._tree import TOGGLE_STYLE
 from textual_vision.constants import Command, OptionFlag, WindowFlag
 from textual_vision.events import CommandMessage
 from textual_vision.frame import Frame
@@ -29,6 +31,8 @@ from textual_vision.window import Window
 
 from divide.editor.div_editor import DivEditor
 from divide import themes
+from divide import outline as outline_mod
+from divide.lang import language_of
 from divide.editor.theme import OUTPUT
 from divide.lang.div.complete import CARET, CompletionResult, complete
 from divide.ui.completion import CompletionPopup, InfoPopup
@@ -699,6 +703,21 @@ class EditorWindow(_TVWindow):
             self.app.close_window(self)  # type: ignore[attr-defined]
 
 
+@dataclass
+class FileEntry(DirEntry):
+    """A file the project window can unfold into its members (its outline)."""
+
+
+@dataclass
+class MemberEntry(DirEntry):
+    """A part of a file (a class, a method, a heading...): ``path`` is the file."""
+
+    member: outline_mod.Node | None = None
+
+
+MEMBERS_MAX_BYTES = 2_000_000  # a bigger file unfolds into nothing (open it: Search > Outline)
+
+
 # Folders that are never worth browsing in the project window.
 HIDDEN_NAMES = {".git", ".hg", ".svn", "__pycache__", ".venv", "node_modules", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".idea"}
 
@@ -718,6 +737,8 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         Binding("delete", "request('delete')", "Delete", show=False),
         Binding("ctrl+r", "request('refresh')", "Refresh", show=False),
         Binding("alt+f10,shift+f10", "request('menu')", "Local menu", show=False),
+        Binding("right", "unfold", "Unfold", show=False),
+        Binding("left", "fold", "Fold", show=False),
     ]
     DEFAULT_CSS = """
     ProjectTree {
@@ -754,6 +775,7 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         super().__init__(*args, **kwargs)
         self.tv_options = OptionFlag.SELECTABLE
         self.icons = icons
+        self.auto_expand = False  # folders toggle on Enter themselves; a file that unfolds opens
 
     def set_icons(self, mode: str) -> None:
         if mode != self.icons:
@@ -762,12 +784,141 @@ class ProjectTree(DirectoryTree, TVViewMixin):
             self.refresh()
 
     def render_label(self, node, base_style, style):
+        data = node.data
+        if isinstance(data, MemberEntry) and data.member is not None:
+            label = outline_mod.rich_label(data.member, themes.current())
+            if self.cursor_node is node:
+                label.stylize(style)  # the bar: one colour from end to end
+            prefix = (self.ICON_NODE_EXPANDED if node.is_expanded else self.ICON_NODE) if node._allow_expand else "  "
+            return Text.assemble((prefix, base_style), label)
+        if isinstance(data, FileEntry):
+            # a file that unfolds: drawn as a file, its ► / ▼ where files have their mark
+            node._allow_expand = False
+            try:
+                text = super().render_label(node, base_style, style)
+            finally:
+                node._allow_expand = True
+            if not self.is_mounted:
+                return text
+            arrow = (self.ICON_NODE_EXPANDED if node.is_expanded else self.ICON_NODE)[0]
+            colour = None
+            if self.icons == icons_mod.MARKS:  # folded, its mark (a click on it unfolds); unfolded, ▼ in its colour
+                mark, colour = icons_mod.mark_for(data.path)
+                arrow = arrow if node.is_expanded else mark
+            return Text.assemble((arrow, base_style + TOGGLE_STYLE + Style(color=colour) + style), text[1:])
         text = super().render_label(node, base_style, style)
-        if self.icons != icons_mod.MARKS or node.data is None or node._allow_expand or not self.is_mounted:
+        if self.icons != icons_mod.MARKS or data is None or node._allow_expand or not self.is_mounted:
             return text
         # the file's mark in the blank cell where a folder has its ►: the same width
-        mark, colour = icons_mod.mark_for(node.data.path)
+        mark, colour = icons_mod.mark_for(data.path)
         return Text.assemble((mark, base_style + Style(color=colour) + style), text[1:])
+
+    # ---------------------------------------------------------- members
+    def _populate_node(self, node, content) -> None:
+        if isinstance(node.data, FileEntry):  # reloaded while unfolded: its members again
+            self.fill_members(node)
+            return
+        if isinstance(node.data, MemberEntry):  # a reload reopens it as if it were a folder: it keeps its own
+            node.expand()
+            return
+        node.remove_children()
+        for path in content:
+            folder = self._safe_is_dir(path)
+            unfolds = not folder and outline_mod.has_outline(language_of(path))
+            node.add(path.name, data=FileEntry(path) if unfolds else DirEntry(path), allow_expand=folder or unfolds)
+        node.expand()
+
+    def fill_members(self, node) -> None:
+        """The members of the file of ``node``, from its open editor if it has one
+        (unsaved changes too), else from the disk."""
+        path = node.data.path
+        opened: set[tuple[str, ...]] = set()  # the members unfolded now stay so
+        stack = [(child, ()) for child in node.children]
+        while stack:
+            child, above = stack.pop()
+            if isinstance(child.data, MemberEntry) and child.data.member is not None:
+                here = above + (child.data.member.key,)
+                if child.is_expanded:
+                    opened.add(here)
+                    stack.extend((c, here) for c in child.children)
+        node.remove_children()
+        text, context = None, {"path": path}
+        window = self.app.window_for(path) if hasattr(self.app, "window_for") else None  # type: ignore[attr-defined]
+        if window is not None:
+            text = window.editor.text
+            if window.editor.lang == "div":
+                context.update(tokens=window.editor.tokens, blocks=window.editor.div_blocks())
+        else:
+            try:
+                if path.stat().st_size <= MEMBERS_MAX_BYTES:
+                    text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = None
+        members = outline_mod.outline(language_of(path), text, **context) if text is not None else None
+        node.data.loaded = True
+        self._add_members(node, members or [], path, opened, ())
+
+    def _add_members(self, parent, members, path, opened, above) -> None:
+        for member in members:
+            here = above + (member.key,)
+            child = parent.add(member.text, data=MemberEntry(path, member=member), allow_expand=bool(member.children),
+                               expand=here in opened or len(members) == 1)  # a lone namespace or class opens at once
+            self._add_members(child, member.children, path, opened, here)
+
+    def refresh_members(self, path: Path) -> None:
+        """``path`` changed (saved): the unfolded file shows its members as they are now."""
+        node = self._node_for(path)
+        if node is not None and isinstance(node.data, FileEntry) and node.is_expanded:
+            self.fill_members(node)
+
+    async def _on_tree_node_expanded(self, event) -> None:
+        data = event.node.data
+        if isinstance(data, (FileEntry, MemberEntry)):
+            event.stop()
+            event.prevent_default()  # not DirectoryTree's: it would open the file
+            if isinstance(data, FileEntry):
+                self.fill_members(event.node)
+
+    async def _on_tree_node_selected(self, event) -> None:
+        data = event.node.data
+        if isinstance(data, MemberEntry) and data.member is not None:
+            event.stop()
+            event.prevent_default()
+            self.post_message(self.MemberSelected(self, data.path, data.member.start, data.member.end))
+        elif data is not None and not isinstance(data, FileEntry) and event.node.allow_expand:
+            event.node.toggle()  # a folder opens and closes (Enter on a file opens the file only)
+
+    def action_unfold(self) -> None:
+        """→: a folder or a file opens (its files, its members); on an open one, to its first."""
+        node = self.cursor_node
+        if node is not None and node.allow_expand:
+            if node.is_expanded and node.children:
+                self.move_cursor(node.children[0])
+            else:
+                node.expand()
+
+    def action_fold(self) -> None:
+        """←: an open folder or file closes; on anything else, to what holds it."""
+        node = self.cursor_node
+        if node is None:
+            return
+        if node.allow_expand and node.is_expanded:
+            node.collapse()
+        elif node.parent is not None and node.parent is not self.root:
+            self.move_cursor(node.parent)
+
+    class MemberSelected(Message):
+        """Enter on a member: open its file there."""
+
+        def __init__(self, tree: "ProjectTree", path: Path, start: int, end: int) -> None:
+            super().__init__()
+            self.tree, self.path, self.start, self.end = tree, path, start, end
+
+    @property
+    def member(self):
+        """The member under the bar, if the bar is on one."""
+        node = self.cursor_node
+        return node.data.member if node is not None and isinstance(node.data, MemberEntry) else None
 
     def filter_paths(self, paths):
         return [p for p in paths if p.name not in HIDDEN_NAMES and not p.name.endswith(".egg-info")]
@@ -792,7 +943,7 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         meta = event.style.meta
         if event.button == 1 and event.chain < 2 and "line" in meta and not meta.get("toggle", False):
             node = self.get_node_at_line(meta["line"])
-            if node is not None and not node.allow_expand:
+            if node is not None and (not node.allow_expand or isinstance(node.data, (FileEntry, MemberEntry))):
                 event.prevent_default()
                 self.cursor_line = meta["line"]
 

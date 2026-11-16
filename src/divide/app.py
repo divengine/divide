@@ -696,6 +696,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
         self.lsp_saved(win.path, win.editor.lang)
+        project = self.project_window()
+        if project is not None:
+            project.project_tree.refresh_members(win.path)  # an unfolded file shows its members as saved
         return True
 
     async def save(self, win: EditorWindow, *, ask_name: bool = False) -> bool:
@@ -2040,6 +2043,14 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def _file_selected(self, event: ProjectTree.FileSelected) -> None:
         event.stop()
         self.open_file(event.path)
+
+    @on(ProjectTree.MemberSelected)
+    def _member_selected(self, event: ProjectTree.MemberSelected) -> None:
+        """Enter on a class, a method, a heading... in the project window: its file, there."""
+        event.stop()
+        win = self.open_file(event.path)
+        if win is not None:
+            self._select_in(win, event.start, event.end)
 
     @on(DivEditor.Changed)
     @on(DivEditor.SelectionChanged)

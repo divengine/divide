@@ -308,6 +308,10 @@ def languages() -> frozenset[str]:
     return frozenset(_builders())
 
 
+def has_outline(lang: str | None) -> bool:
+    return lang in _builders() if lang else False
+
+
 def outline(lang: str | None, text: str, **context) -> list[Node] | None:
     """The outline of ``text`` in ``lang``; None when the language has none
     (or its grammar is missing). ``context`` passes what a builder can reuse

@@ -76,3 +76,5 @@ The same tree, with what each kind of file is made of. Labels keep the editor's 
 | **Ctrl+O** | back to the outline from the editor |
 
 The outline follows you: it changes when another editor comes to the front, and it is redone a moment after you stop typing, keeping what you folded and the bar where it was. In a plain text file it keeps the one it was showing; opened from such files alone, it says there is no outline for that kind of file.
+
+The same members are in the [[Project Window]], below each file: unfold a file there to see them without opening it.
