@@ -89,6 +89,38 @@ _tok("special", "div.special")
 _tok("special", "div.subparser", "div.multirep", "div.macro", "php.tag", **B)
 _tok("markup", "html.tag", "html.attr")
 _tok("module", "php.module", "php.module.builtin")
+# tree-sitter's other grammars (divide.lang.treesitter: Textual's queries, captures as ts.*)
+_tok("keyword", "ts.keyword", "ts.keyword.operator", "ts.conditional", "ts.storageclass", "ts.import", "ts.include",
+     "ts.media", "ts.charset", "ts.keyframes", "ts.supports", "ts.namespace", "ts.preproc", "ts.toml.type",
+     "ts.heading", "ts.markup.heading", **B)
+_tok("markup", "ts.tag", "ts.markup")
+_tok("name", "ts.tag.attribute", "ts.attribute", "ts.property", "ts.css.property", "ts.yaml.field", "ts.field",
+     "ts.label", "ts.function", "ts.function.builtin", "ts.function.method", "ts.function.call", "ts.constructor")
+_tok("string", "ts.string", "ts.string.special", "ts.string.special.symbol", "ts.text.literal", "ts.markup.raw")
+_tok("string", "ts.text.uri", "ts.link.uri", "ts.markup.link", underline=True)
+_tok("special", "ts.string.escape", "ts.link.label", "ts.embedded", "ts.punctuation.special")
+_tok("comment", "ts.comment")
+_tok("number", "ts.number", "ts.float", "ts.toml.datetime")
+_tok("constant", "ts.constant", "ts.boolean")
+_tok("constant", "ts.constant.builtin", **B)
+_tok("type", "ts.type", "ts.type.builtin", "ts.type.definition", "ts.type.qualifier")
+_tok("variable", "ts.variable", "ts.parameter")
+_tok("variable", "ts.variable.builtin", **B)
+_tok("operator", "ts.operator")
+_tok("punct", "ts.punctuation.bracket", "ts.punctuation.delimiter", "ts.tag.delimiter", "ts.list.marker",
+     "ts.heading.marker")
+# INI and CSV (divide.lang.plain): a column in each colour, in turn
+_tok("keyword", "ini.section", **B)
+_tok("name", "ini.key")
+_tok("string", "ini.string")
+_tok("number", "ini.number")
+_tok("constant", "ini.constant")
+_tok("comment", "ini.comment")
+_tok("operator", "ini.operator")
+for _n, _role in enumerate(("keyword", "string", "number", "name", "type", "constant")):
+    _tok(_role, f"csv.col{_n}")
+_tok("punct", "csv.sep")
+_tok("error", "ts.error", "ts.html.end_tag_error", "ts.toml.error", bg="error-bg")
 _tok("error", "div.error", "json.error", bg="error-bg", **B)
 _tok("error", "diag.error", bg="error-bg")  # diagnostics, over the syntax colours
 _tok(None, "diag.warning", bg="warning-bg")

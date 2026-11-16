@@ -120,7 +120,7 @@ def contrast(a: str, b: str) -> float:
 def test_borland_themes_keep_their_colours(name):
     palette = themes.get(name)
     styles = palette.token_styles()
-    assert set(styles) == set(BORLAND_GOLDEN)
+    assert set(BORLAND_GOLDEN) <= set(styles)  # the old kinds keep their colours; new kinds may join
     for kind, spec in BORLAND_GOLDEN.items():
         fg, bg, attrs = spec.split("/")
         style = styles[kind]

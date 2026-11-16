@@ -120,6 +120,11 @@ This document describes behaviour and responsibilities.
 1. Tools > Translate asks for the template, the source dialect and the target dialect.
 2. Div's `translate()` produces the result, which is previewed and then saved or opened.
 
+### UC9b Edit the other files of a project
+
+1. HTML, CSS, JavaScript, Markdown, SQL, XML (also `phpunit.xml.dist`, SVG), YAML, TOML, shell scripts and `.env`, INI (`php.ini`) and CSV files open highlighted in the palette's colours; the status line names the language.
+- *Alt:* a grammar package is missing, so the file opens as plain text.
+
 ### UC9 Edit PHP
 
 **Goal:** write the PHP around the templates.

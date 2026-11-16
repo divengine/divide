@@ -98,6 +98,11 @@ classDiagram
 - **`lang.div.dialector`**: dialect sections, examples and differences.
 - **`lang.divjson`**: tokens, parser (with references and comments) and
   writer for Div JSON.
+- **`lang.treesitter`**: `GRAMMARS` (language → tree-sitter package), `grammar(lang)` returns the
+  Language and Textual's highlight query (the package's own as fallback) with its captures
+  renamed `@ts.*` by `prefixed()`; `DivEditor` registers it as `divide-<lang>`.
+- **`lang.plain`**: `ini_tokens()` and `csv_tokens()` (each column in one of six colours in turn,
+  quoted fields, the separator guessed from the first line).
 - **`lang.php`**: the tree-sitter grammar (`grammar()`), `lint()` with
   `php -l`, and `outline()` returning `Symbol` items.
 

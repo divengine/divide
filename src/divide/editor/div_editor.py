@@ -23,7 +23,7 @@ from divide.lang.divjson import DivJsonError
 from divide.lang.div.diagnostics import Diagnostic, check, include_paths
 from divide.lang.div.lexer import Lexer
 from divide import lang as languages
-from divide.lang import php
+from divide.lang import php, plain, treesitter
 
 from divide import themes
 
@@ -126,14 +126,22 @@ class DivEditor(TextArea):
         self._set_language()
 
     def _set_language(self) -> None:
-        """PHP is parsed by tree-sitter (Textual's own highlighting); the others by divide."""
-        if self.lang == "php" and (found := php.grammar()) is not None:
-            if "php" not in self._languages:
-                self.register_language("php", *found)
-            if self.language != "php":
-                self.language = "php"
+        """PHP and the other files of a project (HTML, YAML...) are parsed by tree-sitter
+        (Textual's own highlighting); Div, Div JSON, INI and CSV by divide's lexers."""
+        found = php.grammar() if self.lang == "php" else treesitter.grammar(self.lang) if self.lang else None
+        if found is not None:
+            name = self.lang if self.lang == "php" else "divide-" + self.lang  # not Textual's builtin names
+            if name not in self._languages:
+                self.register_language(name, *found)
+            if self.language != name:
+                self.language = name
         elif self.language is not None:
             self.language = None
+
+    @property
+    def tree_sitter(self) -> bool:
+        """Coloured by a tree-sitter grammar (PHP, HTML, YAML...)."""
+        return self.language is not None
 
     def on_mount(self) -> None:
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.apply_palette())
@@ -241,6 +249,14 @@ class DivEditor(TextArea):
         elif self.lang == "json":
             tokens = divjson.tokenize(text)
             self._check_json(text, tokens)
+        elif self.lang == "ini":
+            tokens = plain.ini_tokens(text)
+        elif self.lang == "csv":
+            tsv = self.path is not None and self.path.suffix.lower() == ".tsv"
+            tokens = plain.csv_tokens(text, plain.csv_separator(text, tsv))
+        elif self.tree_sitter:
+            super()._build_highlight_map()  # tree-sitter's colours (HTML, YAML...)
+            return
         else:
             return
         self._overlay(tokens)

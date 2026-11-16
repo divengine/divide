@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 02:37+0000\n"
+"POT-Creation-Date: 2026-11-16 02:47+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -487,6 +487,9 @@ msgstr "~N~úmero de línea"
 
 msgid "Error"
 msgstr "Error"
+
+msgid "Error: "
+msgstr "Error: "
 
 msgid "Errors"
 msgstr "Errores"
@@ -1301,6 +1304,9 @@ msgstr "Tabulación vertical"
 
 msgid "Warning"
 msgstr "Aviso"
+
+msgid "Warning: "
+msgstr "Aviso: "
 
 msgid "Warnings"
 msgstr "Avisos"

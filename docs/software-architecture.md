@@ -80,7 +80,7 @@ flowchart TB
 | `divide.app` | The `Divide` application: menu bar, status line, key bindings, the command dispatcher (`run_command`), window layout, the glue between editors and services. It is composed from the feature mixins. |
 | `divide.ui` | Turbo Vision windows, dialogs and lists. One module per feature area, usually a window or dialog plus a mixin that adds the feature to the app. |
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
-| `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. |
+| `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
 | `divide.run` | Everything that runs PHP: render and resolve through the bridge, scripts, the web server, the DBGp debugger and the render trace. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
 | `divide.manual` | The help books: Markdown pages to help topics; `fulltext`: their search index (SQLite FTS5). |
@@ -223,6 +223,7 @@ processes, bounded searches, and an incremental lexer cache. See the
 | Mixins on the app | A plug-in registry | Each feature needs the app's windows, dialogs and commands. Mixins keep each feature in one module with no extra indirection. |
 | Own fuzzy matcher | Textual's `FuzzySearch` | Textual's matcher enumerates every placement of the letters, which explodes on long paths and large projects. A linear matcher keeps memory and time bounded. |
 | git's file list for project search | Walking the tree | It respects `.gitignore` and is fast. The tree walk with the project window's hidden folders is the fallback. |
+| tree-sitter grammars with Textual's queries for the other files | Writing lexers; Pygments | The grammars are the packages of Textual's own `syntax` extra and Textual ships tuned highlight queries for them; their captures are renamed into divide's namespace (`ts.*`) so the palettes colour them by role, as PHP. Grammars load on first use and stay cached (a freed grammar crashes tree-sitter). INI and CSV have no grammar there and are a few lines of lexer each. |
 | gettext for the interface's languages | Own JSON catalogues; Fluent | gettext is in the standard library, handles plurals, and every translation tool (Poedit, Weblate, Crowdin) reads its `.po` files. Babel is needed only to extract and compile, as a development tool. |
 | The language chosen at start | Switching live | Many texts are module constants (titles, hints, theme names). Choosing at start keeps them simple values; Options > Language applies at the next start, like the colour depth. |
 | SQLite FTS5 for the help search | A hand-written inverted index and ranking; an external search engine | FTS5 ships with Python's `sqlite3`: BM25 ranking, Porter stemming, prefix queries and snippets, with no dependency. |

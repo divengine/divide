@@ -2136,7 +2136,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if ed.div_enabled:
             here = ed.document.get_index_from_location(min(ed.selection.start, ed.selection.end))
             if (diag := ed.diagnostic_at(here)) is not None:
-                status.set_hint(("Error: " if diag.severity == "error" else "Warning: ") + diag.message)
+                status.set_hint((_("Error: ") if diag.severity == "error" else _("Warning: ")) + diag.message)
                 return
             d = ed.dialect
             hint = _('Div') + ("" if d.name == "default" else f" · {d.name}")
@@ -2146,7 +2146,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 hint += " · " + ngettext("{n} error", "{n} errors", errors).format(n=errors) + ", " + ngettext(
                     "{n} warning", "{n} warnings", warnings).format(n=warnings) + " (Alt+F8)"
         else:
-            hint = _('plain text')
+            info = languages.language(ed.lang)
+            hint = info.title if info else _('plain text')  # YAML, CSV...: coloured, not checked
         status.set_hint(hint)
 
 

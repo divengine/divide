@@ -48,6 +48,7 @@ ASCII and CP437 glyphs and why it works with 16 colours as well as truecolour.
 | Need | Feature |
 |---|---|
 | See Div's structure | dialect-aware lexer and highlighting (`@_DIALECT`), Div JSON highlighting, outline of templates and PHP files |
+| The rest of a PHP project | highlighting of HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell scripts and `.env`, INI and CSV |
 | Catch errors before rendering | static checks (unclosed blocks, orphan closers, broken JSON in definitions, unresolvable includes), Messages window, Alt+F8 / Alt+F7 |
 | Write faster | completion of variables from the data file, loop item fields, includes, Div snippets; language servers for PHP |
 | Run what will run in production | render through PHP and the real Div (unsaved edits included), Output window, data file per template, data tree editor |

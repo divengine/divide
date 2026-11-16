@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 02:37+0000\n"
+"POT-Creation-Date: 2026-11-16 02:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -479,6 +479,9 @@ msgid "Enter new line ~n~umber"
 msgstr ""
 
 msgid "Error"
+msgstr ""
+
+msgid "Error: "
 msgstr ""
 
 msgid "Errors"
@@ -1298,6 +1301,9 @@ msgid "Vertical tab"
 msgstr ""
 
 msgid "Warning"
+msgstr ""
+
+msgid "Warning: "
 msgstr ""
 
 msgid "Warnings"

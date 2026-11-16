@@ -53,6 +53,7 @@ skipped.
 | `test_scrollbars.py` | frame scroll bars |
 | `test_shadow.py` | drop shadows |
 | `test_glyphs.py` | only ASCII and CP437 in divide's own strings |
+| `test_filetypes.py` | the other file types: detection by name and extension, every grammar loads, every capture has a colour, INI and CSV tokens, each sample file coloured in the editor |
 | `test_i18n.py` | catalogues complete and current, placeholders and hotkey marks kept, translations single-width, menu and dialog hotkeys unique in each language (the dialogs in a process started in Spanish), language choice, no local `_` hiding gettext |
 | `test_app.py` | the application shell, commands, layout |
 
