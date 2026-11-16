@@ -97,3 +97,14 @@ async def test_files_are_coloured(name, tmp_path):
         coloured = {n for n in names if n.startswith(prefix)}
         assert coloured and all(n in themes.TOKENS for n in coloured if not n.startswith(("ts.text", "ts.none", "ts.spell"))), names
         assert any(n in themes.TOKENS for n in names)  # at least one coloured by the palette
+
+
+def test_queries_are_made_once_and_kept():
+    """Freeing a JavaScript query corrupts memory (tree-sitter 0.26): every editor shares one, never freed."""
+    from textual.document._syntax_aware_document import SyntaxAwareDocument
+
+    language, source = treesitter.grammar("javascript")
+    first = SyntaxAwareDocument("let a = 1;\n", language).prepare_query(source)
+    again = SyntaxAwareDocument("let b = 2;\n", language).prepare_query(source)
+    assert first is again is treesitter.query(language, source)
+

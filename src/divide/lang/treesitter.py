@@ -10,7 +10,11 @@ colour them by role (divide.themes.TOKENS), as they colour PHP and Div.
 
 A grammar is loaded the first time a file of its language opens, and kept:
 the editor and its queries point into it (a grammar freed under them would
-crash tree-sitter).
+crash tree-sitter). Its queries are kept too, one per grammar and query, and
+shared by every editor: freeing a JavaScript query corrupts memory
+(tree-sitter 0.26 with tree-sitter-javascript 0.25; the crash comes later,
+anywhere), and Textual made one per document, dropped when its editor
+closed. ``SyntaxAwareDocument.prepare_query`` gives the kept one.
 """
 
 from __future__ import annotations
@@ -76,6 +80,32 @@ def prefixed(query: str) -> str:
     return "".join(out)
 
 
+_QUERIES: dict[tuple[int, str], tuple[object, object]] = {}  # (id of the Language, query) -> (Language, Query)
+
+
+def query(language: object, source: str) -> object:
+    """The Query of ``source`` on ``language``, made once and kept for the whole run
+    (with its Language, so the id in the key stays its own)."""
+    key = (id(language), source)
+    found = _QUERIES.get(key)
+    if found is None:
+        from tree_sitter import Query
+
+        found = _QUERIES[key] = (language, Query(language, source))
+    return found[1]
+
+
+def _keep_queries() -> None:
+    try:
+        from textual.document._syntax_aware_document import SyntaxAwareDocument
+    except ImportError:
+        return
+    SyntaxAwareDocument.prepare_query = lambda self, source: query(self.language, source)
+
+
+_keep_queries()
+
+
 @lru_cache(maxsize=None)
 def grammar(lang: str) -> tuple[object, str] | None:
     """``(tree-sitter Language, highlight query)`` for one of ``GRAMMARS``; None when its
@@ -84,18 +114,19 @@ def grammar(lang: str) -> tuple[object, str] | None:
         return None
     package, loader = GRAMMARS[lang]
     try:
-        from tree_sitter import Language, Query
+        from tree_sitter import Language
 
         module = importlib.import_module(f"tree_sitter_{package}")
         language = Language(getattr(module, loader)())
     except (ImportError, AttributeError, OSError, ValueError):
         return None
-    for query in (_textual_query(package), getattr(module, "HIGHLIGHTS_QUERY", None)):
-        if not query:
+    for source in (_textual_query(package), getattr(module, "HIGHLIGHTS_QUERY", None)):
+        if not source:
             continue
+        source = prefixed(source)
         try:
-            Query(language, query)
+            query(language, source)  # the one the editors will use
         except Exception:  # noqa: BLE001 - a query written for another version of the grammar
             continue
-        return language, prefixed(query)
+        return language, source
     return None
