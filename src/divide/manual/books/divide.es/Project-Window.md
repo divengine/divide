@@ -4,7 +4,18 @@
 
 ![el menú local de la ventana de proyecto](images/project-menu.png)
 
-**Enter** abre un archivo, o pliega y despliega una carpeta. Con el ratón, un clic pone la barra sobre un archivo y un doble clic lo abre; un clic en una carpeta la pliega o la despliega. Las carpetas de control de versiones y de caché (`.git`, `__pycache__`, `.venv`, `node_modules`, cachés de herramientas) se ocultan; `vendor/` sigue visible.
+**Enter** abre un archivo, o pliega y despliega una carpeta. **→** despliega una carpeta (o un archivo, ver abajo) y **←** la pliega, o sube a la carpeta que contiene la barra. Con el ratón, un clic pone la barra sobre un archivo y un doble clic lo abre; un clic en una carpeta la pliega o la despliega. Las carpetas de control de versiones y de caché (`.git`, `__pycache__`, `.venv`, `node_modules`, cachés de herramientas) se ocultan; `vendor/` sigue visible.
+
+## Los miembros de un archivo
+
+Un archivo de un lenguaje con [[esquema|Outline]] (plantillas, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...) también lleva un `►`: desplegado, muestra sus miembros debajo, el mismo árbol que **Buscar > Esquema**: un archivo PHP sus clases, sus métodos y propiedades, sus funciones; una plantilla sus etiquetas; un archivo Markdown sus encabezados; un archivo JSON sus claves...
+
+- **→** o un clic en el `►` despliega el archivo, sin abrirlo; una clase o un bloque se despliega igual. Un archivo con una sola clase o un solo espacio de nombres lo muestra ya desplegado.
+- **Enter** o un doble clic sobre un miembro abre el archivo con ese miembro seleccionado. Sobre el archivo, Enter lo abre, como siempre.
+- Los miembros se leen al desplegar el archivo: de su ventana si está abierto (también los cambios sin guardar), del disco si no. Guardar el archivo los actualiza, conservando lo desplegado.
+- **F2** y **Supr** sobre un miembro no le hacen nada al archivo: solo renombran y eliminan archivos y carpetas.
+
+Con las marcas de tipo de archivo (abajo), un archivo que se despliega muestra su marca mientras está plegado, y `▼` del color de la marca mientras está desplegado; un clic en la marca lo despliega.
 
 ## Marcas de tipo de archivo
 

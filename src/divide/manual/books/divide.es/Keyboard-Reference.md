@@ -74,7 +74,8 @@
 
 | Tecla | Acción |
 |---|---|
-| **Enter** / doble clic | abrir un archivo / plegar una carpeta (un clic pone la barra sobre un archivo, y abre o pliega una carpeta) |
+| **Enter** / doble clic | abrir un archivo / plegar una carpeta (un clic pone la barra sobre un archivo, y abre o pliega una carpeta); sobre un miembro de un archivo, abrir el archivo allí |
+| **→** / **←** | desplegar / plegar una carpeta, o un archivo en sus miembros (en uno plegado, **←** sube a lo que lo contiene) |
 | **Ins** | archivo nuevo |
 | **F7** | carpeta nueva |
 | **F2** | renombrar |

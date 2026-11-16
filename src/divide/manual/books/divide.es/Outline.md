@@ -76,3 +76,5 @@ El mismo árbol, con aquello de lo que está hecho cada tipo de archivo. Las eti
 | **Ctrl+O** | volver al esquema desde el editor |
 
 El esquema te sigue: cambia cuando otro editor pasa al frente, y se rehace un momento después de que dejas de escribir, conservando lo que plegaste y la barra donde estaba. En un archivo de texto plano conserva el que mostraba; abierto solo desde esos archivos, dice que no hay esquema para ese tipo de archivo.
+
+Los mismos miembros están en la [[Ventana de proyecto|Project Window]], debajo de cada archivo: despliega un archivo allí para verlos sin abrirlo.
