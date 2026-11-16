@@ -13,19 +13,19 @@ Div es un motor de plantillas y generador de código escrito en PHP. Está pensa
 
 ```mermaid
 flowchart TD
-    A["Input: Template (text)"] --> B["Dialector: Normalize to canonical Div"]
-    B --> C["Div instance (src, items, config)"]
-    C --> D["Parsing pass: Structure detection"]
+    A["Entrada: plantilla (texto)"] --> B["Dialector: normaliza a Div canónico"]
+    B --> C["Instancia de Div (src, items, config)"]
+    C --> D["Pasada de análisis: detección de estructuras"]
 
-    subgraph T["Transformers (per phase)"]
-      T0["(group)"]
+    subgraph T["Transformadores (por fase)"]
+      T0["(grupo)"]
       T1["Includes"]
-      T2["Conditions"]
-      T3["Loops / Lists"]
-      T4["Replacements / Variables"]
-      T5["Modifiers"]
-      T6["Macros / Formulas"]
-      T7["Capsules / Strip / Ignore / Comment"]
+      T2["Condiciones"]
+      T3["Bucles / listas"]
+      T4["Reemplazos / variables"]
+      T5["Modificadores"]
+      T6["Macros / fórmulas"]
+      T7["Cápsulas / strip / ignorar / comentarios"]
       T0 --> T1
       T0 --> T2
       T0 --> T3
@@ -36,71 +36,71 @@ flowchart TD
     end
 
     D --> T0
-    T1 --> E["Transformed text"]
+    T1 --> E["Texto transformado"]
     T2 --> E
     T3 --> E
     T4 --> E
     T5 --> E
     T6 --> E
     T7 --> E
-    E --> F{"Did it change? (CRC)"}
+    E --> F{"¿Cambió? (CRC)"}
     F -- Yes --> D
-    F -- No --> G["Output: Final text (HTML/code/etc.)"]
+    F -- No --> G["Salida: texto final (HTML/código/etc.)"]
 ```
 
 ## Convergencia y recursión
 
 ```mermaid
 flowchart LR
-    A["Init parse()"] --> B["crc_prev = crc32(src)"]
-    B --> C["Apply phase: detect and transform blocks"]
+    A["Inicio de parse()"] --> B["crc_prev = crc32(src)"]
+    B --> C["Aplicar la fase: detectar y transformar bloques"]
     C --> D["crc_now = crc32(src)"]
     D --> E{"crc_now != crc_prev?"}
-    E -- "Yes" --> F["cycles = cycles + 1"]
+    E -- "Sí" --> F["cycles = cycles + 1"]
     F --> G{"cycles > MAX?"}
-    G -- "Yes" --> H["Abort with error"]
+    G -- "Sí" --> H["Abortar con error"]
     G -- "No" --> B
-    E -- "No" --> I["Convergence reached: return src"]
+    E -- "No" --> I["Convergencia alcanzada: devolver src"]
 ```
 
 ## Dialectos
 
 ```mermaid
 flowchart LR
-    A["Input: Template (Dialect syntax)"] --> C["Dialector: Normalize to canonical Div"]
+    A["Entrada: plantilla (sintaxis del dialecto)"] --> C["Dialector: normaliza a Div canónico"]
 
-    B1["Dialect config: mapping tables"] --> C
-    B2["Delimiters & keywords"] --> C
-    B3["Tags & block markers"] --> C
-    B4["Modifiers & separators"] --> C
-    B5["Escape rules & collision handling"] --> C
+    B1["Configuración del dialecto: tablas de correspondencia"] --> C
+    B2["Delimitadores y palabras clave"] --> C
+    B3["Etiquetas y marcas de bloque"] --> C
+    B4["Modificadores y separadores"] --> C
+    B5["Reglas de escape y manejo de colisiones"] --> C
 
-    C --> D["Canonical Div (text)"]
-    D --> E["Div instance (src, items, config)"]
-    E --> F["Parsing pass: structure detection"]
-    F --> G{"Did it change? (CRC)"}
-    G -- "Yes" --> F
-    G -- "No" --> H["Final output (HTML/code/etc.)"]
+    C --> D["Div canónico (texto)"]
+    D --> E["Instancia de Div (src, items, config)"]
+    E --> F["Pasada de análisis: detección de estructuras"]
+    F --> G{"¿Cambió? (CRC)"}
+    G -- "Sí" --> F
+    G -- "No" --> H["Salida final (HTML/código/etc.)"]
 ```
 
 ## Ámbito de los bucles y subinstancias
 
 ```mermaid
 sequenceDiagram
-    participant E as Engine (div)
-    participant T as Template (list block)
-    participant D as Data (items[])
-    Note over E,T: E detects a list block [ $ items ]
-    E->>T: Extract inner block template
-    loop For each item in items
-        E->>E: Create sub-instance div (isolated scope)
-        E->>E: Set items = item (shadowing/merge)
-        E->>E: parse() (local multipass)
-        E-->>E: Partial result (fragment)
+    participant E as Motor (div)
+    participant T as Plantilla (bloque de lista)
+    participant D as Datos (items[])
+    Note over E,T: E detecta un bloque de lista [ $ items ]
+    E->>T: Extrae la plantilla interna del bloque
+    loop Por cada item de items
+        E->>E: Crea una subinstancia de div (ámbito aislado)
+        E->>E: items = item (ocultación/fusión)
+        E->>E: parse() (multipasada local)
+        E-->>E: Resultado parcial (fragmento)
     end
-    E->>E: Concatenate fragments in order
-    E-->>T: Replace block with concatenation
-    E-->>E: Continue global multipass parse
+    E->>E: Concatena los fragmentos en orden
+    E-->>T: Reemplaza el bloque por la concatenación
+    E-->>E: Sigue el análisis global multipasada
 ```
 
 ## Operaciones básicas
