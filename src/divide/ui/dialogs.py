@@ -211,7 +211,7 @@ def file_info(path: Path, name: str, width: int) -> str:
         return name[:width]
     t = datetime.fromtimestamp(st.st_mtime)
     when = f"{t:%b} {t.day}, {t.year}  {t.hour % 12 or 12}:{t.minute:02d}{'am' if t.hour < 12 else 'pm'}"
-    size = "Directory" if path.is_dir() else str(st.st_size)
+    size = _("Directory") if path.is_dir() else str(st.st_size)
     room = max(1, width - len(when) - len(size) - 4)
     shown = name if len(name) <= room else name[:room - 3] + "..."
     return f"{shown:<{room}}  {size}  {when}"[:width]

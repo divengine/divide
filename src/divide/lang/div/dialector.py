@@ -50,7 +50,7 @@ def _var(name: str, modifier: str = D) -> str:
 SECTIONS: tuple[Section, ...] = (
     Section(
         _('Replacements'),
-        "How a variable is written: {$name}, {$person.name}, {$name:...}",
+        _("How a variable is written: {$name}, {$person.name}, {$name:...}"),
         (
             ("DIV_TAG_REPLACEMENT_PREFIX", _('Prefix')),
             ("DIV_TAG_MODIFIER_SIMPLE", _('Simple replacement')),
@@ -108,7 +108,7 @@ SECTIONS: tuple[Section, ...] = (
     ),
     Section(
         _('Multiple modifiers'),
-        "Several modifiers on one variable: {$name|^|_|}",
+        _("Several modifiers on one variable: {$name|^|_|}"),
         (
             ("DIV_TAG_MULTI_MODIFIERS_PREFIX", _('Prefix')),
             ("DIV_TAG_MULTI_MODIFIERS_OPERATOR", _('Operator')),
@@ -137,7 +137,7 @@ SECTIONS: tuple[Section, ...] = (
     ),
     Section(
         _('Loops and iterations'),
-        "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]",
+        _("[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"),
         (
             ("DIV_TAG_LOOP_BEGIN_PREFIX", _('Begin prefix')),
             ("DIV_TAG_LOOP_BEGIN_SUFFIX", _('Begin suffix')),
@@ -164,7 +164,7 @@ SECTIONS: tuple[Section, ...] = (
     ),
     Section(
         _('Conditions'),
-        "{?( expression )?} ... @else@ ... {/?}, and the conditional parts ?$show ... $show?",
+        _("{?( expression )?} ... @else@ ... {/?}, and the conditional parts ?$show ... $show?"),
         (
             ("DIV_TAG_CONDITIONS_BEGIN_PREFIX", _('Condition prefix')),
             ("DIV_TAG_CONDITIONS_BEGIN_SUFFIX", _('Condition suffix')),
@@ -195,7 +195,7 @@ SECTIONS: tuple[Section, ...] = (
     ),
     Section(
         _('Includes and locations'),
-        "{% header %}, {%% footer %%}, and locations (( name )) filled by {{name ... name}}",
+        _("{% header %}, {%% footer %%}, and locations (( name )) filled by {{name ... name}}"),
         (
             ("DIV_TAG_INCLUDE_BEGIN", _('Include begin')),
             ("DIV_TAG_INCLUDE_END", _('Include end')),
@@ -236,7 +236,7 @@ SECTIONS: tuple[Section, ...] = (
     ),
     Section(
         _('Aggregate functions'),
-        "count, max, min, sum and avg over a list: {$sum:products-price}",
+        _("count, max, min, sum and avg over a list: {$sum:products-price}"),
         (
             ("DIV_TAG_AGGREGATE_FUNCTION_COUNT", _('Count')),
             ("DIV_TAG_AGGREGATE_FUNCTION_MAX", _('Maximum')),
@@ -285,7 +285,7 @@ SECTIONS: tuple[Section, ...] = (
     ),
     Section(
         _('Capsules and sub-parsers'),
-        "Capsules [[entity ... entity]], multiple replacements {:all} ... {:/all}, sub-parsers {p} ... {/p}",
+        _("Capsules [[entity ... entity]], multiple replacements {:all} ... {:/all}, sub-parsers {p} ... {/p}"),
         (
             ("DIV_TAG_CAPSULE_BEGIN_PREFIX", _('Capsule begin prefix')),
             ("DIV_TAG_CAPSULE_BEGIN_SUFFIX", _('Capsule begin suffix')),

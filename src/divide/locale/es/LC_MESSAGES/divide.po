@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 08:09+0000\n"
+"POT-Creation-Date: 2026-11-16 09:25+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -192,6 +192,14 @@ msgstr "Prefijo de fin de cápsula"
 msgid "Capsule end suffix"
 msgstr "Sufijo de fin de cápsula"
 
+#, python-brace-format
+msgid ""
+"Capsules [[entity ... entity]], multiple replacements {:all} ... {:/all},"
+" sub-parsers {p} ... {/p}"
+msgstr ""
+"Cápsulas [[entity ... entity]], reemplazos múltiples {:all} ... {:/all}, "
+"sub-parsers {p} ... {/p}"
+
 msgid "Capsules and sub-parsers"
 msgstr "Cápsulas y sub-parsers"
 
@@ -209,6 +217,9 @@ msgstr "Verificando"
 
 msgid "Close a~l~l"
 msgstr "Cerrar ~t~odas"
+
+msgid "Colors"
+msgstr "Colores"
 
 msgid "Colour ~d~epth (from the next start)"
 msgstr "Profun~d~idad de color (desde el próximo inicio)"
@@ -341,6 +352,9 @@ msgstr "Dialector"
 
 msgid "Direction"
 msgstr "Dirección"
+
+msgid "Directory"
+msgstr "Carpeta"
 
 msgid "Div"
 msgstr "Div"
@@ -657,6 +671,10 @@ msgstr "Ayuda: {title}"
 msgid "Horizontal tab"
 msgstr "Tabulación horizontal"
 
+#, python-brace-format
+msgid "How a variable is written: {$name}, {$person.name}, {$name:...}"
+msgstr "Cómo se escribe una variable: {$name}, {$person.name}, {$name:...}"
+
 msgid "Ignore begin"
 msgstr "Inicio de ignorar"
 
@@ -852,6 +870,10 @@ msgstr "No existe la carpeta: {parent}"
 msgid "No such folder: {root}"
 msgstr "No existe la carpeta: {root}"
 
+#, python-brace-format
+msgid "No {language} errors"
+msgstr "Sin errores de {language}"
+
 msgid "Not a line number"
 msgstr "No es un número de línea"
 
@@ -891,6 +913,10 @@ msgstr "Abre un script PHP (.php) para ejecutarlo."
 
 msgid "Open a file"
 msgstr "Abrir un archivo"
+
+#, python-brace-format
+msgid "Opening {target}"
+msgstr "Abriendo {target}"
 
 msgid "Operator"
 msgstr "Operador"
@@ -1090,6 +1116,10 @@ msgstr "Guardar traducción como"
 msgid "Save ~a~s..."
 msgstr "Guardar ~c~omo..."
 
+#, python-brace-format
+msgid "Saved {name}"
+msgstr "{name} guardado"
+
 msgid "Script"
 msgstr "Script"
 
@@ -1122,6 +1152,10 @@ msgstr ""
 #, python-brace-format
 msgid "Serving {url} · the next request stops"
 msgstr "Sirviendo {url} · la siguiente petición se detiene"
+
+#, python-brace-format
+msgid "Several modifiers on one variable: {$name|^|_|}"
+msgstr "Varios modificadores sobre una variable: {$name|^|_|}"
 
 msgid "Simple replacement"
 msgstr "Reemplazo simple"
@@ -1431,6 +1465,9 @@ msgstr "Xdebug no envió el paquete de inicio"
 msgid "Your choice (the template's own @_DIALECT is ignored)"
 msgstr "Tu elección (se ignora el @_DIALECT de la propia plantilla)"
 
+msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
+msgstr "[$products] ... @empty@ ... [/$products], y [:1,10:] ... [/]"
+
 msgid "a reference looks like name or person.name"
 msgstr "una referencia tiene la forma name o person.name"
 
@@ -1480,6 +1517,10 @@ msgid "could not ask Div: {exc}"
 msgstr "no se pudo preguntar a Div: {exc}"
 
 #, python-brace-format
+msgid "count, max, min, sum and avg over a list: {$sum:products-price}"
+msgstr "count, max, min, sum y avg sobre una lista: {$sum:products-price}"
+
+#, python-brace-format
 msgid "data is not valid JSON ({exc}); Div will render without data"
 msgstr "los datos no son JSON válido ({exc}); Div renderizará sin datos"
 
@@ -1491,6 +1532,10 @@ msgstr "reemplazo por defecto"
 
 msgid "default: (empty)"
 msgstr "por defecto: (vacío)"
+
+#, python-brace-format
+msgid "default: {value}"
+msgstr "por defecto: {value}"
 
 msgid "divide will speak the language chosen the next time it starts."
 msgstr "divide usará el idioma elegido la próxima vez que se inicie."
@@ -1686,6 +1731,22 @@ msgstr "tipo desconocido {type}"
 
 msgid "unterminated string"
 msgstr "cadena sin terminar"
+
+#, python-brace-format, python-format
+msgid ""
+"{% header %}, {%% footer %%}, and locations (( name )) filled by {{name "
+"... name}}"
+msgstr ""
+"{% header %}, {%% footer %%}, y las locations (( name )) que llena {{name"
+" ... name}}"
+
+#, python-brace-format
+msgid ""
+"{?( expression )?} ... @else@ ... {/?}, and the conditional parts ?$show "
+"... $show?"
+msgstr ""
+"{?( expression )?} ... @else@ ... {/?}, y las partes condicionales ?$show "
+"... $show?"
 
 #, python-brace-format
 msgid ""
@@ -2222,6 +2283,9 @@ msgstr "~D~eshacer"
 
 msgid "~U~sing help"
 msgstr "~U~so de la ayuda"
+
+msgid "~V~alue (text, number or $reference)"
+msgstr "Va~l~or (texto, número o $referencia)"
 
 msgid "~W~atch expression"
 msgstr "~E~xpresión a vigilar"

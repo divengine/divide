@@ -56,15 +56,15 @@ class ColorsDialog(_Dialog):
     """The themes (each one previewed as it is chosen) and the colour depth."""
 
     DEFAULT_CSS = """
-    ColorsDialog { width: 66; height: 23; }
+    ColorsDialog { width: 70; height: 24; }
     ColorsDialog Cluster { width: 1fr; margin-bottom: 1; }
-    ColorsDialog .colors-about { color: $text-muted; background: $surface; height: 1; margin-bottom: 1; }
+    ColorsDialog .colors-about { color: $text-muted; background: $surface; height: 2; margin-bottom: 1; }  /* two lines: the longer languages */
     ColorsDialog .colors-sample { width: 1fr; height: 4; margin-bottom: 1; scrollbar-size: 0 0; }
     ColorsDialog .dlg-hint { color: $text-muted; background: $surface; height: auto; }
     """
 
     def __init__(self, current: str, detected: str | None) -> None:
-        super().__init__(title="Colors")
+        super().__init__(title=_('Colors'))
         self.names = list(themes.THEMES)
         self.original = current if current in self.names else themes.DEFAULT
         self.choice = self.original

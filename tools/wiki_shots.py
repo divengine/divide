@@ -36,7 +36,19 @@ PALETTE = "free-pascal"  # the manual's pictures, unless a shot shows another th
 OUT: Path = Path()
 SVG_DIR: Path = Path()
 
-os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in English
+LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in English (es: help-divide-es)
+# the menu hotkeys the shots press, in the interface's language
+_KEYS = {
+    "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
+           "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f"},
+    "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
+           "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n"},
+}
+
+
+def key(name: str) -> str:
+    return _KEYS.get(LANGUAGE, _KEYS["en"])[name]
+
 from divide.app import Divide  # noqa: E402
 from divide.ui.progress import ProgressScreen  # noqa: E402
 
@@ -162,7 +174,7 @@ async def project():
         app.raise_window(app.project_window()); tree.focus(); await settle(pilot)
         await pilot.press("alt+f10"); await settle(pilot)
         save(app, "project-menu")
-        await pilot.press("f"); await settle(pilot)
+        await pilot.press(key("new-file")); await settle(pilot)
         await pilot.press(*"badge.tpl"); await settle(pilot)
         save(app, "project-new-file")
 
@@ -183,7 +195,7 @@ async def menus():
     app = Divide(DEMO, [DEMO / "index.tpl"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
-        await pilot.press("alt+r"); await settle(pilot)
+        await pilot.press(key("run")); await settle(pilot)
         save(app, "menu-run")
         await pilot.press("escape", "alt+d"); await settle(pilot)
         save(app, "menu-debug")
@@ -210,7 +222,7 @@ async def turbo_c():
             if palette is None:
                 save(app, "window-tile")
                 continue
-            await pilot.press("alt+w"); await settle(pilot)
+            await pilot.press(key("window")); await settle(pilot)
             save(app, "palette-turbo-c")
 
 @shot
@@ -220,7 +232,7 @@ async def colors():
     app = Divide(DEMO, [DEMO / "index.tpl"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
-        await pilot.press("alt+o", "c"); await settle(pilot)
+        await pilot.press(key("options"), "c"); await settle(pilot)
         await pilot.press("m"); await settle(pilot, 10)  # the whole desktop previews it
         save(app, "colors-dialog")
         await pilot.press("escape"); await settle(pilot)
@@ -274,7 +286,7 @@ async def dialector():
     app = Divide(DEMO, [DEMO / "erb.dialect"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
-        await pilot.press("alt+t", "d"); await settle(pilot)
+        await pilot.press(key("tools"), "d"); await settle(pilot)
         win = app.active_window()
         await until(pilot, lambda: win.verdict is not None)
         await pilot.press("down", "down", "down", "down"); await settle(pilot)  # Loops and iterations
@@ -292,7 +304,7 @@ async def translate():
     app = Divide(DEMO, [DEMO / "index.tpl"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
-        await pilot.press("alt+t", "t"); await settle(pilot)
+        await pilot.press(key("tools"), "t"); await settle(pilot)
         dialog = app.screen.dialog
         await until(pilot, lambda: dialog.text is not None)
         await pilot.click(dialog.target_input)
@@ -308,7 +320,7 @@ async def help():
     app = Divide(DEMO, [DEMO / "erb.dialect"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
-        await pilot.press("alt+t", "d"); await settle(pilot)
+        await pilot.press(key("tools"), "d"); await settle(pilot)
         win = app.active_window()
         await until(pilot, lambda: win.verdict is not None)
         await pilot.press("f1"); await settle(pilot, 10)
@@ -320,8 +332,8 @@ async def help():
         save(app, "help-div")
         app.help_window().open("_Books"); await settle(pilot, 10)
         save(app, "help-books")
-        await pilot.press("alt+h", "s"); await settle(pilot)
-        await pilot.press(*"include templ"); await settle(pilot)
+        await pilot.press(key("help"), key("help-search")); await settle(pilot)
+        await pilot.press(*key("help-query")); await settle(pilot)
         await pilot.press("down"); await settle(pilot)
         save(app, "help-search")
 
@@ -512,7 +524,7 @@ async def web():
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot, 10)
         ed = app.active_editor().editor
-        await pilot.press("alt+r", "w")
+        await pilot.press(key("run"), "w")
         await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), WebServerDialog), tries=200)
         app.screen.dialog.address_input.data = "localhost:8000"
         await settle(pilot)
@@ -593,7 +605,7 @@ async def language():
     app = Divide(DEMO, [DEMO / "index.tpl"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot)
-        await pilot.press("alt+o", "g"); await settle(pilot)
+        await pilot.press(key("options"), key("language")); await settle(pilot)
         save(app, "language-dialog")
 
 

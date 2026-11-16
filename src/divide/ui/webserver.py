@@ -41,7 +41,7 @@ class WebServerDialog(_Dialog):
     """Address, document root and router of ``php -S``."""
 
     DEFAULT_CSS = """
-    WebServerDialog { width: 66; height: 14; }
+    WebServerDialog { width: 74; height: 14; }
     WebServerDialog InputLine { width: 1fr; }
     WebServerDialog CheckBoxes { width: 1fr; margin-top: 1; }
     WebServerDialog .dlg-hint { color: $text-muted; background: $surface; height: 1; }
@@ -288,7 +288,7 @@ class WebMixin:
         """Ctrl+F9 on a page the server serves: request it, in the browser."""
         url = self.web.url_of(path)  # type: ignore[union-attr]
         self.open_url(url)
-        self.notify(f"Opening {url}", timeout=2)
+        self.notify(_("Opening {target}").format(target=url), timeout=2)
 
     def web_hint(self) -> str | None:
         if not self.serving:

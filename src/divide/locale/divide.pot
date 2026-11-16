@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 08:09+0000\n"
+"POT-Creation-Date: 2026-11-16 09:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -189,6 +189,12 @@ msgstr ""
 msgid "Capsule end suffix"
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"Capsules [[entity ... entity]], multiple replacements {:all} ... {:/all},"
+" sub-parsers {p} ... {/p}"
+msgstr ""
+
 msgid "Capsules and sub-parsers"
 msgstr ""
 
@@ -205,6 +211,9 @@ msgid "Checking"
 msgstr ""
 
 msgid "Close a~l~l"
+msgstr ""
+
+msgid "Colors"
 msgstr ""
 
 msgid "Colour ~d~epth (from the next start)"
@@ -337,6 +346,9 @@ msgid "Dialector"
 msgstr ""
 
 msgid "Direction"
+msgstr ""
+
+msgid "Directory"
 msgstr ""
 
 msgid "Div"
@@ -634,6 +646,10 @@ msgstr ""
 msgid "Horizontal tab"
 msgstr ""
 
+#, python-brace-format
+msgid "How a variable is written: {$name}, {$person.name}, {$name:...}"
+msgstr ""
+
 msgid "Ignore begin"
 msgstr ""
 
@@ -825,6 +841,10 @@ msgstr ""
 msgid "No such folder: {root}"
 msgstr ""
 
+#, python-brace-format
+msgid "No {language} errors"
+msgstr ""
+
 msgid "Not a line number"
 msgstr ""
 
@@ -863,6 +883,10 @@ msgid "Open a PHP script (.php) to run it."
 msgstr ""
 
 msgid "Open a file"
+msgstr ""
+
+#, python-brace-format
+msgid "Opening {target}"
 msgstr ""
 
 msgid "Operator"
@@ -1058,6 +1082,10 @@ msgstr ""
 msgid "Save ~a~s..."
 msgstr ""
 
+#, python-brace-format
+msgid "Saved {name}"
+msgstr ""
+
 msgid "Script"
 msgstr ""
 
@@ -1087,6 +1115,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Serving {url} · the next request stops"
+msgstr ""
+
+#, python-brace-format
+msgid "Several modifiers on one variable: {$name|^|_|}"
 msgstr ""
 
 msgid "Simple replacement"
@@ -1372,6 +1404,9 @@ msgstr ""
 msgid "Your choice (the template's own @_DIALECT is ignored)"
 msgstr ""
 
+msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
+msgstr ""
+
 msgid "a reference looks like name or person.name"
 msgstr ""
 
@@ -1419,6 +1454,10 @@ msgid "could not ask Div: {exc}"
 msgstr ""
 
 #, python-brace-format
+msgid "count, max, min, sum and avg over a list: {$sum:products-price}"
+msgstr ""
+
+#, python-brace-format
 msgid "data is not valid JSON ({exc}); Div will render without data"
 msgstr ""
 
@@ -1429,6 +1468,10 @@ msgid "default replacement"
 msgstr ""
 
 msgid "default: (empty)"
+msgstr ""
+
+#, python-brace-format
+msgid "default: {value}"
 msgstr ""
 
 msgid "divide will speak the language chosen the next time it starts."
@@ -1613,6 +1656,18 @@ msgid "unknown type {type}"
 msgstr ""
 
 msgid "unterminated string"
+msgstr ""
+
+#, python-brace-format, python-format
+msgid ""
+"{% header %}, {%% footer %%}, and locations (( name )) filled by {{name "
+"... name}}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{?( expression )?} ... @else@ ... {/?}, and the conditional parts ?$show "
+"... $show?"
 msgstr ""
 
 #, python-brace-format
@@ -2147,6 +2202,9 @@ msgid "~U~ndo"
 msgstr ""
 
 msgid "~U~sing help"
+msgstr ""
+
+msgid "~V~alue (text, number or $reference)"
 msgstr ""
 
 msgid "~W~atch expression"

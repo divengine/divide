@@ -189,7 +189,7 @@ class HelpView(ScrollView, TVViewMixin):
             link = self.topic.links[self.selected]
             if link.external:
                 self.app.open_url(link.target)
-                self.app.notify(f"Opening {link.target}", timeout=2)
+                self.app.notify(_("Opening {target}").format(target=link.target), timeout=2)
             else:
                 self.post_message(self.Follow(link.target))
 

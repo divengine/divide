@@ -359,7 +359,7 @@ def _message(title: str, text: str):
 class _TagRow(Horizontal):
     DEFAULT_CSS = """
     _TagRow { height: 1; }
-    _TagRow .tr-label { width: 26; color: $text; }
+    _TagRow .tr-label { width: 34; color: $text; }  /* the longest label, in Spanish */
     _TagRow InputLine { width: 18; }
     _TagRow .tr-default { width: 1fr; color: $text-muted; padding-left: 2; }
     """
@@ -371,7 +371,7 @@ class SectionDialog(_Dialog):
     # The content spans the frame (margin 1: inside the frame) so that the rules
     # between the tags, the preview and the verdict meet it in Ts.
     DEFAULT_CSS = """
-    SectionDialog { width: 78; }
+    SectionDialog { width: 86; }
     SectionDialog > .tv-window-content { margin: 1; }
     SectionDialog .sd-about { height: 1; color: $text-muted; background: $surface; padding: 0 1; }
     SectionDialog .sd-rows { height: auto; max-height: 12; background: $surface; padding: 0 1; }
@@ -408,7 +408,7 @@ class SectionDialog(_Dialog):
                     yield Label(label, link=self.inputs[key], classes="tr-label")
                     yield self.inputs[key]
                     default = DEFAULT_TAGS[key]
-                    yield Static(f"default: {default}" if default else _('default: (empty)'), classes="tr-default", markup=False)
+                    yield Static(_("default: {value}").format(value=default) if default else _('default: (empty)'), classes="tr-default", markup=False)
         yield HRule()
         yield self.preview
         yield HRule()
@@ -527,7 +527,7 @@ class TranslateDialog(_Dialog):
     DEFAULT_CSS = """
     TranslateDialog { width: 92; }
     TranslateDialog .tr-row { height: 1; margin-top: 1; }
-    TranslateDialog .tr-row Label { width: 18; }
+    TranslateDialog .tr-row Label { width: 21; }
     TranslateDialog .tr-row InputLine { width: 1fr; }
     TranslateDialog .tr-row Button { margin-left: 1; min-width: 5; }
     TranslateDialog .tr-note { height: 1; color: $text-muted; background: $surface; }

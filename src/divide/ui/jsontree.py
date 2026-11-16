@@ -119,7 +119,7 @@ class EditItemDialog(_Dialog):
             yield self.key_input
         yield Label(_('T~y~pe'), link=self.types)
         yield self.types
-        yield Label("~V~alue (text, number or $reference)", link=self.value_input)
+        yield Label(_("~V~alue (text, number or $reference)"), link=self.value_input)
         yield self.value_input
         with Horizontal(classes="dlg-buttons"):
             yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")

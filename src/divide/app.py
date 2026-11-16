@@ -663,7 +663,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         win.saved_text = win.editor.text
         win.refresh_indicator()
         self.update_status()
-        self.notify(f"Saved {win.path.name}", timeout=1.5)
+        self.notify(_("Saved {name}").format(name=win.path.name), timeout=1.5)
         self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
         self.lsp_saved(win.path, win.editor.lang)
@@ -1499,7 +1499,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if win is None or not win.editor.checked:
             win = self._check_target()
         if win is None or not win.editor.diagnostics:
-            self.notify(f"No {self._lang_title(win.editor) if win else 'Div'} errors", timeout=1.5)
+            self.notify(_("No {language} errors").format(language=self._lang_title(win.editor) if win else "Div"), timeout=1.5)
             return
         ed = win.editor
         here = ed.document.get_index_from_location(ed.selection.start)
