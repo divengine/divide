@@ -129,6 +129,21 @@ async def test_right_click_opens_local_menu_not_the_file(tmp_path):
         assert [w.path for w in app.editor_windows()] == [root / "page.tpl"]
 
 
+async def test_a_click_puts_the_bar_on_a_file_a_double_click_opens_it(tmp_path):
+    root = project(tmp_path)
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = app.project_window().project_tree
+        page_line = next(c for c in tree.root.children if c.data.path.name == "page.tpl").line
+        await pilot.click(tree, offset=(8, page_line))
+        await settle(pilot, 4)
+        assert app.editor_windows() == [] and tree.cursor_line == page_line
+        await pilot.click(tree, offset=(8, page_line), times=2)
+        await settle(pilot)
+        assert [w.path for w in app.editor_windows()] == [root / "page.tpl"]
+
+
 async def test_window_tile_arranges_every_window(tmp_path):
     root = project(tmp_path)
     app = Divide(root, [root / "page.tpl", root / "parts" / "a.tpl"])

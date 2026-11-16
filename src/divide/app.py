@@ -90,6 +90,7 @@ from divide.ui.runner import CallStackWindow, RunMixin, WatchesWindow
 from divide.ui.tracer import TraceMixin, TraceWindow
 from divide.ui.colors import ColorsMixin
 from divide.ui.outline import OutlineMixin, OutlineWindow
+from divide.ui.palette import PaletteMixin
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide import lsp
@@ -154,6 +155,8 @@ CM_CALL_STACK = Command.USER + 89  # Ctrl+F3
 CM_XDEBUG = Command.USER + 90
 CM_TRACE_RENDER = Command.USER + 91
 CM_OUTLINE = Command.USER + 92  # Ctrl+O
+CM_GOTO_FILE = Command.USER + 93  # Ctrl+P
+CM_COMMANDS = Command.USER + 94  # Ctrl+Shift+P
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -186,6 +189,8 @@ COMMANDS: dict[str, int] = {
     "HELP_BACK": CM_HELP_BACK,
     "TRACE": CM_TRACE,
     "OUTLINE": CM_OUTLINE,
+    "GOTO_FILE": CM_GOTO_FILE,
+    "COMMANDS": CM_COMMANDS,
     "STEP": CM_STEP,
     "STEP_OUT": CM_STEP_OUT,
     "GOTO_CURSOR": CM_GOTO_CURSOR,
@@ -288,8 +293,9 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, PaletteMixin, Application):
     TITLE = "divide"
+    ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
     /* Turbo Vision's desktop: 0x71, the ░ pattern blue on light gray (textual-vision draws it on blue) */
@@ -311,6 +317,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         Binding("ctrl+l", "command('SEARCH_AGAIN')", "Search again", show=False),
         Binding("ctrl+g", "command('GOTO_LINE')", "Go to line", show=False),
         Binding("ctrl+o", "command('OUTLINE')", "Outline", show=False, priority=True),
+        # VS Code's: Ctrl+Shift+P reaches only terminals that tell it from Ctrl+P (a > in Go to file does it too)
+        Binding("ctrl+p", "command('GOTO_FILE')", "Go to file", show=False, priority=True),
+        Binding("ctrl+shift+p", "command('COMMANDS')", "Commands", show=False, priority=True),
         Binding("ctrl+f9", "command('RENDER')", "Run", show=False, priority=True),
         # The debugger, as in Turbo Pascal.
         Binding("f7", "command('TRACE')", "Trace into", show=False, priority=True),
@@ -413,6 +422,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     MenuItem("~G~o to line number...", CM_GOTO_LINE, "Ctrl+G"),
                     MenuItem("Go to ~i~ncluded template", CM_GOTO_INCLUDE, "Ctrl+Enter"),
                     MenuItem("~O~utline", CM_OUTLINE, "Ctrl+O"),
+                    MenuItem("Go to fi~l~e...", CM_GOTO_FILE, "Ctrl+P"),
+                    MenuItem("~C~ommand palette...", CM_COMMANDS, "Ctrl+Shift+P"),
                     Separator(),
                     MenuItem("~P~revious error", CM_PREV_ERROR, "Alt+F7"),
                     MenuItem("~N~ext error", CM_NEXT_ERROR, "Alt+F8"),
@@ -853,6 +864,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 await self.web_server_command()
             case _ if command == CM_XDEBUG:
                 await self.choose_xdebug()
+            case _ if command in (CM_GOTO_FILE, CM_COMMANDS):
+                await self.palette(commands=command == CM_COMMANDS)
             case _ if command == CM_OUTLINE:
                 self.show_outline()
             case _ if command == CM_TRACE_RENDER:

@@ -114,6 +114,7 @@ UI_ROLES = (
     "help-selected", "help-selected-bg", "help-frame", "help-frame-passive",
     "progress-fill", "progress-track", "progress-text", "verdict-error",
     "list-bg", "list-text", "list-selected", "list-focused", "list-focused-bg", "list-scroll",
+    "list-match", "list-match-focused", "list-dim",
     "info-bg", "info-text",
     "history-bg", "history-text", "history-frame", "history-focused", "history-focused-bg",
 )
@@ -143,6 +144,7 @@ BORLAND_UI = {
     # a dialog's lists (the files of File > Open, the histories): Turbo Pascal's own
     "list-bg": "cyan", "list-text": "black", "list-selected": "yellow",  # the chosen one, the list elsewhere
     "list-focused": "white", "list-focused-bg": "green", "list-scroll": "blue",  # the chosen one, in the list
+    "list-match": "white", "list-match-focused": "yellow", "list-dim": "blue",  # Go to file: the letters typed, the folders
     "info-bg": "blue", "info-text": "cyan",  # File > Open's pane: the folder, the file under the bar
     "history-bg": "blue", "history-text": "white", "history-frame": "white",  # an input line's earlier entries
     "history-focused": "black", "history-focused-bg": "cyan",
@@ -229,6 +231,7 @@ MODERN_UI = {
     "verdict-error": "#FF7A85",
     "list-bg": "#11141A", "list-text": _TEXT, "list-selected": "#E8C77D",
     "list-focused": _BRIGHT, "list-focused-bg": "#2F5F9E", "list-scroll": "#5F6673",
+    "list-match": "#7DB4F5", "list-match-focused": "#E8C77D", "list-dim": "#8B93A1",
     "info-bg": "#1E3350", "info-text": "#9FD0FF",
     "history-bg": "#1E3350", "history-text": _TEXT, "history-frame": "#7DB4F5",
     "history-focused": _BRIGHT, "history-focused-bg": "#2F5F9E",

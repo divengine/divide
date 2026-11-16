@@ -785,6 +785,14 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         if event.button == 3:  # the right button opens the local menu (on mouse down), not the file
             event.stop()
             event.prevent_default()
+            return
+        # a click puts the bar on a file, a double click opens it (a folder opens with one)
+        meta = event.style.meta
+        if event.button == 1 and event.chain < 2 and "line" in meta and not meta.get("toggle", False):
+            node = self.get_node_at_line(meta["line"])
+            if node is not None and not node.allow_expand:
+                event.prevent_default()
+                self.cursor_line = meta["line"]
 
     def cursor_screen_at(self) -> tuple[int, int]:
         region = self.content_region
