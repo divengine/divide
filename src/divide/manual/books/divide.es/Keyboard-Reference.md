@@ -31,7 +31,7 @@
 |---|---|
 | **Ctrl+Space** | autocompletado |
 | **Ctrl+A** | seleccionar todo |
-| **Ctrl+O** | esquema del archivo PHP, ver [[Esquema\|Outline]] |
+| **Ctrl+O** | esquema de la plantilla o del archivo PHP, ver [[Esquema\|Outline]] |
 | **Ctrl+Enter** / **Ctrl+J** / Ctrl+clic | ir a la plantilla incluida; en PHP, abrir el archivo que nombra una cadena, o ir a la definición (con un servidor de lenguaje) |
 | **Ctrl+F** / **Ctrl+R** | buscar / reemplazar |
 | **Ctrl+L** | buscar de nuevo |

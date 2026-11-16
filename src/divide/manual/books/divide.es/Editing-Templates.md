@@ -27,7 +27,7 @@ Los diálogos son los clásicos: mayúsculas y minúsculas, palabras completas, 
 
 ## Teclas de edición
 
-Funcionan las habituales: flechas, Home/End, PgUp/PgDn, Shift para seleccionar, **Ctrl+Z** / **Ctrl+Y** deshacer y rehacer, **Ctrl+X/C/V** cortar, copiar y pegar, **Ctrl+A** seleccionar todo, **Tab** sangra (**F7** abre la [[Traza del render|Render Trace]]). **Ctrl+Space** abre el [[autocompletado|Completion]], **Ctrl+Enter** va a la plantilla a la que apunta un include (ver [[Verificación de plantillas|Checking Templates]]).
+Funcionan las habituales: flechas, Home/End, PgUp/PgDn, Shift para seleccionar, **Ctrl+Z** / **Ctrl+Y** deshacer y rehacer, **Ctrl+X/C/V** cortar, copiar y pegar, **Ctrl+A** seleccionar todo, **Tab** sangra (**F7** abre la [[Traza del render|Render Trace]]). **Ctrl+Space** abre el [[autocompletado|Completion]], **Ctrl+Enter** va a la plantilla a la que apunta un include (ver [[Verificación de plantillas|Checking Templates]]), **Ctrl+O** lista las etiquetas de la plantilla para saltar a ellas (ver [[Esquema|Outline]]).
 
 ## Otros archivos
 
