@@ -138,6 +138,16 @@ En los diálogos con una ruta, el botón **...** / **Examinar...** abre el diál
 |---|---|
 | **Enter** / doble clic | abrir el archivo en la coincidencia, seleccionada |
 
+## Ventana Esquema
+
+| Tecla | Acción |
+|---|---|
+| **Enter** / doble clic | ir a la parte bajo la barra |
+| **Espacio** / clic en **►** **▼** | plegarla o desplegarla |
+| **← / →** | plegar / desplegar (a la parte que la contiene / a la primera que contiene) |
+
+Ver [[Esquema|Outline]].
+
 ## Ventanas Vigilancias y Pila de llamadas
 
 | Tecla | Acción |

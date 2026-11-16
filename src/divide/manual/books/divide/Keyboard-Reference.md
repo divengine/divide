@@ -138,6 +138,16 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 |---|---|
 | **Enter** / double click | open the file at the match, selected |
 
+## Outline window
+
+| Key | Action |
+|---|---|
+| **Enter** / double click | go to the part under the bar |
+| **Space** / click on **►** **▼** | fold or unfold it |
+| **← / →** | fold / unfold (to the part that holds it / to the first one it holds) |
+
+See [[Outline]].
+
 ## Watches and Call stack windows
 
 | Key | Action |
