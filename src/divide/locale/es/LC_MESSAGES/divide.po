@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 07:54+0000\n"
+"POT-Creation-Date: 2026-11-16 08:09+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -114,6 +114,9 @@ msgstr "Sufijo de inicio"
 
 msgid "Blocks"
 msgstr "Bloques"
+
+msgid "Books"
+msgstr "Libros"
 
 msgid "Break"
 msgstr "Interrupción"
@@ -245,6 +248,9 @@ msgstr "Prefijo de fin de contenido"
 
 msgid "Content end suffix"
 msgstr "Sufijo de fin de contenido"
+
+msgid "Contents"
+msgstr "Contenido"
 
 #, python-brace-format
 msgid "Could not ask Div: {exc}"
@@ -640,6 +646,14 @@ msgstr "Fin de HTML a texto"
 msgid "HTML to text width"
 msgstr "Ancho de HTML a texto"
 
+#, python-brace-format
+msgid "Help: {book} · {title}"
+msgstr "Ayuda: {book} · {title}"
+
+#, python-brace-format
+msgid "Help: {title}"
+msgstr "Ayuda: {title}"
+
 msgid "Horizontal tab"
 msgstr "Tabulación horizontal"
 
@@ -665,6 +679,9 @@ msgstr "Fin de include"
 
 msgid "Includes and locations"
 msgstr "Includes y locations"
+
+msgid "Index"
+msgstr "Índice"
 
 msgid "Information"
 msgstr "Información"
@@ -886,6 +903,9 @@ msgstr "~A~brir"
 
 msgid "Origin"
 msgstr "Origen"
+
+msgid "Other books"
+msgstr "Otros libros"
 
 msgid "Outline"
 msgstr "Esquema"
@@ -1237,6 +1257,9 @@ msgstr ""
 "El dialector reescribe {display_name} como JSON estándar con solo las "
 "etiquetas que difieren de las de Div: se pierden los comentarios y las "
 "demás etiquetas. ¿Continuar?"
+
+msgid "The documentation inside divide, one book each."
+msgstr "La documentación dentro de divide, un libro cada una."
 
 msgid "The key is empty"
 msgstr "La clave está vacía"

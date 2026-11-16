@@ -21,7 +21,7 @@ divide = "divide.app:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-divide = ["run/*.php", "manual/books.json", "manual/books/*/*", "manual/search.sqlite", "locale/*/LC_MESSAGES/*.mo"]
+divide = ["run/*.php", "manual/books.json", "manual/books/*/*", "manual/search*.sqlite", "locale/*/LC_MESSAGES/*.mo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

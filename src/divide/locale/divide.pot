@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 07:54+0000\n"
+"POT-Creation-Date: 2026-11-16 08:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -110,6 +110,9 @@ msgid "Begin suffix"
 msgstr ""
 
 msgid "Blocks"
+msgstr ""
+
+msgid "Books"
 msgstr ""
 
 msgid "Break"
@@ -241,6 +244,9 @@ msgid "Content end prefix"
 msgstr ""
 
 msgid "Content end suffix"
+msgstr ""
+
+msgid "Contents"
 msgstr ""
 
 #, python-brace-format
@@ -617,6 +623,14 @@ msgstr ""
 msgid "HTML to text width"
 msgstr ""
 
+#, python-brace-format
+msgid "Help: {book} · {title}"
+msgstr ""
+
+#, python-brace-format
+msgid "Help: {title}"
+msgstr ""
+
 msgid "Horizontal tab"
 msgstr ""
 
@@ -639,6 +653,9 @@ msgid "Include end"
 msgstr ""
 
 msgid "Includes and locations"
+msgstr ""
+
+msgid "Index"
 msgstr ""
 
 msgid "Information"
@@ -858,6 +875,9 @@ msgid "Op~e~n"
 msgstr ""
 
 msgid "Origin"
+msgstr ""
+
+msgid "Other books"
 msgstr ""
 
 msgid "Outline"
@@ -1187,6 +1207,9 @@ msgstr ""
 msgid ""
 "The dialector rewrites {display_name} as standard JSON with only the tags"
 " that differ from Div's: comments and other tags are dropped. Continue?"
+msgstr ""
+
+msgid "The documentation inside divide, one book each."
 msgstr ""
 
 msgid "The key is empty"

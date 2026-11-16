@@ -75,15 +75,16 @@ Environment variables:
 ## 5. Packaged resources
 
 `pyproject.toml` ships `run/*.php` (the bridge), `manual/books.json`, the
-books' pages (`manual/books/*/*`), the help's search index
-(`manual/search.sqlite`) and the compiled translations
+books' pages (`manual/books/*/*`, a translation in `books/<id>.<lang>`), the
+help's search indexes (`manual/search.sqlite`, `manual/search.<lang>.sqlite`) and the compiled translations
 (`locale/*/LC_MESSAGES/*.mo`) inside the package. After changing texts,
 `tools/i18n.py all` extracts, merges and compiles the catalogues. The books are refreshed from
 their sources, and the index rebuilt, with:
 
 ```sh
 .venv/bin/python tools/sync_book.py divide <path to divide.wiki clone>
-.venv/bin/python tools/sync_book.py --index     # only the search index
+.venv/bin/python tools/sync_book.py divide <path to a Spanish wiki> --language es
+.venv/bin/python tools/sync_book.py --index     # only the search indexes
 ```
 
 ## 6. Release (Transition, planned)

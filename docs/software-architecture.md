@@ -160,7 +160,7 @@ src/divide/
     div/               lexer, dialect, diagnostics, complete, outline, dialector, preview
   run/                 render.py, script.py, server.py, dbgp.py, trace.py, bridge.php
   lsp/                 server table, client
-  manual/              help engine, books.json, books/<id>/ (copied pages)
+  manual/              help engine, books.json, books/<id>/ and books/<id>.<lang>/ (copied pages)
   ui/                  windows, dialogs, one module per feature
 tests/                 pytest (+ pytest-asyncio), one file per area
 tools/                 install.sh, sync_book.py, wiki_shots.py
@@ -203,7 +203,7 @@ divide has no database. Its persistent data:
 | Settings: palette, colours, icons, Div engine, Xdebug, LSP choices and commands, run arguments, web server, input histories | `$XDG_CONFIG_HOME/divide/config.json` | `divide.config` and the feature that uses each key |
 | Language server caches | `$XDG_CACHE_HOME/...` | `divide.lsp.client` |
 | Help books | `src/divide/manual/books/<id>/` (packaged) | `tools/sync_book.py` |
-| Help search index | `src/divide/manual/search.sqlite` (packaged; rebuilt in memory when stale) | `tools/sync_book.py` → `divide.manual.fulltext.build` |
+| Help search index | `src/divide/manual/search.sqlite`, `search.<lang>.sqlite` per language of the books (packaged; rebuilt in memory when stale) | `tools/sync_book.py` → `divide.manual.fulltext.build` |
 | Projects' files | the project folder | the developer; divide only reads and writes what is edited |
 
 ## 9. Size and performance

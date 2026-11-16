@@ -20,6 +20,12 @@ shipped beside the books (``manual/search.sqlite``). It records a
 fingerprint of the pages it was built from: when the pages differ (a book
 copied by hand, a checkout in the middle of a change) the index is built
 again, in memory, on the first search. It takes a fraction of a second.
+
+Each language of the books has its index (``search.sqlite`` for the
+originals, ``search.<language>.sqlite`` for the books in another language,
+with the pages they have not translated yet in the original's). Porter's
+stemmer is English's: the other languages are indexed as written, where a
+prefix still finds the longer words.
 """
 
 from __future__ import annotations
@@ -31,11 +37,11 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from divide import manual
+from divide import i18n, manual
 
 INDEX_FILE = manual.HERE / "search.sqlite"
 VERSION = "2"  # of the index's layout: a new one rebuilds the index
-TOKENIZER = "porter unicode61 remove_diacritics 2"
+TOKENIZER = "porter unicode61 remove_diacritics 2"  # English's
 RAW_TOKENIZER = "unicode61 remove_diacritics 2"  # the words as written: for the prefix being typed
 WEIGHTS = (8.0, 4.0, 1.0)  # title, heading, text (BM25 column weights)
 MARK_START, MARK_END = "\x01", "\x02"  # around the words found, in the snippet
@@ -88,24 +94,35 @@ def sections(name: str) -> list[tuple[str, str, str]]:
     return [s for s in out if s[0] or s[2]]
 
 
+def index_file(lang: str | None = None) -> Path:
+    lang = lang or manual.language()
+    return INDEX_FILE if lang == i18n.SOURCE else INDEX_FILE.with_name(f"search.{lang}.sqlite")
+
+
+def tokenizer(lang: str) -> str:
+    return TOKENIZER if lang == i18n.SOURCE else RAW_TOKENIZER
+
+
 def fingerprint() -> str:
-    """Of the books' pages and the index's layout: an index built from other pages is stale."""
-    digest = hashlib.sha1(VERSION.encode())
+    """Of the books' pages (in the language they are shown in) and the index's layout:
+    an index built from other pages is stale."""
+    digest = hashlib.sha1(f"{VERSION}\0{manual.language()}".encode())
     for book in manual.books():
-        for path in sorted(book.dir.glob("*.md")):
-            digest.update(f"{book.id}/{path.name}\0".encode())
-            digest.update(path.read_bytes())
+        for name, path in sorted(manual.files(book.id).items()):
+            if name.endswith(".md"):
+                digest.update(f"{book.id}/{path.parent.name}/{name}\0".encode())
+                digest.update(path.read_bytes())
     return digest.hexdigest()
 
 
 # -------------------------------------------------------------------- index
 def _create(db: sqlite3.Connection) -> None:
     db.execute("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
-    for table, tokenizer in (("help", TOKENIZER), ("help_raw", RAW_TOKENIZER)):
+    for table, tokenizer_ in (("help", tokenizer(manual.language())), ("help_raw", RAW_TOKENIZER)):
         db.execute(
             f"CREATE VIRTUAL TABLE {table} USING fts5("
             "title, heading, body, book UNINDEXED, page UNINDEXED, anchor UNINDEXED, "
-            f"tokenize = '{tokenizer}')"
+            f"tokenize = '{tokenizer_}')"
         )
 
 
@@ -128,14 +145,16 @@ def fill(db: sqlite3.Connection) -> int:
     return rows
 
 
-def build(path: Path = INDEX_FILE) -> int:
-    """Write the index file (``tools/sync_book.py`` calls it). Returns the rows."""
+def build(path: Path | None = None, lang: str = i18n.SOURCE) -> int:
+    """Write the index file of a language. Returns the rows."""
+    path = path or index_file(lang)
     tmp = path.with_suffix(".tmp")
     tmp.unlink(missing_ok=True)
     db = sqlite3.connect(tmp)
     try:
-        _create(db)
-        rows = fill(db)
+        with manual.reading_in(lang):
+            _create(db)
+            rows = fill(db)
         db.execute("VACUUM")
     finally:
         db.close()
@@ -143,12 +162,23 @@ def build(path: Path = INDEX_FILE) -> int:
     return rows
 
 
-@lru_cache(maxsize=1)
-def _connection(stamp: str) -> sqlite3.Connection:
+def build_all() -> dict[str, int]:
+    """The index of every language there are books in (``tools/sync_book.py`` calls it);
+    an index of a language no book is in any more is removed."""
+    built = {lang: build(lang=lang) for lang in manual.languages()}
+    for old in INDEX_FILE.parent.glob("search.*.sqlite"):
+        if old.name.split(".")[1] not in built:
+            old.unlink()
+    return built
+
+
+@lru_cache(maxsize=4)
+def _connection(lang: str, stamp: str) -> sqlite3.Connection:
     """The shipped index when it was built from these pages, else one built in memory."""
-    if INDEX_FILE.is_file():
+    path = index_file(lang)
+    if path.is_file():
         try:
-            db = sqlite3.connect(f"file:{INDEX_FILE}?mode=ro", uri=True, check_same_thread=False)
+            db = sqlite3.connect(f"file:{path}?mode=ro", uri=True, check_same_thread=False)
             found = db.execute("SELECT value FROM meta WHERE key = 'fingerprint'").fetchone()
             if found and found[0] == stamp:
                 return db
@@ -162,7 +192,7 @@ def _connection(stamp: str) -> sqlite3.Connection:
 
 
 def connection() -> sqlite3.Connection:
-    return _connection(fingerprint())
+    return _connection(manual.language(), fingerprint())
 
 
 # -------------------------------------------------------------------- query

@@ -9,6 +9,16 @@ cross references between topics (``[[Page]]``, ``[[text|Page]]``,
 the headings. Images are left out; external links are plain text; links
 that lead nowhere in the book are plain text too.
 
+A book may come in several languages: one entry of ``books.json`` per
+language, with the same ``id`` and a ``language`` (the first entry of an id
+is the original; the others take what they do not say from it). A
+translation is copied to ``books/<id>.<language>/`` from a repository of its
+own (a wiki in Spanish, say) and keeps the original's page names
+(``Other-Files.md``, with its title and text translated): so F1's topics,
+the links between pages and the contents work in every language. divide
+shows each book in the language of the interface, else in the original, and
+a page not translated yet in the original.
+
 A topic is named ``book:Page`` (a bare ``Page`` is divide's). Each book has
 a generated Contents (its wiki sidebar or its list of pages) and an Index;
 the Books topic lists the books.
@@ -22,15 +32,19 @@ from __future__ import annotations
 import json
 import re
 import textwrap
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote, unquote
 
+from divide import i18n
+from divide.i18n import _
 from divide.glyphs import screen_text
 
 HERE = Path(__file__).parent
-BOOKS_DIR = HERE / "books"
+ROOT = HERE  # books.json and books/ (tests use another: use_root)
 DEFAULT = "divide"  # the book of bare topic names
 LIBRARY = "_Books"  # generated: the list of books
 CONTENTS = "_Contents"  # generated per book: its sidebar or its list of pages
@@ -45,10 +59,21 @@ class Book:
     home: str = "Home"
     contents: str = ""  # "_Sidebar.md" (a wiki's) or a file listing the pages in order
     source: str = ""
+    language: str = i18n.SOURCE  # the language of its pages
+    original: str = ""  # a translation: the folder of the original, for the pages it lacks
+
+    @property
+    def folder(self) -> str:
+        return self.id if not self.original else f"{self.id}.{self.language}"
 
     @property
     def dir(self) -> Path:
-        return BOOKS_DIR / self.id
+        return ROOT / "books" / self.folder
+
+    @property
+    def dirs(self) -> tuple[Path, ...]:
+        """Where its pages are: its own folder, then the original's."""
+        return (self.dir, ROOT / "books" / self.original) if self.original else (self.dir,)
 
 
 @dataclass(frozen=True)
@@ -75,11 +100,68 @@ class Topic:
 
 
 # ------------------------------------------------------------------ books
+_reading: str | None = None  # a language forced for a while (reading_in)
+
+
+def use_root(root: Path) -> None:
+    """Read the books from another folder (its books.json and books/): for tests."""
+    global ROOT
+    ROOT = Path(root)
+    for cached in (registry, _books, _stems_in, _files, _read):
+        cached.cache_clear()
+
+
 @lru_cache(maxsize=None)
-def books() -> tuple[Book, ...]:
-    data = json.loads((HERE / "books.json").read_text(encoding="utf-8"))
+def registry() -> tuple[Book, ...]:
+    """Every book in every language, as books.json lists them."""
+    data = json.loads((ROOT / "books.json").read_text(encoding="utf-8"))
     fields = Book.__dataclass_fields__
-    return tuple(Book(**{k: v for k, v in entry.items() if k in fields}) for entry in data)
+    originals: dict[str, dict] = {}
+    out = []
+    for entry in data:
+        first = originals.setdefault(entry["id"], entry)
+        if first is not entry:  # a translation: the rest from the original
+            entry = {**first, **entry,
+                     "original": first["id"] if "language" not in first or first["language"] == i18n.SOURCE
+                     else f"{first['id']}.{first['language']}"}
+        out.append(Book(**{k: v for k, v in entry.items() if k in fields}))
+    return tuple(out)
+
+
+def languages() -> list[str]:
+    """The languages there are books in."""
+    return sorted({b.language for b in registry()})
+
+
+def language() -> str:
+    """The language the books are shown in: the interface's, when some book is in it."""
+    wanted = _reading or i18n.current
+    return wanted if wanted in languages() else i18n.SOURCE
+
+
+@contextmanager
+def reading_in(lang: str) -> Iterator[None]:
+    """``with reading_in("es"):`` the books as in that language (the search index is built so)."""
+    global _reading
+    before, _reading = _reading, lang
+    try:
+        yield
+    finally:
+        _reading = before
+
+
+@lru_cache(maxsize=None)
+def _books(lang: str) -> tuple[Book, ...]:
+    out: dict[str, Book] = {}
+    for b in registry():
+        if b.id not in out or b.language == lang:
+            out[b.id] = b
+    return tuple(out.values())
+
+
+def books() -> tuple[Book, ...]:
+    """One per book: in the language of the books (language()), else the original."""
+    return _books(language())
 
 
 def book(book_id: str) -> Book | None:
@@ -126,11 +208,29 @@ def slug(heading: str) -> str:
 
 
 @lru_cache(maxsize=None)
-def _stems(book_id: str) -> tuple[str, ...]:
+def _files(b: Book) -> dict[str, Path]:
+    """A book's files by name: its own, then the original's it lacks."""
+    found: dict[str, Path] = {}
+    for folder in b.dirs:
+        if folder.is_dir():
+            for path in sorted(folder.iterdir()):
+                if path.is_file():
+                    found.setdefault(path.name, path)
+    return found
+
+
+def files(book_id: str) -> dict[str, Path]:
     b = book(book_id)
-    if b is None:
-        return ()
-    return tuple(sorted(p.stem for p in b.dir.glob("*.md")))
+    return _files(b) if b else {}
+
+
+@lru_cache(maxsize=None)
+def _stems_in(book_id: str, lang: str) -> tuple[str, ...]:
+    return tuple(sorted(Path(name).stem for name in files(book_id) if name.endswith(".md")))
+
+
+def _stems(book_id: str) -> tuple[str, ...]:
+    return _stems_in(book_id, language())
 
 
 def page_names(book_id: str | None = None) -> list[str]:
@@ -189,17 +289,17 @@ def source(name: str) -> str | None:
     b = book(book_id)
     if b is None or page not in _stems(book_id):
         return None
-    return _read(b.dir / f"{page}.md")
+    return _read(_files(b)[f"{page}.md"])
 
 
 def title_of(name: str) -> str:
     book_id, page = split(name)
     if page == LIBRARY:
-        return "Books"
+        return _("Books")
     if page == CONTENTS:
-        return "Contents"
+        return _("Contents")
     if page == INDEX:
-        return "Index"
+        return _("Index")
     text = source(name) or ""
     match = re.search(r"^# (.+)$", text, re.M)
     return _plain(match.group(1)) if match else page.replace("-", " ")
@@ -210,7 +310,9 @@ def window_title(name: str) -> str:
     book_id = split(name)[0]
     b = book(book_id)
     title = title_of(name)
-    return f"Help: {title}" if not b or book_id == DEFAULT else f"Help: {b.title} · {title}"
+    if not b or book_id == DEFAULT:
+        return _("Help: {title}").format(title=title)
+    return _("Help: {book} · {title}").format(book=b.title, title=title)
 
 
 def headings(name: str) -> list[tuple[int, str]]:
@@ -230,7 +332,7 @@ def _wiki(label: str, target: str) -> str:
 
 
 def library_source() -> str:
-    lines = ["# Books", "", "The documentation inside divide, one book each.", ""]
+    lines = [f"# {_('Books')}", "", _("The documentation inside divide, one book each."), ""]
     for b in books():
         lines.append(f"- {_wiki(b.title, contents_of(b.id))}: {b.description}")
     return "\n".join(lines) + "\n"
@@ -241,13 +343,14 @@ def contents_source(book_id: str) -> str | None:
     b = book(book_id)
     if b is None:
         return None
-    head = ["# Contents", "", f"{b.title}. {_wiki('Index', index_of(book_id))} · {_wiki('Other books', LIBRARY)}", ""]
+    head = [f"# {_('Contents')}", "", f"{b.title}. {_wiki(_('Index'), index_of(book_id))} · {_wiki(_('Other books'), LIBRARY)}", ""]
+    where = _files(b).get(b.contents) if b.contents else None
     if b.contents.endswith(".md"):
-        text = _read(b.dir / b.contents)
+        text = _read(where) if where else None
         if text is not None:
             return "\n".join(head) + "\n" + text
     lines = head
-    order = _read(b.dir / b.contents) if b.contents else None
+    order = _read(where) if where else None
     stems = [Path(line.strip()).stem for line in (order or "").splitlines()
              if line.strip() and not line.lstrip().startswith("#")]
     stems = [s for s in stems if s in _stems(book_id)] or [s for s in _stems(book_id) if not s.startswith("_")]
@@ -264,11 +367,11 @@ def index_source(book_id: str = DEFAULT) -> str:
     for name in page_names(book_id):
         title = title_of(name)
         entries.append((title, _wiki(title, name), ""))
-        for _, text in headings(name):
+        for _level, text in headings(name):
             label = re.sub(r"^[\d.]+\s*", "", text)  # "1. Open the project": by its words
             entries.append((label, f"[{label}]({quote(name, safe=':')}#{slug(text)})", f" · {title}"))
     entries.sort(key=lambda e: re.sub(r"^[\d.]+\s*", "", e[0]).lower())
-    lines = ["# Index", ""]
+    lines = [f"# {_('Index')}", ""]
     letter = ""
     for key, link, where in entries:
         first = re.sub(r"^[\d.]+\s*", "", key)[:1].upper()
@@ -575,7 +678,7 @@ def search(word: str, first: str | None = None) -> list[tuple[str, str]]:
         if word in title.lower():
             found.append((title, name))
     for name in names:
-        for _, text in headings(name):
+        for _level, text in headings(name):
             if word in text.lower():
                 found.append((f"{text} · {title_of(name)}", f"{name}#{slug(text)}"))
     return found

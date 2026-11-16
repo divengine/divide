@@ -1,0 +1,19 @@
+[
+  {
+    "id": "guide",
+    "title": "Guide",
+    "description": "An example book, in English and in Spanish.",
+    "source": "https://example.com/guide.wiki.git",
+    "path": ".",
+    "home": "Home",
+    "contents": "_Sidebar.md",
+    "skip": ["_Footer.md"]
+  },
+  {
+    "id": "guide",
+    "language": "es",
+    "title": "Guía",
+    "description": "Un libro de ejemplo, en inglés y en español.",
+    "source": "https://example.com/guide-es.wiki.git"
+  }
+]

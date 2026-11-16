@@ -137,12 +137,28 @@ items (lines of `Span`, with `Link` cross references) by `_Writer`. Books are
 copied from their sources by `tools/sync_book.py`, so documentation is
 written once, in its own repository.
 
+**Books in other languages.** A translation is one more entry of
+`books.json` with the same `id`, a `language` and its own `source`; it takes
+the rest from the original (the id's first entry). `registry()` gives every
+book in every language; `books()` one per id, in `language()` (the
+interface's, `i18n.current`, when some book is in it, else English). A
+translation's pages are in `books/<id>.<language>/` with the original's page
+names; `Book.dirs` is its folder, then the original's, so `files()`,
+`source()` and the contents take a page not translated yet from the
+original. Topic names, F1's topics and links are the same in every
+language. `reading_in(lang)` shows the books as in another language for a
+while (the index is built so); `use_root(path)` reads them from another
+folder (tests: `tests/books`, an example book in English and Spanish).
+
 **Full-text search (`divide.manual.fulltext`).** `sections(name)` splits a
 page into its opening and its `#`-`###` sections, as plain words. `build()`
 writes them to `search.sqlite` in two FTS5 tables with the same rowids:
 `help` (Porter stemming) and `help_raw` (words as written). A `meta` table
 holds the pages' `fingerprint()`. `connection()` uses the shipped file when
-the fingerprint matches, else an in-memory index built on the spot.
+the fingerprint matches, else an in-memory index built on the spot. Each
+language of the books has its file (`index_file(lang)`: `search.sqlite`,
+`search.<lang>.sqlite`), made by `build_all()`; Porter is English's stemmer,
+so the other languages index as written in both tables.
 `search(text)` matches finished words in `help` and the last word as a prefix
 in either table, sums the BM25 ranks (title 8, heading 4, text 1), falls back
 to any word when no section has all of them, and returns `Hit` items (target

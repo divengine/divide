@@ -69,8 +69,12 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
 - **S5 Interface languages.** The interface (menus, dialogs, hints,
   messages) is translatable with gettext, and ships in English and Spanish.
   The language is the system's, Options > Language, `--language` or
-  `DIVIDE_LANGUAGE`, and applies at start. The help books, and what Div,
-  PHP, Xdebug and language servers say, are not part of it.
+  `DIVIDE_LANGUAGE`, and applies at start. What Div, PHP, Xdebug and
+  language servers say is not part of it. The help books are translated as
+  books: a translation is a repository of its own (a wiki in Spanish), synced
+  as one more entry of `books.json`; divide shows each book in the
+  interface's language when it has it, a page not translated in the
+  original.
 - **S2 Colour depth.** Truecolour, 256 and 16 colours. On 16-colour
   terminals each colour maps to its own ANSI slot. `--colors` can force a
   depth.
