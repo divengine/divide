@@ -67,6 +67,8 @@ class _Dialog(Dialog):
 
     DEFAULT_CSS = """
     _Dialog > .tv-window-content { margin: 1 2; layout: vertical; }
+    _Dialog RuleFrame .frame--active, _Dialog RuleFrame .frame--passive { color: $divide-dialog-frame; }
+    _Dialog RuleFrame .frame--title { color: $divide-dialog-title; }
     _Dialog .dlg-text { color: $text; background: $surface; width: 1fr; height: auto; }
     _Dialog .dlg-buttons { height: 2; align-horizontal: center; margin-top: 1; }
     _Dialog .dlg-buttons Button { margin: 0 1; }

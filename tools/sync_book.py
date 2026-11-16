@@ -9,7 +9,11 @@ Run it after the source changes:
 
     tools/sync_book.py divide path/to/divide.wiki
     tools/sync_book.py div path/to/div          # a checkout of the engine
+    tools/sync_book.py --index                  # only the search index
     tools/sync_book.py --list
+
+After copying, it builds the help's full-text search index
+(src/divide/manual/search.sqlite, see divide.manual.fulltext) from every book.
 """
 
 from __future__ import annotations
@@ -22,6 +26,7 @@ from pathlib import Path
 
 MANUAL = Path(__file__).resolve().parent.parent / "src" / "divide" / "manual"
 REGISTRY = MANUAL / "books.json"
+sys.path.insert(0, str(MANUAL.parent.parent))  # divide from this checkout
 
 
 def books() -> list[dict]:
@@ -58,7 +63,10 @@ def main() -> int:
     parser.add_argument("book", nargs="?", help="the book's id in books.json")
     parser.add_argument("checkout", nargs="?", type=Path, help="a checkout of the book's source")
     parser.add_argument("--list", action="store_true", help="list the books and their sources")
+    parser.add_argument("--index", action="store_true", help="only build the search index")
     args = parser.parse_args()
+    if args.index:
+        return index()
     registry = books()
     if args.list or not args.book:
         for book in registry:
@@ -70,7 +78,16 @@ def main() -> int:
         return 1
     if args.checkout is None:
         parser.error("the checkout of the book's source is required")
-    return sync(book, args.checkout)
+    status = sync(book, args.checkout)
+    return status or index()
+
+
+def index() -> int:
+    from divide.manual import fulltext
+
+    rows = fulltext.build()
+    print(f"indexed {rows} sections in {fulltext.INDEX_FILE.name}")
+    return 0
 
 
 if __name__ == "__main__":

@@ -117,6 +117,7 @@ UI_ROLES = (
     "list-match", "list-match-focused", "list-dim",
     "info-bg", "info-text",
     "history-bg", "history-text", "history-frame", "history-focused", "history-focused-bg",
+    "dialog-frame", "dialog-title",
 )
 
 # --------------------------------------------------------------------------
@@ -148,6 +149,7 @@ BORLAND_UI = {
     "info-bg": "blue", "info-text": "cyan",  # File > Open's pane: the folder, the file under the bar
     "history-bg": "blue", "history-text": "white", "history-frame": "white",  # an input line's earlier entries
     "history-focused": "black", "history-focused-bg": "cyan",
+    "dialog-frame": "white", "dialog-title": "white",  # a dialog's double frame and its title, on the gray
 }
 
 # Div's structure in the reserved-word white, variables in light cyan, the HTML
@@ -169,7 +171,10 @@ FREE_PASCAL_SYNTAX = {
     "special": "lightcyan", "markup": "lightgray", "module": "lightgray",
 }
 
-FREE_PASCAL_UI = {**BORLAND_UI, "editor-gutter": "lightgray", "info-text": "lightcyan"}  # Campbell's cyan is faint on its blue
+FREE_PASCAL_UI = {
+    **BORLAND_UI, "editor-gutter": "lightgray", "info-text": "lightcyan",  # Campbell's cyan is faint on its blue
+    "dialog-frame": "black", "dialog-title": "black",  # its white is nearly its light gray
+}
 
 # --------------------------------------------------------------------------
 # modern-dark: deep gray surfaces, light text, one blue accent.
@@ -235,6 +240,7 @@ MODERN_UI = {
     "info-bg": "#1E3350", "info-text": "#9FD0FF",
     "history-bg": "#1E3350", "history-text": _TEXT, "history-frame": "#7DB4F5",
     "history-focused": _BRIGHT, "history-focused-bg": "#2F5F9E",
+    "dialog-frame": _BRIGHT, "dialog-title": _BRIGHT,
 }
 
 MODERN_SYNTAX = {
@@ -331,6 +337,11 @@ def recolour(theme: Theme, table: Mapping[str, str], name: str) -> Theme:
     return dataclasses.replace(theme, name=name, variables={k: swap(v) for k, v in theme.variables.items()}, **fields)
 
 
+# Turbo Pascal's chrome in Campbell's colours, but for the labels' hotkeys: Campbell's light yellow
+# vanishes on its light gray, so they are red, as the menus' are on the same gray.
+_fp = recolour(THEME_TURBO_PASCAL, CAMPBELL, "free-pascal")
+FREE_PASCAL_CHROME = dataclasses.replace(_fp, variables={**_fp.variables, "label-hotkey": CAMPBELL["red"]})
+
 THEMES: dict[str, Palette] = {
     p.name: p
     for p in (
@@ -339,7 +350,7 @@ THEMES: dict[str, Palette] = {
         Palette("turbo-c", "Turbo ~C~", "Turbo C 2.01's: as Turbo Pascal, white-on-black menu hotkeys.",
                 CGA, THEME_TURBO_C, BORLAND_UI, BORLAND_SYNTAX),
         Palette("free-pascal", "~F~ree Pascal", "Turbo Vision's layout in Windows Terminal's Campbell colours.",
-                CAMPBELL, recolour(THEME_TURBO_PASCAL, CAMPBELL, "free-pascal"),
+                CAMPBELL, FREE_PASCAL_CHROME,
                 FREE_PASCAL_UI, FREE_PASCAL_SYNTAX),
         Palette("modern-dark", "~M~odern dark", "Deep grays, light text and a blue accent, high contrast.",
                 MODERN, MODERN_CHROME, MODERN_UI, MODERN_SYNTAX),

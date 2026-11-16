@@ -68,6 +68,7 @@ from divide.run.render import (
 )
 from divide.ui.explorer import TREE_HINT, ExplorerMixin
 from divide.ui.help import HelpWindow
+from divide.ui.helpsearch import HelpSearchDialog
 from divide.ui.jsontree import JsonTreeWindow
 from divide.ui.dialector import (
     CM_OPEN_TRANSLATION,
@@ -159,6 +160,7 @@ CM_OUTLINE = Command.USER + 92  # Ctrl+O
 CM_GOTO_FILE = Command.USER + 93  # Ctrl+P
 CM_COMMANDS = Command.USER + 94  # Alt+P
 CM_FIND_IN_FILES = Command.USER + 95  # Shift+F2
+CM_HELP_FULLTEXT = Command.USER + 96  # Help > Search
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
@@ -502,6 +504,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     MenuItem("~B~ooks", CM_HELP_BOOKS),
                     MenuItem("~I~ndex", CM_HELP_INDEX, "Shift+F1"),
                     MenuItem("~T~opic search", CM_HELP_SEARCH, "Ctrl+F1"),
+                    MenuItem("~S~earch...", CM_HELP_FULLTEXT),
                     MenuItem("~P~revious topic", CM_HELP_BACK, "Alt+F1"),
                     MenuItem("~U~sing help", CM_HELP, "F1"),
                     Separator(),
@@ -821,11 +824,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 self.open_help(manual.index_of(self.help_book()))
             case _ if command == CM_HELP_BOOKS:
                 self.open_help(manual.LIBRARY)
+            case _ if command == CM_HELP_FULLTEXT:
+                await self.help_fulltext()
             case _ if command == CM_HELP_SEARCH:
                 if editor is not None and lsp.servers_for(editor.editor.lang or "") and editor.path is not None:
                     if await self.lsp_hover(editor.editor):  # what the language server knows
                         return
-                self.help_search()
+                await self.help_search()
             case _ if command == CM_HELP_BACK:
                 help_win = self.help_window()
                 if help_win is None:
@@ -1589,8 +1594,14 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return info.help_topic if info else "Editing-Templates"
         return manual.contents_of(manual.DEFAULT)
 
-    def help_search(self) -> None:
-        """Ctrl+F1: the topic of the word under the cursor, else the index."""
+    async def help_fulltext(self, text: str = "") -> None:
+        """Help > Search: the books by words, ranked; Enter opens the section."""
+        dialog = HelpSearchDialog(text)
+        if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
+            self.open_help(dialog.chosen)
+
+    async def help_search(self) -> None:
+        """Ctrl+F1: the topic of the word under the cursor, else Help > Search with it."""
         win = self.active_editor()
         word = ""
         if win is not None:
@@ -1606,7 +1617,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             word = line[start:end]
         book = self.help_book()
         found = manual.search(word, first=book) if len(word) > 2 else []
-        self.open_help(found[0][1] if found else manual.index_of(book))
+        if found:
+            self.open_help(found[0][1])
+        else:
+            await self.help_fulltext(word)
 
     # ---------------------------------------------------------- dialector
     def dialector_windows(self) -> list[DialectorWindow]:
