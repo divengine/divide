@@ -125,6 +125,7 @@ from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.run.script import size_text
 from divide.run import children
+from divide.run import setup as div_setup
 from divide import lsp
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
@@ -1158,7 +1159,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def _include_engine(self, template: Path) -> Path | None:
         if not shutil.which("php"):
             return None
-        return find_engine([template.parent, self.root], config.load().get("div_engine"))
+        return self.find_div_engine([template.parent, self.root])
+
+    def find_div_engine(self, start_dirs: list[Path]) -> Path | None:
+        """Div's engine: $DIVIDE_DIV_PHP, the project's Div setup, Options > Div engine, then vendor/."""
+        return find_engine(start_dirs, config.load().get("div_engine"), div_setup.load(self.root).engine)
 
     async def _resolve(self, ed: DivEditor, includes: list[str]) -> dict[str, IncludeTarget] | None:
         assert ed.path is not None
@@ -1363,7 +1368,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if template is None:
             await self.run_dialog(information(title, _('Open a Div template (.tpl) to render it.')))
             return None
-        engine = find_engine([template.parent, self.root], config.load().get("div_engine"))
+        engine = self.find_div_engine([template.parent, self.root])
         if engine is None:
             await self.run_dialog(
                 information(
@@ -1455,10 +1460,13 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         items.extend(self.run_items(win.path if win is not None else template))
         rendered = win.path if win is not None else template
         if self.render_messages and rendered is not None and rendered == self.last_template:
-            order = {"FATAL": 0, "DATA": 1, "WARNING": 2, "PHP": 3, "NOTE": 4}
+            order = {"FATAL": 0, "SETUP": 1, "DATA": 2, "WARNING": 3, "PHP": 4, "NOTE": 5}
             items.append(MessageItem(_('── render of {name} ──').format(name=rendered.name)))
             for m in sorted(self.render_messages, key=lambda m: order.get(m.level, 9)):
-                items.append(MessageItem(f"{m.level}: {m.text}"))
+                if m.path is not None:  # a setting of the Div setup: Enter goes to it
+                    items.append(MessageItem(f"{m.level}: {self._relative(m.path)}: {m.text}", m.path, m.offset, m.offset))
+                else:
+                    items.append(MessageItem(f"{m.level}: {m.text}"))
         return items
 
     def refresh_messages(self, template: Path | None = None) -> None:
@@ -2018,7 +2026,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             self.raise_window(tree)
 
     async def choose_engine(self) -> None:
-        current = find_engine([self.root], config.load().get("div_engine"))
+        current = self.find_div_engine([self.root])
         start = current.parent if current else self.root
         dialog = FileDialog(_('Div engine (autoload.php or div.php)'), start, name=current.name if current else "", pattern="*.php", ok_label=_('~O~K'))
         if await self.run_dialog(dialog) == Command.OK and dialog.chosen:

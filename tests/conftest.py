@@ -23,3 +23,9 @@ def own_config(tmp_path_factory, monkeypatch):
     (home / "divide").mkdir()
     (home / "divide" / "config.json").write_text(json.dumps({"lsp": {"php": "off"}}))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(home))
+
+
+@pytest.fixture(autouse=True)
+def own_div_home(tmp_path_factory, monkeypatch):
+    """Never the user's ~/.div/setup.json: an empty Div home of the tests' own."""
+    monkeypatch.setenv("DIV_HOME", str(tmp_path_factory.mktemp("div-home")))

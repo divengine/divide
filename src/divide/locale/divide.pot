@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-16 14:08+0000\n"
+"POT-Creation-Date: 2026-11-17 01:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,6 +29,14 @@ msgid " ({count} names that are not Div tags are left out)"
 msgstr ""
 
 msgid " on the same line"
+msgstr ""
+
+#, python-brace-format
+msgid "\"{key}\" is not applied yet: this divide leaves it out"
+msgstr ""
+
+#, python-brace-format
+msgid "\"{key}\" must be an object"
 msgstr ""
 
 #, python-brace-format
@@ -1426,7 +1434,22 @@ msgstr ""
 msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
 msgstr ""
 
+msgid "a list of folders is expected"
+msgstr ""
+
+msgid "a number or PHP error levels are expected (E_ALL, E_NOTICE...)"
+msgstr ""
+
+msgid "a path is expected"
+msgstr ""
+
 msgid "a reference looks like name or person.name"
+msgstr ""
+
+msgid "a whole number of at least 1 is expected"
+msgstr ""
+
+msgid "an extension is expected, like \"tpl\""
 msgstr ""
 
 msgid "an object member needs a key"
@@ -1444,6 +1467,10 @@ msgid "break the loop"
 msgstr ""
 
 msgid "can only insert into an object or an array"
+msgstr ""
+
+#, python-brace-format
+msgid "cannot read it: {exc}"
 msgstr ""
 
 #, python-brace-format
@@ -1634,7 +1661,13 @@ msgid ""
 " templates)"
 msgstr ""
 
+msgid "the engine is a .php file (autoload.php or div.php)"
+msgstr ""
+
 msgid "the root has no parent"
+msgstr ""
+
+msgid "the setup must be a JSON object"
 msgstr ""
 
 msgid "too long: cut"
@@ -1668,6 +1701,18 @@ msgstr ""
 
 #, python-brace-format
 msgid "unexpected {pos!r} after the value"
+msgstr ""
+
+#, python-brace-format
+msgid "unknown PHP error level \"{name}\""
+msgstr ""
+
+#, python-brace-format
+msgid "unknown setting \"{key}\""
+msgstr ""
+
+#, python-brace-format
+msgid "unknown setting \"{key}.{name}\""
 msgstr ""
 
 #, python-brace-format
@@ -1818,6 +1863,14 @@ msgid "{n} window with unsaved changes kept open"
 msgid_plural "{n} windows with unsaved changes kept open"
 msgstr[0] ""
 msgstr[1] ""
+
+#, python-brace-format
+msgid "{path} is not a file"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is not a folder"
+msgstr ""
 
 #, python-brace-format
 msgid "{root} is not a folder"

@@ -5,9 +5,15 @@ Div is PHP, so rendering runs ``php bridge.php`` with a JSON request on stdin
 template source comes from the editor, so unsaved changes are rendered; its
 real path is passed too, so relative includes resolve as in production.
 
+Every request carries the project's Div setup (``.div/setup.json`` and the
+user's ``~/.div/setup.json``, see :mod:`divide.run.setup`): it is read in
+:func:`_call_bridge`, the one way to the bridge, from the request's ``cwd`` (the
+project's root), so no operation can go without it.
+
 Engine lookup (first hit wins): the ``DIVIDE_DIV_PHP`` environment variable,
-the configured path, then ``vendor/autoload.php`` (with
-``vendor/divengine/div``) walking up from the template and the project root.
+the setup's ``engine`` (the project's, then the user's), the path chosen in
+Options > Div engine, then ``vendor/autoload.php`` (with ``vendor/divengine/div``)
+walking up from the template and the project root.
 """
 
 from __future__ import annotations
@@ -26,20 +32,24 @@ from pathlib import Path
 from divide.lang.div.dialect import lenient_json
 from divide.lang.divjson import references
 from divide.run import children
+from divide.run import setup as div_setup
 
 BRIDGE = Path(__file__).with_name("bridge.php")
 ENV_ENGINE = "DIVIDE_DIV_PHP"
-DATA_EXT = ".json"  # DIV_DEFAULT_DATA_FILE_EXT
+DATA_EXT = ".json"  # DIV_DEFAULT_DATA_FILE_EXT (a project's setup may change it: DivSetup.data_ext)
 TIMEOUT = 20.0
 
-# Levels from the bridge: Div's WARNING / FATAL, PHP notices, deprecations.
-SERIOUS = {"FATAL", "WARNING", "PHP", "DATA"}
+# Levels from the bridge: Div's WARNING / FATAL, PHP notices, deprecations;
+# SETUP: a setting of the project's Div setup that was left out.
+SERIOUS = {"FATAL", "WARNING", "PHP", "DATA", "SETUP"}
 
 
 @dataclass
 class RenderMessage:
     level: str
     text: str
+    path: Path | None = None  # where it is (a setup file), when known
+    offset: int = 0
 
 
 @dataclass
@@ -63,9 +73,10 @@ def _engine_ok(path: Path) -> bool:
     return path.is_file() and path.suffix == ".php"
 
 
-def find_engine(start_dirs: list[Path], configured: str | None = None) -> Path | None:
-    """Locate Div: an ``autoload.php`` of a composer install or a ``div.php``."""
-    for candidate in (os.environ.get(ENV_ENGINE), configured):
+def find_engine(start_dirs: list[Path], configured: str | None = None, setup: Path | None = None) -> Path | None:
+    """Locate Div: an ``autoload.php`` of a composer install or a ``div.php``
+    (``setup``: the engine of the project's Div setup, before ``configured``)."""
+    for candidate in (os.environ.get(ENV_ENGINE), setup and str(setup), configured):
         if candidate:
             path = Path(candidate).expanduser()
             if _engine_ok(path):
@@ -110,9 +121,14 @@ def check_data(text: str) -> str | None:
 
 
 async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: float) -> dict:
+    """The bridge's reply to ``request``, with the Div setup of the project at ``cwd``;
+    the settings it left out come first in the reply's ``messages``."""
     php = php or shutil.which("php")
     if not php:
         raise RenderError(_('php not found in PATH'))
+    setup = div_setup.load(cwd)
+    if settings := setup.bridge():
+        request = {**request, "setup": settings}
     proc = children.track(await asyncio.create_subprocess_exec(
         php,
         str(BRIDGE),
@@ -136,7 +152,20 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
     except ValueError:
         detail = (err or out).decode("utf-8", "replace").strip()[:500]
         raise RenderError(_('php bridge failed (exit {returncode}): {detail}').format(returncode=proc.returncode, detail=detail)) from None
-    return reply if isinstance(reply, dict) else {}
+    if not isinstance(reply, dict):
+        return {}
+    if setup.problems:
+        reply["messages"] = [problem_message(p) for p in setup.problems] + list(reply.get("messages") or [])
+    return reply
+
+
+def problem_message(problem: div_setup.Problem) -> dict:
+    return {"level": "SETUP", "text": problem.text, "path": str(problem.file), "offset": problem.offset}
+
+
+def _message(m: dict) -> RenderMessage:
+    path = m.get("path")
+    return RenderMessage(m.get("level", "?"), m.get("text", ""), Path(path) if path else None, int(m.get("offset") or 0))
 
 
 @dataclass(frozen=True)
@@ -193,7 +222,7 @@ async def render(
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     result = RenderResult(
         output=reply.get("output") or "",
-        messages=[RenderMessage(m.get("level", "?"), m.get("text", "")) for m in reply.get("messages", [])],
+        messages=[_message(m) for m in reply.get("messages", [])],
         fatal=bool(reply.get("fatal")),
         version=reply.get("version"),
         seconds=time.monotonic() - started,

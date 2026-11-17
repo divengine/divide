@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from divide.run.render import RenderMessage, RenderResult, _call_bridge, references
+from divide.run.render import RenderMessage, RenderResult, _call_bridge, _message, references
 
 TIMEOUT = 60.0
 _START = ("Parsing all...", "Parsing from the original source", "Parsing with '")  # Div's log: not translated
@@ -193,7 +193,7 @@ async def trace_render(
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     result = RenderResult(
         output=reply.get("output") or "",
-        messages=[RenderMessage(m.get("level", "?"), m.get("text", "")) for m in reply.get("messages", [])],
+        messages=[_message(m) for m in reply.get("messages", [])],
         fatal=bool(reply.get("fatal")),
         version=reply.get("version"),
         seconds=time.monotonic() - started,

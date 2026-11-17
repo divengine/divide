@@ -189,6 +189,7 @@ file only to colour, and reports nothing about it.
   editor / project windows, message boxes, file dialog, completion list, project file operations,
   the dialector, the help window; `HRule` / `VRule` divide a window and join its frame in Ts
 - `src/divide/run/` — rendering: `bridge.php` (runs Div, replies JSON) and `render.py`
+- `src/divide/run/setup.py` — the project's Div setup (`.div/setup.json`, and the user's `~/.div/setup.json`): constants before Div loads and Div's static API, applied by the bridge to every request
 - `src/divide/manual/` — the built-in help: books (copies of a wiki or a docs folder) laid out as topics with cross references
 - `src/divide/app.py` — the application: menus, status line, commands, window management
 - `docs/div-language.md` — notes on Div as understood by the editor

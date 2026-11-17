@@ -37,6 +37,14 @@
  * since that engine's last note:
  *   {"engine": 1, "level": 1, "message": "Parsing conditions...", "src": "..." | null}
  *
+ * Every request may carry the project's Div setup (divide/run/setup.py), applied
+ * before the operation, whatever it is:
+ *   "setup": {"constants": {"PACKAGES": "/abs/templates/", ...},
+ *             "include_paths": ["/abs/shared/"], "error_reporting": 32759}
+ * the constants are defined before Div loads (Div keeps a constant that exists),
+ * then div::addIncludePath() and div::setErrorReporting() run before any engine
+ * is built. A setting that fails is reported as a "SETUP" message.
+ *
  * Div prints its errors into the output ("[[]]LEVEL: message" in CLI) and
  * dies on fatal ones, so everything is buffered and the reply is written
  * from a shutdown function.
@@ -47,6 +55,9 @@ $version = null;
 $replied = false;  // the resolve operation answers by itself
 
 set_error_handler(static function ($no, $str, $file, $line) use (&$messages) {
+    if (!empty($GLOBALS['divide_error_reporting']) && !(error_reporting() & $no)) {
+        return true;  // the setup's error_reporting leaves it out (Div sets it around formulas)
+    }
     $level = in_array($no, [E_DEPRECATED, E_USER_DEPRECATED], true) ? 'DEPRECATED' : 'PHP';
     $messages[] = ['level' => $level, 'text' => $str . ' (' . basename($file) . ':' . $line . ')'];
     return true;
@@ -101,6 +112,14 @@ if ($op === 'dialect_validate') {
     }
 }
 
+// The project's setup, part 1: Div defines its constants with "defined(...) or define(...)".
+$setup = is_array($request['setup'] ?? null) ? $request['setup'] : [];
+foreach ((array) ($setup['constants'] ?? []) as $name => $value) {
+    if (is_string($name) && (is_string($value) || is_int($value)) && !defined($name)) {
+        define($name, $value);
+    }
+}
+
 $engine = $request['engine'];
 require_once $engine;
 if (basename($engine) === 'div.php' && !function_exists('divengine\\string')) {
@@ -115,6 +134,45 @@ if (!class_exists($divClass)) {
     exit(0);
 }
 $version = $divClass::getVersion();
+
+// Part 2: Div's static API, before any engine is built.
+foreach ((array) ($setup['include_paths'] ?? []) as $path) {
+    try {
+        $divClass::addIncludePath((string) $path);
+    } catch (Throwable $e) {
+        $messages[] = ['level' => 'SETUP', 'text' => "addIncludePath($path): " . $e->getMessage()];
+    }
+}
+if (isset($setup['error_reporting']) && is_int($setup['error_reporting'])) {
+    try {
+        $divClass::setErrorReporting($setup['error_reporting']);
+        $GLOBALS['divide_error_reporting'] = true;
+    } catch (Throwable $e) {
+        $messages[] = ['level' => 'SETUP', 'text' => 'setErrorReporting(): ' . $e->getMessage()];
+    }
+}
+
+/**
+ * The file Div means by $file: Div keeps the name it found through its include
+ * paths (PACKAGES, DIV_REPO, addIncludePath()) and reads it from there later,
+ * as fileExists() and getFileContents() look for it.
+ */
+function divide_real_file(string $divClass, ?string $file): ?string
+{
+    if ($file === null || $file === '') {
+        return $file;
+    }
+    if (is_file($file)) {
+        return realpath($file) ?: $file;
+    }
+    foreach ($divClass::getIncludePaths($divClass::getPackagesPath()) as $base) {
+        $path = rtrim(str_replace('\\', '/', (string) $base), '/') . '/' . $file;
+        if (is_file($path)) {
+            return realpath($path) ?: $path;
+        }
+    }
+    return $file;
+}
 
 function reply_now(array $reply)
 {
@@ -180,7 +238,7 @@ if ($op === 'dialect_load') {
                 }
             }
             if ($file !== null) {
-                $file = realpath($file) ?: $file;
+                $file = divide_real_file($divClass, $file);
             }
         }
     } catch (Throwable $e) {
@@ -233,7 +291,7 @@ if ($op === 'resolve') {
                 $path = substr($path, 0, $sep);
             }
             $file = $tpl->getTplPath($path);
-            $resolved[(string) $raw] = ['path' => $path, 'file' => $file === null ? null : (realpath($file) ?: $file)];
+            $resolved[(string) $raw] = ['path' => $path, 'file' => divide_real_file($divClass, $file)];
         }
     } catch (Throwable $e) {
         $messages[] = ['level' => 'FATAL', 'text' => get_class($e) . ': ' . $e->getMessage()];
