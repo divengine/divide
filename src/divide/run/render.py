@@ -93,9 +93,10 @@ def find_engine(start_dirs: list[Path], configured: str | None = None, setup: Pa
     return None
 
 
-def default_data_file(template: Path) -> Path:
-    """Div's own convention: ``page.tpl`` takes its data from ``page.json``."""
-    return template.with_suffix(DATA_EXT)
+def default_data_file(template: Path, ext: str = DATA_EXT) -> Path:
+    """Div's own convention: ``page.tpl`` takes its data from ``page.json``
+    (``ext``: the project's data extension, DIV_DEFAULT_DATA_FILE_EXT)."""
+    return template.with_suffix(ext)
 
 
 _STRING_OR_COMMENT = re.compile(r""""(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|//[^\n]*|/\*.*?\*/""", re.DOTALL)
@@ -120,15 +121,44 @@ def check_data(text: str) -> str | None:
     return None
 
 
-async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: float) -> dict:
+# Div's verdict on a project's dialect: (engine, tags) -> None (valid) or Div's reason
+_dialect_verdicts: dict[str, str | None] = {}
+
+
+async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: float,
+                       project_dialect: bool = True) -> dict:
     """The bridge's reply to ``request``, with the Div setup of the project at ``cwd``;
-    the settings it left out come first in the reply's ``messages``."""
+    the settings it left out come first in the reply's ``messages``.
+    ``project_dialect=False``: Div's default dialect, not the project's."""
     php = php or shutil.which("php")
     if not php:
         raise RenderError(_('php not found in PATH'))
     setup = div_setup.load(cwd)
-    if settings := setup.bridge():
+    problems = [problem_message(p) for p in setup.problems]
+    use_dialect = project_dialect and bool(setup.dialect_tags)
+    if use_dialect:
+        # Div dies on its first engine when the dialect is not valid: ask it apart first
+        key = json.dumps([request.get("engine"), setup.dialect_tags], sort_keys=True)
+        if key not in _dialect_verdicts:
+            verdict = await _raw_bridge({"engine": request.get("engine"), "op": "dialect_validate",
+                                         "tags": setup.dialect_tags}, cwd=cwd, php=php, timeout=timeout)
+            valid = verdict.get("valid")
+            _dialect_verdicts[key] = None if valid is True else str(valid or _('Div gave no answer'))
+        if (reason := _dialect_verdicts[key]) is not None:
+            use_dialect = False
+            source = setup.dialect_source or (setup.files[0] if setup.files else None)
+            problems.append({"level": "SETUP", "path": str(source) if source else None, "offset": 0,
+                             "text": _("Div rejects the project's dialect, left out: {reason}").format(reason=reason)})
+    if settings := setup.bridge(dialect=use_dialect):
         request = {**request, "setup": settings}
+    reply = await _raw_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    if problems:
+        reply["messages"] = problems + list(reply.get("messages") or [])
+    return reply
+
+
+async def _raw_bridge(request: dict, *, cwd: Path, php: str, timeout: float) -> dict:
+    """The bridge's reply to ``request`` as it is (no setup added)."""
     proc = children.track(await asyncio.create_subprocess_exec(
         php,
         str(BRIDGE),
@@ -152,11 +182,7 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
     except ValueError:
         detail = (err or out).decode("utf-8", "replace").strip()[:500]
         raise RenderError(_('php bridge failed (exit {returncode}): {detail}').format(returncode=proc.returncode, detail=detail)) from None
-    if not isinstance(reply, dict):
-        return {}
-    if setup.problems:
-        reply["messages"] = [problem_message(p) for p in setup.problems] + list(reply.get("messages") or [])
-    return reply
+    return reply if isinstance(reply, dict) else {}
 
 
 def problem_message(problem: div_setup.Problem) -> dict:
@@ -267,12 +293,17 @@ async def check_dialect(
     expected: str | None = None,
     php: str | None = None,
     timeout: float = 10.0,
+    project_dialect: bool = True,
 ) -> DialectVerdict:
     """Ask Div whether ``tags`` (DIV_TAG_* overrides) make a valid dialect and, with
     ``sample`` (a template in that dialect) and ``expected`` (the same template in
-    Div's default dialect), whether Div reads the sample back as expected."""
+    Div's default dialect), whether Div reads the sample back as expected.
+
+    The tags ``tags`` does not set are the project's dialect's (Div fills a
+    dialect's missing tags with its current ones), or Div's defaults with
+    ``project_dialect=False``."""
     request = {"engine": str(engine), "op": "dialect_validate", "tags": tags}
-    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout, project_dialect=project_dialect)
     valid = reply.get("valid")
     version = reply.get("version")
     if valid is not True:
@@ -280,7 +311,8 @@ async def check_dialect(
     if sample is None or expected is None:
         return DialectVerdict(None, version=version)
     try:
-        translated = await translate_template(engine, sample, tags, {}, cwd=cwd, php=php, timeout=timeout)
+        translated = await translate_template(engine, sample, tags, {}, cwd=cwd, php=php, timeout=timeout,
+                                              project_dialect=project_dialect)
     except RenderError:
         return DialectVerdict(None, None, version=version)
     return DialectVerdict(None, translated == expected, translated, version=version)
@@ -295,14 +327,16 @@ async def translate_template(
     cwd: Path,
     php: str | None = None,
     timeout: float = 20.0,
+    project_dialect: bool = True,
 ) -> str:
     """Div's own ``translate()``: ``code`` written in ``source`` rewritten in ``target``.
 
     Dialects are DIV_TAG_* overrides, or a dialect file's text (Div decodes it);
-    empty means Div's default dialect.
+    what they leave out (all of it, when empty) is the project's dialect, or
+    Div's default one with ``project_dialect=False``.
     """
     request = {"engine": str(engine), "op": "translate", "from": source, "to": target, "code": code}
-    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
+    reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout, project_dialect=project_dialect)
     translated = reply.get("translated")
     if not isinstance(translated, str):
         problems = [m.get("text", "") for m in reply.get("messages", []) if m.get("level") in ("FATAL", "PHP")]
@@ -348,4 +382,32 @@ async def load_dialect(
         (cwd / found).resolve() if found else None,
         {str(k): str(v) for k, v in tags.items()} if isinstance(tags, dict) else None,
         reply.get("problem"),
+    )
+
+
+@dataclass(frozen=True)
+class SetupCheck:
+    """How Div took the project's setup (the bridge's ``setup_check``)."""
+
+    dialect: str | None  # None: valid; else Div's reason
+    include_paths: list[str]
+    functions: dict[str, bool]  # allowed function -> PHP has it
+    modifiers: dict[str, bool]  # prefix -> its function can be called
+    constants: dict[str, object]  # as Div sees them
+    messages: list[RenderMessage]
+    version: str | None
+
+
+async def check_setup(engine: Path, *, cwd: Path, php: str | None = None, timeout: float = 10.0) -> SetupCheck:
+    """Apply the project's Div setup and ask Div how it took it."""
+    reply = await _call_bridge({"engine": str(engine), "op": "setup_check"}, cwd=cwd, php=php, timeout=timeout)
+    dialect = reply.get("dialect")
+    return SetupCheck(
+        None if dialect is True else str(dialect or _('Div gave no answer')),
+        [str(p) for p in reply.get("include_paths") or []],
+        {str(k): bool(v) for k, v in (reply.get("functions") or {}).items()},
+        {str(k): bool(v) for k, v in (reply.get("modifiers") or {}).items()},
+        dict(reply.get("constants") or {}),
+        [_message(m) for m in reply.get("messages", [])],
+        reply.get("version"),
     )

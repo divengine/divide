@@ -29,6 +29,7 @@ from textual.color import Color
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Static
 from textual_vision.button import Button
+from textual_vision.cluster import CheckBoxes
 from textual_vision.constants import Command
 from textual_vision.input_line import InputLine
 from textual_vision.label import Label
@@ -536,8 +537,14 @@ class TranslateDialog(_Dialog):
     TranslateDialog .tr-status.-bad { color: $error; }
     """
 
-    def __init__(self, template: str = "", source: str = "", target: str = "", *, root: Path | None = None) -> None:
+    def __init__(self, template: str = "", source: str = "", target: str = "", *, root: Path | None = None,
+                 project_dialect: str | None = None, on_project: bool = True) -> None:
         super().__init__(title=_('Translate a template'))
+        # with a project dialect (its Div setup), what the dialects leave out is it, or Div's
+        self.base: CheckBoxes | None = None
+        if project_dialect is not None:
+            self.base = CheckBoxes([_("~B~ase: the project's dialect ({name})").format(name=project_dialect)])
+            self.base.value = int(on_project)
         self.root = root or Path.cwd()
         self.template_input = InputLine(max_len=1024)
         self.template_input.data = template
@@ -569,7 +576,13 @@ class TranslateDialog(_Dialog):
             yield Label(_('T~o~ dialect'), link=self.target_input)
             yield self.target_input
             yield Button("...", CM_BROWSE_TARGET, id="browse-2")
-        yield Static(_("Paths relative to the project · an empty dialect is Div's default"), classes="tr-note", markup=False)
+        if self.base is not None:
+            with Horizontal(classes="tr-row"):
+                yield Label("", link=self.base)
+                yield self.base
+            yield Static(_("Paths relative to the project · an empty dialect is the base one"), classes="tr-note", markup=False)
+        else:
+            yield Static(_("Paths relative to the project · an empty dialect is Div's default"), classes="tr-note", markup=False)
         yield self.preview
         yield self.status
         with Horizontal(classes="dlg-buttons"):
@@ -597,6 +610,10 @@ class TranslateDialog(_Dialog):
         if translate:
             self.run_translation()
 
+    @property
+    def on_project(self) -> bool:
+        return self.base is not None and bool(self.base.value & 1)
+
     def fields(self) -> tuple[str, str, str]:
         return self.template_input.data.strip(), self.source_input.data.strip(), self.target_input.data.strip()
 
@@ -606,7 +623,7 @@ class TranslateDialog(_Dialog):
         self.status.set_class(False, "-bad")
         self.status.update(_('Asking Div...'))
         try:
-            text, dialect = await self.app.translate_for_dialog(*asked)  # type: ignore[attr-defined]
+            text, dialect = await self.app.translate_for_dialog(*asked, project=self.on_project)  # type: ignore[attr-defined]
         except ValueError as exc:
             self.text = None
             self.status.set_class(True, "-bad")

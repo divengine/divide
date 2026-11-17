@@ -27,6 +27,7 @@ from divide import lang as languages
 from divide.lang import php, plain, treesitter
 
 from divide import themes
+from divide.run import setup as div_setup
 
 from . import theme as editor_themes
 
@@ -107,6 +108,7 @@ class DivEditor(TextArea):
         self.forced_dialect: Dialect | None = None  # a dialect given from outside (the dialector's preview)
         self.marks: list[tuple[int, int, str]] = []  # extra highlights: (start, end, style name)
         self.dialect: Dialect = DEFAULT_DIALECT
+        self.base_dialect: Dialect = DEFAULT_DIALECT  # the project's (its Div setup), else Div's
         self._dialect_ref: str | None = None
         self.engine_dialects: dict[str, Dialect] = {}  # @_DIALECT value -> the dialect as Div loads it
         self._guess: tuple[str, Dialect] | None = None
@@ -181,7 +183,7 @@ class DivEditor(TextArea):
     def checked(self) -> bool:
         """Its errors are listed in the Messages window (Div, PHP)."""
         info = languages.language(self.lang)
-        return bool(info and info.checked)
+        return bool(info and info.checked) or div_setup.is_setup_file(self.path)
 
     def set_lint(self, diagnostics: list[Diagnostic]) -> None:
         """The errors a checker outside the editor found (PHP's ``php -l``)."""
@@ -265,6 +267,15 @@ class DivEditor(TextArea):
         elif self.lang == "json":
             tokens = divjson.tokenize(text)
             self._check_json(text, tokens)
+            if div_setup.is_setup_file(self.path):  # a Div setup: what divide would leave out
+                found = []
+                for problem in div_setup.check_text(self.path, text):
+                    end = text.find("\n", problem.offset)
+                    end = len(text) if end < 0 else end
+                    severity = "error" if self.json_error is not None else "warning"
+                    found.append(Diagnostic(problem.offset, max(end, problem.offset + 1), severity, problem.text))
+                self._set_diagnostics(found)
+                tokens = tokens + [_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics]
         elif self.lang == "ini":
             tokens = plain.ini_tokens(text)
         elif self.lang == "csv":
@@ -376,7 +387,7 @@ class DivEditor(TextArea):
             if ref is not None and self.is_mounted:
                 self.post_message(self.DialectRefChanged(self))
         if ref is None:
-            new = DEFAULT_DIALECT
+            new = self.base_dialect
         elif ref in self.engine_dialects:
             new = self.engine_dialects[ref]
         else:
@@ -390,11 +401,25 @@ class DivEditor(TextArea):
         """Until Div answers (or without Div): look for the file in Python, to colour."""
         if self._guess is not None and self._guess[0] == ref:
             return self._guess[1]
-        guess = resolve_dialect(text, self.path, self.roots)
-        if guess.error is not None:
-            guess = Dialect(name=ref)  # Div's defaults; whether the file is fine is Div's to say
+        guess = resolve_dialect(text, self.path, self.roots, self.base_dialect)
+        if guess.error is not None:  # the base; whether the file is fine is Div's to say
+            guess = Dialect(name=ref, tags=dict(self.base_dialect.tags))
         self._guess = (ref, guess)
         return guess
+
+    def set_base_dialect(self, dialect: Dialect | None) -> None:
+        """The project's dialect (None: Div's): a template without @_DIALECT is in it,
+        and a dialect file's missing tags are its tags. Re-highlights."""
+        dialect = dialect or DEFAULT_DIALECT
+        if dialect.tags == self.base_dialect.tags:
+            return
+        self.base_dialect = dialect
+        self._guess = None
+        self.engine_dialects.clear()  # completed with the old base: Div is asked again
+        if self.lang == "div":
+            self._update_dialect(self.text)
+            self._build_highlight_map()
+            self.refresh()
 
     def set_engine_dialect(self, ref: str, dialect: Dialect) -> None:
         """Div's answer for ``@_DIALECT = ref`` (from the app); re-highlights."""

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 01:23+0000\n"
+"POT-Creation-Date: 2026-11-17 01:38+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -33,12 +33,16 @@ msgid " on the same line"
 msgstr " en la misma línea"
 
 #, python-brace-format
-msgid "\"{key}\" is not applied yet: this divide leaves it out"
-msgstr "«{key}» todavía no se aplica: esta versión de divide lo omite"
-
-#, python-brace-format
 msgid "\"{key}\" must be an object"
 msgstr "«{key}» debe ser un objeto"
+
+#, python-brace-format
+msgid "\"{name}\" is not a PHP function name"
+msgstr "«{name}» no es un nombre de función de PHP"
+
+#, python-brace-format
+msgid "\"{prefix}\" needs the name of a PHP function"
+msgstr "«{prefix}» necesita el nombre de una función de PHP"
 
 #, python-brace-format
 msgid "\"{query}\" in {mask}: {count} in {files}"
@@ -352,6 +356,12 @@ msgstr "Archivo de ~d~ialecto"
 msgid "Dialector"
 msgstr "Dialector"
 
+msgid "Dialects are now completed with Div's default dialect"
+msgstr "Ahora los dialectos se completan con el dialecto por defecto de Div"
+
+msgid "Dialects are now completed with the project's dialect"
+msgstr "Ahora los dialectos se completan con el dialecto del proyecto"
+
 msgid "Direction"
 msgstr "Dirección"
 
@@ -370,6 +380,10 @@ msgstr "Div no puede decodificarlo como objeto JSON"
 #, python-brace-format
 msgid "Div cannot decode the target dialect {target}: {problem}"
 msgstr "Div no puede decodificar el dialecto de destino {target}: {problem}"
+
+#, python-brace-format
+msgid "Div cannot decode {path}: {exc}"
+msgstr "Div no puede decodificar {path}: {exc}"
 
 #, python-brace-format
 msgid "Div cannot find the dialect file {ref}"
@@ -397,8 +411,23 @@ msgid "Div gave no answer"
 msgstr "Div no respondió"
 
 #, python-brace-format
+msgid "Div has no system variable div.{name}"
+msgstr "Div no tiene la variable de sistema div.{name}"
+
+#, python-brace-format
+msgid "Div has no tag {name}"
+msgstr "Div no tiene la etiqueta {name}"
+
+#, python-brace-format
 msgid "Div reads line {line} otherwise: {strip}"
 msgstr "Div lee la línea {line} de otro modo: {strip}"
+
+#, python-brace-format
+msgid "Div rejects the project's dialect, left out: {reason}"
+msgstr "Div rechaza el dialecto del proyecto, se omite: {reason}"
+
+msgid "Div setup"
+msgstr "Configuración de Div"
 
 #, python-brace-format
 msgid "Div syntax error at {frag!r}"
@@ -947,6 +976,9 @@ msgstr "O~K~"
 msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
 msgstr "PHP terminó antes de que Xdebug conectara: ¿está cargado Xdebug?\n"
 
+msgid "PHP settings of the project trusted"
+msgstr "Ajustes PHP del proyecto marcados como de confianza"
+
 msgid "PHP · no errors"
 msgstr "PHP · sin errores"
 
@@ -958,6 +990,9 @@ msgstr "Argumentos"
 
 msgid "Paths relative to the project · an empty dialect is Div's default"
 msgstr "Rutas relativas al proyecto · un dialecto vacío es el de Div por defecto"
+
+msgid "Paths relative to the project · an empty dialect is the base one"
+msgstr "Rutas relativas al proyecto · un dialecto vacío es el de base"
 
 #, python-brace-format
 msgid "Paused at {place}{request} · {debug_hint}"
@@ -1216,6 +1251,9 @@ msgstr "Sufijo"
 msgid "Suggested: Div's default dialect (the template has no @_DIALECT)"
 msgstr "Sugerido: el dialecto de Div por defecto (la plantilla no tiene @_DIALECT)"
 
+msgid "Suggested: the base dialect (the template has no @_DIALECT)"
+msgstr "Sugerido: el dialecto de base (la plantilla no tiene @_DIALECT)"
+
 #, python-brace-format
 msgid "Suggested: the template's @_DIALECT = {ref}"
 msgstr "Sugerido: el @_DIALECT de la plantilla = {ref}"
@@ -1430,8 +1468,26 @@ msgstr "Tu elección (se ignora el @_DIALECT de la propia plantilla)"
 msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
 msgstr "[$products] ... @empty@ ... [/$products], y [:1,10:] ... [/]"
 
+msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
+msgstr "se espera un archivo .dialect o un objeto de etiquetas DIV_TAG_"
+
+msgid "a list of PHP function names is expected"
+msgstr "se espera una lista de nombres de funciones de PHP"
+
 msgid "a list of folders is expected"
 msgstr "se espera una lista de carpetas"
+
+msgid "a list of names is expected"
+msgstr "se espera una lista de nombres"
+
+msgid "a list of {{\"search\": ..., \"replace\": ...}} is expected"
+msgstr "se espera una lista de {{\"search\": ..., \"replace\": ...}}"
+
+msgid "a list of {{\"var\": ..., \"search\": ..., \"replace\": ...}} is expected"
+msgstr "se espera una lista de {{\"var\": ..., \"search\": ..., \"replace\": ...}}"
+
+msgid "a modifier needs a prefix"
+msgstr "un modificador necesita un prefijo"
 
 msgid "a number or PHP error levels are expected (E_ALL, E_NOTICE...)"
 msgstr "se espera un número o niveles de error de PHP (E_ALL, E_NOTICE...)"
@@ -1450,6 +1506,15 @@ msgstr "se espera una extensión, como \"tpl\""
 
 msgid "an object member needs a key"
 msgstr "un miembro de objeto necesita una clave"
+
+msgid "an object of names and values is expected"
+msgstr "se espera un objeto de nombres y valores"
+
+msgid "an object of prefix: PHP function is expected"
+msgstr "se espera un objeto prefijo: función de PHP"
+
+msgid "an object of variables is expected"
+msgstr "se espera un objeto de variables"
 
 #, python-brace-format
 msgid "at line {target} of {name}"
@@ -1528,6 +1593,12 @@ msgstr ""
 "\n"
 "IDE de terminal para los proyectos Divengine.\n"
 "https://github.com/divengine"
+
+msgid "each default is {{\"search\": ..., \"replace\": ...}}"
+msgstr "cada valor por defecto es {{\"search\": ..., \"replace\": ...}}"
+
+msgid "each default is {{\"var\": \"name\", \"search\": ..., \"replace\": ...}}"
+msgstr "cada valor por defecto es {{\"var\": \"nombre\", \"search\": ..., \"replace\": ...}}"
 
 msgid "empty document"
 msgstr "documento vacío"
@@ -1633,6 +1704,9 @@ msgstr "include preprocesado"
 msgid "program reset"
 msgstr "programa reiniciado"
 
+msgid "project"
+msgstr "proyecto"
+
 msgid "project folder and/or files to open"
 msgstr "carpeta del proyecto y/o archivos que abrir"
 
@@ -1654,6 +1728,9 @@ msgstr "los datos usan {names}: Div decodifica un archivo de datos antes de que 
 
 msgid "the engine is a .php file (autoload.php or div.php)"
 msgstr "el motor es un archivo .php (autoload.php o div.php)"
+
+msgid "the project's \"php\" settings are not applied until you trust them (Options > Div setup)"
+msgstr "los ajustes «php» del proyecto no se aplican hasta que confíes en ellos (Opciones > Configuración de Div)"
 
 msgid "the root has no parent"
 msgstr "la raíz no tiene padre"
@@ -1760,12 +1837,30 @@ msgid "{expression}: (not running)"
 msgstr "{expression}: (no se ejecuta)"
 
 #, python-brace-format
+msgid ""
+"{file} lets this project's templates call PHP:\n"
+"\n"
+"{calls}\n"
+"\n"
+"Trust these settings? (Until they change; Options > Div setup can trust them later.)"
+msgstr ""
+"{file} permite a las plantillas de este proyecto llamar a PHP:\n"
+"\n"
+"{calls}\n"
+"\n"
+"¿Confiar en estos ajustes? (Hasta que cambien; Opciones > Configuración de Div permite confiar más tarde.)"
+
+#, python-brace-format
 msgid "{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})"
 msgstr "{frag} cierra un bucle que nunca se abrió ({loop_b}{key}{loop_bs})"
 
 #, python-brace-format
 msgid "{ignore_b} is never closed with {ignore_e}"
 msgstr "{ignore_b} nunca se cierra con {ignore_e}"
+
+#, python-brace-format
+msgid "{key}: a $reference is not a value here"
+msgstr "{key}: una $referencia no es un valor aquí"
 
 #, python-brace-format
 msgid "{name} did not answer"
@@ -1794,6 +1889,10 @@ msgstr "{name} está listo"
 #, python-brace-format
 msgid "{name} knows nothing about {this}"
 msgstr "{name} no sabe nada de {this}"
+
+#, python-brace-format
+msgid "{name} must be text"
+msgstr "{name} debe ser texto"
 
 #, python-brace-format
 msgid "{name} renders with {name2}"
@@ -1929,6 +2028,16 @@ msgstr "~A~utomático: el primero que se encuentre"
 
 msgid "~B~ackward"
 msgstr "~H~acia atrás"
+
+msgid "~B~ase: Div's default dialect"
+msgstr "~B~ase: el dialecto por defecto de Div"
+
+msgid "~B~ase: the project's dialect"
+msgstr "~B~ase: el dialecto del proyecto"
+
+#, python-brace-format
+msgid "~B~ase: the project's dialect ({name})"
+msgstr "~B~ase: el dialecto del proyecto ({name})"
 
 msgid "~B~ooks"
 msgstr "~L~ibros"
@@ -2330,4 +2439,7 @@ msgstr "── servidor web {address} ──"
 
 #~ msgid "a number or PHP levels are expected, like \"E_ALL & ~E_NOTICE\""
 #~ msgstr "se espera un número o niveles de PHP, como \"E_ALL & ~E_NOTICE\""
+
+#~ msgid "\"{key}\" is not applied yet: this divide leaves it out"
+#~ msgstr "«{key}» todavía no se aplica: esta versión de divide lo omite"
 

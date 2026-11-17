@@ -52,6 +52,25 @@ CSV = Language("csv", "CSV", frozenset({".csv", ".tsv"}), OTHER)
 LANGUAGES: tuple[Language, ...] = (DIV, JSON, PHP, HTML, CSS, JAVASCRIPT, MARKDOWN, SQL, XML, YAML, TOML, SHELL, INI, CSV)
 
 
+# the project's own extensions (its Div setup: DIV_DEFAULT_TPL_FILE_EXT, DIV_DEFAULT_DATA_FILE_EXT)
+_project: dict[str, str] = {}
+
+
+def set_project_extensions(template: str | None = None, data: str | None = None) -> None:
+    """Files with the project's template extension are Div templates (before HTML,
+    say: ``.html`` templates), and those with its data extension Div JSON."""
+    _project.clear()
+    if data:
+        _project[data.lower()] = JSON.name
+    if template:
+        _project[template.lower()] = DIV.name
+
+
+def template_extensions() -> frozenset[str]:
+    """Div's (``.tpl``, ``.div``) and the project's."""
+    return DIV.extensions | {ext for ext, name in _project.items() if name == DIV.name}
+
+
 def language(name: str | None) -> Language | None:
     return next((lang for lang in LANGUAGES if lang.name == name), None)
 
@@ -60,6 +79,8 @@ def language_of(path: Path | None) -> str | None:
     """The language of a file: Div for templates (and untitled buffers), None for plain text."""
     if path is None:
         return DIV.name
+    if path.suffix.lower() in _project:
+        return _project[path.suffix.lower()]
     name = path.name.lower()
     for lang in LANGUAGES:  # whole names and endings first: phpunit.xml.dist, .env, .env.local
         if any(name == n or name.endswith(n) or (n == ".env" and name.startswith(".env.")) for n in lang.names):

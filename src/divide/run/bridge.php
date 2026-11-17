@@ -39,11 +39,19 @@
  *
  * Every request may carry the project's Div setup (divide/run/setup.py), applied
  * before the operation, whatever it is:
- *   "setup": {"constants": {"PACKAGES": "/abs/templates/", ...},
- *             "include_paths": ["/abs/shared/"], "error_reporting": 32759}
- * the constants are defined before Div loads (Div keeps a constant that exists),
- * then div::addIncludePath() and div::setErrorReporting() run before any engine
- * is built. A setting that fails is reported as a "SETUP" message.
+ *   "setup": {"constants": {"PACKAGES": "/abs/templates/", "DIV_TAG_...": "...", ...},
+ *             "request": {"get": {...}, "post": {...}, "server": {...}, "session": {...}, "cookie": {...}},
+ *             "error_reporting": 32759, "include_paths": ["/abs/shared/"],
+ *             "system_vars": ["server"], "allowed_functions": ["array_sum"],
+ *             "modifiers": {"rev:": "strrev"}, "globals": {...},
+ *             "defaults": [[search, replace]], "defaults_by_var": [[var, search, replace]]}
+ * the request's superglobals and the constants come before Div loads (Div keeps
+ * a constant that exists), then Div's static API runs before any engine is
+ * built. A setting that fails is reported as a "SETUP" message.
+ *
+ * With "op": "setup_check" it only applies the setup and says how Div took it:
+ *   -> {"dialect": true | "<Div's reason>", "include_paths": [...],
+ *       "functions": {"name": bool}, "modifiers": {"prefix": bool}, "constants": {...}}
  *
  * Div prints its errors into the output ("[[]]LEVEL: message" in CLI) and
  * dies on fatal ones, so everything is buffered and the reply is written
@@ -112,8 +120,28 @@ if ($op === 'dialect_validate') {
     }
 }
 
-// The project's setup, part 1: Div defines its constants with "defined(...) or define(...)".
+// The project's setup, part 1: a request to simulate, and the constants (Div
+// defines its own with "defined(...) or define(...)").
 $setup = is_array($request['setup'] ?? null) ? $request['setup'] : [];
+$simulated = is_array($setup['request'] ?? null) ? $setup['request'] : [];
+if (isset($simulated['get']) && is_array($simulated['get'])) {
+    $_GET = $simulated['get'];
+}
+if (isset($simulated['post']) && is_array($simulated['post'])) {
+    $_POST = $simulated['post'];
+}
+if (isset($simulated['cookie']) && is_array($simulated['cookie'])) {
+    $_COOKIE = $simulated['cookie'];
+}
+if (isset($simulated['server']) && is_array($simulated['server'])) {
+    $_SERVER = array_merge($_SERVER, $simulated['server']);
+}
+if (isset($simulated['session']) && is_array($simulated['session'])) {
+    $_SESSION = $simulated['session'];
+}
+if ($simulated) {
+    $_REQUEST = array_merge($_GET, $_POST);
+}
 foreach ((array) ($setup['constants'] ?? []) as $name => $value) {
     if (is_string($name) && (is_string($value) || is_int($value)) && !defined($name)) {
         define($name, $value);
@@ -150,6 +178,76 @@ if (isset($setup['error_reporting']) && is_int($setup['error_reporting'])) {
     } catch (Throwable $e) {
         $messages[] = ['level' => 'SETUP', 'text' => 'setErrorReporting(): ' . $e->getMessage()];
     }
+}
+$delimiter = defined('DIV_TAG_VAR_MEMBER_DELIMITER') ? DIV_TAG_VAR_MEMBER_DELIMITER : '.';
+$setup_steps = [
+    'system_vars' => static function ($name) use ($divClass, $delimiter) {
+        $divClass::enableSystemVar('div' . $delimiter . $name);
+    },
+    'allowed_functions' => static function ($name) use ($divClass, &$messages) {
+        if (!function_exists($name)) {
+            $messages[] = ['level' => 'SETUP', 'text' => "setAllowedFunction($name): PHP has no function $name"];
+        }
+        $divClass::setAllowedFunction($name);
+    },
+];
+foreach ($setup_steps as $key => $step) {
+    foreach ((array) ($setup[$key] ?? []) as $value) {
+        try {
+            $step((string) $value);
+        } catch (Throwable $e) {
+            $messages[] = ['level' => 'SETUP', 'text' => "$key $value: " . $e->getMessage()];
+        }
+    }
+}
+foreach ((array) ($setup['modifiers'] ?? []) as $prefix => $function) {
+    if (!is_callable($function)) {
+        $messages[] = ['level' => 'SETUP', 'text' => "addCustomModifier($prefix): PHP has no function $function"];
+        continue;
+    }
+    $divClass::addCustomModifier((string) $prefix, $function);
+}
+foreach ((array) ($setup['globals'] ?? []) as $var => $value) {
+    $divClass::setGlobal((string) $var, $value);
+}
+foreach ((array) ($setup['defaults'] ?? []) as $pair) {
+    if (is_array($pair) && count($pair) === 2) {
+        $divClass::setDefault($pair[0], $pair[1]);
+    }
+}
+foreach ((array) ($setup['defaults_by_var'] ?? []) as $triple) {
+    if (is_array($triple) && count($triple) === 3) {
+        $divClass::setDefaultByVar((string) $triple[0], $triple[1], $triple[2]);
+    }
+}
+
+if ($op === 'setup_check') {
+    try {
+        $dialect = $divClass::isValidCurrentDialect();
+    } catch (Throwable $e) {
+        $dialect = get_class($e) . ': ' . $e->getMessage();
+    }
+    $functions = [];
+    foreach ((array) ($setup['allowed_functions'] ?? []) as $name) {
+        $functions[(string) $name] = function_exists((string) $name);
+    }
+    $modifiers = [];
+    foreach ((array) ($setup['modifiers'] ?? []) as $prefix => $function) {
+        $modifiers[(string) $prefix] = is_callable($function);
+    }
+    $constants = [];
+    foreach (['PACKAGES', 'DIV_REPO', 'DIV_DEFAULT_TPL_FILE_EXT', 'DIV_DEFAULT_DATA_FILE_EXT', 'DIV_MAX_PARSE_CYCLES', 'DIV_MAX_FILENAME_SIZE'] as $name) {
+        $constants[$name] = defined($name) ? constant($name) : null;
+    }
+    reply_now([
+        'dialect' => $dialect,
+        'include_paths' => array_values(array_filter($divClass::getIncludePaths($divClass::getPackagesPath()), 'strlen')),
+        'functions' => (object) $functions,
+        'modifiers' => (object) $modifiers,
+        'constants' => $constants,
+        'messages' => $messages,
+        'version' => $version,
+    ]);
 }
 
 /**

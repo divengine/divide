@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from divide import lang as languages
 from divide import themes
 
 PLAIN = "plain"
@@ -53,5 +54,7 @@ BY_NAME: dict[str, tuple[str, str]] = {
 
 def mark_for(path: Path, palette: themes.Palette | None = None) -> tuple[str, str]:
     """``(mark, colour)`` of a file; the colour is the slot's ``#RRGGBB`` in the palette."""
-    mark, slot = BY_NAME.get(path.name) or BY_EXTENSION.get(path.suffix.lower()) or FILE
+    template = languages.language_of(path) == languages.DIV.name  # .tpl, .div, the project's template extension
+    mark, slot = (BY_NAME.get(path.name) or (BY_EXTENSION[".tpl"] if template else None)
+                  or BY_EXTENSION.get(path.suffix.lower()) or FILE)
     return mark, (palette or themes.current()).hex(slot)

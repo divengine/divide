@@ -203,19 +203,22 @@ class Dialect:
         return self.tags.get(key, "")
 
     @classmethod
-    def from_overrides(cls, overrides: dict, name: str = "custom", source: Path | None = None) -> "Dialect":
-        tags = dict(DEFAULT_TAGS)
+    def from_overrides(cls, overrides: dict, name: str = "custom", source: Path | None = None,
+                       base: "Dialect | None" = None) -> "Dialect":
+        """Div's tags with ``overrides``; the ones they leave are ``base``'s (the
+        project's dialect: Div fills a dialect's missing tags with its current ones)."""
+        tags = dict(base.tags if base is not None else DEFAULT_TAGS)
         for k, v in overrides.items():
             if isinstance(k, str) and k.startswith("DIV_TAG_"):
                 tags[k] = "" if v is None else str(v)
         return cls(name=name, tags=tags, source=source)
 
     @classmethod
-    def load(cls, path: Path) -> "Dialect":
+    def load(cls, path: Path, base: "Dialect | None" = None) -> "Dialect":
         data = lenient_json(path.read_text(encoding="utf-8"))
         if not isinstance(data, dict):
             raise ValueError(f"{path}: a dialect must be a JSON object")
-        return cls.from_overrides(data, name=path.stem, source=path)
+        return cls.from_overrides(data, name=path.stem, source=path, base=base)
 
 
 DEFAULT_DIALECT = Dialect()
@@ -230,7 +233,8 @@ def template_properties(text: str) -> dict[str, tuple[str, int]]:
     return props
 
 
-def resolve_dialect(text: str, template_path: Path | None = None, roots: list[Path] | None = None) -> Dialect:
+def resolve_dialect(text: str, template_path: Path | None = None, roots: list[Path] | None = None,
+                    base: Dialect | None = None) -> Dialect:
     """divide's quick guess of a template's dialect, from its ``@_DIALECT`` property.
 
     Only to colour the template until Div answers, or when there is no Div: the
@@ -241,7 +245,7 @@ def resolve_dialect(text: str, template_path: Path | None = None, roots: list[Pa
     """
     prop = template_properties(text).get("DIALECT")
     if not prop:
-        return DEFAULT_DIALECT
+        return base or DEFAULT_DIALECT
     ref = prop[0].strip().strip("'\"")
     candidates: list[Path] = []
     p = Path(ref)
@@ -256,7 +260,7 @@ def resolve_dialect(text: str, template_path: Path | None = None, roots: list[Pa
     for c in candidates:
         if c.is_file():
             try:
-                return Dialect.load(c)
+                return Dialect.load(c, base)
             except (OSError, ValueError) as exc:
                 return Dialect(name=ref, error=str(exc))
     return Dialect(name=ref, error=f"dialect file not found: {ref}")

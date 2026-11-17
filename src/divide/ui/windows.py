@@ -465,9 +465,11 @@ class EditorView(DivEditor, TVViewMixin):
             return None
         provider = getattr(self.app, "completion_data_for", None)
         data = provider(self) if provider is not None else None
+        setup = getattr(self.app, "div_setup", None)
         return complete(
             self.text, offset, self.tokens, self.dialect,
             data=data, template=self.path, roots=self.roots, explicit=explicit,
+            template_ext=setup().template_ext if setup is not None else ".tpl",
         )
 
     def update_completion(self, explicit: bool = False) -> None:

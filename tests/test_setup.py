@@ -84,7 +84,7 @@ def test_invalid_entries_are_left_out_with_their_place(tmp_path):
     assert lines[2].count("not a folder") == 2
     assert "extension" in lines[3]
     assert "max_cycles" in lines[4] and "E_NOPE" in lines[4] and "parser.colour" in lines[4]
-    assert "not applied yet" in lines[5]
+    assert "not a file" in lines[5]  # the dialect file
     assert "unknown setting" in lines[6]
     assert "not a file" in lines[7]
 
@@ -271,3 +271,147 @@ async def test_a_left_out_setting_in_the_messages_window_goes_to_its_place(tmp_p
         editor = app.active_editor()
         assert editor is not None and editor.path == file.resolve()
         assert editor.editor.cursor_location[0] == 1  # the line of "max_cycles"
+
+
+# ------------------------------------------------------------------ the rest of the setup
+def test_every_section_read_and_merged(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    write_setup(home, {"data": {"globals": {"site": "Mine", "year": 2020}, "system_vars": ["server"],
+                                "defaults": [{"search": None, "replace": "user"}]},
+                       "php": {"allowed_functions": ["md5"], "modifiers": {"up:": "strtoupper"}},
+                       "request": {"server": {"HTTP_HOST": "mine.test", "LANG": "es"}}})
+    monkeypatch.setenv("DIV_HOME", str(home / ".div"))
+    project = tmp_path / "shop"
+    project.mkdir()
+    (project / "erb.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>", name: "erb"}')
+    write_setup(project, {
+        "dialect": "erb.dialect",
+        "data": {"globals": {"site": "Shop"}, "system_vars": ["div.ascii", "now"],
+                 "defaults": [{"search": None, "replace": "-"}, {"search": 0, "replace": "zero"}],
+                 "defaults_by_var": [{"var": "price", "search": 0, "replace": "free"}]},
+        "request": {"get": {"page": 2}, "server": {"HTTP_HOST": "shop.test"}, "session": {"user": "rafa"}},
+    })
+    setup = div_setup.load(project)
+    assert setup.problems == ()
+    assert setup.dialect_tags == {"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>"}
+    assert setup.dialect.name == "erb" and setup.dialect["DIV_TAG_REPLACEMENT_PREFIX"] == "<%= "
+    assert setup.dialect["DIV_TAG_LOOP_BEGIN_PREFIX"] == "[$"  # Div's for the rest
+    assert setup.globals == {"site": "Shop", "year": 2020}
+    assert setup.system_vars == ("ascii", "server")  # "now" is always on
+    assert setup.defaults == ((None, "-"), (0, "zero"))
+    assert setup.defaults_by_var == (("price", 0, "free"),)
+    assert setup.allowed_functions == ("md5",) and setup.modifiers == {"up:": "strtoupper"}  # the user's: trusted
+    assert setup.request == {"get": {"page": 2}, "server": {"HTTP_HOST": "shop.test", "LANG": "es"},
+                             "session": {"user": "rafa"}}
+    bridge = setup.bridge()
+    assert bridge["constants"]["DIV_TAG_REPLACEMENT_PREFIX"] == "<%= "
+    assert "DIV_TAG_REPLACEMENT_PREFIX" not in setup.bridge(dialect=False).get("constants", {})
+    variables = setup.variables()
+    assert variables["site"] == "Shop" and variables["div.server"]["HTTP_HOST"] == "shop.test"
+
+
+def test_bad_parts_of_sections(tmp_path):
+    (tmp_path / "x.dialect").write_text('{"DIV_TAG_NOPE": "x", "DIV_TAG_EMPTY": true}')
+    write_setup(tmp_path, {
+        "dialect": "x.dialect",
+        "data": {"globals": [1], "system_vars": ["cookies"], "defaults": [{"search": 1}],
+                 "defaults_by_var": [{"search": 1, "replace": 2}]},
+        "php": {"allowed_functions": ["system()"], "modifiers": {"x:": "not a function"}},
+        "request": {"get": "page=1", "files": {}},
+    })
+    texts = " / ".join(p.text for p in div_setup.load(tmp_path).problems)
+    for expected in ("DIV_TAG_NOPE", "DIV_TAG_EMPTY must be text", "data.globals", "div.cookies",
+                     "data.defaults:", "data.defaults_by_var", "system()", '"x:"', "request.get", "request.files"):
+        assert expected in texts, expected
+
+
+def test_a_projects_php_waits_for_trust(tmp_path):
+    file = write_setup(tmp_path, {"php": {"allowed_functions": ["md5"], "modifiers": {"rev:": "strrev"}}})
+    setup = div_setup.load(tmp_path)
+    assert setup.allowed_functions == () and setup.modifiers == {}
+    assert setup.untrusted is not None and setup.untrusted.functions == ("md5",)
+    assert any("trust" in p.text for p in setup.problems)
+    div_setup.trust(setup.untrusted)
+    trusted = div_setup.load(tmp_path)
+    assert trusted.untrusted is None and trusted.allowed_functions == ("md5",) and trusted.modifiers == {"rev:": "strrev"}
+    write_setup(tmp_path, {"php": {"allowed_functions": ["md5", "exec"]}})  # changed: asked again
+    again = div_setup.load(tmp_path)
+    assert again.untrusted is not None and again.allowed_functions == ()
+    assert file.exists()
+
+
+def test_the_editor_marks_a_setup_files_problems(tmp_path):
+    file = tmp_path / ".div" / "setup.json"
+    problems = div_setup.check_text(file, '{"parser": {"max_cycles": 0}}')
+    assert len(problems) == 1 and "max_cycles" in problems[0].text
+    assert div_setup.is_setup_file(file) and not div_setup.is_setup_file(tmp_path / "setup.json")
+
+
+def test_the_projects_extensions(tmp_path):
+    from divide import lang as languages
+    from divide.ui import icons
+    try:
+        languages.set_project_extensions(".html", ".data")
+        assert languages.language_of(tmp_path / "page.html") == "div"
+        assert languages.language_of(tmp_path / "page.data") == "json"
+        assert languages.language_of(tmp_path / "page.tpl") == "div"
+        assert ".html" in languages.template_extensions()
+        assert icons.mark_for(tmp_path / "page.html")[0] == "{"
+    finally:
+        languages.set_project_extensions()
+    assert languages.language_of(tmp_path / "page.html") == "html"
+
+
+def test_include_completion_with_the_projects_extension(tmp_path):
+    from divide.lang.div.complete import template_paths
+    (tmp_path / "parts").mkdir()
+    (tmp_path / "parts" / "menu.html").write_text("")
+    (tmp_path / "parts" / "old.tpl").write_text("")
+    names = [c.label for c in template_paths("parts/", None, [tmp_path], ".html")]
+    assert names == ["parts/menu"]
+
+
+def test_a_template_dialect_is_completed_with_the_projects():
+    from divide.lang.div.dialect import Dialect
+    project = Dialect.from_overrides({"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>"})
+    own = Dialect.from_overrides({"DIV_TAG_LOOP_BEGIN_PREFIX": "<% each "}, base=project)
+    assert own["DIV_TAG_REPLACEMENT_PREFIX"] == "<%= " and own["DIV_TAG_LOOP_BEGIN_PREFIX"] == "<% each "
+
+
+@needs_div
+async def test_div_takes_the_whole_setup(tmp_path):
+    (tmp_path / "erb.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>"}')
+    file = write_setup(tmp_path, {
+        "dialect": "erb.dialect",
+        "data": {"globals": {"site": "Shop"}, "system_vars": ["server"],
+                 # text: Div's jsonDecode() makes numbers floats, and Div matches defaults by serialize()
+                 "defaults_by_var": [{"var": "price", "search": "0", "replace": "free"}]},
+        "php": {"modifiers": {"rev:": "strrev"}, "allowed_functions": ["str_repeat"]},
+        "request": {"get": {"page": "2"}, "server": {"HTTP_HOST": "shop.test"}},
+    })
+    div_setup.trust(div_setup.load(tmp_path).untrusted)
+    page = tmp_path / "page.tpl"
+    code = "<%= $site %>|<%= $price %>|<%= rev:site %>|<%= $div.get.page %>|<%= $div.server.HTTP_HOST %>|(# str_repeat('a', 3) #)"
+    result = await render(Path(ENGINE), page, code, '{"price": "0"}', cwd=tmp_path)
+    assert result.output == "Shop|free|pohS|2|shop.test|aaa", result.messages
+    check = await render_mod.check_setup(Path(ENGINE), cwd=tmp_path)
+    assert check.dialect is None and check.functions == {"str_repeat": True} and check.modifiers == {"rev:": True}
+    assert file.exists()
+
+
+@needs_div
+async def test_a_dialect_div_rejects_is_left_out(tmp_path):
+    (tmp_path / "bad.dialect").write_text('{"DIV_TAG_EMPTY": "@break@"}')  # the same as DIV_TAG_BREAK
+    write_setup(tmp_path, {"dialect": "bad.dialect"})
+    result = await render(Path(ENGINE), tmp_path / "p.tpl", "{$x}", '{"x": "ok"}', cwd=tmp_path)
+    assert result.output == "ok" and not result.fatal
+    assert any(m.level == "SETUP" and "rejects" in m.text for m in result.messages)
+
+
+@needs_div
+async def test_div_reports_what_php_lacks(tmp_path):
+    write_setup(tmp_path, {"php": {"allowed_functions": ["no_such_function_x"], "modifiers": {"z:": "no_such_fn_y"}}})
+    div_setup.trust(div_setup.load(tmp_path).untrusted)
+    check = await render_mod.check_setup(Path(ENGINE), cwd=tmp_path)
+    assert check.functions == {"no_such_function_x": False} and check.modifiers == {"z:": False}
+    assert sum(m.level == "SETUP" for m in check.messages) == 2

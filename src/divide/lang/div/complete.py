@@ -204,8 +204,9 @@ def _filter(items: list[Completion], prefix: str, key=lambda c: c.label) -> list
 
 
 # ---------------------------------------------------------------------- paths
-def template_paths(prefix: str, template: Path | None, roots: list[Path]) -> list[Completion]:
-    """Folders (``dir/``) and ``.tpl`` files (without extension) matching a typed path."""
+def template_paths(prefix: str, template: Path | None, roots: list[Path], ext: str = ".tpl") -> list[Completion]:
+    """Folders (``dir/``) and templates matching a typed path: those with Div's
+    extension (``ext``, DIV_DEFAULT_TPL_FILE_EXT) without it, as Div adds it."""
     folder, _, _ = prefix.rpartition("/")
     bases = ([template.parent] if template is not None else []) + list(roots)
     seen: set[str] = set()
@@ -224,7 +225,7 @@ def template_paths(prefix: str, template: Path | None, roots: list[Path]) -> lis
                 if rel + "/" not in seen:
                     seen.add(rel + "/")
                     out.append(Completion(rel + "/", rel + "/", "folder", retrigger=True))
-            elif child.suffix.lower() == ".tpl":
+            elif child.suffix.lower() == ext:
                 name = rel[: -len(child.suffix)]
                 if name not in seen:
                     seen.add(name)
@@ -298,6 +299,7 @@ def complete(
     template: Path | None = None,
     roots: list[Path] | None = None,
     explicit: bool = False,
+    template_ext: str = ".tpl",
 ) -> CompletionResult | None:
     """Completions at ``offset``; ``explicit`` (Ctrl+Space) also offers tags anywhere."""
     T = dialect
@@ -314,7 +316,7 @@ def complete(
         m = re.search(re.escape(begin) + r"([\w./\-]*)$", before)
         if m:
             prefix = m.group(1)
-            items = template_paths(prefix, template, roots)
+            items = template_paths(prefix, template, roots, template_ext)
             closed = rest.startswith(end.lstrip()) or rest.startswith(end)
             items = [it if it.retrigger or closed else Completion(it.label, it.insert, it.detail, after=end) for it in items]
             return CompletionResult(offset - len(prefix), prefix, _filter(items, prefix), "path")

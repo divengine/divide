@@ -203,6 +203,7 @@ CM_DX_EXAMPLE = Command.USER + 75
 CM_DX_CHECK = Command.USER + 76
 CM_DX_IMPORT = Command.USER + 77
 CM_DX_TRANSLATE = Command.USER + 78
+CM_DX_BASE = Command.USER + 79
 
 # Names usable in bindings: action_command('SAVE'), action_command('FIND'), ...
 COMMANDS: dict[str, int] = {
@@ -414,6 +415,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         self._focused_template: EditorWindow | None = None  # last template window that had focus
         self._completion_cache: dict[Path, tuple[str, object]] = {}  # data file -> (text, value)
         self._include_timers: dict[object, object] = {}  # editor id -> pending include resolution
+        self._trust_asked: set[str] = set()  # digests of untrusted PHP settings already asked about
+        self.dialects_on_project = True  # Dialector, Translate: missing tags are the project's dialect's
         self._include_gen: dict[int, int] = {}  # editor id -> latest resolution asked
 
     # --------------------------------------------------------------- shell
@@ -574,6 +577,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         children.kill_all()
 
     def on_mount(self) -> None:
+        self.apply_div_setup()
         if self.initial_files:
             for f in self.initial_files:
                 self.open_file(f)
@@ -643,7 +647,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         except (OSError, UnicodeDecodeError) as exc:
             self.notify(_('Cannot open {name}: {exc}').format(name=path.name, exc=exc), severity="error")
             return None
-        win = EditorWindow(path, text, roots=[self.root], number=self._free_number())
+        setup = self.apply_div_setup()
+        win = EditorWindow(path, text, roots=self.template_roots(), number=self._free_number())
+        win.editor.set_base_dialect(setup.dialect)
         self._relabel(win)
         self._insert(win)
         self.call_after_refresh(self.resolve_includes_of, win.editor)
@@ -651,7 +657,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         return win
 
     def new_file(self, text: str = "", *, plain: bool = False) -> EditorWindow:
-        win = EditorWindow(None, text, roots=[self.root], untitled=self._untitled, number=self._free_number())
+        win = EditorWindow(None, text, roots=self.template_roots(), untitled=self._untitled, number=self._free_number())
+        win.editor.set_base_dialect(self.div_setup().dialect)
         win.saved_text = ""  # generated text counts as unsaved
         if plain:
             win.editor.lang = None
@@ -694,6 +701,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         win.refresh_indicator()
         self.update_status()
         self.notify(_("Saved {name}").format(name=win.path.name), timeout=1.5)
+        self.apply_div_setup()  # it may be a setup file, or a dialect file the setup names
         self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
         self.lsp_saved(win.path, win.editor.lang)
@@ -1069,14 +1077,63 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def window_for(self, path: Path) -> EditorWindow | None:
         return next((w for w in self.editor_windows() if w.path == path), None)
 
+    # ------------------------------------------------- the project's Div setup
+    def div_setup(self) -> div_setup.DivSetup:
+        """The project's Div setup (.div/setup.json and ~/.div/setup.json), as it is now."""
+        return div_setup.load(self.root)
+
+    def apply_div_setup(self) -> div_setup.DivSetup:
+        """What the setup changes on divide's side: the template and data extensions,
+        the project's dialect in every template; asks once to trust its PHP settings."""
+        setup = self.div_setup()
+        if setup is getattr(self, "_applied_setup", None):
+            return setup
+        self._applied_setup = setup
+        languages.set_project_extensions(
+            setup.template_ext if setup.template_ext != ".tpl" else None,
+            setup.data_ext if setup.data_ext != ".json" else None,
+        )
+        for win in self.editor_windows():
+            win.editor.roots = self.template_roots()
+            win.editor.set_base_dialect(setup.dialect)
+        if self.is_mounted:
+            self.recheck_includes()
+        if setup.untrusted is not None and setup.untrusted.digest not in self._trust_asked:
+            self._trust_asked.add(setup.untrusted.digest)
+            self.call_after_refresh(lambda: self.run_worker(self.ask_div_trust(setup.untrusted)))
+        return setup
+
+    async def ask_div_trust(self, untrusted: div_setup.Untrusted) -> bool:
+        """The project's setup lets its templates call PHP functions: only if the user says so."""
+        calls = [*untrusted.functions, *(f"{prefix} -> {fn}" for prefix, fn in untrusted.modifiers.items())]
+        text = _("{file} lets this project's templates call PHP:\n\n{calls}\n\nTrust these settings? "
+                 "(Until they change; Options > Div setup can trust them later.)").format(
+            file=self._relative(untrusted.file), calls=", ".join(calls) or "-")
+        if await self.run_dialog(confirm(_('Div setup'), text)) != Command.YES:
+            return False
+        div_setup.trust(untrusted)
+        self.apply_div_setup()
+        self.notify(_("PHP settings of the project trusted"), timeout=2)
+        return True
+
+    def template_roots(self) -> list[Path]:
+        """Where Div looks for templates besides the template's folder: the project, and
+        the setup's packages, repository and include paths."""
+        setup = self.div_setup()
+        roots = [self.root]
+        for place in (setup.constants.get("PACKAGES"), setup.constants.get("DIV_REPO"), *setup.include_paths):
+            if isinstance(place, str) and (path := Path(place)) not in roots:
+                roots.append(path)
+        return roots
+
     def data_file_for(self, template: Path) -> Path:
-        return self.data_files.get(template) or default_data_file(template)
+        return self.data_files.get(template) or default_data_file(template, self.div_setup().data_ext)
 
     def template_for_data(self, data: Path) -> Path | None:
         for template, chosen in self.data_files.items():
             if chosen == data:
                 return template
-        sibling = data.with_suffix(".tpl")
+        sibling = data.with_suffix(self.div_setup().template_ext)
         return sibling if sibling.exists() or self.window_for(sibling) else None
 
     def render_target(self) -> Path | None:
@@ -1085,7 +1142,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if win is not None and win.path is not None:
             if win.editor.div_enabled:
                 return win.path
-            if win.path.suffix == ".json" and (template := self.template_for_data(win.path)):
+            if win.path.suffix in (".json", self.div_setup().data_ext) and (template := self.template_for_data(win.path)):
                 return template
         return self.last_template
 
@@ -1101,20 +1158,27 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def completion_data_for(self, editor: DivEditor) -> object:
         """The data JSON of the template in ``editor`` (decoded; the last good one while it is broken)."""
         if editor.path is None:
-            return None
+            return self._with_setup_variables(None)
         data_path = self.data_file_for(editor.path)
         text = self._text_of(data_path)
         if text is None:
-            return None
+            return self._with_setup_variables(None)
         cached = self._completion_cache.get(data_path)
         if cached is not None and cached[0] == text:
             return cached[1]
         try:
             value = divjson.loads(text)
         except divjson.DivJsonError:
-            return cached[1] if cached is not None else None
+            return self._with_setup_variables(cached[1] if cached is not None else None)
         self._completion_cache[data_path] = (text, value)
-        return value
+        return self._with_setup_variables(value)
+
+    def _with_setup_variables(self, data: object) -> object:
+        """The data with the setup's globals and system variables (the data wins, as in Div)."""
+        extra = self.div_setup().variables()
+        if not extra:
+            return data
+        return {**extra, **data} if isinstance(data, dict) else (extra if data is None else data)
 
     # ------------------------------------------------- dialect and includes
     # divide never looks for a template's dialect file or its included templates
@@ -1195,7 +1259,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return Dialect(name=ref, error=_('Div cannot find the dialect file {ref}').format(ref=ref))
         if loaded.tags is None:
             return Dialect(name=ref, source=loaded.file, error=f"{loaded.problem}: {self._project_relative(loaded.file)}")
-        return Dialect.from_overrides(loaded.tags, name=loaded.file.stem, source=loaded.file)
+        return Dialect.from_overrides(loaded.tags, name=loaded.file.stem, source=loaded.file,
+                                      base=self.div_setup().dialect)
 
     @work(group="includes")
     async def resolve_includes_of(self, ed: DivEditor) -> None:
@@ -1245,7 +1310,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             self.open_file(target.file)
             return
         # Not found: offer to create it where Div looks first, next to the template.
-        name = target.path if target.path.endswith(".tpl") else target.path + ".tpl"
+        ext = self.div_setup().template_ext
+        name = target.path if target.path.endswith(ext) else target.path + ext
         new = (win.path.parent / name).resolve()
         rel = self._project_relative(new)
         if await self.run_dialog(confirm(_('Go to include'), _('Div cannot find {path}. Create {rel}?').format(path=target.path, rel=rel))) != Command.YES:
@@ -1277,7 +1343,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return
         bases = ([win.path.parent] if win.path is not None else []) + [self.root]
         for base in bases:
-            for candidate in (name, name + ".tpl"):
+            for candidate in (name, name + self.div_setup().template_ext):
                 path = (base / candidate).resolve()
                 if path.is_file():
                     self.open_file(path)
@@ -1738,16 +1804,24 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return None, loaded.problem or _('Div cannot decode it as a JSON object')
         return loaded.tags, None
 
+    def dialect_base_tags(self) -> dict[str, str]:
+        """What a dialect file's missing tags are: the project's dialect (its Div setup)
+        unless the user chose Div's default one."""
+        setup = self.div_setup()
+        return dict(setup.dialect_tags) if self.dialects_on_project else {}
+
     async def dialector_verdict(self, tags: dict[str, str]) -> DialectVerdict | None:
         """Div's verdict on a dialect: valid? and does it read the dialector's example back?"""
         engine = self._include_engine(self.root / "x")
         if engine is None:
             return None
-        changed = dx.overrides(tags)
+        # The tags the file leaves out are the project's dialect's when it has one (as Div
+        # fills a dialect's missing tags with its current ones): Div gets them all.
+        changed = {**self.dialect_base_tags(), **dx.overrides(tags)}
         try:
             return await check_dialect(
                 engine, changed, cwd=self.root,
-                sample=dx.example(changed).text, expected=dx.example({}).text,
+                sample=dx.example(changed).text, expected=dx.example({}).text, project_dialect=False,
             )
         except RenderError as exc:
             return DialectVerdict(_('could not ask Div: {exc}').format(exc=exc))
@@ -1774,6 +1848,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 Item(_('Save e~x~ample template...'), CM_DX_EXAMPLE),
                 Item(_('Trans~l~ate a template...'), CM_DX_TRANSLATE),
                 Item(_('~C~heck with Div'), CM_DX_CHECK),
+                *([Sep(), Item(_("~B~ase: the project's dialect") if self.dialects_on_project
+                               else _("~B~ase: Div's default dialect"), CM_DX_BASE)]
+                  if self.div_setup().dialect is not None else []),
             ])
             region = win.sections.content_region
             at = (region.x + 2, region.y + max(0, win.section_index - win.sections.scroll_offset.y))
@@ -1781,7 +1858,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             action = {
                 CM_DX_EDIT: "edit", CM_DX_RESTORE: "restore_section", CM_DX_TRANSFORM: "transform",
                 CM_DX_ALL_DEFAULTS: "all_defaults", CM_DX_PHP: "php", CM_DX_EXAMPLE: "example", CM_DX_CHECK: "check",
-                CM_DX_IMPORT: "import", CM_DX_TRANSLATE: "translate",
+                CM_DX_IMPORT: "import", CM_DX_TRANSLATE: "translate", CM_DX_BASE: "base",
             }.get(command, "")
         section = win.section
         match action:
@@ -1820,6 +1897,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     target=self._project_relative(win.source.path) if win.source.path else "",
                 )
             case "check":
+                win.check_now()
+            case "base":
+                self.dialects_on_project = not self.dialects_on_project
+                self.notify(_("Dialects are now completed with the project's dialect") if self.dialects_on_project
+                            else _("Dialects are now completed with Div's default dialect"), timeout=2)
                 win.check_now()
         if win.is_attached:
             win.sections.focus()
@@ -1895,7 +1977,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         path = Path(text).expanduser()
         return (path if path.is_absolute() else self.root / path).resolve()
 
-    async def translate_for_dialog(self, template: str, source: str, target: str) -> tuple[str, Dialect]:
+    async def translate_for_dialog(self, template: str, source: str, target: str,
+                                   project: bool = True) -> tuple[str, Dialect]:
         """Div's translation of a template between two dialect files (empty: Div's default).
 
         The ``@_DIALECT`` property of the result points at the target dialect."""
@@ -1916,7 +1999,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if engine is None:
             raise ValueError(_('Div was not found: Div translates the template (Options > Div engine).'))
         try:
-            translated = await translate_template(engine, code, texts[0], texts[1], cwd=self.root)
+            translated = await translate_template(engine, code, texts[0], texts[1], cwd=self.root,
+                                                  project_dialect=project)
         except RenderError as exc:
             raise ValueError(str(exc)) from None
         target_path = self._project_path(target)
@@ -1932,7 +2016,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             if loaded is not None and loaded.tags is None:
                 raise ValueError(_('Div cannot decode the target dialect {target}: {problem}').format(target=target, problem=loaded.problem))
             tags = loaded.tags if loaded is not None else {}
-        dialect = Dialect.from_overrides(tags, name=target_path.stem if target_path else "default", source=target_path)
+        base = self.div_setup().dialect if project else None
+        dialect = Dialect.from_overrides(tags, name=target_path.stem if target_path else "default", source=target_path,
+                                         base=base)
         return dx.set_dialect_property(translated, ref), dialect
 
     async def suggest_source_dialect(self, template: str) -> tuple[str, str]:
@@ -1947,6 +2033,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return "", ""
         prop = template_properties(text).get("DIALECT")
         if prop is None or not prop[0].strip():
+            if self.div_setup().dialect is not None:
+                return "", _("Suggested: the base dialect (the template has no @_DIALECT)")
             return "", _("Suggested: Div's default dialect (the template has no @_DIALECT)")
         ref = prop[0].strip()
         engine = self._include_engine(tpl)
@@ -1966,7 +2054,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         if not template and active is not None and active.editor.div_enabled and active.path is not None:
             template = self._project_relative(active.path)
         # The source dialect is suggested by the dialog from the template itself.
-        dialog = TranslateDialog(template, source, target, root=self.root)
+        project = self.div_setup().dialect
+        dialog = TranslateDialog(template, source, target, root=self.root,
+                                 project_dialect=project.name if project is not None else None,
+                                 on_project=self.dialects_on_project)
         choice = await self.run_dialog(dialog)
         if dialog.text is None or choice not in (CM_SAVE_TRANSLATION, CM_OPEN_TRANSLATION):
             return
@@ -1976,7 +2067,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         tpl = self._project_path(dialog.fields()[0])
         assert tpl is not None
         suffix = dialog.target_dialect.source.stem if dialog.target_dialect and dialog.target_dialect.source else "div"
-        default = f"{tpl.stem}.{suffix}{tpl.suffix or '.tpl'}"
+        default = f"{tpl.stem}.{suffix}{tpl.suffix or self.div_setup().template_ext}"
         name = InputDialog(
             _('Save translation as'), _('~F~ile'), default, hint=_('Relative to {name}/').format(name=tpl.parent.name), select=(0, len(default) - 4),
             browse=("*.tpl", tpl.parent),
