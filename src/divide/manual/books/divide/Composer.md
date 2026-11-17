@@ -2,21 +2,22 @@
 
 **Tools > Composer packages...** shows the project's packages and runs [Composer](https://getcomposer.org) for them: add Div or any package from Packagist, remove, update, install, look for newer versions. divide never edits `composer.json` behind composer's back: composer does every change, under the progress box, and its output stays in the **Composer** window.
 
-![Tools > Composer packages: the packages, and the one under the bar](images/composer.png)
+![Tools > Composer packages: the packages by group and vendor, and the one under the bar](images/composer.png)
 
 ![adding a package: Packagist searched, composer require under the progress box](images/composer.gif)
 
 ## The window
 
-- **Left: the packages.** What `composer.json` requires (`req`), its development packages (`dev`), the packages composer installed with them (`dep`) and the platform (`php`, extensions), each with its installed version (from `composer.lock`). `↑` marks a package with a newer version, once you looked for them.
-- **Right: the package under the bar.** Its description, kind, the version required and installed, the newer one, type, license, homepage, source, what it requires and what requires it.
-- **Below the list:** the project (its name, how many packages), whether it is installed, and how the last command ended.
+- **Left: the packages, as a tree.** First what the project needs to run (**Runtime**, `require`), what it needs only to develop (**Development**, `require-dev`) and the **Platform** (`php`, extensions); under each, the vendor (`divengine/`), then the package by its own name with its installed version (from `composer.lock`), all alphabetical. A package `composer.json` requires is bright; one composer installed with them is dim, and it sits under the group of the lock's section it came in. `↑` marks a package with a newer version, once you looked for them. **Space** folds a group or a vendor (and they stay folded after a reload); the filter line above the tree keeps only the packages whose name holds what you type (see [[The Desktop#filtering-a-list-or-a-tree]]).
+- **Right: the package under the bar** (on a group or a vendor, what it holds). Its description, kind, the version required and installed, the newer one, type, license, homepage, source, what it requires and what requires it.
+- **Below the tree:** the project (its name, how many packages), whether it is installed, and how the last command ended.
 
 | Key | |
 |---|---|
 | **Ins** | add a package (the assistant below) |
 | **Del** | remove the package (`composer remove`), after confirming. Only packages the project requires: a dependency goes when what requires it goes. |
-| **Enter** / double click | the package's folder (`vendor/...`) in the [[Project Window]] |
+| **Enter** / double click | the package's folder (`vendor/...`) in the [[Project Window]]; on a group or a vendor, fold or unfold it |
+| **Space** | fold or unfold a group or a vendor |
 | **Ctrl+R** | read `composer.json` and `composer.lock` again |
 | **Alt+F10** / **Shift+F10** | local menu: update the package (`composer update name --with-dependencies`), update every package, install, look for newer versions (`composer outdated --direct`), validate `composer.json`, dump the autoloader, open `composer.json`, a new `composer.json`, choose the composer program |
 

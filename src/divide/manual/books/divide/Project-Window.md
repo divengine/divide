@@ -6,6 +6,8 @@
 
 **Enter** opens a file, or folds and unfolds a folder. **→** unfolds a folder (or a file, below) and **←** folds it, or goes up to the folder that holds the bar. With the mouse, a click puts the bar on a file and a double click opens it; a click on a folder folds or unfolds it. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
 
+Type with the tree focused and only the files and folders whose name holds it stay, from the whole project, also from folders you never opened (see [[The Desktop#filtering-a-list-or-a-tree]]). **Esc** empties the filter.
+
 ![the project window: a folder unfolded, a new file, the file type marks](images/project.gif)
 
 ## A file's members

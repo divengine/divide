@@ -50,6 +50,18 @@ The left side shows the keys that matter. The right side tells you about the win
 - in the project window, the dialector and the help window, their keys;
 - while something runs in the background (a render, for example), a turning spinner (`|` `/` `-` `\`) and what is running.
 
+## Filtering a list or a tree
+
+Every tree and list has a filter line above it: `» type to filter`. With the list focused, type: only the items that hold what you typed stay (a piece of the name, upper or lower case alike), and the line says how many, `» tpl  5/14`. **Backspace** takes a letter back, **Esc** empties the filter (only then does Esc close a dialog). **Space** keeps its job: fold, choose.
+
+In a tree you see what matches, the branches above it, and everything below a node that matches: filter by a folder or a vendor and you see what it holds. The [[Project Window]] looks in the whole project, also in folders you never opened.
+
+![the project window filtered by tpl: the templates of every folder](images/filter.png)
+
+![typing in the project window and in the outline: only what matches stays](images/filter.gif)
+
+The filter is in the project window, the [[Outline]], the [[data tree|Data Files]], the [[Composer]] packages, the Messages and Find in files windows, Watches, Call stack, the [[Render Trace]], the sections of the [[Dialector]] and of the [[Div Setup]], the files of File > Open, and the input line history (there in the list's frame). The command palette, Help > Search and Composer's add assistant have a search line of their own.
+
 ## Dialogs
 
 Dialogs work as in Turbo Vision: **Tab** / **Shift+Tab** go from one control to the next, **Alt + the yellow letter** jumps to a control, **Enter** presses the default button (also from an input line or a group of options), **Esc** cancels.

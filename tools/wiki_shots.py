@@ -760,6 +760,21 @@ async def composer():
 
 
 @shot
+async def filtering():
+    """The filter line over the project window: what holds "tpl", in every folder (The-Desktop.md)."""
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot)
+        app.toggle_project(); await settle(pilot)
+        tree = app.project_window().project_tree
+        app.raise_window(app.project_window()); tree.focus(); await settle(pilot)
+        await pilot.press(*"tpl")
+        await until(pilot, lambda: tree.cursor_node is not None and "tpl" in tree.cursor_node.label.plain, tries=200)
+        await pilot.pause(0.5); await settle(pilot, 10)
+        save(app, "filter")
+
+
+@shot
 async def spanish():
     """The Run menu in Spanish: a process of its own, the interface's language is chosen at start."""
     if os.environ["DIVIDE_LANGUAGE"] != "es":  # (the module's default is English)

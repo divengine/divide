@@ -62,6 +62,16 @@
 | **Esc** | stop the render or the script while it runs |
 | any key | close the box after the verdict (it also closes by itself: after 2 seconds on a success, 5 with warnings or errors) |
 
+## Lists and trees
+
+Every tree and list has a filter line above it, see [[The Desktop#filtering-a-list-or-a-tree]].
+
+| Key | Action |
+|---|---|
+| a letter, a digit, a sign | add it to the filter: only the items that hold it stay (upper or lower case alike) |
+| **Backspace** | take a letter back |
+| **Esc** | empty the filter (with an empty filter, Esc does what it always does) |
+
 ## Completion list
 
 | Key | Action |
@@ -145,7 +155,8 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 |---|---|
 | **Ins** | add a package |
 | **Del** | remove the package |
-| **Enter** / double click | its folder in the project window |
+| **Enter** / double click | its folder in the project window (on a group or a vendor: fold or unfold) |
+| **Space** / **→** / **←** | fold / unfold a group or a vendor |
 | **Ctrl+R** | read composer.json and composer.lock again |
 | **Alt+F10** / **Shift+F10** | local menu: update, install, newer versions, validate, autoloader, new composer.json |
 

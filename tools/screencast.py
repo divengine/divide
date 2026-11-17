@@ -530,7 +530,11 @@ async def composer(rec_dir: Path) -> Recorder:
             await pilot.press(wiki_shots.key("composer"))
             await rec.until(lambda: isinstance(app.active_window(), ComposerWindow))
             win = app.active_window()
-            await rec.snap(2.5, 8)
+            await rec.snap(1.5, 8)
+            rec.caption(tr("By vendor: bright what composer.json requires, dim what came with it",
+                           "Por vendor: brillante lo que pide composer.json, tenue lo que vino"))
+            await rec.press("down", hold=0.6)
+            await rec.press("down", hold=2.5)
             rec.caption(tr("Ins: search Packagist as you type", "Ins: busca en Packagist mientras escribes"))
             await pilot.press("insert")
             await rec.until(lambda: isinstance(app.screen, DialogScreen))
@@ -1006,7 +1010,52 @@ async def php_lsp(rec_dir: Path) -> Recorder:
     return rec
 
 
-SCENES.update({"project": project_window, "finding": finding, "desktop": desktop, "php-lsp": php_lsp})
+async def filtering(rec_dir: Path) -> Recorder:
+    """The-Desktop.md: the filter over a tree or a list: the project window, then the outline."""
+    from divide.ui.outline import OutlineWindow
+    with tempfile.TemporaryDirectory() as work:
+        root = wiki_shots.shop_copy(Path(work))
+        app = Divide(root, [root / "index.tpl"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            await pilot.press("ctrl+b")
+            tree = app.project_window().project_tree
+            rec.caption(tr("Every tree and list has a filter line above it: type, and only what holds it stays",
+                           "Cada árbol y lista tiene una línea de filtro encima: escribe y solo queda lo que coincide"))
+            await rec.snap(2.0, 8)
+            await rec.type("card", 0.3)
+            await rec.until(lambda: tree.cursor_node is not None and "card" in tree.cursor_node.label.plain, tries=120)
+            await rec.snap(1.0, 8)
+            rec.caption(tr("The project window looks in the whole project, folders never opened too",
+                           "La ventana del proyecto busca en todo el proyecto, también en carpetas nunca abiertas"))
+            await rec.snap(2.5, 8)
+            rec.caption(tr("Backspace takes a letter back; Escape empties it",
+                           "Retroceso quita una letra; Escape lo vacía"))
+            for _ in range(4):
+                await rec.press("backspace", hold=0.25)
+            await rec.type("head", 0.3)
+            await rec.until(lambda: tree.cursor_node is not None and "header" in tree.cursor_node.label.plain, tries=120)
+            await rec.snap(1.8, 8)
+            await rec.press("escape", hold=1.6)
+            rec.caption(tr("The same in the outline, the data tree, Composer, the messages...",
+                           "Lo mismo en el esquema, el árbol de datos, Composer, los mensajes..."))
+            app.raise_window(app.window_for(root / "index.tpl"))
+            await rec.snap(0.6, 6)
+            await pilot.press("ctrl+o")
+            await rec.until(lambda: isinstance(app.active_window(), OutlineWindow))
+            outline = app.active_window().outline_tree
+            await rec.until(lambda: outline.filter_counts()[1] > 0)
+            await rec.snap(1.5, 8)
+            await rec.type("product", 0.25)
+            await rec.snap(3.5, 8)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
+SCENES.update({"project": project_window, "finding": finding, "desktop": desktop, "php-lsp": php_lsp,
+                "filter": filtering})
 
 
 # ------------------------------------------------------------------ output
