@@ -153,3 +153,17 @@ async def test_divide_asks_once_to_trust_a_projects_php(tmp_path):
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot, 20)
         assert not isinstance(app.screen, DialogScreen)
+
+
+async def test_a_global_saved_in_the_setup_is_completed_at_once(tmp_path):
+    page = tmp_path / "page.tpl"
+    page.write_text("Hi")
+    (tmp_path / "page.json").write_text('{"shop": "Acme"}')
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        ed = app.window_for(page).editor
+        assert app.completion_data_for(ed) == {"shop": "Acme"}  # the data, cached now
+        (tmp_path / ".div").mkdir()
+        (tmp_path / ".div" / "setup.json").write_text('{"data": {"globals": {"site": "The shop"}}}')
+        assert app.completion_data_for(ed) == {"site": "The shop", "shop": "Acme"}

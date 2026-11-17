@@ -6,6 +6,8 @@ Tu aplicación PHP configura Div en su propio código: la carpeta de sus plantil
 
 ![Opciones > Configuración de Div: las secciones, lo que está en vigor y de dónde viene, el veredicto de Div](images/div-setup.png)
 
+![un global en Opciones > Configuración de Div, completado y renderizado](images/div-setup.gif)
+
 ## Dónde está
 
 | Archivo | Para |

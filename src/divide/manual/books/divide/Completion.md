@@ -2,6 +2,8 @@
 
 divide completes as you type, from what your template can actually see.
 
+![completion as you type: the data's keys, nested keys, includes, Div's tags](images/completion.gif)
+
 ## While you type
 
 The list opens by itself after:

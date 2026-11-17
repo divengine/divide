@@ -1296,7 +1296,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return self._with_setup_variables(None)
         cached = self._completion_cache.get(data_path)
         if cached is not None and cached[0] == text:
-            return cached[1]
+            return self._with_setup_variables(cached[1])  # the setup may have changed since
         try:
             value = divjson.loads(text)
         except divjson.DivJsonError:

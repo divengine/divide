@@ -4,6 +4,8 @@
 
 ![plantilla y salida lado a lado](images/hero.png)
 
+![un render con el Div real, y la salida siguiendo cada guardado](images/rendering.gif)
+
 ## El recuadro de progreso
 
 Mientras Div trabaja, un recuadro como el *Compiling* de Turbo Pascal muestra la plantilla, el archivo de datos, el motor y un reloj; las plantillas grandes pueden tardar un rato, y **Esc** detiene el render.

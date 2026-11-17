@@ -4,6 +4,8 @@
 
 ![Herramientas > Paquetes Composer: los paquetes, y el que está bajo la barra](images/composer.png)
 
+![añadir un paquete: Packagist consultado, composer require bajo el cuadro de progreso](images/composer.gif)
+
 ## La ventana
 
 - **Izquierda: los paquetes.** Lo que requiere `composer.json` (`req`), sus paquetes de desarrollo (`dev`), los paquetes que composer instaló con ellos (`dep`) y la plataforma (`php`, extensiones), cada uno con su versión instalada (de `composer.lock`). `↑` marca un paquete con una versión más nueva, una vez que las buscaste.
@@ -27,7 +29,7 @@ Cuando composer falla, la ventana Composer pasa al frente con sus palabras.
 **Ins** abre un asistente:
 
 1. **Buscar en Packagist:** escribe unas letras; divide pregunta a Packagist (`composer search`) cuando dejas de escribir. O escribe el nombre, `vendor/paquete`, tal cual.
-2. **Paquetes:** mueve la barra para elegir uno; su descripción se ve debajo.
+2. **Paquetes:** Tab, y mueve la barra para elegir uno; su descripción se ve debajo. Enter (o un doble clic) lo añade.
 3. **Versión:** divide pregunta a Packagist las versiones del paquete y sugiere una restricción a partir de la estable más nueva (`^6.1` para Div 6.1.3). Escribe la tuya si lo prefieres: divide deja de sugerir.
 4. **Solo desarrollo:** `require-dev` en lugar de `require`.
 

@@ -4,6 +4,8 @@ divide verifica tu plantilla en cada edición, con su dialecto, y te dice con qu
 
 ![errores en el editor y en la ventana Mensajes](images/diagnostics.png)
 
+![errores mientras escribes, la verificación del propio Div, la ventana Mensajes y un arreglo](images/checking.gif)
+
 ## Qué se verifica
 
 **Errores** (blanco sobre rojo en el editor):

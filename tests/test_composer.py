@@ -240,3 +240,23 @@ async def test_a_failure_shows_composer_s_words(tmp_path, fake):
         log = app.active_window()
         assert isinstance(log, ComposerLogWindow) and any("invalid" in line for line in log.lines)
     assert os.environ.get(cmp.ENV)
+
+
+async def test_enter_on_a_package_adds_it(tmp_path, fake):
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop"}))
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await app.open_composer()
+        await settle(pilot)
+        app.composer_action(app.active_window(), "add")
+        await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+        dialog = app.screen.dialog
+        dialog.query_input.focus()
+        await pilot.press(*"acme")
+        await until(pilot, lambda: dialog.found and dialog.version_input.data == "^2.1")
+        await pilot.press("tab", "down")  # to the packages, the second one
+        await until(pilot, lambda: dialog.chosen == "acme/forms" and dialog.version_input.data == "^2.1")
+        await pilot.press("enter")
+        await close_progress(pilot, app)
+        assert ["require", "acme/forms:^2.1"] in calls(fake)

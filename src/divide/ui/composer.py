@@ -274,6 +274,11 @@ class ResultList(ListBox):
         super().focus_item(item)
         self._dialog.choose(self.focused)
 
+    def select_item(self, item: int) -> None:
+        """Enter (or a double click) on a package adds it, as the Add button would."""
+        super().select_item(item)
+        self._dialog.end_modal(Command.OK)
+
 
 class AddPackageDialog(_Dialog):
     """Search Packagist as you type, pick a package, its version (suggested), dev or not."""

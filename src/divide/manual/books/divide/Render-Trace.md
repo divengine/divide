@@ -4,6 +4,8 @@
 
 ![the row where Div decides a condition: what stays, in green](images/trace.png)
 
+![the render trace: step by step, and the template before a step](images/trace.gif)
+
 ## Why not line by line
 
 A Div template is not run from top to bottom. Div rewrites the whole template again and again: it decides the conditions, pastes the includes in, unrolls the lists, replaces the variables, formats the numbers… Each rewrite can bring new tags (an include brings its own), so Div keeps going until a whole cycle changes nothing: a **fixed point**. Parts of the template are parsed apart, each with an engine of its own: every item of a list, the expression of a condition.

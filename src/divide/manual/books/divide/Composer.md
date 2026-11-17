@@ -4,6 +4,8 @@
 
 ![Tools > Composer packages: the packages, and the one under the bar](images/composer.png)
 
+![adding a package: Packagist searched, composer require under the progress box](images/composer.gif)
+
 ## The window
 
 - **Left: the packages.** What `composer.json` requires (`req`), its development packages (`dev`), the packages composer installed with them (`dep`) and the platform (`php`, extensions), each with its installed version (from `composer.lock`). `↑` marks a package with a newer version, once you looked for them.
@@ -27,7 +29,7 @@ When composer fails, the Composer window comes to the front with its words.
 **Ins** opens an assistant:
 
 1. **Search Packagist:** type a few letters; divide asks Packagist (`composer search`) once you stop typing. Or type the name, `vendor/package`, as it is.
-2. **Packages:** move the bar to choose one; its description shows below.
+2. **Packages:** Tab, then move the bar to choose one; its description shows below. Enter (or a double click) adds it.
 3. **Version:** divide asks Packagist for the package's versions and suggests a constraint from the newest stable one (`^6.1` for Div 6.1.3). Type your own if you prefer: divide stops suggesting.
 4. **Development only:** `require-dev` instead of `require`.
 

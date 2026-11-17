@@ -31,7 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wiki_shots  # noqa: E402  (sets the interface's language before divide is imported)
-from wiki_shots import DEMO, SIZE, PALETTE, rasterise, settle  # noqa: E402
+from wiki_shots import DEMO, SIZE, PALETTE, rasterise, settle, until  # noqa: E402
 
 from divide.app import Divide  # noqa: E402
 from divide.ui.progress import ProgressScreen  # noqa: E402
@@ -255,7 +255,320 @@ async def tour(rec_dir: Path) -> Recorder:
     return rec
 
 
-SCENES = {"outline": outline, "tour": tour}
+def tr(en: str, es: str) -> str:
+    """A caption in the interface's language (the Spanish manual gets Spanish pictures)."""
+    return es if wiki_shots.LANGUAGE == "es" else en
+
+
+async def wait(rec: Recorder, pred, step: float = 0.15, seconds: float = 120.0) -> None:
+    """Frames while the app works on something slow (composer, the network), short on screen."""
+    import time
+    end = time.monotonic() + seconds
+    while not pred():
+        if time.monotonic() > end:
+            dialog = getattr(rec.app.screen, "dialog", None)
+            raise SystemExit(f"timed out: screen {rec.app.screen!r}, "
+                             + ", ".join(f"{k}={getattr(dialog, k, None)!r}" for k in ("chosen", "found"))
+                             + f", status {str(getattr(dialog, 'status', '') and dialog.status.render())!r}")
+        await rec.pilot.pause(0.4)
+        await rec.snap(step, 2)
+
+
+async def completion(rec_dir: Path) -> Recorder:
+    """Completion.md: the data's keys, nested keys, the templates to include, Div's tags."""
+    index = DEMO / "index.tpl"
+    app = Divide(DEMO, [index])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.window_for(index).editor
+        ed.move_cursor((8, 21))
+        await pilot.press("end", "enter")
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("{$ offers the keys of the template's data (index.json)",
+                       "{$ ofrece las claves de los datos de la plantilla (index.json)"))
+        await rec.snap(0.8, 8)
+        await rec.type("<p>{$")
+        await rec.snap(1.8, 8)
+        await rec.press("down", hold=0.6)  # shop
+        await pilot.press("enter")
+        await rec.snap(0.8)
+        await rec.type("</p>")
+        await rec.snap(0.8)
+
+        rec.caption(tr("A dot goes inside: the keys of cart", "Un punto entra: las claves de cart"))
+        await pilot.press("enter")
+        await rec.type("<p>{$cart.")
+        await rec.snap(1.8, 8)
+        await rec.press("down", hold=0.6)  # cart.items
+        await pilot.press("enter")
+        await rec.snap(0.6)
+        await rec.type("</p>")
+        await rec.snap(0.8)
+
+        rec.caption(tr("{% offers the templates you can include, folder by folder",
+                       "{% ofrece las plantillas que puedes incluir, carpeta a carpeta"))
+        await pilot.press("enter")
+        await rec.type("{% ")
+        await rec.snap(1.8, 8)
+        await pilot.press("enter")  # components/
+        await rec.snap(1.6, 8)
+        await pilot.press("enter")
+        await rec.snap(1.4, 8)
+
+        rec.caption(tr("Ctrl+Space: every Div tag of the template's dialect", "Ctrl+Espacio: todas las etiquetas Div del dialecto de la plantilla"))
+        await pilot.press("end", "enter")
+        await rec.type("{")
+        await pilot.press("ctrl+@")
+        await rec.snap(2.2, 8)
+        await rec.press("down", "down", "down", hold=0.5)
+        await rec.snap(1.0)
+        await pilot.press("enter")
+        await rec.snap(2.5, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def checking(rec_dir: Path) -> Recorder:
+    """Checking-Templates.md: errors as you type, Div's own check, the Messages window, a fix."""
+    checkout = DEMO / "checkout.tpl"
+    app = Divide(DEMO, [checkout])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.window_for(checkout).editor
+        await until(pilot, lambda: ed.include_targets)
+        await settle(pilot, 6)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("checkout.tpl is broken on purpose: divide marks it as you type",
+                       "checkout.tpl está roto a propósito: divide lo marca mientras escribes"))
+        await rec.snap(3.0, 8)
+        rec.caption(tr("Alt+F9 asks Div itself; the Messages window lists what is wrong",
+                       "Alt+F9 le pregunta al propio Div; la ventana Mensajes lista lo que está mal"))
+        await pilot.press("alt+f9")
+        await rec.box()
+        app.raise_window(app.window_for(checkout))  # the status line: the template's errors
+        await rec.snap(2.5, 8)
+        rec.caption(tr("Alt+F8 goes from one error to the next; the status line says why",
+                       "Alt+F8 va de un error al siguiente; la línea de estado dice por qué"))
+        await rec.press("alt+f8", hold=1.6)
+        await rec.press("alt+f8", hold=1.6)
+        await rec.press("alt+f8", hold=1.6)
+        rec.caption(tr("[/$orders] closes a loop never opened: completion offers the one that is",
+                       "[/$orders] cierra un bucle nunca abierto: el completado ofrece el que sí"))
+        app.raise_window(app.window_for(checkout))
+        ed.move_cursor((8, 3))
+        await rec.snap(0.8, 6)
+        for _ in range(6):
+            await rec.press("delete", hold=0.12)
+        await rec.type("c")
+        await rec.snap(1.6, 8)
+        await pilot.press("enter")
+        await rec.snap(1.5, 10)
+        rec.caption(tr("Alt+F9 again: two errors gone, the loop is closed",
+                       "Alt+F9 otra vez: dos errores menos, el bucle está cerrado"))
+        await pilot.press("alt+f9")
+        await rec.box()
+        app.raise_window(app.window_for(checkout))
+        await rec.snap(3.5, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def rendering(rec_dir: Path) -> Recorder:
+    """Rendering.md: Ctrl+F9 with the real Div, the output beside the template, a save renders again."""
+    with tempfile.TemporaryDirectory() as work:
+        root = wiki_shots.shop_copy(Path(work))
+        index = root / "index.tpl"
+        app = Divide(root, [index])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            rec.caption(tr("Ctrl+F9 renders the template with the real Div engine and its data",
+                           "Ctrl+F9 renderiza la plantilla con el motor Div real y sus datos"))
+            await rec.snap(1.5, 8)
+            await pilot.press("ctrl+f9")
+            await rec.box()
+            await rec.snap(3.0, 8)
+            rec.caption(tr("Edit the template and save (F2): the output follows",
+                           "Edita la plantilla y guarda (F2): la salida la sigue"))
+            app.raise_window(app.window_for(index))
+            ed = app.window_for(index).editor
+            ed.move_cursor((7, 15))  # inside <h1>
+            await rec.snap(0.8, 6)
+            await rec.type(" - {$shop}")
+            await rec.snap(0.8)
+            await pilot.press("f2")
+            await rec.until(lambda: "Divengine" in (app.output_window().view.text if app.output_window() else ""))
+            await rec.snap(3.0, 8)
+            rec.caption(tr("The data too: change index.json, save, and it renders again",
+                           "Los datos también: cambia index.json, guarda, y se renderiza otra vez"))
+            await rec.go_to_file("index.json")
+            await rec.until(lambda: app.window_for(root / "index.json") is not None)
+            data = app.window_for(root / "index.json").editor
+            data.move_cursor((1, 12))
+            await rec.snap(0.8, 8)
+            await rec.type("all of ")
+            await rec.snap(0.6)
+            await pilot.press("f2")
+            await rec.until(lambda: "all of the divide shop" in app.output_window().view.text)
+            app.raise_window(app.output_window())
+            await rec.snap(3.5, 8)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
+async def trace(rec_dir: Path) -> Recorder:
+    """Render-Trace.md: F7 replays how Div rewrote the template, step by step, before and after."""
+    from divide.ui.tracer import TraceWindow
+    index = DEMO / "index.tpl"
+    app = Divide(DEMO, [index])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("F7: the render trace records every step Div takes",
+                       "F7: la traza de render graba cada paso que da Div"))
+        await rec.snap(1.5, 8)
+        await pilot.press("f7")
+        await rec.until(lambda: isinstance(app.active_window(), TraceWindow), tries=160)
+        if isinstance(app.screen, ProgressScreen):
+            await rec.box(0.6)
+        await rec.snap(2.0, 8)
+        rec.caption(tr("F8 steps through it: what Div wrote in each step is green",
+                       "F8 la recorre: lo que Div escribió en cada paso va en verde"))
+        for _ in range(6):
+            await rec.press("f8", hold=1.1)
+        rec.caption(tr("Space: the template just before that step, what Div took away in red",
+                       "Espacio: la plantilla justo antes de ese paso, lo que Div quitó en rojo"))
+        await rec.press("space", hold=2.2)
+        await rec.press("space", hold=1.6)
+        rec.caption(tr("The row where Div decides a condition says what it found",
+                       "La fila donde Div decide una condición dice qué encontró"))
+        window = app.active_window()
+        row = next((i for i, m in enumerate(window.rows) if "true" in m.label or "verdad" in m.label), None)
+        if row is not None:
+            window.list.focus_item(row)
+        await rec.snap(3.5, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def div_setup(rec_dir: Path) -> Recorder:
+    """Div-Setup.md: a global set in Options > Div setup, saved, completed and rendered in a template."""
+    from divide.ui.dialogs import DialogScreen
+    from divide.ui.divsetup import DivSetupWindow
+    with tempfile.TemporaryDirectory() as work, wiki_shots.own_engine():
+        root = wiki_shots.shop_copy(Path(work))
+        index = root / "index.tpl"
+        app = Divide(root, [index])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            rec.caption(tr("Options > Div setup: how Div is set up for this project, while you design",
+                           "Opciones > Configuración de Div: cómo se configura Div para este proyecto mientras diseñas"))
+            await rec.snap(1.2, 8)
+            await pilot.press(wiki_shots.key("options"))
+            await rec.snap(0.9)
+            await pilot.press(wiki_shots.key("div-setup"))
+            await rec.until(lambda: isinstance(app.active_window(), DivSetupWindow))
+            win = app.active_window()
+            await rec.until(lambda: win.check is not None, tries=200)
+            await rec.snap(2.0, 8)
+            rec.caption(tr("Data: a global every template gets", "Datos: un global que recibe cada plantilla"))
+            await rec.press("down", "down", "down", "down", hold=0.5)
+            await pilot.press("enter")
+            await rec.until(lambda: isinstance(app.screen, DialogScreen))
+            await rec.snap(1.0, 8)
+            app.screen.dialog.inputs["data.globals"].focus()
+            await rec.type('{"site": "The divide shop"}', 0.06)
+            await rec.snap(1.2)
+            await pilot.press("enter")
+            await rec.until(lambda: not isinstance(app.screen, DialogScreen))
+            await rec.snap(1.8, 8)
+            rec.caption(tr("F2 saves .div/setup.json: every render, check and completion uses it",
+                           "F2 guarda .div/setup.json: cada render, verificación y completado lo usa"))
+            await pilot.press("f2")
+            await rec.until(lambda: (root / ".div" / "setup.json").exists())
+            await rec.snap(2.0, 10)
+            rec.caption(tr("{$ in any template now offers it", "{$ en cualquier plantilla ya lo ofrece"))
+            app.raise_window(app.window_for(index))
+            ed = app.window_for(index).editor
+            ed.move_cursor((8, 21))
+            await pilot.press("end", "enter")
+            await rec.snap(0.6, 6)
+            await rec.type("<p>{$si")
+            await rec.snap(2.0, 8)
+            await pilot.press("enter")
+            await rec.type("</p>")
+            await rec.snap(0.6)
+            rec.caption(tr("And Div renders it", "Y Div lo renderiza"))
+            await pilot.press("ctrl+f9")
+            await rec.box()
+            await rec.snap(3.5, 8)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
+async def composer(rec_dir: Path) -> Recorder:
+    """Composer.md: Tools > Composer packages, Ins, Packagist searched, a package added by composer."""
+    from divide.ui.composer import ComposerWindow
+    from divide.ui.dialogs import DialogScreen
+    with tempfile.TemporaryDirectory() as work:
+        root = wiki_shots.shop_copy(Path(work))
+        app = Divide(root, [root / "index.tpl"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            rec.caption(tr("Tools > Composer packages: what the project requires and what is installed",
+                           "Herramientas > Paquetes Composer: lo que el proyecto requiere y lo instalado"))
+            await rec.snap(1.0, 8)
+            await pilot.press(wiki_shots.key("tools"))
+            await rec.snap(0.9)
+            await pilot.press(wiki_shots.key("composer"))
+            await rec.until(lambda: isinstance(app.active_window(), ComposerWindow))
+            win = app.active_window()
+            await rec.snap(2.5, 8)
+            rec.caption(tr("Ins: search Packagist as you type", "Ins: busca en Packagist mientras escribes"))
+            await pilot.press("insert")
+            await rec.until(lambda: isinstance(app.screen, DialogScreen))
+            dialog = app.screen.dialog
+            dialog.query_input.focus()
+            await rec.snap(0.8, 6)
+            await rec.type("divengine")
+            await wait(rec, lambda: bool(dialog.found) and bool(dialog.version_input.data))
+            await rec.snap(1.5, 6)
+            rec.caption(tr("Choose one: the version is suggested from its newest stable one",
+                           "Elige uno: la versión se sugiere a partir de la estable más nueva"))
+            index = next(i for i, f in enumerate(dialog.found) if f.name == "divengine/matrix")
+            await rec.press("tab", hold=0.5)  # to the packages
+            for _ in range(index):
+                await rec.press("down", hold=0.4)
+            await wait(rec, lambda: dialog.chosen == "divengine/matrix" and dialog.version_input.data.startswith("^1"))
+            await rec.snap(2.2, 6)
+            rec.caption(tr("Add: composer require does it, under the progress box",
+                           "Añadir: lo hace composer require, bajo el cuadro de progreso"))
+            await pilot.press("enter")
+            await wait(rec, lambda: all(w.is_finished for w in app.workers if w.group == "composer")
+                       or (isinstance(app.screen, ProgressScreen) and not app.screen.dialog.running), step=0.2, seconds=300)
+            await rec.snap(1.2, 6)
+            if isinstance(app.screen, ProgressScreen):
+                await pilot.press("escape")
+            await wait(rec, lambda: all(w.is_finished for w in app.workers if w.group == "composer"))
+            rec.caption(tr("The new package, installed", "El paquete nuevo, instalado"))
+            app.raise_window(win)
+            row = next(i for i, p in enumerate(win.project.packages) if p.name == "divengine/matrix")
+            win.packages.focus_item(row)
+            await rec.snap(4.0, 10)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
+SCENES = {"outline": outline, "tour": tour, "completion": completion, "checking": checking, "rendering": rendering,
+          "trace": trace, "div-setup": div_setup, "composer": composer}
 
 
 # ------------------------------------------------------------------ output
@@ -353,6 +666,7 @@ def main() -> None:
     parser.add_argument("--music", type=Path, help="music under the video (default: a placeholder chord)")
     parser.add_argument("--gif-width", type=int, default=900, help="the GIF's width in pixels (default 900)")
     parser.add_argument("--gif-colors", type=int, default=64, help="the GIF's palette (default 64 colours)")
+    parser.add_argument("--gif-only", action="store_true", help="no MP4 (the wiki takes the GIF)")
     parser.add_argument("scene", nargs="?", default="outline", choices=sorted(SCENES))
     args = parser.parse_args()
     engine = args.engine or os.environ.get("DIVIDE_DIV_PHP")
@@ -367,6 +681,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as work_dir:
         work = Path(work_dir)
         os.environ["XDG_CONFIG_HOME"] = str(work / "config")
+        os.environ["DIV_HOME"] = str(work / "div-home")  # nor the user's Div setup, nor what they trust
         (work / "config" / "divide").mkdir(parents=True)
         (work / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}')
         frames = work / "frames"
@@ -378,6 +693,8 @@ def main() -> None:
         write_concat(rec, concat)
         make_gif(rec, concat, work, out / f"{args.scene}.gif", args.gif_width, args.gif_colors)
         print("saved", out / f"{args.scene}.gif")
+        if args.gif_only:
+            return
         music = args.music
         if music is None:
             music = work / "music.wav"

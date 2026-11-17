@@ -2,6 +2,8 @@
 
 divide completa mientras escribes, a partir de lo que tu plantilla puede ver de verdad.
 
+![completado mientras escribes: las claves de los datos, claves anidadas, includes, etiquetas de Div](images/completion.gif)
+
 ## Mientras escribes
 
 La lista se abre sola después de:

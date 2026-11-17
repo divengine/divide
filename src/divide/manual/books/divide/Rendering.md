@@ -4,6 +4,8 @@
 
 ![template and output side by side](images/hero.png)
 
+![a render with the real Div, and the output following each save](images/rendering.gif)
+
 ## The progress box
 
 While Div works, a box like Turbo Pascal's *Compiling* box shows the template, the data file, the engine and a clock; big templates can take a while, and **Esc** stops the render.

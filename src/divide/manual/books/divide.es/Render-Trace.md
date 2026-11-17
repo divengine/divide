@@ -4,6 +4,8 @@
 
 ![la fila donde Div decide una condición: lo que se queda, en verde](images/trace.png)
 
+![la traza de render: paso a paso, y la plantilla antes de un paso](images/trace.gif)
+
 ## Por qué no línea a línea
 
 Una plantilla Div no se ejecuta de arriba abajo. Div reescribe la plantilla entera una y otra vez: decide las condiciones, pega los includes, despliega las listas, reemplaza las variables, formatea los números… Cada reescritura puede traer etiquetas nuevas (un include trae las suyas), así que Div sigue hasta que un ciclo entero no cambia nada: un **punto fijo**. Partes de la plantilla se analizan aparte, cada una con un motor propio: cada elemento de una lista, la expresión de una condición.

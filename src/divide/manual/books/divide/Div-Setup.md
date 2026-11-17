@@ -6,6 +6,8 @@ Your PHP application sets Div up in its own code: the folder of its templates, a
 
 ![Options > Div setup: the sections, what is in effect and where it comes from, Div's verdict](images/div-setup.png)
 
+![a global set in Options > Div setup, completed and rendered](images/div-setup.gif)
+
 ## Where it lives
 
 | File | For |

@@ -4,6 +4,8 @@ divide checks your template on every edit, with its dialect, and tells you what 
 
 ![errors in the editor and the Messages window](images/diagnostics.png)
 
+![errors as you type, Div's own check, the Messages window and a fix](images/checking.gif)
+
 ## What is checked
 
 **Errors** (white on red in the editor):

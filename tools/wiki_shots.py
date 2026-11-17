@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import atexit
 import json
 import os
 import re
@@ -41,9 +42,11 @@ LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in En
 # the menu hotkeys the shots press, in the interface's language
 _KEYS = {
     "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
-           "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y"},
+           "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y",
+           "div-setup": "e", "composer": "c"},
     "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
-           "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s"},
+           "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s",
+           "div-setup": "f", "composer": "c"},
 }
 
 
@@ -643,10 +646,17 @@ SHOP_SETUP = {  # the Div setup of the shop's copy in the Div setup shots
 }
 
 
+DEMO_COPY = Path(tempfile.gettempdir()) / "divide-demo"  # a name that reads well in the pictures (composer shows it)
+
+
 def shop_copy(work: Path, setup: dict | None = None) -> Path:
-    """The shop in a temporary folder (with its vendor/): shots that save, or need a .div/, leave the example alone."""
-    root = Path(work) / "shop"
+    """The shop in a temporary folder (with its vendor/): shots that save, or need a .div/, leave the example alone.
+    It is /tmp/divide-demo/shop, made anew for each shot and removed when the program ends (``work``, the
+    caller's temporary folder, is kept for the callers; the copy does not go in it)."""
+    root = DEMO_COPY / "shop"
+    shutil.rmtree(DEMO_COPY, ignore_errors=True)
     shutil.copytree(DEMO, root, symlinks=True)
+    atexit.register(shutil.rmtree, DEMO_COPY, True)
     if setup is not None:
         (root / ".div").mkdir()
         (root / ".div" / "setup.json").write_text(json.dumps(setup, indent=2) + "\n")
