@@ -126,6 +126,7 @@ from divide.ui.palette import PaletteMixin
 from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
+from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.run.script import size_text
 from divide.run import children
 from divide.run import setup as div_setup
@@ -164,6 +165,7 @@ CM_DS_JSON = Command.USER + 38
 CM_DS_DIALECT = Command.USER + 39
 CM_DS_TRUST = Command.USER + 46
 CM_DS_CHECK = Command.USER + 47
+CM_COMPOSER = Command.USER + 48
 CM_DATA_TREE = Command.USER + 14
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
@@ -341,7 +343,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -531,6 +533,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     _('~T~ools'),
                     MenuItem(_('~D~ialector...'), CM_DIALECTOR),
                     MenuItem(_('~T~ranslate a template...'), CM_TRANSLATE),
+                    Separator(),
+                    MenuItem(_('~C~omposer packages...'), CM_COMPOSER),
                 ),
                 SubMenu(
                     _('~O~ptions'),
@@ -868,6 +872,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 await self.open_dialector()
             case _ if command == CM_TRANSLATE:
                 await self.translate_wizard()
+            case _ if command == CM_COMPOSER:
+                await self.open_composer()
             case _ if command == CM_GOTO_INCLUDE and editor:
                 await self.goto_include(editor)
             case _ if command == CM_COMPLETE and editor:
@@ -1814,6 +1820,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return "Div-Setup"
         if isinstance(active, JsonTreeWindow):
             return "Data-Files"
+        if isinstance(active, (ComposerWindow, ComposerLogWindow)):
+            return "Composer"
         if isinstance(active, ProjectWindow):
             return "Project-Window"
         if isinstance(active, OutputWindow):
@@ -2342,6 +2350,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         active = self.active_window()
         if isinstance(active, OutputWindow):
             status.set_hint(active.summary)
+            return
+        if isinstance(active, ComposerWindow):
+            status.set_hint(ComposerWindow.HINT)
             return
         if isinstance(active, DivSetupWindow):
             dirty = " *" if active.source.dirty else ""

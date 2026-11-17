@@ -24,6 +24,7 @@
 * [[Configuración de Div|Div Setup]]
 * [[Dialector|Dialector]]
 * [[Traducir plantillas|Translating Templates]]
+* [[Composer|Composer]]
 
 **Referencia**
 

@@ -17,9 +17,9 @@ divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas super
 | **Buscar** | Buscar, Reemplazar, Buscar de nuevo, Buscar en archivos (Shift+F2), Ir a línea, Ir a la plantilla incluida, Esquema (Ctrl+O: ver [[Esquema\|Outline]]), Ir a archivo (Ctrl+P), Paleta de comandos (Alt+P): ver [[Buscar archivos y comandos\|Finding Files and Commands]], Error anterior / Error siguiente |
 | **Ejecutar** | Ejecutar (Ctrl+F9: renderizar una plantilla, ejecutar un script PHP), Pasar por encima (F8), Trazar dentro (F7), Salir de la función, Ir al cursor (F4), Reiniciar programa (Ctrl+F2), Argumentos, Ejecutar en terminal, Servidor web, Verificar (Alt+F9), Salida, Archivo de datos, Editar datos, Árbol de datos (Ctrl+T) |
 | **Depurar** | Evaluar (Ctrl+F4), Vigilancias, Pila de llamadas (Ctrl+F3), Añadir vigilancia (Ctrl+F7), Punto de ruptura (Ctrl+F8): ver [[Depurar PHP\|Debugging PHP]]; Traza del render: ver [[Traza del render\|Render Trace]] |
-| **Herramientas** | Dialector, Traducir una plantilla |
+| **Herramientas** | Dialector, Traducir una plantilla, [[Paquetes Composer\|Composer]] |
 | **Ventana** | Proyecto (Ctrl+B), Mensajes, Mosaico, Cascada, Zoom, Siguiente, Anterior, Cerrar, Cerrar todas |
-| **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, [[configuración de Div|Div Setup]], Xdebug |
+| **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, [[configuración de Div\|Div Setup]], Xdebug |
 | **Ayuda** | Contenido, Libros, Índice (Shift+F1), Buscar tema (Ctrl+F1), Buscar (en los libros por palabras, por relevancia), Tema anterior (Alt+F1), Uso de la ayuda (F1), Acerca de: ver [[Ayuda\|Help]] |
 
 ## Ventanas

@@ -24,6 +24,7 @@
 * [[Div Setup]]
 * [[Dialector]]
 * [[Translating Templates]]
+* [[Composer]]
 
 **Reference**
 

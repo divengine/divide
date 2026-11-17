@@ -7,7 +7,7 @@
 | **Python 3.11+** | divide itself |
 | **PHP 8** (the `php` command) | rendering, and checking includes |
 | **Div** (`divengine/div`) | rendering, and checking includes |
-| **Xdebug** (optional) | the PHP [[debugger|Debugging PHP]] |
+| **Xdebug** (optional) | the PHP [[debugger\|Debugging PHP]] |
 
 Editing, highlighting, completion and most checks work with Python alone. Everything that needs to know what Div would do (rendering, resolving `{% includes %}`) asks the real engine, so it needs PHP and Div.
 

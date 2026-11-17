@@ -139,6 +139,18 @@ En los diálogos con una ruta, el botón **...** / **Examinar...** abre el diál
 |---|---|
 | **Enter** / doble clic | abrir el archivo en la coincidencia, seleccionada |
 
+## Ventana Paquetes Composer
+
+| Tecla | Acción |
+|---|---|
+| **Ins** | añadir un paquete |
+| **Supr** | quitar el paquete |
+| **Enter** / doble clic | su carpeta en la ventana de proyecto |
+| **Ctrl+R** | leer de nuevo composer.json y composer.lock |
+| **Alt+F10** / **Shift+F10** | menú local: actualizar, instalar, versiones nuevas, validar, autoloader, nuevo composer.json |
+
+Ver [[Composer|Composer]].
+
 ## Ventana Configuración de Div
 
 | Tecla | Acción |

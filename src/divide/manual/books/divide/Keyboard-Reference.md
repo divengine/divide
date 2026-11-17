@@ -139,6 +139,18 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 |---|---|
 | **Enter** / double click | open the file at the match, selected |
 
+## Composer window
+
+| Key | Action |
+|---|---|
+| **Ins** | add a package |
+| **Del** | remove the package |
+| **Enter** / double click | its folder in the project window |
+| **Ctrl+R** | read composer.json and composer.lock again |
+| **Alt+F10** / **Shift+F10** | local menu: update, install, newer versions, validate, autoloader, new composer.json |
+
+See [[Composer]].
+
 ## Div setup window
 
 | Key | Action |

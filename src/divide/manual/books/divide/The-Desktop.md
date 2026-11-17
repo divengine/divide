@@ -17,9 +17,9 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Search** | Find, Replace, Search again, Find in files (Shift+F2), Go to line, Go to included template, Outline (Ctrl+O: see [[Outline]]), Go to file (Ctrl+P), Command palette (Alt+P): see [[Finding Files and Commands]], Previous / Next error |
 | **Run** | Run (Ctrl+F9: render a template, run a PHP script), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Web server, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
-| **Tools** | Dialector, Translate a template |
+| **Tools** | Dialector, Translate a template, [[Composer packages\|Composer]] |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, [[Div setup|Div Setup]], Xdebug |
+| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, [[Div setup\|Div Setup]], Xdebug |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Search (the books by words, ranked), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows

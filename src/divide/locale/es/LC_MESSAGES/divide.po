@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 01:46+0000\n"
+"POT-Creation-Date: 2026-11-17 01:57+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -17,6 +17,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+msgid "  (no packages)"
+msgstr "  (sin paquetes)"
+
+msgid "  (nothing found)"
+msgstr "  (no se encontró nada)"
 
 #, python-brace-format
 msgid "  ... and {changes} more"
@@ -50,6 +56,9 @@ msgstr "\"{query}\" en {mask}: {count} en {files}"
 
 msgid "(Ins adds a watch; variables show while the debugger is paused)"
 msgstr "(Ins añade una vigilancia; las variables se ven con el depurador en pausa)"
+
+msgid "(as typed)"
+msgstr "(tal como está escrito)"
 
 msgid "(between cycles)"
 msgstr "(entre ciclos)"
@@ -87,11 +96,18 @@ msgstr "16 colores (consola de Windows)"
 msgid "About"
 msgstr "Acerca de"
 
+msgid "Add a package"
+msgstr "Añadir un paquete"
+
 msgid "Add item"
 msgstr "Añadir elemento"
 
 msgid "Add watch"
 msgstr "Añadir vigilancia"
+
+#, python-brace-format
+msgid "Adding {name}"
+msgstr "Añadiendo {name}"
 
 msgid "Aggregate functions"
 msgstr "Funciones de agregación"
@@ -104,6 +120,10 @@ msgstr "Como en un shell: las comillas conservan los espacios. Ctrl+F9 y el depu
 
 msgid "Asking Div..."
 msgstr "Preguntando a Div..."
+
+#, python-brace-format
+msgid "Asking Packagist for the versions of {name}..."
+msgstr "Preguntando a Packagist las versiones de {name}..."
 
 msgid "Assignment"
 msgstr "Asignación"
@@ -227,8 +247,17 @@ msgstr "Cambiado: previsualiza de nuevo (Enter)"
 msgid "Checking"
 msgstr "Verificando"
 
+msgid "Choose a package (vendor/package)"
+msgstr "Elige un paquete (vendor/paquete)"
+
+msgid "Classes ~f~older"
+msgstr "Carpe~t~a de las clases"
+
 msgid "Close a~l~l"
 msgstr "Cerrar ~t~odas"
+
+msgid "Cl~a~ss namespace (PSR-4)"
+msgstr "Esp~a~cio de nombres de las clases (PSR-4)"
 
 msgid "Colors"
 msgstr "Colores"
@@ -244,6 +273,25 @@ msgstr "Inicio de comentario"
 
 msgid "Comment end"
 msgstr "Fin de comentario"
+
+msgid "Composer"
+msgstr "Composer"
+
+msgid "Composer packages"
+msgstr "Paquetes Composer"
+
+msgid "Composer program (composer or composer.phar)"
+msgstr "Programa composer (composer o composer.phar)"
+
+msgid "Composer was not found. Install it (https://getcomposer.org/download/), put composer.phar in the project, or choose it: Alt+F10 > Composer program."
+msgstr "No se encontró Composer. Instálalo (https://getcomposer.org/download/), pon composer.phar en el proyecto, o elígelo: Alt+F10 > Programa composer."
+
+msgid "Composer ~p~rogram..."
+msgstr "~P~rograma composer..."
+
+#, python-brace-format
+msgid "Composer: {path}"
+msgstr "Composer: {path}"
 
 msgid "Condition end"
 msgstr "Fin de condición"
@@ -302,6 +350,9 @@ msgstr "Cor~t~ar"
 
 msgid "C~a~scade"
 msgstr "~C~ascada"
+
+msgid "C~r~eate"
+msgstr "C~r~ear"
 
 #, python-brace-format
 msgid "DBGp error {code}"
@@ -489,6 +540,9 @@ msgstr "No se encontró Div: es Div quien traduce la plantilla (Opciones > Motor
 msgid "Div {version}: dialect {dialect}"
 msgstr "Div {version}: dialecto {dialect}"
 
+msgid "Div ~v~ersion"
+msgstr "Versión de Di~v~"
+
 msgid "Div's default dialect"
 msgstr "el dialecto por defecto de Div"
 
@@ -531,8 +585,14 @@ msgstr "Carpeta raíz"
 msgid "Dollar symbol"
 msgstr "Símbolo de dólar"
 
+msgid "Done"
+msgstr "Hecho"
+
 msgid "D~a~ta tree"
 msgstr "Árbol de dat~o~s"
+
+msgid "D~e~scription"
+msgstr "D~e~scripción"
 
 msgid "Edit as ~J~SON"
 msgstr "Editar como ~J~SON"
@@ -612,6 +672,9 @@ msgstr "Escapes para caracteres difíciles de escribir, y el corte de resumen"
 msgid "Evaluate"
 msgstr "Evaluar"
 
+msgid "Every package is up to date"
+msgstr "Todos los paquetes están al día"
+
 msgid "Example template"
 msgstr "Plantilla de ejemplo"
 
@@ -633,6 +696,9 @@ msgstr "F7 entrar · F8 paso · F4 al cursor · Ctrl+F9 ejecutar · Ctrl+F2 rein
 
 msgid "F8 step · F7 into · Shift+F8 out · Space before/after"
 msgstr "F8 paso · F7 entrar · Shift+F8 salir · Espacio antes/después"
+
+msgid "Failed"
+msgstr "Falló"
 
 msgid "False begin prefix"
 msgstr "Prefijo de inicio falso"
@@ -756,6 +822,9 @@ msgstr "Ayuda: {book} · {title}"
 msgid "Help: {title}"
 msgstr "Ayuda: {title}"
 
+msgid "Homepage"
+msgstr "Web"
+
 msgid "Hooks (beforeBuild, afterParse...), subclasses of div, closures and sub-parsers are PHP code: divide does not run the application's code, so they cannot be set here."
 msgstr "Los hooks (beforeBuild, afterParse...), las subclases de div, las closures y los sub-parsers son código PHP: divide no ejecuta el código de la aplicación, así que no se pueden configurar aquí."
 
@@ -799,8 +868,20 @@ msgstr "Información"
 msgid "Ins"
 msgstr "Ins"
 
+msgid "Ins add · Del remove · Enter its folder · Ctrl+R reload · Alt+F10 update, install, outdated, new composer.json"
+msgstr "Ins añadir · Supr quitar · Enter su carpeta · Ctrl+R recargar · Alt+F10 actualizar, instalar, versiones nuevas, nuevo composer.json"
+
+msgid "Ins adds a package (Div is divengine/div)."
+msgstr "Ins añade un paquete (Div es divengine/div)."
+
 msgid "Ins new file · F7 folder · F2 rename · Del delete · Alt+F10 menu"
 msgstr "Ins nuevo archivo · F7 carpeta · F2 renombrar · Supr eliminar · Alt+F10 menú"
+
+msgid "Installed"
+msgstr "Instalado"
+
+msgid "Installing the packages"
+msgstr "Instalando los paquetes"
 
 msgid "Interface language"
 msgstr "Idioma de la interfaz"
@@ -810,6 +891,9 @@ msgstr "Nombre no válido."
 
 msgid "It applies from the next start."
 msgstr "Se aplica desde el próximo inicio."
+
+msgid "It requires:"
+msgstr "Requiere:"
 
 msgid "Item variable separator"
 msgstr "Separador de variable del elemento"
@@ -826,6 +910,9 @@ msgstr "Prefijo de iteración"
 msgid "Iteration suffix"
 msgstr "Sufijo de iteración"
 
+msgid "Its ~f~older"
+msgstr "Su ~c~arpeta"
+
 msgid "JSON encode"
 msgstr "Codificar JSON"
 
@@ -838,6 +925,9 @@ msgstr "JSON correcto"
 
 msgid "JavaScript code"
 msgstr "Código JavaScript"
+
+msgid "Kind"
+msgstr "Tipo"
 
 msgid "Language"
 msgstr "Lenguaje"
@@ -852,14 +942,34 @@ msgstr "Servidores de lenguaje"
 msgid "Lan~g~uage..."
 msgstr "~I~dioma..."
 
+#, python-brace-format
+msgid "Last: {command}: done"
+msgstr "Último: {command}: hecho"
+
+#, python-brace-format
+msgid "Last: {command}: failed (see the Composer window)"
+msgstr "Último: {command}: falló (ver la ventana Composer)"
+
+msgid "License"
+msgstr "Licencia"
+
 msgid "Lines"
 msgstr "Líneas"
+
+msgid "Li~c~ense"
+msgstr "Li~c~encia"
 
 msgid "Location begin"
 msgstr "Inicio de location"
 
 msgid "Location end"
 msgstr "Fin de location"
+
+msgid "Look for ~n~ewer versions"
+msgstr "Buscar versiones más ~n~uevas"
+
+msgid "Looking for newer versions"
+msgstr "Buscando versiones más nuevas"
 
 msgid "Loops and iterations"
 msgstr "Bucles e iteraciones"
@@ -912,6 +1022,9 @@ msgstr "Mutaciones"
 msgid "Nested folders are fine (a/b/c)"
 msgstr "Se admiten carpetas anidadas (a/b/c)"
 
+msgid "New composer.json"
+msgstr "Nuevo composer.json"
+
 msgid "New dialect"
 msgstr "Dialecto nuevo"
 
@@ -936,14 +1049,23 @@ msgstr "~N~uevo archivo..."
 msgid "New ~n~ame"
 msgstr "~N~uevo nombre"
 
+msgid "Newer"
+msgstr "Más nueva"
+
 msgid "Next page"
 msgstr "Página siguiente"
+
+msgid "Ne~w~ composer.json..."
+msgstr "Nuevo co~m~poser.json..."
 
 msgid "No Xdebug: it serves, but requests cannot be debugged"
 msgstr "Sin Xdebug: sirve las páginas, pero las peticiones no se pueden depurar"
 
 msgid "No command matches"
 msgstr "Ningún comando coincide"
+
+msgid "No composer.json: Alt+F10 > New composer.json"
+msgstr "Sin composer.json: Alt+F10 > Nuevo composer.json"
 
 msgid "No file matches"
 msgstr "Ningún archivo coincide"
@@ -970,6 +1092,9 @@ msgstr "Sin errores de {language}"
 msgid "Not a line number"
 msgstr "No es un número de línea"
 
+msgid "Not installed yet: Alt+F10 > Install"
+msgstr "Aún sin instalar: Alt+F10 > Instalar"
+
 msgid "Nothing found: fewer or other words"
 msgstr "No se encontró nada: prueba con menos palabras o con otras"
 
@@ -989,6 +1114,9 @@ msgstr "N~u~lo"
 msgid "One-character transformations: {^name}, {_name}, {%name}, {html:name}..."
 msgstr "Transformaciones de un carácter: {^name}, {_name}, {%name}, {html:name}..."
 
+msgid "Only a package the project requires can be removed (not a dependency of another one)"
+msgstr "Solo se puede quitar un paquete que el proyecto requiere (no una dependencia de otro)"
+
 msgid "Open a Div template (.tpl) to render it."
 msgstr "Abre una plantilla Div (.tpl) para renderizarla."
 
@@ -1006,6 +1134,9 @@ msgstr "Abre un script PHP (.php) para ejecutarlo."
 
 msgid "Open a file"
 msgstr "Abrir un archivo"
+
+msgid "Open ~c~omposer.json"
+msgstr "Abrir c~o~mposer.json"
 
 #, python-brace-format
 msgid "Opening {target}"
@@ -1064,6 +1195,9 @@ msgstr "PHP · sin errores"
 msgid "PHP · php not found in PATH: not checked"
 msgstr "PHP · php no está en el PATH: sin verificar"
 
+msgid "Packagist did not answer"
+msgstr "Packagist no respondió"
+
 msgid "Parameters"
 msgstr "Argumentos"
 
@@ -1110,6 +1244,9 @@ msgstr "Argumentos del programa"
 msgid "Progra~m~ reset"
 msgstr "~R~einiciar programa"
 
+msgid "Project"
+msgstr "Proyecto"
+
 msgid "Property separator"
 msgstr "Separador de propiedad"
 
@@ -1133,6 +1270,9 @@ msgstr "Pon el cursor en un include {% %} o {%% %%}"
 msgid "Put {section} back to Div's defaults in this file?"
 msgstr "¿Devolver {section} a los valores por defecto de Div en este archivo?"
 
+msgid "P~H~P version"
+msgstr "Versión de P~H~P"
+
 msgid "Raw URL encode"
 msgstr "Codificar URL (raw)"
 
@@ -1145,6 +1285,14 @@ msgstr "Relativo al proyecto; si el archivo existe, se abre"
 #, python-brace-format
 msgid "Relative to {name}/"
 msgstr "Relativo a {name}/"
+
+#, python-brace-format
+msgid "Remove {name} from the project (composer remove)?"
+msgstr "¿Quitar {name} del proyecto (composer remove)?"
+
+#, python-brace-format
+msgid "Removing {name}"
+msgstr "Quitando {name}"
 
 msgid "Rename"
 msgstr "Renombrar"
@@ -1180,6 +1328,15 @@ msgstr "¿Reemplazar esta coincidencia?"
 
 msgid "Replacements"
 msgstr "Reemplazos"
+
+msgid "Require ~D~iv (divengine/div)"
+msgstr "Requerir ~D~iv (divengine/div)"
+
+msgid "Required"
+msgstr "Requerido"
+
+msgid "Required by:"
+msgstr "Lo requiere:"
 
 msgid "Restore ~a~ll defaults"
 msgstr "Restaurar t~o~do"
@@ -1243,6 +1400,10 @@ msgstr "No se encontró el texto buscado."
 msgid "Search the help"
 msgstr "Buscar en la ayuda"
 
+#, python-brace-format
+msgid "Searching Packagist for {query}..."
+msgstr "Buscando {query} en Packagist..."
+
 msgid "Select ~a~ll"
 msgstr "~S~eleccionar todo"
 
@@ -1274,6 +1435,9 @@ msgstr "Reemplazo simple"
 
 msgid "Simulated request"
 msgstr "Petición simulada"
+
+msgid "Source"
+msgstr "Fuente"
 
 msgid "Space"
 msgstr "Espacio"
@@ -1336,6 +1500,10 @@ msgstr "Correcto"
 
 msgid "Suffix"
 msgstr "Sufijo"
+
+#, python-brace-format
+msgid "Suggested from the newest stable version · newest: {newest}"
+msgstr "Sugerida a partir de la versión estable más nueva · la más nueva: {newest}"
 
 msgid "Suggested: Div's default dialect (the template has no @_DIALECT)"
 msgstr "Sugerido: el dialecto de Div por defecto (la plantilla no tiene @_DIALECT)"
@@ -1413,6 +1581,9 @@ msgstr "La siguiente petición a {url} se detiene {where}"
 msgid "The next request will not stop"
 msgstr "La siguiente petición no se detendrá"
 
+msgid "The project has a composer.json already."
+msgstr "El proyecto ya tiene un composer.json."
+
 msgid "The project's PHP settings wait for your trust (Alt+F10)"
 msgstr "Los ajustes PHP del proyecto esperan tu confianza (Alt+F10)"
 
@@ -1484,8 +1655,14 @@ msgstr "Turbo ~C~"
 msgid "Turbo ~P~ascal"
 msgstr "Turbo ~P~ascal"
 
+msgid "Type"
+msgstr "Tipo de paquete"
+
 msgid "Type a command · delete the > for the files · Enter run · Esc close"
 msgstr "Escribe un comando · borra el > para los archivos · Enter ejecutar · Esc cerrar"
+
+msgid "Type a few letters: Packagist is searched as you type."
+msgstr "Escribe unas letras: se busca en Packagist mientras escribes."
 
 msgid "Type a file name · > for the commands · Enter open · Esc close"
 msgstr "Escribe un nombre de archivo · > para los comandos · Enter abrir · Esc cerrar"
@@ -1511,11 +1688,24 @@ msgstr "Codificar URL"
 msgid "Unsaved: F2 saves (Div sees the saved file)"
 msgstr "Sin guardar: F2 guarda (Div ve el archivo guardado)"
 
+msgid "Update ~e~very package"
+msgstr "Actualizar ~t~odos los paquetes"
+
+msgid "Updating every package"
+msgstr "Actualizando todos los paquetes"
+
+#, python-brace-format
+msgid "Updating {name}"
+msgstr "Actualizando {name}"
+
 msgid "Upper case"
 msgstr "Mayúsculas"
 
 msgid "Use a name inside the project folder."
 msgstr "Usa un nombre dentro de la carpeta del proyecto."
+
+msgid "Validating composer.json"
+msgstr "Validando composer.json"
 
 #, python-brace-format
 msgid "Variables defined in the template: {= products: [...] =}, and default replacements"
@@ -1559,6 +1749,9 @@ msgstr "¿Qué plantilla? Escribe su ruta."
 msgid "Word wrap"
 msgstr "Ajuste de líneas"
 
+msgid "Writing the autoloader"
+msgstr "Escribiendo el autoloader"
+
 msgid "Xdebug"
 msgstr "Xdebug"
 
@@ -1600,6 +1793,13 @@ msgstr "[!] divide omite {count}:"
 
 msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
 msgstr "[$products] ... @empty@ ... [/$products], y [:1,10:] ... [/]"
+
+#, python-brace-format
+msgid "[exit code {code}]"
+msgstr "[código de salida {code}]"
+
+msgid "[stopped]"
+msgstr "[detenido]"
 
 msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
 msgstr "se espera un archivo .dialect o un objeto de etiquetas DIV_TAG_"
@@ -1683,6 +1883,20 @@ msgstr "profundidad de color (por defecto: la que el terminal dice admitir)"
 msgid "colour theme (default: the one chosen in Options > Colors, else turbo-pascal)"
 msgstr "tema de color (por defecto: el elegido en Opciones > Colores; si no, turbo-pascal)"
 
+#, python-brace-format
+msgid "composer could not start: {exc}"
+msgstr "composer no pudo arrancar: {exc}"
+
+#, python-brace-format
+msgid "composer.json cannot be read: {exc}"
+msgstr "no se puede leer composer.json: {exc}"
+
+msgid "composer.json is not a JSON object"
+msgstr "composer.json no es un objeto JSON"
+
+msgid "composer.json written; composer was not found to install it"
+msgstr "composer.json escrito; no se encontró composer para instalarlo"
+
 msgid "condition with else"
 msgstr "condición con else"
 
@@ -1715,8 +1929,17 @@ msgstr "por defecto: (vacío)"
 msgid "default: {value}"
 msgstr "por defecto: {value}"
 
+msgid "dependency"
+msgstr "dependencia"
+
+msgid "dev"
+msgstr "dev"
+
 msgid "divide will speak the language chosen the next time it starts."
 msgstr "divide usará el idioma elegido la próxima vez que se inicie."
+
+msgid "divide writes composer.json as composer init would; composer installs it."
+msgstr "divide escribe composer.json como lo haría composer init; composer lo instala."
 
 #, python-brace-format
 msgid ""
@@ -1807,6 +2030,9 @@ msgstr "sin conexión"
 msgid "not found"
 msgstr "no encontrado"
 
+msgid "not installed"
+msgstr "no instalado"
+
 msgid "number format"
 msgstr "formato de número"
 
@@ -1841,6 +2067,9 @@ msgstr "php.ini ya carga Xdebug: déjalo vacío"
 msgid "plain text"
 msgstr "texto plano"
 
+msgid "platform"
+msgstr "plataforma"
+
 msgid "preprocessed include"
 msgstr "include preprocesado"
 
@@ -1855,6 +2084,12 @@ msgstr "carpeta del proyecto y/o archivos que abrir"
 
 msgid "project's"
 msgstr "del proyecto"
+
+msgid "require"
+msgstr "require"
+
+msgid "starts the project with Div in it."
+msgstr "empieza el proyecto con Div dentro."
 
 msgid "strip block"
 msgstr "bloque strip"
@@ -1874,6 +2109,12 @@ msgstr "los datos usan {names}: Div decodifica un archivo de datos antes de que 
 
 msgid "the engine is a .php file (autoload.php or div.php)"
 msgstr "el motor es un archivo .php (autoload.php o div.php)"
+
+msgid "the name is vendor/project, in lowercase: divengine/shop"
+msgstr "el nombre es vendor/proyecto, en minúsculas: divengine/shop"
+
+msgid "the namespace is like App\\ or Acme\\Shop\\"
+msgstr "el espacio de nombres es como App\\ o Acme\\Shop\\"
 
 msgid "the project's \"php\" settings are not applied until you trust them (Options > Div setup)"
 msgstr "los ajustes «php» del proyecto no se aplican hasta que confíes en ellos (Opciones > Configuración de Div)"
@@ -1945,6 +2186,9 @@ msgstr "del usuario"
 msgid "valid"
 msgstr "válido"
 
+msgid "vendor/ is missing: Alt+F10 > Install"
+msgstr "falta vendor/: Alt+F10 > Instalar"
+
 msgid "written in the setup"
 msgstr "escrito en la configuración"
 
@@ -1975,6 +2219,10 @@ msgid "{close} closes a condition that was never opened"
 msgstr "{close} cierra una condición que nunca se abrió"
 
 #, python-brace-format
+msgid "{count} found · ↓ to choose"
+msgstr "{count} encontrados · ↓ para elegir"
+
+#, python-brace-format
 msgid "{count} include paths"
 msgstr "{count} rutas de inclusión"
 
@@ -1983,8 +2231,16 @@ msgid "{count} occurrences replaced"
 msgstr "{count} coincidencias reemplazadas"
 
 #, python-brace-format
+msgid "{count} packages have a newer version"
+msgstr "{count} paquetes tienen una versión más nueva"
+
+#, python-brace-format
 msgid "{count} to look at"
 msgstr "{count} que revisar"
+
+#, python-brace-format
+msgid "{count} with a newer version (marked ↑)"
+msgstr "{count} con una versión más nueva (marcados ↑)"
 
 #, python-brace-format
 msgid "{display_name}: no {editor} errors"
@@ -2045,6 +2301,10 @@ msgid "{name} has no Div tags."
 msgstr "{name} no tiene etiquetas de Div."
 
 #, python-brace-format
+msgid "{name} is not installed (vendor/{name})"
+msgstr "{name} no está instalado (vendor/{name})"
+
+#, python-brace-format
 msgid "{name} is ready"
 msgstr "{name} está listo"
 
@@ -2071,6 +2331,10 @@ msgstr "{name}: no existe ese archivo junto a {display_name} ni en el proyecto"
 #, python-brace-format
 msgid "{name}: no {editor} errors"
 msgstr "{name}: sin errores de {editor}"
+
+#, python-brace-format
+msgid "{name}: {direct} required, {deps} with them"
+msgstr "{name}: {direct} requeridos, {deps} con ellos"
 
 #, python-brace-format
 msgid "{n} error"
@@ -2175,6 +2439,12 @@ msgstr "~Alt+X~ Salir"
 msgid "~A~bout..."
 msgstr "Acerca ~d~e..."
 
+msgid "~A~dd"
+msgstr "~A~ñadir"
+
+msgid "~A~dd a package..."
+msgstr "~A~ñadir un paquete..."
+
 msgid "~A~dd watch..."
 msgstr "~A~ñadir vigilancia..."
 
@@ -2248,6 +2518,9 @@ msgstr "~C~omando del servidor elegido (vacío: el del proyecto o el del PATH)"
 msgid "~C~ommand palette..."
 msgstr "Paleta de ~c~omandos..."
 
+msgid "~C~omposer packages..."
+msgstr "Paquetes ~C~omposer..."
+
 msgid "~C~ontents"
 msgstr "~C~ontenido"
 
@@ -2270,6 +2543,9 @@ msgstr "~P~or defecto"
 msgid "~D~efaults: [{\"search\": ..., \"replace\": ...}]"
 msgstr "Valores por ~d~efecto: [{\"search\": ..., \"replace\": ...}]"
 
+msgid "~D~evelopment only (require-dev)"
+msgstr "Solo ~d~esarrollo (require-dev)"
+
 msgid "~D~ialect file"
 msgstr "Archivo de ~d~ialecto"
 
@@ -2284,6 +2560,9 @@ msgstr "Motor ~D~iv..."
 
 msgid "~D~ocument root"
 msgstr "Carpeta ~r~aíz"
+
+msgid "~D~ump the autoloader"
+msgstr "~R~egenerar el autoloader"
 
 msgid "~E~dit"
 msgstr "~E~ditar"
@@ -2381,6 +2660,12 @@ msgstr "Rutas de ~i~nclusión (separadas por ;)"
 msgid "~I~ndex"
 msgstr "Índ~i~ce"
 
+msgid "~I~nstall"
+msgstr "~I~nstalar"
+
+msgid "~I~nstall it now (composer install)"
+msgstr "~I~nstalarlo ahora (composer install)"
+
 msgid "~K~ey"
 msgstr "~C~lave"
 
@@ -2389,6 +2674,9 @@ msgstr "~I~dioma"
 
 msgid "~L~anguage servers..."
 msgstr "Servidores de ~l~enguaje..."
+
+msgid "~L~ibrary (a package for others)"
+msgstr "~B~iblioteca (un paquete para otros)"
 
 msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
 msgstr "Ciclos ~m~áximos del parser (DIV_MAX_PARSE_CYCLES)"
@@ -2412,6 +2700,9 @@ msgstr "~N~ombre (. es la carpeta de abajo)"
 #, python-brace-format
 msgid "~N~ame (in {where}/)"
 msgstr "~N~ombre (en {where}/)"
+
+msgid "~N~ame (vendor/project)"
+msgstr "~N~ombre (vendor/proyecto)"
 
 msgid "~N~ew"
 msgstr "~N~uevo"
@@ -2464,6 +2755,9 @@ msgstr "Sa~l~ida"
 msgid "~P~OST"
 msgstr "~P~OST"
 
+msgid "~P~ackages"
+msgstr "~P~aquetes"
+
 msgid "~P~ackages: the templates' root (PACKAGES)"
 msgstr "~P~aquetes: la raíz de las plantillas (PACKAGES)"
 
@@ -2492,6 +2786,9 @@ msgstr "Tema ~a~nterior"
 msgid "~P~roject"
 msgstr "~P~royecto"
 
+msgid "~P~roject (an application)"
+msgstr "~P~royecto (una aplicación)"
+
 msgid "~P~roject's setup"
 msgstr "Configuración del ~p~royecto"
 
@@ -2506,6 +2803,9 @@ msgstr "~R~eferencia"
 
 msgid "~R~egular expression"
 msgstr "Expresión ~r~egular"
+
+msgid "~R~emove the package"
+msgstr "~Q~uitar el paquete"
 
 msgid "~R~ename..."
 msgstr "~R~enombrar..."
@@ -2545,6 +2845,9 @@ msgstr "Guardar ~c~omo..."
 
 msgid "~S~earch"
 msgstr "~B~uscar"
+
+msgid "~S~earch Packagist (or type vendor/package)"
+msgstr "~B~uscar en Packagist (o escribe vendor/paquete)"
 
 msgid "~S~earch again"
 msgstr "Buscar de ~n~uevo"
@@ -2609,14 +2912,23 @@ msgstr "~C~onfiar en los ajustes PHP del proyecto..."
 msgid "~U~ndo"
 msgstr "~D~eshacer"
 
+msgid "~U~pdate the package"
+msgstr "Act~u~alizar el paquete"
+
 msgid "~U~ser's setup (all projects)"
 msgstr "Configuración del ~u~suario (todos los proyectos)"
 
 msgid "~U~sing help"
 msgstr "~U~so de la ayuda"
 
+msgid "~V~alidate composer.json"
+msgstr "~V~alidar composer.json"
+
 msgid "~V~alue (text, number or $reference)"
 msgstr "Va~l~or (texto, número o $referencia)"
+
+msgid "~V~ersion"
+msgstr "~V~ersión"
 
 msgid "~W~atch expression"
 msgstr "~E~xpresión a vigilar"
@@ -2685,5 +2997,8 @@ msgstr "── servidor web {address} ──"
 #~ msgstr "«{key}» todavía no se aplica: esta versión de divide lo omite"
 
 #~ msgid "~E~rror reporting (E_ALL, E_ALL & ~E_NOTICE...)"
+#~ msgstr ""
+
+#~ msgid "Class names~p~ace (PSR-4)"
 #~ msgstr ""
 

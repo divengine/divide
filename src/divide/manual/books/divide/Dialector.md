@@ -67,7 +67,7 @@ The verdict appears below the sections and in each section dialog, and it is upd
 | **Save example template...** | writes the example in your dialect as a template that starts with `@_DIALECT = your.dialect`, and opens it. Your dialect file is saved first. |
 | **Translate a template...** | the [[Translating Templates]] wizard, with this dialect as the target |
 | **Check with Div** | ask Div again now |
-| **Base: the project's dialect** / **Base: Div's default dialect** | with a project dialect (its [[Div setup|Div Setup]]): which one fills the tags the file leaves out when Div judges it. The project's by default, as Div does when it loads the file in that project. |
+| **Base: the project's dialect** / **Base: Div's default dialect** | with a project dialect (its [[Div setup\|Div Setup]]): which one fills the tags the file leaves out when Div judges it. The project's by default, as Div does when it loads the file in that project. |
 
 ## Using a dialect
 

@@ -63,6 +63,11 @@ through the real Div engine, side by side with the code.
   extensions, dialect, globals, defaults, PHP functions and a simulated
   request; every render, check and include goes through it, and
   Options > Div setup edits it section by section, with Div's verdict.
+- **Composer without leaving it.** Tools > Composer packages lists what the
+  project requires and what is installed, adds packages with an assistant
+  (Packagist searched as you type, the version suggested), removes, updates,
+  installs and finds newer versions, all run by composer itself; a project
+  without `composer.json` gets one, with Div in it.
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
@@ -194,6 +199,7 @@ file only to colour, and reports nothing about it.
   editor / project windows, message boxes, file dialog, completion list, project file operations,
   the dialector, the help window; `HRule` / `VRule` divide a window and join its frame in Ts
 - `src/divide/run/` — rendering: `bridge.php` (runs Div, replies JSON) and `render.py`
+- `src/divide/run/composer.py`, `src/divide/ui/composer.py` — Composer: the project's packages, composer run under the progress box, the assistants
 - `src/divide/run/setup.py` — the project's Div setup (`.div/setup.json`, and the user's `~/.div/setup.json`): constants before Div loads and Div's static API, applied by the bridge to every request
 - `src/divide/manual/` — the built-in help: books (copies of a wiki or a docs folder) laid out as topics with cross references
 - `src/divide/app.py` — the application: menus, status line, commands, window management
