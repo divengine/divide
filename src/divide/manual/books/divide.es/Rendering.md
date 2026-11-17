@@ -34,7 +34,9 @@ Un comportamiento de Div que conviene conocer: un archivo de datos se decodifica
 
 ## Elegir el motor
 
-Ver [[Instalación|Installation]]: `DIVIDE_DIV_PHP`, **Opciones > Motor Div…**, o el `vendor/` del proyecto. Cuando no se encuentra Div, Ctrl+F9 te dice cómo instalarlo.
+Ver [[Instalación|Installation]]: `DIVIDE_DIV_PHP`, la [[configuración de Div|Div Setup]] del proyecto, **Opciones > Motor Div…**, o el `vendor/` del proyecto. Cuando no se encuentra Div, Ctrl+F9 te dice cómo instalarlo.
+
+Div renderiza con la [[configuración de Div|Div Setup]] del proyecto (`.div/setup.json`): sus carpetas de plantillas, extensiones, dialecto, globales, funciones y petición simulada, como los configuraría tu aplicación.
 
 ## Cómo llegó Div ahí
 

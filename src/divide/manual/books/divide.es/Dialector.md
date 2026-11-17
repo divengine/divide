@@ -67,6 +67,7 @@ El veredicto aparece debajo de las secciones y en cada diálogo de sección, y s
 | **Guardar plantilla de ejemplo...** | escribe el ejemplo en tu dialecto como una plantilla que empieza con `@_DIALECT = your.dialect`, y la abre. Antes se guarda tu archivo de dialecto. |
 | **Traducir una plantilla...** | el asistente de [[Traducir plantillas\|Translating Templates]], con este dialecto como destino |
 | **Verificar con Div** | preguntar de nuevo a Div ahora |
+| **Base: el dialecto del proyecto** / **Base: el dialecto por defecto de Div** | con un dialecto de proyecto (su [[configuración de Div\|Div Setup]]): cuál completa las etiquetas que el archivo no tiene cuando Div lo juzga. Por defecto el del proyecto, como hace Div al cargar el archivo en ese proyecto. |
 
 ## Usar un dialecto
 

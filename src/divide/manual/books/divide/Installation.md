@@ -49,8 +49,9 @@ composer require divengine/div
 divide finds the engine by itself, in this order:
 
 1. the `DIVIDE_DIV_PHP` environment variable: a `vendor/autoload.php`, or a Div checkout's `src/div.php` (with its `vendor/` installed);
-2. the path set in **Options > Div engine…** (saved in `~/.config/divide/config.json`);
-3. a `vendor/autoload.php` with `vendor/divengine/div`, looking upwards from the template and from the project folder.
+2. the `engine` of the project's [[Div setup|Div Setup]] (`.div/setup.json`), then of yours (`~/.div/setup.json`);
+3. the path set in **Options > Div engine…** (saved in `~/.config/divide/config.json`);
+4. a `vendor/autoload.php` with `vendor/divengine/div`, looking upwards from the template and from the project folder.
 
 If none is found, **Ctrl+F9** on a template explains what to do, and include checks are simply skipped.
 

@@ -19,7 +19,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
 | **Tools** | Dialector, Translate a template |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, Xdebug |
+| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, [[Div setup|Div Setup]], Xdebug |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Search (the books by words, ranked), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
 
 ## Windows

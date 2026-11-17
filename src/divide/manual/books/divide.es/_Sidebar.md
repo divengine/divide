@@ -21,6 +21,7 @@
 * [[Archivos de datos|Data Files]]
 * [[Otros archivos|Other Files]]
 * [[Ventana de proyecto|Project Window]]
+* [[Configuración de Div|Div Setup]]
 * [[Dialector|Dialector]]
 * [[Traducir plantillas|Translating Templates]]
 

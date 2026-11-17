@@ -34,7 +34,9 @@ One Div behaviour worth knowing: a data file is decoded before any variable exis
 
 ## Choosing the engine
 
-See [[Installation]]: `DIVIDE_DIV_PHP`, **Options > Div engine…**, or the project's `vendor/`. When Div cannot be found, Ctrl+F9 tells you how to install it.
+See [[Installation]]: `DIVIDE_DIV_PHP`, the project's [[Div setup|Div Setup]], **Options > Div engine…**, or the project's `vendor/`. When Div cannot be found, Ctrl+F9 tells you how to install it.
+
+Div renders with the project's [[Div setup|Div Setup]] (`.div/setup.json`): its template folders, extensions, dialect, globals, functions and simulated request, as your application would set them up.
 
 ## How Div got there
 

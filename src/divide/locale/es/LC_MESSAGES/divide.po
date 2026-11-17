@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 01:38+0000\n"
+"POT-Creation-Date: 2026-11-17 01:46+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -78,6 +78,9 @@ msgstr "(no se encontró nada)"
 msgid "(nothing to list)"
 msgstr "(nada que listar)"
 
+msgid "(the project's, not trusted yet: Alt+F10)"
+msgstr "(los del proyecto, aún sin confianza: Alt+F10)"
+
 msgid "16 colours (Windows console)"
 msgstr "16 colores (consola de Windows)"
 
@@ -92,6 +95,9 @@ msgstr "Añadir vigilancia"
 
 msgid "Aggregate functions"
 msgstr "Funciones de agregación"
+
+msgid "An empty field: Div's default (or the user's setup)."
+msgstr "Un campo vacío: el valor por defecto de Div (o la configuración del usuario)."
 
 msgid "As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them."
 msgstr "Como en un shell: las comillas conservan los espacios. Ctrl+F9 y el depurador los pasan."
@@ -288,6 +294,9 @@ msgstr "Contar palabras"
 msgid "Co~m~plete"
 msgstr "Co~m~pletar"
 
+msgid "Custom PHP code"
+msgstr "Código PHP propio"
+
 msgid "Cu~t~"
 msgstr "Cor~t~ar"
 
@@ -333,6 +342,10 @@ msgstr "Inicio de reempl. por defecto"
 msgid "Default repl. end"
 msgstr "Fin de reempl. por defecto"
 
+#, python-brace-format
+msgid "Defaults by ~v~ariable: [{\"var\": ..., \"search\": ..., \"replace\": ...}]"
+msgstr "Valores por defecto por ~v~ariable: [{\"var\": ..., \"search\": ..., \"replace\": ...}]"
+
 msgid "Del"
 msgstr "Supr"
 
@@ -349,6 +362,9 @@ msgstr "¿Eliminar {path!s} y sus {count} elemento(s)?"
 
 msgid "De~l~ete..."
 msgstr "~E~liminar..."
+
+msgid "Dialect"
+msgstr "Dialecto"
 
 msgid "Dialect ~f~ile"
 msgstr "Archivo de ~d~ialecto"
@@ -430,12 +446,26 @@ msgid "Div setup"
 msgstr "Configuración de Div"
 
 #, python-brace-format
+msgid "Div setup ({which}): {name}"
+msgstr "Configuración de Div ({which}): {name}"
+
+#, python-brace-format
+msgid "Div setup rewrites {name} as standard JSON: its comments are dropped. Continue?"
+msgstr "La configuración de Div reescribe {name} como JSON estándar: se pierden sus comentarios. ¿Continuar?"
+
+#, python-brace-format
 msgid "Div syntax error at {frag!r}"
 msgstr "Error de sintaxis de Div en {frag!r}"
+
+msgid "Div s~e~tup..."
+msgstr "Con~f~iguración de Div..."
 
 #, python-brace-format
 msgid "Div translated {lines} lines · shown in the target dialect"
 msgstr "Div tradujo {lines} líneas · se muestran en el dialecto de destino"
+
+msgid "Div was not found (Options > Div engine, or the setup's engine)"
+msgstr "No se encontró Div (Opciones > Motor Div, o el motor de la configuración)"
 
 msgid "Div was not found (see Options > Div engine): only Div knows where an include leads."
 msgstr "No se encontró Div (ver Opciones > Motor Div): solo Div sabe adónde lleva un include."
@@ -454,6 +484,16 @@ msgstr "No se encontró Div: es Div quien juzga el dialecto (Opciones > Motor Di
 
 msgid "Div was not found: Div translates the template (Options > Div engine)."
 msgstr "No se encontró Div: es Div quien traduce la plantilla (Opciones > Motor Div)."
+
+#, python-brace-format
+msgid "Div {version}: dialect {dialect}"
+msgstr "Div {version}: dialecto {dialect}"
+
+msgid "Div's default dialect"
+msgstr "el dialecto por defecto de Div"
+
+msgid "Div: not asked yet (Alt+F10 > Check with Div)"
+msgstr "Div: aún sin preguntar (Alt+F10 > Verificar con Div)"
 
 msgid "Div: valid √"
 msgstr "Div: válido √"
@@ -481,6 +521,10 @@ msgstr ""
 "escrito {strip}\n"
 "leído   {strip2}"
 
+#, python-brace-format
+msgid "Div: {problem}"
+msgstr "Div: {problem}"
+
 msgid "Document root"
 msgstr "Carpeta raíz"
 
@@ -489,6 +533,9 @@ msgstr "Símbolo de dólar"
 
 msgid "D~a~ta tree"
 msgstr "Árbol de dat~o~s"
+
+msgid "Edit as ~J~SON"
+msgstr "Editar como ~J~SON"
 
 msgid "Edit item"
 msgstr "Editar elemento"
@@ -517,8 +564,14 @@ msgstr "Sufijo de fin"
 msgid "Engine"
 msgstr "Motor"
 
+msgid "Engine and paths"
+msgstr "Motor y rutas"
+
 msgid "Enter"
 msgstr "Enter"
+
+msgid "Enter edit section · Del Div's defaults · F2 save · Alt+F10 menu: user/project, JSON, trust"
+msgstr "Enter editar sección · Supr valores de Div · F2 guardar · Alt+F10 menú: usuario/proyecto, JSON, confianza"
 
 msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
 msgstr "Enter editar sección · Supr por defecto · Alt+F10 menú: transformar, PHP, ejemplo"
@@ -596,6 +649,9 @@ msgstr "Sufijo de fin falso"
 msgid "File"
 msgstr "Archivo"
 
+msgid "File extensions"
+msgstr "Extensiones de archivo"
+
 msgid "Find"
 msgstr "Buscar"
 
@@ -622,6 +678,14 @@ msgid ""
 "{error}"
 msgstr ""
 "Corrige primero el archivo de dialecto:\n"
+"{error}"
+
+#, python-brace-format
+msgid ""
+"Fix the setup file first:\n"
+"{error}"
+msgstr ""
+"Corrige primero el archivo de configuración:\n"
 "{error}"
 
 #, python-brace-format
@@ -692,12 +756,18 @@ msgstr "Ayuda: {book} · {title}"
 msgid "Help: {title}"
 msgstr "Ayuda: {title}"
 
+msgid "Hooks (beforeBuild, afterParse...), subclasses of div, closures and sub-parsers are PHP code: divide does not run the application's code, so they cannot be set here."
+msgstr "Los hooks (beforeBuild, afterParse...), las subclases de div, las closures y los sub-parsers son código PHP: divide no ejecuta el código de la aplicación, así que no se pueden configurar aquí."
+
 msgid "Horizontal tab"
 msgstr "Tabulación horizontal"
 
 #, python-brace-format
 msgid "How a variable is written: {$name}, {$person.name}, {$name:...}"
 msgstr "Cómo se escribe una variable: {$name}, {$person.name}, {$name:...}"
+
+msgid "How far Div goes, and which PHP errors its formulas report."
+msgstr "Hasta dónde llega Div y qué errores de PHP informan sus fórmulas."
 
 msgid "Ignore begin"
 msgstr "Inicio de ignorar"
@@ -802,6 +872,9 @@ msgstr "Inicio de macro"
 
 msgid "Macro end"
 msgstr "Fin de macro"
+
+msgid "Max ~f~ile name size (DIV_MAX_FILENAME_SIZE)"
+msgstr "Longitud máxima del nombre de ~a~rchivo (DIV_MAX_FILENAME_SIZE)"
 
 msgid "Maximum"
 msgstr "Máximo"
@@ -976,8 +1049,14 @@ msgstr "O~K~"
 msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
 msgstr "PHP terminó antes de que Xdebug conectara: ¿está cargado Xdebug?\n"
 
+msgid "PHP functions"
+msgstr "Funciones PHP"
+
 msgid "PHP settings of the project trusted"
 msgstr "Ajustes PHP del proyecto marcados como de confianza"
+
+msgid "PHP that templates may call: functions in formulas and conditions, custom modifiers. A project's only once you trust it."
+msgstr "El PHP que pueden llamar las plantillas: funciones en fórmulas y condiciones, modificadores propios. Los del proyecto, solo cuando confíes en ellos."
 
 msgid "PHP · no errors"
 msgstr "PHP · sin errores"
@@ -987,6 +1066,9 @@ msgstr "PHP · php no está en el PATH: sin verificar"
 
 msgid "Parameters"
 msgstr "Argumentos"
+
+msgid "Parser"
+msgstr "Parser"
 
 msgid "Paths relative to the project · an empty dialect is Div's default"
 msgstr "Rutas relativas al proyecto · un dialecto vacío es el de Div por defecto"
@@ -1046,6 +1128,10 @@ msgstr "Pon el cursor en un símbolo o en una cadena con un nombre de archivo (s
 #, python-brace-format, python-format
 msgid "Put the cursor on a {% %} or {%% %%} include"
 msgstr "Pon el cursor en un include {% %} o {%% %%}"
+
+#, python-brace-format
+msgid "Put {section} back to Div's defaults in this file?"
+msgstr "¿Devolver {section} a los valores por defecto de Div en este archivo?"
 
 msgid "Raw URL encode"
 msgstr "Codificar URL (raw)"
@@ -1186,6 +1272,9 @@ msgstr "Varios modificadores sobre una variable: {$name|^|_|}"
 msgid "Simple replacement"
 msgstr "Reemplazo simple"
 
+msgid "Simulated request"
+msgstr "Petición simulada"
+
 msgid "Space"
 msgstr "Espacio"
 
@@ -1262,8 +1351,15 @@ msgstr "Sugerido: el @_DIALECT de la plantilla = {ref}"
 msgid "Suggested: the template's @_DIALECT = {ref} (Div not found to resolve it)"
 msgstr "Sugerido: el @_DIALECT de la plantilla = {ref} (no se encontró Div para resolverlo)"
 
+#, python-brace-format
+msgid "Suggested: {value}"
+msgstr "Sugerido: {value}"
+
 msgid "Sum"
 msgstr "Suma"
+
+msgid "S~E~SSION"
+msgstr "S~E~SSION"
 
 msgid "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
 msgstr "Tab siguiente enlace · Enter ir · Alt+F1 atrás · Shift+F1 índice · Esc cerrar"
@@ -1316,6 +1412,15 @@ msgstr "La siguiente petición a {url} se detiene {where}"
 
 msgid "The next request will not stop"
 msgstr "La siguiente petición no se detendrá"
+
+msgid "The project's PHP settings wait for your trust (Alt+F10)"
+msgstr "Los ajustes PHP del proyecto esperan tu confianza (Alt+F10)"
+
+msgid "The project's dialect: templates without @_DIALECT are in it, and a dialect file's missing tags are its."
+msgstr "El dialecto del proyecto: las plantillas sin @_DIALECT están en él, y las etiquetas que faltan en un archivo de dialecto son las suyas."
+
+msgid "The request templates see while you design them: div.get, div.post, div.server, div.session."
+msgstr "La petición que ven las plantillas mientras las diseñas: div.get, div.post, div.server, div.session."
 
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr "El script se está ejecutando: Ctrl+F2 lo detiene"
@@ -1403,6 +1508,9 @@ msgstr "~T~ipo"
 msgid "URL encode"
 msgstr "Codificar URL"
 
+msgid "Unsaved: F2 saves (Div sees the saved file)"
+msgstr "Sin guardar: F2 guarda (Div ve el archivo guardado)"
+
 msgid "Upper case"
 msgstr "Mayúsculas"
 
@@ -1436,6 +1544,15 @@ msgstr "Servidor web {address} detenido"
 msgid "Web server: {url} ({state})"
 msgstr "Servidor web: {url} ({state})"
 
+msgid "What Div adds to a template's or a data file's name (without the dot)."
+msgstr "Lo que Div añade al nombre de una plantilla o de un archivo de datos (sin el punto)."
+
+msgid "What every template gets besides its data: globals (setGlobal()), defaults, system variables."
+msgstr "Lo que recibe cada plantilla además de sus datos: globales (setGlobal()), valores por defecto, variables de sistema."
+
+msgid "Which Div, and where it looks for templates (PACKAGES, DIV_REPO, addIncludePath())."
+msgstr "Qué Div, y dónde busca las plantillas (PACKAGES, DIV_REPO, addIncludePath())."
+
 msgid "Which template? Type its path."
 msgstr "¿Qué plantilla? Escribe su ruta."
 
@@ -1464,6 +1581,22 @@ msgstr "Xdebug no envió el paquete de inicio"
 
 msgid "Your choice (the template's own @_DIALECT is ignored)"
 msgstr "Tu elección (se ignora el @_DIALECT de la propia plantilla)"
+
+#, python-brace-format
+msgid "[!] Not valid JSON: {error}"
+msgstr "[!] No es JSON válido: {error}"
+
+#, python-brace-format
+msgid "[!] PHP lacks: {names}"
+msgstr "[!] A PHP le falta: {names}"
+
+#, python-brace-format
+msgid "[!] The file is not valid JSON: {error}"
+msgstr "[!] El archivo no es JSON válido: {error}"
+
+#, python-brace-format
+msgid "[!] divide leaves out {count}:"
+msgstr "[!] divide omite {count}:"
 
 msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
 msgstr "[$products] ... @empty@ ... [/$products], y [:1,10:] ... [/]"
@@ -1497,6 +1630,9 @@ msgstr "se espera una ruta"
 
 msgid "a reference looks like name or person.name"
 msgstr "una referencia tiene la forma name o person.name"
+
+msgid "a whole number is expected"
+msgstr "se espera un número entero"
 
 msgid "a whole number of at least 1 is expected"
 msgstr "se espera un número entero mayor o igual que 1"
@@ -1611,6 +1747,10 @@ msgstr "código de salida {exit_code}"
 msgid "expected ':' after the key {key!r}"
 msgstr "se esperaba ':' tras la clave {key!r}"
 
+#, python-brace-format
+msgid "found by itself: {path}"
+msgstr "encontrado solo: {path}"
+
 msgid "friendly tag"
 msgstr "etiqueta amigable"
 
@@ -1664,6 +1804,9 @@ msgstr "ninguno"
 msgid "not connected"
 msgstr "sin conexión"
 
+msgid "not found"
+msgstr "no encontrado"
+
 msgid "number format"
 msgstr "formato de número"
 
@@ -1709,6 +1852,9 @@ msgstr "proyecto"
 
 msgid "project folder and/or files to open"
 msgstr "carpeta del proyecto y/o archivos que abrir"
+
+msgid "project's"
+msgstr "del proyecto"
 
 msgid "strip block"
 msgstr "bloque strip"
@@ -1790,6 +1936,18 @@ msgstr "tipo desconocido {type}"
 msgid "unterminated string"
 msgstr "cadena sin terminar"
 
+msgid "user"
+msgstr "usuario"
+
+msgid "user's"
+msgstr "del usuario"
+
+msgid "valid"
+msgstr "válido"
+
+msgid "written in the setup"
+msgstr "escrito en la configuración"
+
 #, python-brace-format, python-format
 msgid "{% header %}, {%% footer %%}, and locations (( name )) filled by {{name ... name}}"
 msgstr "{% header %}, {%% footer %%}, y las locations (( name )) que llena {{name ... name}}"
@@ -1815,6 +1973,10 @@ msgstr[1] "{changes} en {n} análisis"
 #, python-brace-format
 msgid "{close} closes a condition that was never opened"
 msgstr "{close} cierra una condición que nunca se abrió"
+
+#, python-brace-format
+msgid "{count} include paths"
+msgstr "{count} rutas de inclusión"
 
 #, python-brace-format
 msgid "{count} occurrences replaced"
@@ -1935,6 +2097,10 @@ msgstr[0] "{n} coincidencia"
 msgstr[1] "{n} coincidencias"
 
 #, python-brace-format
+msgid "{n} of {count} set in this file · Enter to edit"
+msgstr "{n} de {count} en este archivo · Enter para editar"
+
+#, python-brace-format
 msgid "{n} tag change:"
 msgid_plural "{n} tags change:"
 msgstr[0] "{n} etiqueta cambia:"
@@ -1990,6 +2156,10 @@ msgstr "{value} no es un archivo."
 msgid "{verdict}: press any key"
 msgstr "{verdict}: pulsa una tecla"
 
+#, python-brace-format
+msgid "{where}: {count} tags"
+msgstr "{where}: {count} etiquetas"
+
 msgid "~1~6 colours (ANSI)"
 msgstr "~1~6 colores (ANSI)"
 
@@ -2013,6 +2183,9 @@ msgstr "~D~irección (host:puerto)"
 
 msgid "~A~ll"
 msgstr "~T~odas"
+
+msgid "~A~llowed functions (separated by ,)"
+msgstr "Funciones ~p~ermitidas (separadas por ,)"
 
 msgid "~A~rray"
 msgstr "~A~rray"
@@ -2044,6 +2217,9 @@ msgstr "~L~ibros"
 
 msgid "~B~rowse..."
 msgstr "~E~xaminar..."
+
+msgid "~C~OOKIE"
+msgstr "~C~OOKIE"
 
 msgid "~C~all stack"
 msgstr "~P~ila de llamadas"
@@ -2078,6 +2254,9 @@ msgstr "~C~ontenido"
 msgid "~C~opy"
 msgstr "~C~opiar"
 
+msgid "~D~ata (DIV_DEFAULT_DATA_FILE_EXT)"
+msgstr "~D~atos (DIV_DEFAULT_DATA_FILE_EXT)"
+
 msgid "~D~ata file..."
 msgstr "Archivo de ~d~atos..."
 
@@ -2086,6 +2265,16 @@ msgstr "~D~epurar"
 
 msgid "~D~efaults"
 msgstr "~P~or defecto"
+
+#, python-brace-format
+msgid "~D~efaults: [{\"search\": ..., \"replace\": ...}]"
+msgstr "Valores por ~d~efecto: [{\"search\": ..., \"replace\": ...}]"
+
+msgid "~D~ialect file"
+msgstr "Archivo de ~d~ialecto"
+
+msgid "~D~ialect in the Dialector"
+msgstr "~D~ialecto en el Dialector"
 
 msgid "~D~ialector..."
 msgstr "~D~ialector..."
@@ -2105,8 +2294,14 @@ msgstr "Editar d~a~tos"
 msgid "~E~dit section..."
 msgstr "~E~ditar sección..."
 
+msgid "~E~ngine (autoload.php or div.php)"
+msgstr "~M~otor (autoload.php o div.php)"
+
 msgid "~E~ntire scope"
 msgstr "Todo el te~x~to"
+
+msgid "~E~rror reporting (E_ALL, E_NOTICE...)"
+msgstr "~E~rrores de PHP (E_ALL, E_NOTICE...)"
 
 msgid "~E~valuate..."
 msgstr "~E~valuar..."
@@ -2162,6 +2357,12 @@ msgstr "Desde el ~c~ursor"
 msgid "~F~rom dialect"
 msgstr "Dialecto de ~o~rigen"
 
+msgid "~G~ET (a JSON object)"
+msgstr "~G~ET (un objeto JSON)"
+
+msgid "~G~lobals (a JSON object)"
+msgstr "~G~lobales (un objeto JSON)"
+
 msgid "~G~o to cursor"
 msgstr "Ir al ~c~ursor"
 
@@ -2173,6 +2374,9 @@ msgstr "A~y~uda"
 
 msgid "~I~mport tags..."
 msgstr "~I~mportar etiquetas..."
+
+msgid "~I~nclude paths (separated by ;)"
+msgstr "Rutas de ~i~nclusión (separadas por ;)"
 
 msgid "~I~ndex"
 msgstr "Índ~i~ce"
@@ -2186,11 +2390,18 @@ msgstr "~I~dioma"
 msgid "~L~anguage servers..."
 msgstr "Servidores de ~l~enguaje..."
 
+msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
+msgstr "Ciclos ~m~áximos del parser (DIV_MAX_PARSE_CYCLES)"
+
 msgid "~M~essages"
 msgstr "~M~ensajes"
 
 msgid "~M~odern dark"
 msgstr "~M~oderno oscuro"
+
+#, python-brace-format
+msgid "~M~odifiers: {\"prefix:\": \"php_function\"}"
+msgstr "~M~odificadores: {\"prefix:\": \"php_function\"}"
 
 msgid "~N~ame"
 msgstr "~N~ombre"
@@ -2250,6 +2461,12 @@ msgstr "~E~squema"
 msgid "~O~utput"
 msgstr "Sa~l~ida"
 
+msgid "~P~OST"
+msgstr "~P~OST"
+
+msgid "~P~ackages: the templates' root (PACKAGES)"
+msgstr "~P~aquetes: la raíz de las plantillas (PACKAGES)"
+
 #, python-brace-format
 msgid "~P~arameters of {name}"
 msgstr "~A~rgumentos de {name}"
@@ -2275,6 +2492,9 @@ msgstr "Tema ~a~nterior"
 msgid "~P~roject"
 msgstr "~P~royecto"
 
+msgid "~P~roject's setup"
+msgstr "Configuración del ~p~royecto"
+
 msgid "~P~rompt on replace"
 msgstr "Pre~g~untar al reemplazar"
 
@@ -2299,6 +2519,12 @@ msgstr "~R~eemplazar por"
 msgid "~R~eplace..."
 msgstr "~R~eemplazar..."
 
+msgid "~R~epository (DIV_REPO)"
+msgstr "~R~epositorio (DIV_REPO)"
+
+msgid "~R~estore Div's defaults"
+msgstr "~R~estaurar los valores de Div"
+
 msgid "~R~estore section defaults"
 msgstr "~R~estaurar la sección"
 
@@ -2307,6 +2533,9 @@ msgstr "~C~arpeta..."
 
 msgid "~R~un"
 msgstr "E~j~ecutar"
+
+msgid "~S~ERVER (added to PHP's)"
+msgstr "~S~ERVER (se añade al de PHP)"
 
 msgid "~S~ave"
 msgstr "~G~uardar"
@@ -2335,8 +2564,14 @@ msgstr "~D~etener el servidor"
 msgid "~S~tring"
 msgstr "Te~x~to"
 
+msgid "~S~ystem variables (div.now, div.get... are always on)"
+msgstr "Variables de ~s~istema (div.now, div.get... siempre están activas)"
+
 msgid "~T~emplate"
 msgstr "Plan~t~illa"
+
+msgid "~T~emplates (DIV_DEFAULT_TPL_FILE_EXT)"
+msgstr "~P~lantillas (DIV_DEFAULT_TPL_FILE_EXT)"
 
 msgid "~T~ext to find"
 msgstr "~T~exto a buscar"
@@ -2368,8 +2603,14 @@ msgstr "~V~erdadero"
 msgid "~T~rue colour (24-bit)"
 msgstr "Color ~r~eal (24 bits)"
 
+msgid "~T~rust the project's PHP settings..."
+msgstr "~C~onfiar en los ajustes PHP del proyecto..."
+
 msgid "~U~ndo"
 msgstr "~D~eshacer"
+
+msgid "~U~ser's setup (all projects)"
+msgstr "Configuración del ~u~suario (todos los proyectos)"
 
 msgid "~U~sing help"
 msgstr "~U~so de la ayuda"
@@ -2442,4 +2683,7 @@ msgstr "── servidor web {address} ──"
 
 #~ msgid "\"{key}\" is not applied yet: this divide leaves it out"
 #~ msgstr "«{key}» todavía no se aplica: esta versión de divide lo omite"
+
+#~ msgid "~E~rror reporting (E_ALL, E_ALL & ~E_NOTICE...)"
+#~ msgstr ""
 

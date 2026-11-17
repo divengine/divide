@@ -37,6 +37,7 @@ XTermParser._sequence_to_key_events = _alt_keys_type_nothing
 import argparse
 import os
 import re
+import json
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
@@ -87,6 +88,7 @@ from divide.run.render import (
     IncludeTarget,
     RenderError,
     check_dialect,
+    check_setup,
     default_data_file,
     find_engine,
     render,
@@ -98,6 +100,7 @@ from divide.ui.explorer import TREE_HINT, ExplorerMixin
 from divide.ui.help import HelpWindow
 from divide.ui.helpsearch import HelpSearchDialog
 from divide.ui.jsontree import JsonTreeWindow
+from divide.ui.divsetup import DivSetupWindow, SetupSectionDialog, set_value as setup_set_value
 from divide.ui.dialector import (
     CM_OPEN_TRANSLATION,
     CM_SAVE_TRANSLATION,
@@ -153,6 +156,14 @@ CM_OUTPUT = Command.USER + 10
 CM_DATA_FILE = Command.USER + 11
 CM_EDIT_DATA = Command.USER + 12
 CM_DIV_ENGINE = Command.USER + 13
+CM_DIV_SETUP = Command.USER + 34
+CM_DS_EDIT = Command.USER + 35
+CM_DS_RESTORE = Command.USER + 36
+CM_DS_SCOPE = Command.USER + 37
+CM_DS_JSON = Command.USER + 38
+CM_DS_DIALECT = Command.USER + 39
+CM_DS_TRUST = Command.USER + 46
+CM_DS_CHECK = Command.USER + 47
 CM_DATA_TREE = Command.USER + 14
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
@@ -530,6 +541,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                     Separator(),
                     MenuItem(_('~L~anguage servers...'), CM_LSP_SERVERS),
                     MenuItem(_('~D~iv engine...'), CM_DIV_ENGINE),
+                    MenuItem(_('Div s~e~tup...'), CM_DIV_SETUP),
                     MenuItem(_('~X~debug...'), CM_XDEBUG),
                     Separator(),
                     MenuItem(_('Lan~g~uage...'), CM_LANGUAGE),
@@ -693,6 +705,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def _write(self, win: EditorWindow) -> bool:
         assert win.path is not None
         try:
+            if div_setup.is_setup_file(win.path):
+                win.path.parent.mkdir(parents=True, exist_ok=True)  # .div/ comes with its first setup
             win.path.write_text(win.editor.text, encoding="utf-8")
         except OSError as exc:
             self.notify(_('Save failed: {exc}').format(exc=exc), severity="error")
@@ -702,6 +716,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         self.update_status()
         self.notify(_("Saved {name}").format(name=win.path.name), timeout=1.5)
         self.apply_div_setup()  # it may be a setup file, or a dialect file the setup names
+        for view in self.setup_windows():  # Div sees the saved files: ask it again
+            view.refresh_view()
+            view.check_now()
         self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
         self.lsp_saved(win.path, win.editor.lang)
@@ -807,9 +824,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 dialog = FileDialog(_('Open a file'), start)
                 if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
                     self.open_file(dialog.chosen)
-            case Command.SAVE if editor or isinstance(win, (JsonTreeWindow, DialectorWindow)):
+            case Command.SAVE if editor or isinstance(win, (JsonTreeWindow, DialectorWindow, DivSetupWindow)):
                 await self.save(editor or win.source)  # type: ignore[union-attr]
-            case Command.SAVE_AS if editor or isinstance(win, (JsonTreeWindow, DialectorWindow)):
+            case Command.SAVE_AS if editor or isinstance(win, (JsonTreeWindow, DialectorWindow, DivSetupWindow)):
                 await self.save(editor or win.source, ask_name=True)  # type: ignore[union-attr]
             case Command.SAVE_ALL:
                 for w in self.editor_windows():
@@ -954,6 +971,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
                 self.toggle_data_tree()
             case _ if command == CM_DIV_ENGINE:
                 await self.choose_engine()
+            case _ if command == CM_DIV_SETUP:
+                await self.open_div_setup()
             case _ if command == CM_GOTO_LINE and editor:
                 ed = editor.editor
                 dialog = GotoLineDialog(ed.cursor_location[0] + 1)
@@ -1115,6 +1134,112 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         self.apply_div_setup()
         self.notify(_("PHP settings of the project trusted"), timeout=2)
         return True
+
+    def setup_windows(self) -> list[DivSetupWindow]:
+        return [w for w in self.windows() if isinstance(w, DivSetupWindow)]
+
+    async def open_div_setup(self, *, user: bool = False) -> None:
+        """Options > Div setup: the project's setup file (or the user's), section by section."""
+        file = div_setup.user_file() if user else div_setup.project_file(self.root)
+        source = self.open_file(file)  # a new file: an empty buffer, F2 creates it
+        if source is None:
+            return
+        view = next((w for w in self.setup_windows() if w.source is source), None)
+        if view is None:
+            view = DivSetupWindow(source, self.root, user=user, number=self._free_number())
+            for attr in ("offset", "width", "height"):
+                setattr(view.styles, attr, getattr(source.styles, attr))
+            self.insert_window(view)
+        else:
+            self.raise_window(view)
+
+    async def check_div_setup(self):
+        """Div's verdict on the saved setup (``setup_check``), or why it cannot say."""
+        engine = self.find_div_engine([self.root]) if shutil.which("php") else None
+        if engine is None:
+            return _("Div was not found (Options > Div engine, or the setup's engine)")
+        try:
+            return await check_setup(engine, cwd=self.root)
+        except RenderError as exc:
+            return str(exc)
+
+    def div_setup_action(self, win: DivSetupWindow, action: str) -> None:
+        self._div_setup_action(win, action)
+
+    @work(group="div-setup")
+    async def _div_setup_action(self, win: DivSetupWindow, action: str) -> None:
+        setup = self.div_setup()
+        if action == "menu":
+            from textual_vision.menus import Menu, MenuItem as Item, Separator as Sep
+            from divide.ui.explorer import LocalMenu
+
+            items = [
+                Item(_('~E~dit section...'), CM_DS_EDIT, _('Enter')),
+                Item(_("~R~estore Div's defaults"), CM_DS_RESTORE, _('Del')),
+                Sep(),
+                Item(_("~P~roject's setup") if win.user else _("~U~ser's setup (all projects)"), CM_DS_SCOPE),
+                Item(_('Edit as ~J~SON'), CM_DS_JSON, "Ctrl+T"),
+            ]
+            if setup.dialect_source is not None:
+                items.append(Item(_('~D~ialect in the Dialector'), CM_DS_DIALECT))
+            if setup.untrusted is not None:
+                items.append(Item(_("~T~rust the project's PHP settings..."), CM_DS_TRUST))
+            items += [Sep(), Item(_('~C~heck with Div'), CM_DS_CHECK)]
+            region = win.sections.content_region
+            at = (region.x + 2, region.y + max(0, win.section_index - win.sections.scroll_offset.y))
+            command = await self.push_screen_wait(LocalMenu(Menu(items=items), at))
+            action = {
+                CM_DS_EDIT: "edit", CM_DS_RESTORE: "restore", CM_DS_SCOPE: "scope", CM_DS_JSON: "json",
+                CM_DS_DIALECT: "dialect", CM_DS_TRUST: "trust", CM_DS_CHECK: "check",
+            }.get(command, "")
+        section = win.section
+        match action:
+            case "edit":
+                if not section.fields:
+                    await self.run_dialog(information(section.title, section.about))
+                    return
+                if not await win.can_rewrite():
+                    return
+                suggestions = {}
+                if any(f.key == "engine" for f in section.fields) and (found := self.find_div_engine([self.root])):
+                    suggestions["engine"] = str(found)
+                base = (win.source.path or self.root / ".div" / "setup.json").parent.parent
+                dialog = SetupSectionDialog(section, win.data, win.source.path or base, base, suggestions)
+                if await self.run_dialog(dialog) == Command.OK:
+                    data = json.loads(json.dumps(win.data, default=str))
+                    for key, value in dialog.values.items():
+                        setup_set_value(data, key, value, remove=value is None)
+                    win.write(data)
+            case "restore":
+                if not section.fields or not await win.can_rewrite():
+                    return
+                text = _("Put {section} back to Div's defaults in this file?").format(section=section.title)
+                if await self.run_dialog(confirm(_('Div setup'), text)) == Command.YES:
+                    data = json.loads(json.dumps(win.data, default=str))
+                    for f in section.fields:
+                        setup_set_value(data, f.key, None, remove=True)
+                    win.write(data)
+            case "scope":
+                await self.open_div_setup(user=not win.user)
+                return
+            case "json":
+                self.raise_window(win.source)
+                return
+            case "dialect":
+                if setup.dialect_source is not None:
+                    self.open_file(setup.dialect_source)
+                    await self.open_dialector()
+                return
+            case "trust":
+                if setup.untrusted is not None:
+                    await self.ask_div_trust(setup.untrusted)
+                win.refresh_view()
+                win.check_now()
+            case "check":
+                win.check_now()
+        if win.is_attached:
+            win.sections.focus()
+        self.update_status()
 
     def template_roots(self) -> list[Path]:
         """Where Div looks for templates besides the template's folder: the project, and
@@ -1685,6 +1810,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             return "Help"
         if isinstance(active, DialectorWindow):
             return "Dialector"
+        if isinstance(active, DivSetupWindow):
+            return "Div-Setup"
         if isinstance(active, JsonTreeWindow):
             return "Data-Files"
         if isinstance(active, ProjectWindow):
@@ -2092,7 +2219,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
     def toggle_data_tree(self) -> None:
         """Code <-> tree: from a tree go to its code; from JSON code (or a template's data) open its tree."""
         active = self.active_window()
-        if isinstance(active, (JsonTreeWindow, DialectorWindow)):
+        if isinstance(active, (JsonTreeWindow, DialectorWindow, DivSetupWindow)):
             self.raise_window(active.source)
             return
         source = active if isinstance(active, EditorWindow) and active.editor.lang == "json" else None
@@ -2158,7 +2285,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
             if win.editor is event.text_area:
                 win.refresh_indicator()
         if isinstance(event, DivEditor.Changed):
-            for view in self.tree_windows() + self.dialector_windows():
+            for view in self.tree_windows() + self.dialector_windows() + self.setup_windows():
                 if view.source.editor is event.text_area:
                     view.reload()
         self.update_status()
@@ -2215,6 +2342,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, TraceMixi
         active = self.active_window()
         if isinstance(active, OutputWindow):
             status.set_hint(active.summary)
+            return
+        if isinstance(active, DivSetupWindow):
+            dirty = " *" if active.source.dirty else ""
+            status.set_hint(f"{active.source.display_name}{dirty} · {DivSetupWindow.HINT}")
             return
         if isinstance(active, DialectorWindow):
             dirty = " *" if active.source.dirty else ""

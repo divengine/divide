@@ -49,8 +49,9 @@ composer require divengine/div
 divide encuentra el motor por sí solo, en este orden:
 
 1. la variable de entorno `DIVIDE_DIV_PHP`: un `vendor/autoload.php`, o el `src/div.php` de un checkout de Div (con su `vendor/` instalado);
-2. la ruta definida en **Opciones > Motor Div…** (guardada en `~/.config/divide/config.json`);
-3. un `vendor/autoload.php` con `vendor/divengine/div`, buscando hacia arriba desde la plantilla y desde la carpeta del proyecto.
+2. el `engine` de la [[configuración de Div|Div Setup]] del proyecto (`.div/setup.json`), y después de la tuya (`~/.div/setup.json`);
+3. la ruta definida en **Opciones > Motor Div…** (guardada en `~/.config/divide/config.json`);
+4. un `vendor/autoload.php` con `vendor/divengine/div`, buscando hacia arriba desde la plantilla y desde la carpeta del proyecto.
 
 Si no encuentra ninguno, **Ctrl+F9** en una plantilla explica qué hacer, y las verificaciones de includes simplemente se omiten.
 

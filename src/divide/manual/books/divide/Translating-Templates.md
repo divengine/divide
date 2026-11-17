@@ -10,6 +10,8 @@ Div can rewrite a template from one dialect to another. **Tools > Translate a te
 - **From dialect:** the dialect the template is written in. This is normally known: a template written in another dialect says so with `@_DIALECT`, and one that says nothing is in Div's default dialect. So divide **suggests** it. It reads the template's `@_DIALECT` and lets Div find the file the same way it does when rendering (`getTplPath()`), or it suggests Div's default when there is none. A note under the field says where the suggestion comes from. You can still type another dialect; once you do, divide stops suggesting.
 - **To dialect:** the dialect to translate into. Leave it empty for Div's default dialect.
 
+With a project dialect (its [[Div setup|Div Setup]]), a **Base** check box says what fills what the dialects leave out, and what an empty dialect means: the project's dialect (checked), or Div's default one.
+
 Paths are relative to the project, and an empty dialect means Div's default. Each field has a **...** button that opens the file dialog and writes the chosen file's **absolute** path. Shorten it to a relative one if you prefer. Choosing a file with **...** previews straight away.
 
 ## Preview, save, open

@@ -10,6 +10,8 @@ Div puede reescribir una plantilla de un dialecto a otro. **Herramientas > Tradu
 - **Dialecto de origen:** el dialecto en el que está escrita la plantilla. Normalmente se sabe: una plantilla escrita en otro dialecto lo dice con `@_DIALECT`, y una que no dice nada está en el dialecto por defecto de Div. Así que divide lo **sugiere**. Lee el `@_DIALECT` de la plantilla y deja que Div encuentre el archivo igual que al renderizar (`getTplPath()`), o sugiere el de Div por defecto cuando no hay ninguno. Una nota bajo el campo dice de dónde viene la sugerencia. Aún puedes escribir otro dialecto; en cuanto lo haces, divide deja de sugerir.
 - **Dialecto de destino:** el dialecto al que traducir. Déjalo vacío para el dialecto por defecto de Div.
 
+Con un dialecto de proyecto (su [[configuración de Div|Div Setup]]), una casilla **Base** dice qué completa lo que los dialectos no tienen, y qué significa un dialecto vacío: el dialecto del proyecto (marcada), o el de Div por defecto.
+
 Las rutas son relativas al proyecto, y un dialecto vacío significa el de Div por defecto. Cada campo tiene un botón **...** que abre el diálogo de archivos y escribe la ruta **absoluta** del archivo elegido. Acórtala a una relativa si lo prefieres. Elegir un archivo con **...** previsualiza enseguida.
 
 ## Previsualizar, guardar, abrir

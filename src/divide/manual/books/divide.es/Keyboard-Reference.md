@@ -139,6 +139,20 @@ En los diálogos con una ruta, el botón **...** / **Examinar...** abre el diál
 |---|---|
 | **Enter** / doble clic | abrir el archivo en la coincidencia, seleccionada |
 
+## Ventana Configuración de Div
+
+| Tecla | Acción |
+|---|---|
+| **↑ ↓** | elegir una sección (sus ajustes en vigor se ven al lado) |
+| **Enter** / doble clic | editar la sección |
+| **Supr** | devolver la sección a los valores por defecto de Div |
+| **Ctrl+Z / Ctrl+Y** | deshacer / rehacer |
+| **Ctrl+T** | el archivo de configuración como JSON |
+| **Alt+F10** / **Shift+F10** | menú local: configuración del usuario o del proyecto, JSON, dialecto, confianza, verificar con Div |
+| **F2** | guardar el archivo de configuración |
+
+Ver [[Configuración de Div|Div Setup]].
+
 ## Ventana Esquema
 
 | Tecla | Acción |

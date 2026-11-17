@@ -21,6 +21,7 @@
 * [[Data Files]]
 * [[Other Files]]
 * [[Project Window]]
+* [[Div Setup]]
 * [[Dialector]]
 * [[Translating Templates]]
 

@@ -19,7 +19,7 @@ divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas super
 | **Depurar** | Evaluar (Ctrl+F4), Vigilancias, Pila de llamadas (Ctrl+F3), Añadir vigilancia (Ctrl+F7), Punto de ruptura (Ctrl+F8): ver [[Depurar PHP\|Debugging PHP]]; Traza del render: ver [[Traza del render\|Render Trace]] |
 | **Herramientas** | Dialector, Traducir una plantilla |
 | **Ventana** | Proyecto (Ctrl+B), Mensajes, Mosaico, Cascada, Zoom, Siguiente, Anterior, Cerrar, Cerrar todas |
-| **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, Xdebug |
+| **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, [[configuración de Div|Div Setup]], Xdebug |
 | **Ayuda** | Contenido, Libros, Índice (Shift+F1), Buscar tema (Ctrl+F1), Buscar (en los libros por palabras, por relevancia), Tema anterior (Alt+F1), Uso de la ayuda (F1), Acerca de: ver [[Ayuda\|Help]] |
 
 ## Ventanas

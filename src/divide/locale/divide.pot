@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 01:38+0000\n"
+"POT-Creation-Date: 2026-11-17 01:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,6 +77,9 @@ msgstr ""
 msgid "(nothing to list)"
 msgstr ""
 
+msgid "(the project's, not trusted yet: Alt+F10)"
+msgstr ""
+
 msgid "16 colours (Windows console)"
 msgstr ""
 
@@ -90,6 +93,9 @@ msgid "Add watch"
 msgstr ""
 
 msgid "Aggregate functions"
+msgstr ""
+
+msgid "An empty field: Div's default (or the user's setup)."
 msgstr ""
 
 msgid "As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them."
@@ -289,6 +295,9 @@ msgstr ""
 msgid "Co~m~plete"
 msgstr ""
 
+msgid "Custom PHP code"
+msgstr ""
+
 msgid "Cu~t~"
 msgstr ""
 
@@ -334,6 +343,12 @@ msgstr ""
 msgid "Default repl. end"
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"Defaults by ~v~ariable: [{\"var\": ..., \"search\": ..., \"replace\": "
+"...}]"
+msgstr ""
+
 msgid "Del"
 msgstr ""
 
@@ -349,6 +364,9 @@ msgid "Delete {path!s} and its {count} item(s)?"
 msgstr ""
 
 msgid "De~l~ete..."
+msgstr ""
+
+msgid "Dialect"
 msgstr ""
 
 msgid "Dialect ~f~ile"
@@ -431,11 +449,27 @@ msgid "Div setup"
 msgstr ""
 
 #, python-brace-format
+msgid "Div setup ({which}): {name}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Div setup rewrites {name} as standard JSON: its comments are dropped. "
+"Continue?"
+msgstr ""
+
+#, python-brace-format
 msgid "Div syntax error at {frag!r}"
+msgstr ""
+
+msgid "Div s~e~tup..."
 msgstr ""
 
 #, python-brace-format
 msgid "Div translated {lines} lines · shown in the target dialect"
+msgstr ""
+
+msgid "Div was not found (Options > Div engine, or the setup's engine)"
 msgstr ""
 
 msgid ""
@@ -454,6 +488,16 @@ msgid "Div was not found: Div judges the dialect (Options > Div engine)."
 msgstr ""
 
 msgid "Div was not found: Div translates the template (Options > Div engine)."
+msgstr ""
+
+#, python-brace-format
+msgid "Div {version}: dialect {dialect}"
+msgstr ""
+
+msgid "Div's default dialect"
+msgstr ""
+
+msgid "Div: not asked yet (Alt+F10 > Check with Div)"
 msgstr ""
 
 msgid "Div: valid √"
@@ -476,6 +520,10 @@ msgid ""
 "read  {strip2}"
 msgstr ""
 
+#, python-brace-format
+msgid "Div: {problem}"
+msgstr ""
+
 msgid "Document root"
 msgstr ""
 
@@ -483,6 +531,9 @@ msgid "Dollar symbol"
 msgstr ""
 
 msgid "D~a~ta tree"
+msgstr ""
+
+msgid "Edit as ~J~SON"
 msgstr ""
 
 msgid "Edit item"
@@ -512,7 +563,15 @@ msgstr ""
 msgid "Engine"
 msgstr ""
 
+msgid "Engine and paths"
+msgstr ""
+
 msgid "Enter"
+msgstr ""
+
+msgid ""
+"Enter edit section · Del Div's defaults · F2 save · Alt+F10 menu: "
+"user/project, JSON, trust"
 msgstr ""
 
 msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
@@ -593,6 +652,9 @@ msgstr ""
 msgid "File"
 msgstr ""
 
+msgid "File extensions"
+msgstr ""
+
 msgid "Find"
 msgstr ""
 
@@ -614,6 +676,12 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Fix the dialect file first:\n"
+"{error}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Fix the setup file first:\n"
 "{error}"
 msgstr ""
 
@@ -685,11 +753,20 @@ msgstr ""
 msgid "Help: {title}"
 msgstr ""
 
+msgid ""
+"Hooks (beforeBuild, afterParse...), subclasses of div, closures and sub-"
+"parsers are PHP code: divide does not run the application's code, so they"
+" cannot be set here."
+msgstr ""
+
 msgid "Horizontal tab"
 msgstr ""
 
 #, python-brace-format
 msgid "How a variable is written: {$name}, {$person.name}, {$name:...}"
+msgstr ""
+
+msgid "How far Div goes, and which PHP errors its formulas report."
 msgstr ""
 
 msgid "Ignore begin"
@@ -794,6 +871,9 @@ msgid "Macro begin"
 msgstr ""
 
 msgid "Macro end"
+msgstr ""
+
+msgid "Max ~f~ile name size (DIV_MAX_FILENAME_SIZE)"
 msgstr ""
 
 msgid "Maximum"
@@ -969,7 +1049,15 @@ msgstr ""
 msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
 msgstr ""
 
+msgid "PHP functions"
+msgstr ""
+
 msgid "PHP settings of the project trusted"
+msgstr ""
+
+msgid ""
+"PHP that templates may call: functions in formulas and conditions, custom"
+" modifiers. A project's only once you trust it."
 msgstr ""
 
 msgid "PHP · no errors"
@@ -979,6 +1067,9 @@ msgid "PHP · php not found in PATH: not checked"
 msgstr ""
 
 msgid "Parameters"
+msgstr ""
+
+msgid "Parser"
 msgstr ""
 
 msgid "Paths relative to the project · an empty dialect is Div's default"
@@ -1040,6 +1131,10 @@ msgstr ""
 
 #, python-brace-format, python-format
 msgid "Put the cursor on a {% %} or {%% %%} include"
+msgstr ""
+
+#, python-brace-format
+msgid "Put {section} back to Div's defaults in this file?"
 msgstr ""
 
 msgid "Raw URL encode"
@@ -1186,6 +1281,9 @@ msgstr ""
 msgid "Simple replacement"
 msgstr ""
 
+msgid "Simulated request"
+msgstr ""
+
 msgid "Space"
 msgstr ""
 
@@ -1262,7 +1360,14 @@ msgstr ""
 msgid "Suggested: the template's @_DIALECT = {ref} (Div not found to resolve it)"
 msgstr ""
 
+#, python-brace-format
+msgid "Suggested: {value}"
+msgstr ""
+
 msgid "Sum"
+msgstr ""
+
+msgid "S~E~SSION"
 msgstr ""
 
 msgid "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
@@ -1317,6 +1422,19 @@ msgid "The next request to {url} stops {where}"
 msgstr ""
 
 msgid "The next request will not stop"
+msgstr ""
+
+msgid "The project's PHP settings wait for your trust (Alt+F10)"
+msgstr ""
+
+msgid ""
+"The project's dialect: templates without @_DIALECT are in it, and a "
+"dialect file's missing tags are its."
+msgstr ""
+
+msgid ""
+"The request templates see while you design them: div.get, div.post, "
+"div.server, div.session."
 msgstr ""
 
 msgid "The script is running: Ctrl+F2 stops it"
@@ -1405,6 +1523,9 @@ msgstr ""
 msgid "URL encode"
 msgstr ""
 
+msgid "Unsaved: F2 saves (Div sees the saved file)"
+msgstr ""
+
 msgid "Upper case"
 msgstr ""
 
@@ -1440,6 +1561,19 @@ msgstr ""
 msgid "Web server: {url} ({state})"
 msgstr ""
 
+msgid "What Div adds to a template's or a data file's name (without the dot)."
+msgstr ""
+
+msgid ""
+"What every template gets besides its data: globals (setGlobal()), "
+"defaults, system variables."
+msgstr ""
+
+msgid ""
+"Which Div, and where it looks for templates (PACKAGES, DIV_REPO, "
+"addIncludePath())."
+msgstr ""
+
 msgid "Which template? Type its path."
 msgstr ""
 
@@ -1467,6 +1601,22 @@ msgid "Xdebug sent no init packet"
 msgstr ""
 
 msgid "Your choice (the template's own @_DIALECT is ignored)"
+msgstr ""
+
+#, python-brace-format
+msgid "[!] Not valid JSON: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "[!] PHP lacks: {names}"
+msgstr ""
+
+#, python-brace-format
+msgid "[!] The file is not valid JSON: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "[!] divide leaves out {count}:"
 msgstr ""
 
 msgid "[$products] ... @empty@ ... [/$products], and [:1,10:] ... [/]"
@@ -1500,6 +1650,9 @@ msgid "a path is expected"
 msgstr ""
 
 msgid "a reference looks like name or person.name"
+msgstr ""
+
+msgid "a whole number is expected"
 msgstr ""
 
 msgid "a whole number of at least 1 is expected"
@@ -1613,6 +1766,10 @@ msgstr ""
 msgid "expected ':' after the key {key!r}"
 msgstr ""
 
+#, python-brace-format
+msgid "found by itself: {path}"
+msgstr ""
+
 msgid "friendly tag"
 msgstr ""
 
@@ -1670,6 +1827,9 @@ msgstr ""
 msgid "not connected"
 msgstr ""
 
+msgid "not found"
+msgstr ""
+
 msgid "number format"
 msgstr ""
 
@@ -1714,6 +1874,9 @@ msgid "project"
 msgstr ""
 
 msgid "project folder and/or files to open"
+msgstr ""
+
+msgid "project's"
 msgstr ""
 
 msgid "strip block"
@@ -1801,6 +1964,18 @@ msgstr ""
 msgid "unterminated string"
 msgstr ""
 
+msgid "user"
+msgstr ""
+
+msgid "user's"
+msgstr ""
+
+msgid "valid"
+msgstr ""
+
+msgid "written in the setup"
+msgstr ""
+
 #, python-brace-format, python-format
 msgid ""
 "{% header %}, {%% footer %%}, and locations (( name )) filled by {{name "
@@ -1827,6 +2002,10 @@ msgstr[1] ""
 
 #, python-brace-format
 msgid "{close} closes a condition that was never opened"
+msgstr ""
+
+#, python-brace-format
+msgid "{count} include paths"
 msgstr ""
 
 #, python-brace-format
@@ -1944,6 +2123,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, python-brace-format
+msgid "{n} of {count} set in this file · Enter to edit"
+msgstr ""
+
+#, python-brace-format
 msgid "{n} tag change:"
 msgid_plural "{n} tags change:"
 msgstr[0] ""
@@ -1999,6 +2182,10 @@ msgstr ""
 msgid "{verdict}: press any key"
 msgstr ""
 
+#, python-brace-format
+msgid "{where}: {count} tags"
+msgstr ""
+
 msgid "~1~6 colours (ANSI)"
 msgstr ""
 
@@ -2021,6 +2208,9 @@ msgid "~A~ddress (host:port)"
 msgstr ""
 
 msgid "~A~ll"
+msgstr ""
+
+msgid "~A~llowed functions (separated by ,)"
 msgstr ""
 
 msgid "~A~rray"
@@ -2052,6 +2242,9 @@ msgid "~B~ooks"
 msgstr ""
 
 msgid "~B~rowse..."
+msgstr ""
+
+msgid "~C~OOKIE"
 msgstr ""
 
 msgid "~C~all stack"
@@ -2087,6 +2280,9 @@ msgstr ""
 msgid "~C~opy"
 msgstr ""
 
+msgid "~D~ata (DIV_DEFAULT_DATA_FILE_EXT)"
+msgstr ""
+
 msgid "~D~ata file..."
 msgstr ""
 
@@ -2094,6 +2290,16 @@ msgid "~D~ebug"
 msgstr ""
 
 msgid "~D~efaults"
+msgstr ""
+
+#, python-brace-format
+msgid "~D~efaults: [{\"search\": ..., \"replace\": ...}]"
+msgstr ""
+
+msgid "~D~ialect file"
+msgstr ""
+
+msgid "~D~ialect in the Dialector"
 msgstr ""
 
 msgid "~D~ialector..."
@@ -2114,7 +2320,13 @@ msgstr ""
 msgid "~E~dit section..."
 msgstr ""
 
+msgid "~E~ngine (autoload.php or div.php)"
+msgstr ""
+
 msgid "~E~ntire scope"
+msgstr ""
+
+msgid "~E~rror reporting (E_ALL, E_NOTICE...)"
 msgstr ""
 
 msgid "~E~valuate..."
@@ -2171,6 +2383,12 @@ msgstr ""
 msgid "~F~rom dialect"
 msgstr ""
 
+msgid "~G~ET (a JSON object)"
+msgstr ""
+
+msgid "~G~lobals (a JSON object)"
+msgstr ""
+
 msgid "~G~o to cursor"
 msgstr ""
 
@@ -2181,6 +2399,9 @@ msgid "~H~elp"
 msgstr ""
 
 msgid "~I~mport tags..."
+msgstr ""
+
+msgid "~I~nclude paths (separated by ;)"
 msgstr ""
 
 msgid "~I~ndex"
@@ -2195,10 +2416,17 @@ msgstr ""
 msgid "~L~anguage servers..."
 msgstr ""
 
+msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
+msgstr ""
+
 msgid "~M~essages"
 msgstr ""
 
 msgid "~M~odern dark"
+msgstr ""
+
+#, python-brace-format
+msgid "~M~odifiers: {\"prefix:\": \"php_function\"}"
 msgstr ""
 
 msgid "~N~ame"
@@ -2259,6 +2487,12 @@ msgstr ""
 msgid "~O~utput"
 msgstr ""
 
+msgid "~P~OST"
+msgstr ""
+
+msgid "~P~ackages: the templates' root (PACKAGES)"
+msgstr ""
+
 #, python-brace-format
 msgid "~P~arameters of {name}"
 msgstr ""
@@ -2282,6 +2516,9 @@ msgid "~P~revious topic"
 msgstr ""
 
 msgid "~P~roject"
+msgstr ""
+
+msgid "~P~roject's setup"
 msgstr ""
 
 msgid "~P~rompt on replace"
@@ -2308,6 +2545,12 @@ msgstr ""
 msgid "~R~eplace..."
 msgstr ""
 
+msgid "~R~epository (DIV_REPO)"
+msgstr ""
+
+msgid "~R~estore Div's defaults"
+msgstr ""
+
 msgid "~R~estore section defaults"
 msgstr ""
 
@@ -2315,6 +2558,9 @@ msgid "~R~oot..."
 msgstr ""
 
 msgid "~R~un"
+msgstr ""
+
+msgid "~S~ERVER (added to PHP's)"
 msgstr ""
 
 msgid "~S~ave"
@@ -2344,7 +2590,13 @@ msgstr ""
 msgid "~S~tring"
 msgstr ""
 
+msgid "~S~ystem variables (div.now, div.get... are always on)"
+msgstr ""
+
 msgid "~T~emplate"
+msgstr ""
+
+msgid "~T~emplates (DIV_DEFAULT_TPL_FILE_EXT)"
 msgstr ""
 
 msgid "~T~ext to find"
@@ -2377,7 +2629,13 @@ msgstr ""
 msgid "~T~rue colour (24-bit)"
 msgstr ""
 
+msgid "~T~rust the project's PHP settings..."
+msgstr ""
+
 msgid "~U~ndo"
+msgstr ""
+
+msgid "~U~ser's setup (all projects)"
 msgstr ""
 
 msgid "~U~sing help"

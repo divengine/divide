@@ -139,6 +139,20 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 |---|---|
 | **Enter** / double click | open the file at the match, selected |
 
+## Div setup window
+
+| Key | Action |
+|---|---|
+| **↑ ↓** | choose a section (its settings in effect show beside) |
+| **Enter** / double click | edit the section |
+| **Del** | the section back to Div's defaults |
+| **Ctrl+Z / Ctrl+Y** | undo / redo |
+| **Ctrl+T** | the setup file as JSON |
+| **Alt+F10** / **Shift+F10** | local menu: user's or project's setup, JSON, dialect, trust, check with Div |
+| **F2** | save the setup file |
+
+See [[Div Setup]].
+
 ## Outline window
 
 | Key | Action |

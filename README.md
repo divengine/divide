@@ -58,6 +58,11 @@ through the real Div engine, side by side with the code.
   the signature of the call you type, hover (Ctrl+F1), go to definition
   (Ctrl+Enter) and the server's diagnostics. divide is a generic LSP client (pygls), so
   other languages are one entry away.
+- **Div set up as your application sets it up.** `.div/setup.json` (and your
+  own `~/.div/setup.json`) tells divide the project's template folders,
+  extensions, dialect, globals, defaults, PHP functions and a simulated
+  request; every render, check and include goes through it, and
+  Options > Div setup edits it section by section, with Div's verdict.
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
