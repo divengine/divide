@@ -29,7 +29,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from divide.lang.div.dialect import lenient_json
+from divide.lang.div.dialect import block_clash, lenient_json
 from divide.lang.divjson import references
 from divide.run import children
 from divide.run import setup as div_setup
@@ -143,6 +143,8 @@ async def _call_bridge(request: dict, *, cwd: Path, php: str | None, timeout: fl
             verdict = await _raw_bridge({"engine": request.get("engine"), "op": "dialect_validate",
                                          "tags": setup.dialect_tags}, cwd=cwd, php=php, timeout=timeout)
             valid = verdict.get("valid")
+            if valid is True:
+                valid = block_clash(setup.dialect_tags) or True  # Div before 6.1.4 let it through
             _dialect_verdicts[key] = None if valid is True else str(valid or _('Div gave no answer'))
         if (reason := _dialect_verdicts[key]) is not None:
             use_dialect = False
@@ -306,6 +308,8 @@ async def check_dialect(
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout, project_dialect=project_dialect)
     valid = reply.get("valid")
     version = reply.get("version")
+    if valid is True:
+        valid = block_clash(tags) or True  # Div before 6.1.4 let it through
     if valid is not True:
         return DialectVerdict(str(valid or _('Div gave no answer')), version=version)
     if sample is None or expected is None:

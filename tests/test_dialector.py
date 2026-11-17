@@ -7,7 +7,7 @@ import pytest
 
 from divide.app import Divide
 from divide.lang.div import dialector as dx
-from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
+from divide.lang.div.dialect import DEFAULT_TAGS, Dialect, block_clash
 from divide.lang.div.lexer import Lexer
 from divide.run.render import ENV_ENGINE, check_dialect
 from divide.ui.dialector import DialectorWindow, SectionDialog, TransformDialog, TranslateDialog
@@ -86,6 +86,32 @@ async def test_div_validates_and_reads_dialects_back(tmp_path):
     assert erb.valid
     # Everything but what Div's translator itself gets wrong reads back.
     assert {d.section for d in dx.differences(ERB, erb.translated)} <= {"Includes and locations"}
+
+
+
+LOOP_END_LIKE_BEGIN = {"DIV_TAG_LOOP_BEGIN_PREFIX": "<% for $", "DIV_TAG_LOOP_BEGIN_SUFFIX": " %>",
+                       "DIV_TAG_LOOP_END_PREFIX": "<% for $", "DIV_TAG_LOOP_END_SUFFIX": " %>"}
+LOOP_CLASH = ("DIV_TAG_LOOP_END_PREFIX and DIV_TAG_LOOP_END_SUFFIX must not be equal to "
+              "DIV_TAG_LOOP_BEGIN_PREFIX and DIV_TAG_LOOP_BEGIN_SUFFIX")
+
+
+def test_a_block_cannot_end_with_its_own_begin():
+    assert block_clash({}) is None
+    assert block_clash(LOOP_END_LIKE_BEGIN) == LOOP_CLASH
+    assert block_clash({**LOOP_END_LIKE_BEGIN, "DIV_TAG_LOOP_END_SUFFIX": " end %>"}) is None  # only alike
+    assert block_clash({"DIV_TAG_IGNORE_END": "{ignore}"}) == "DIV_TAG_IGNORE_END must not be equal to DIV_TAG_IGNORE_BEGIN"
+    assert block_clash({"DIV_TAG_ITERATION_END": "[:"}) == (
+        "DIV_TAG_ITERATION_END must not be equal to DIV_TAG_ITERATION_BEGIN_PREFIX")
+
+
+@needs_div
+async def test_div_and_divide_refuse_a_loop_that_ends_like_it_begins(tmp_path):
+    """Div refuses it from 6.1.4; with an older Div, divide says the same."""
+    verdict = await check_dialect(Path(ENGINE), LOOP_END_LIKE_BEGIN, cwd=tmp_path,
+                                  sample=dx.example(LOOP_END_LIKE_BEGIN).text, expected=dx.example({}).text)
+    assert verdict.reason == LOOP_CLASH
+    alike = {**LOOP_END_LIKE_BEGIN, "DIV_TAG_LOOP_END_SUFFIX": " end %>"}
+    assert (await check_dialect(Path(ENGINE), alike, cwd=tmp_path)).valid
 
 
 async def settle(pilot, n=8):

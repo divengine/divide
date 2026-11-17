@@ -7,7 +7,9 @@ original web dialector, divengine/dialector), so any dialect can be shown
 filled in, with the place of every tag known.
 
 Whether a dialect is valid, and whether Div reads it back, is not decided
-here: Div answers that (``divide.run.render.check_dialect``).
+here: Div answers that (``divide.run.render.check_dialect``). The one rule divide
+applies itself is Div 6.1.4's, for older engines: no block may end with its own
+begin tag (``dialect.block_clash``).
 """
 
 from __future__ import annotations

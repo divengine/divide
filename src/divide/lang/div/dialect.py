@@ -151,6 +151,46 @@ SYSTEM_VAR_PREFIX = "div."
 
 _PROPERTY_RE = re.compile(r"^[ \t]*@_([A-Za-z_]\w*)[ \t]*=[ \t]*(.*?)[ \t]*$", re.M)
 
+# Blocks with a begin and an end tag, and blocks with a name between a prefix and
+# a suffix ([$list] ... [/$list]), as div::isValidCurrentDialect() checks them (6.1.4).
+_BLOCKS = (
+    ("DIV_TAG_IGNORE_BEGIN", "DIV_TAG_IGNORE_END"),
+    ("DIV_TAG_COMMENT_BEGIN", "DIV_TAG_COMMENT_END"),
+    ("DIV_TAG_TXT_BEGIN", "DIV_TAG_TXT_END"),
+    ("DIV_TAG_STRIP_BEGIN", "DIV_TAG_STRIP_END"),
+    ("DIV_TAG_FORMULA_BEGIN", "DIV_TAG_FORMULA_END"),
+    ("DIV_TAG_ITERATION_BEGIN_PREFIX", "DIV_TAG_ITERATION_END"),
+    ("DIV_TAG_CONDITIONS_BEGIN_PREFIX", "DIV_TAG_CONDITIONS_END"),
+    ("DIV_TAG_TPLVAR_BEGIN", "DIV_TAG_TPLVAR_END"),
+    ("DIV_TAG_DEFAULT_REPLACEMENT_BEGIN", "DIV_TAG_DEFAULT_REPLACEMENT_END"),
+    ("DIV_TAG_INCLUDE_BEGIN", "DIV_TAG_INCLUDE_END"),
+    ("DIV_TAG_PREPROCESSED_BEGIN", "DIV_TAG_PREPROCESSED_END"),
+    ("DIV_TAG_FRIENDLY_BEGIN", "DIV_TAG_FRIENDLY_END"),
+    ("DIV_TAG_LOCATION_BEGIN", "DIV_TAG_LOCATION_END"),
+    ("DIV_TAG_MACRO_BEGIN", "DIV_TAG_MACRO_END"),
+)
+_NAMED_BLOCKS = (
+    "DIV_TAG_LOOP", "DIV_TAG_SUBPARSER", "DIV_TAG_CONDITIONAL_TRUE", "DIV_TAG_CONDITIONAL_FALSE",
+    "DIV_TAG_CAPSULE", "DIV_TAG_MULTI_REPLACEMENT", "DIV_TAG_LOCATION_CONTENT",
+)
+
+
+def block_clash(tags: dict[str, str]) -> str | None:
+    """Div's words when a block of the dialect ends with its own begin tag (None: none does).
+
+    The parser cannot tell where such a block closes. Div refuses it from 6.1.4;
+    divide applies the same rule, in the same words, whatever Div it runs."""
+    tags = {**DEFAULT_TAGS, **tags}
+    for begin, end in _BLOCKS:
+        if tags[begin] == tags[end]:
+            return f"{end} must not be equal to {begin}"
+    for block in _NAMED_BLOCKS:
+        if (tags[f"{block}_BEGIN_PREFIX"], tags[f"{block}_BEGIN_SUFFIX"]) == (
+                tags[f"{block}_END_PREFIX"], tags[f"{block}_END_SUFFIX"]):
+            return (f"{block}_END_PREFIX and {block}_END_SUFFIX must not be equal to "
+                    f"{block}_BEGIN_PREFIX and {block}_BEGIN_SUFFIX")
+    return None
+
 
 def lenient_json(text: str):
     """Decode the relaxed JSON that Div accepts in dialect files and tplvars."""

@@ -47,7 +47,7 @@ Lines divide the window into these three boxes and the preview. The panels use t
 
 divide does not decide whether a dialect works: Div does, in two steps.
 
-1. **Is it valid?** The tags are given to Div before it loads, and Div's own `isValidCurrentDialect()` judges them. It checks that the required tags are present and that the tags that must be unique are unique. If a tag is wrong, Div says why, for example `DIV_TAG_BREAK must be unique and not equal to DIV_TAG_EMPTY`, and the section that holds the tag gets a `!`.
+1. **Is it valid?** The tags are given to Div before it loads, and Div's own `isValidCurrentDialect()` judges them. It checks that the required tags are present, that the tags that must be unique are unique, and (from Div 6.1.4) that no block ends with its own begin tag: a loop that begins and ends with `<% for $list %>` cannot tell where it closes. With an older Div, divide checks that last rule itself, in Div's words. If a tag is wrong, Div says why, for example `DIV_TAG_BREAK must be unique and not equal to DIV_TAG_EMPTY`, and the section that holds the tag gets a `!`.
 2. **Does Div read it?** The example, written in your dialect, is translated back by Div's `translateFrom()` and compared, section by section, with the same example in Div's default dialect. The verdict says how many sections come back exactly. For the first one that does not, it shows the line you wrote and what Div read.
 
 The verdict appears below the sections and in each section dialog, and it is updated after every change. It needs PHP and Div (see [[Installation]]).
