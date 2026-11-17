@@ -19,23 +19,26 @@ from __future__ import annotations
 
 from divide.i18n import _
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from rich.style import Style
+from rich.text import Text
 from textual import events, work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.color import Color
 from textual.containers import Horizontal, Vertical, VerticalScroll
-from textual.widgets import Static
+from textual.widgets import Static, Tree
 from textual_vision.button import Button
 from textual_vision.cluster import CheckBoxes, RadioButtons
-from textual_vision.constants import Command
+from textual_vision.constants import Command, OptionFlag
+from textual_vision.group import TVViewMixin
 from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
-from divide import config
+from divide import config, themes
 from divide.editor.theme import OUTPUT
 from divide.run import composer as cmp
 from divide.ui.dialogs import _Dialog, information, confirm
@@ -63,43 +66,140 @@ def _styles(view: EditorView) -> tuple[Style, Style]:
     return _editor_styles(view)
 
 
-class PackageList(ListBox):
-    """The packages, in the editor's colours."""
+# Colour slots of the rows (every palette gives each a colour that reads on its windows).
+GROUP, VENDOR, REQUIRED, DEPENDENCY, PLATFORM, NEWER = (
+    "lightcyan", "cyan", "white", "lightgray", "lightmagenta", "lightgreen")
 
-    DEFAULT_CSS = "PackageList { width: 1fr; height: 1fr; }"
-    can_focus = True
+
+@dataclass(frozen=True)
+class Row:
+    """A row of the tree: a group (runtime, development, platform), a vendor, or a package."""
+
+    kind: str  # "group" | "vendor" | "package"
+    key: str  # the group's id, "group:vendor", or the package's name
+    package: cmp.Package | None = None
+
+
+def tree_of(packages: list[cmp.Package]) -> list[tuple[str, str, list[tuple[str, list[cmp.Package]]]]]:
+    """(group id, title, [(vendor, packages)]): runtime, development, platform; each
+    vendor and its packages in alphabetical order. The platform has no vendors ("")."""
+    groups = [("runtime", _("Runtime (require)")), ("dev", _("Development (require-dev)")),
+              ("platform", _("Platform (php, extensions)"))]
+    out = []
+    for gid, title in groups:
+        members = [p for p in packages if (p.platform if gid == "platform" else not p.platform and p.dev == (gid == "dev"))]
+        if not members:
+            continue
+        vendors: dict[str, list[cmp.Package]] = {}
+        for p in members:
+            vendor = "" if p.platform else p.name.split("/", 1)[0]
+            vendors.setdefault(vendor, []).append(p)
+        out.append((gid, title, [(v, sorted(vendors[v], key=lambda p: p.name)) for v in sorted(vendors)]))
+    return out
+
+
+class PackageTree(Tree[Row], TVViewMixin):
+    """Runtime / development / platform, the vendors under them, then the packages:
+    a required one (composer.json) bright, a dependency (it came with them) dim."""
+
+    ICON_NODE = "► "  # Turbo Vision's own (CP437), like the outline's
+    ICON_NODE_EXPANDED = "▼ "
+    BINDINGS = [
+        Binding("right", "unfold", "Unfold", show=False),
+        Binding("left", "fold", "Fold", show=False),
+    ]
+    DEFAULT_CSS = """
+    PackageTree {
+        width: 1fr; height: 1fr;
+        background: $divide-editor-bg;
+        color: $divide-editor-text;
+        scrollbar-size: 0 0;
+        padding: 0;
+    }
+    PackageTree > .tree--guides, PackageTree > .tree--guides-hover, PackageTree > .tree--guides-selected {
+        color: $divide-editor-gutter;
+    }
+    PackageTree > .tree--cursor, PackageTree:focus > .tree--cursor {
+        color: $divide-editor-selection; background: $divide-editor-selection-bg; text-style: none;
+    }
+    PackageTree > .tree--highlight, PackageTree > .tree--highlight-line { background: $divide-editor-bg; }
+    """
 
     def __init__(self, window: "ComposerWindow") -> None:
-        super().__init__([])
+        super().__init__("packages")
         self._window = window
-        self._syncing = False
+        self.show_root = False
+        self.auto_expand = False  # Enter: the package's folder; Space and the arrows fold
+        self.guide_depth = 2
+        self.tv_options = OptionFlag.SELECTABLE
+        self.name_width = 24
 
-    def focus_item(self, item: int) -> None:
-        super().focus_item(item)
-        if not self._syncing:
-            self._window.package_focused(self.focused)
+    def on_mount(self) -> None:
+        self.app.theme_changed_signal.subscribe(self, lambda _theme: self.repaint())
 
-    def select_item(self, item: int) -> None:
-        super().select_item(item)
-        self._window.app.composer_action(self._window, "folder")  # type: ignore[attr-defined]
+    def repaint(self) -> None:
+        self._invalidate()
+        self.refresh()
 
-    def on_click(self, event: events.Click) -> None:
-        if event.chain >= 2:
-            self.select_item(self.focused)
+    def render_label(self, node, base_style, style):
+        row: Row | None = node.data
+        palette = themes.current()
+        if row is None:  # (no packages)
+            return Text.assemble(("  ", base_style), (str(node.label), base_style + style))
+        if row.kind == "group":
+            label = Text(str(node.label), Style(color=palette.hex(GROUP), bold=True))
+        elif row.kind == "vendor":
+            label = Text(str(node.label), Style(color=palette.hex(VENDOR)))
+        else:
+            p = row.package
+            assert p is not None
+            colour = PLATFORM if p.platform else REQUIRED if p.direct else DEPENDENCY
+            short = p.name if p.platform else p.name.split("/", 1)[1]
+            newer = p.name in self._window.latest
+            label = Text.assemble(
+                ("↑" if newer else " ", Style(color=palette.hex(NEWER), bold=True)),
+                (f"{short:<{self.name_width}.{self.name_width}} ", Style(color=palette.hex(colour), bold=p.direct)),
+                (p.version or p.constraint or "", Style(color=palette.hex(colour))),
+            )
+        if self.cursor_node is node:
+            label.stylize(style)  # the bar: one colour from end to end
+        if node.allow_expand:
+            prefix = (self.ICON_NODE_EXPANDED if node.is_expanded else self.ICON_NODE, base_style)
+        else:
+            prefix = ("  ", base_style)
+        return Text.assemble(prefix, label)
 
-    def get_component_rich_style(self, *names: str, partial: bool = False) -> Style:
-        normal, focused = _styles(self._window.palette_view)
-        if names == ("list-viewer--normal",):
-            return normal
-        if names == ("list-viewer--focused",):
-            return normal + focused
-        return super().get_component_rich_style(*names, partial=partial)
+    def action_unfold(self) -> None:
+        node = self.cursor_node
+        if node is not None and node.allow_expand:
+            if node.is_expanded and node.children:
+                self.move_cursor(node.children[0])
+            else:
+                node.expand()
+
+    def action_fold(self) -> None:
+        node = self.cursor_node
+        if node is None:
+            return
+        if node.allow_expand and node.is_expanded:
+            node.collapse()
+        elif node.parent is not None and node.parent is not self.root:
+            self.move_cursor(node.parent)
+
+    async def _on_click(self, event: events.Click) -> None:
+        # a click puts the bar on a row, a double click opens it; ► ▼ fold
+        meta = event.style.meta
+        if event.button == 1 and "line" in meta and not meta.get("toggle", False):
+            event.prevent_default()
+            self.cursor_line = meta["line"]
+            if event.chain >= 2:
+                self.action_select_cursor()
 
 
 class ComposerWindow(_TVWindow):
-    """Packages | the focused one, with the project's state below the list."""
+    """Packages | the focused one, with the project's state below the tree."""
 
-    HINT = _('Ins add · Del remove · Enter its folder · Ctrl+R reload · Alt+F10 update, install, outdated, new composer.json')
+    HINT = _('Ins add · Del remove · Enter its folder · Space fold · Ctrl+R reload · Alt+F10 update, install, outdated')
     BINDINGS = [
         Binding("insert", "add", show=False),
         Binding("delete", "remove", show=False),
@@ -116,13 +216,14 @@ class ComposerWindow(_TVWindow):
     def __init__(self, root: Path, number: int = 0) -> None:
         self.project_root = root
         super().__init__(_('Composer packages'), number=number)
-        self.packages = PackageList(self)
+        self.packages = PackageTree(self)
         self.state = Static("", classes="cp-state", markup=False)
         self.info = Static("", classes="cp-info", markup=False)
         self.palette_view = EditorView("", read_only=True)  # only lends its colours
         self.project: cmp.Project = cmp.read(root)
         self.latest: dict[str, str] = {}
-        self.index = 0
+        self.package: cmp.Package | None = None  # the focused one
+        self._folded: set[str] = set()  # the groups and vendors folded, kept across reloads
         self.last: str | None = None  # the last command and how it ended
 
     def compose_content(self) -> ComposeResult:
@@ -148,30 +249,106 @@ class ComposerWindow(_TVWindow):
         for box in (self.state, self.info, self.query_one(".cp-left"), self.query_one(".cp-right")):
             box.styles.background = bg
             box.styles.color = fg
-        self.packages.refresh()
+        self.packages.repaint()
 
     # ------------------------------------------------------------ view
-    @property
-    def package(self) -> cmp.Package | None:
-        packages = self.project.packages
-        return packages[self.index] if 0 <= self.index < len(packages) else None
-
     def reload(self) -> None:
         """composer.json and composer.lock again (after composer ran, or Ctrl+R)."""
         self.project = cmp.read(self.project_root)
-        rows = []
-        for p in self.project.packages:
-            mark = "↑" if p.name in self.latest else " "
-            kind = {"require": "req", "dev": "dev", "dependency": "dep", "platform": "php"}
-            short = kind["platform"] if p.platform else kind["dependency"] if not p.direct else kind["dev"] if p.dev else kind["require"]
-            rows.append(f"{mark}{short} {p.name:<31.31} {p.version or p.constraint or '':<12.12}")
-        keep = min(self.index, max(0, len(rows) - 1))
-        self.packages._syncing = True
-        self.packages.set_list(rows or [_('  (no packages)')])
-        self.packages.focus_item(keep)
-        self.packages._syncing = False
-        self.package_focused(keep)
+        tree = self.packages
+        cursor = tree.cursor_node
+        keep = cursor.data.key if cursor is not None and cursor.data is not None else None
+        tree.clear()
+        names = [p.name if p.platform else p.name.split("/", 1)[-1] for p in self.project.packages]
+        tree.name_width = min(28, max([12, *map(len, names)]))
+        first = None
+        for gid, title, vendors in tree_of(self.project.packages):
+            count = sum(len(members) for _vendor, members in vendors)
+            group = tree.root.add(f"{title}  {count}", Row("group", gid), expand=gid not in self._folded)
+            for vendor, members in vendors:
+                parent = group
+                if vendor:
+                    key = f"{gid}:{vendor}"
+                    parent = group.add(f"{vendor}/", Row("vendor", key), expand=key not in self._folded)
+                for p in members:
+                    leaf = parent.add_leaf(p.name, Row("package", p.name, p))
+                    first = first or leaf
+        if not self.project.packages:
+            tree.root.add_leaf(_('(no packages)'), None)
+        kept = self._node(keep) if keep else None
+        if kept is not None and kept.data.kind != "package":  # a group or a vendor, maybe folded
+            tree.call_after_refresh(lambda: tree.move_cursor(kept, animate=False))
+            self.package_focused(None, kept.data)
+        elif (kept or first) is None or not self.focus_package((kept or first).data.key):
+            self.package_focused(None)
         self.show_state()
+
+    def rows(self) -> list[str]:
+        """The visible rows as text (the tree's lines, without colours)."""
+        out = []
+        for line in range(self.packages.last_line + 1):
+            node = self.packages.get_node_at_line(line)
+            if node is None:
+                continue
+            row = node.data
+            if row is not None and row.kind == "package" and row.package is not None:
+                p = row.package
+                mark = "↑" if p.name in self.latest else " "
+                out.append(f"{mark}{p.name} {p.version or p.constraint or ''}")
+            else:
+                out.append(str(node.label))
+        return out
+
+    def _node(self, key: str):
+        """The tree's node of a row (a package's name, a group's id, "group:vendor")."""
+        def find(node):
+            for child in node.children:
+                if child.data is not None and child.data.key == key:
+                    return child
+                found = find(child)
+                if found is not None:
+                    return found
+            return None
+        return find(self.packages.root)
+
+    def focus_package(self, name: str) -> bool:
+        """Put the bar on a package (unfolding its group and vendor)."""
+        node = self._node(name)
+        if node is None or node.data.kind != "package":
+            return False
+        parent = node.parent
+        while parent is not None and parent is not self.packages.root:
+            parent.expand()
+            parent = parent.parent
+        tree = self.packages
+        tree.call_after_refresh(lambda: tree.move_cursor(node, animate=False))  # once its line is known
+        self.package_focused(node.data.package)
+        return True
+
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
+        event.stop()
+        row = event.node.data
+        self.package_focused(row.package if row is not None and row.kind == "package" else None, row)
+
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        event.stop()
+        row = event.node.data
+        if row is None:
+            return
+        if row.kind == "package":
+            self.app.composer_action(self, "folder")  # type: ignore[attr-defined]
+        else:
+            event.node.toggle()
+
+    def on_tree_node_collapsed(self, event: Tree.NodeCollapsed) -> None:
+        event.stop()
+        if event.node.data is not None:
+            self._folded.add(event.node.data.key)
+
+    def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
+        event.stop()
+        if event.node.data is not None:
+            self._folded.discard(event.node.data.key)
 
     def show_state(self) -> None:
         project = self.project
@@ -182,7 +359,8 @@ class ComposerWindow(_TVWindow):
         else:
             direct = sum(p.direct and not p.platform for p in project.packages)
             deps = sum(not p.direct for p in project.packages)
-            lines = [_("{name}: {direct} required, {deps} with them").format(name=project.name, direct=direct, deps=deps)]
+            lines = [_("{name}: {direct} required, {deps} with them").format(name=project.name, direct=direct, deps=deps),
+                     _("Bright: in composer.json · dim: came with them")]
             if project.lock is None:
                 lines.append(_("Not installed yet: Alt+F10 > Install"))
             elif not project.installed:
@@ -193,11 +371,20 @@ class ComposerWindow(_TVWindow):
             lines.append(self.last)
         self.state.update("\n".join(lines))
 
-    def package_focused(self, index: int) -> None:
-        self.index = index
-        p = self.package
+    def package_focused(self, package: cmp.Package | None, row: Row | None = None) -> None:
+        self.package = package
+        p = package
         if p is None:
-            self.info.update(_("Ins adds a package (Div is divengine/div)."))
+            if row is not None and row.kind == "vendor":
+                vendor = row.key.split(":", 1)[1]
+                members = [q for q in self.project.packages if q.name.startswith(vendor + "/")]
+                self.info.update("\n".join([f"{vendor}/", "─" * (len(vendor) + 1)] + [f"  {q.name}  {q.version or q.constraint or ''}" for q in members]))
+            elif row is not None and row.kind == "group":
+                self.info.update(str({"runtime": _("What the project needs to run (require), and what came with it."),
+                                      "dev": _("What the project needs only while it is developed (require-dev), and what came with it."),
+                                      "platform": _("PHP and its extensions: composer checks them, it does not install them.")}[row.key]))
+            else:
+                self.info.update(_("Ins adds a package (Div is divengine/div)."))
             return
         lines = [p.name, "─" * len(p.name)]
         if p.description:
@@ -601,7 +788,7 @@ class ComposerMixin:
             Item(_('Composer ~p~rogram...'), CM_CP_PROGRAM),
         ]
         region = win.packages.content_region
-        at = (region.x + 2, region.y + max(0, win.index - win.packages.scroll_offset.y))
+        at = (region.x + 2, region.y + max(0, win.packages.cursor_line - win.packages.scroll_offset.y))
         chosen = await self.push_screen_wait(LocalMenu(Menu(items=items), at))  # type: ignore[attr-defined]
         return {
             CM_CP_ADD: "add", CM_CP_REMOVE: "remove", CM_CP_UPDATE: "update", CM_CP_UPDATE_ALL: "update_all",

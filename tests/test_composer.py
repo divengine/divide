@@ -16,7 +16,7 @@ from textual_vision.constants import Command
 
 from divide.app import Divide
 from divide.run import composer as cmp
-from divide.ui.composer import AddPackageDialog, ComposerLogWindow, ComposerWindow, NewComposerDialog
+from divide.ui.composer import AddPackageDialog, ComposerLogWindow, ComposerWindow, NewComposerDialog, tree_of
 from divide.ui.dialogs import DialogScreen
 from divide.ui.progress import ProgressScreen
 
@@ -183,7 +183,7 @@ async def test_a_new_composer_json_and_install(tmp_path, fake):
         log = next(w for w in app.windows() if isinstance(w, ComposerLogWindow))
         assert "Generating autoload files" in log.lines
         win = next(w for w in app.windows() if isinstance(w, ComposerWindow))
-        assert any("divengine/div" in row for row in win.packages.items)
+        assert any("divengine/div" in row for row in win.rows())
 
 
 async def test_add_remove_and_newer_versions(tmp_path, fake):
@@ -209,9 +209,10 @@ async def test_add_remove_and_newer_versions(tmp_path, fake):
         await close_progress(pilot, app)
         assert ["require", "--dev", "acme/tables:^2.1"] in calls(fake)
         assert json.loads((tmp_path / "composer.json").read_text())["require-dev"] == {"acme/tables": "^2.1"}
-        assert any("acme/tables" in row for row in win.packages.items)
+        await settle(pilot)
+        assert any("acme/tables" in row for row in win.rows())
         # remove it again
-        win.packages.focus_item(next(i for i, p in enumerate(win.project.packages) if p.name == "acme/tables"))
+        assert win.focus_package("acme/tables")
         await settle(pilot)
         app.composer_action(win, "remove")
         await until(pilot, lambda: isinstance(app.screen, DialogScreen))
@@ -223,7 +224,8 @@ async def test_add_remove_and_newer_versions(tmp_path, fake):
         app.composer_action(win, "outdated")
         await close_progress(pilot, app)
         assert win.latest == {"divengine/div": "7.0.0"}
-        assert win.packages.items[0].startswith("↑")
+        await settle(pilot)
+        assert "↑divengine/div ^6.1" in win.rows()
 
 
 async def test_a_failure_shows_composer_s_words(tmp_path, fake):
@@ -260,3 +262,46 @@ async def test_enter_on_a_package_adds_it(tmp_path, fake):
         await pilot.press("enter")
         await close_progress(pilot, app)
         assert ["require", "acme/forms:^2.1"] in calls(fake)
+
+
+def test_the_tree_groups_by_use_then_vendor(tmp_path):
+    (tmp_path / "composer.json").write_text(json.dumps({
+        "name": "acme/shop", "require": {"php": ">=8.0", "divengine/div": "^6.1", "acme/forms": "^1"},
+        "require-dev": {"phpunit/phpunit": "^10"}}))
+    (tmp_path / "composer.lock").write_text(json.dumps({
+        "packages": [{"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"},
+                     {"name": "acme/forms", "version": "1.2.0"}],
+        "packages-dev": [{"name": "phpunit/phpunit", "version": "10.5.0"}, {"name": "sebastian/diff", "version": "5.0.0"}]}))
+    tree = tree_of(cmp.read(tmp_path).packages)
+    shape = [(gid, [(vendor, [(p.name, p.direct) for p in members]) for vendor, members in vendors])
+             for gid, _title, vendors in tree]
+    assert shape == [
+        ("runtime", [("acme", [("acme/forms", True)]),
+                     ("divengine", [("divengine/div", True), ("divengine/functions", False)])]),
+        ("dev", [("phpunit", [("phpunit/phpunit", True)]), ("sebastian", [("sebastian/diff", False)])]),
+        ("platform", [("", [("php", True)])]),
+    ]
+
+
+async def test_the_window_shows_the_tree_and_folds(tmp_path, fake):
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1"}}))
+    (tmp_path / "composer.lock").write_text(json.dumps({"packages": [
+        {"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"}]}))
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await app.open_composer()
+        await settle(pilot)
+        win = app.active_window()
+        assert isinstance(win, ComposerWindow)
+        assert win.rows() == ["Runtime (require)  2", "divengine/", " divengine/div 6.1.4", " divengine/functions 1.0.2"]
+        assert win.package.name == "divengine/div"
+        await pilot.press("down")
+        await settle(pilot)
+        assert win.package.name == "divengine/functions" and not win.package.direct
+        await pilot.press("left", "left")  # to the vendor, and fold it
+        await settle(pilot)
+        assert win.rows() == ["Runtime (require)  2", "divengine/"] and win.package is None
+        win.reload()  # what is folded stays folded
+        await settle(pilot)
+        assert win.rows()[-1] == "divengine/"

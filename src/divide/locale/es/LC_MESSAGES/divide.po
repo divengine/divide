@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 01:57+0000\n"
+"POT-Creation-Date: 2026-11-17 17:12+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -17,9 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
-
-msgid "  (no packages)"
-msgstr "  (sin paquetes)"
 
 msgid "  (nothing found)"
 msgstr "  (no se encontró nada)"
@@ -71,6 +68,9 @@ msgstr "(sin mensajes)"
 
 msgid "(no outline for this kind of file)"
 msgstr "(no hay esquema para este tipo de archivo)"
+
+msgid "(no packages)"
+msgstr "(sin paquetes)"
 
 msgid "(none)"
 msgstr "(ninguno)"
@@ -159,6 +159,9 @@ msgstr "Interrupción"
 
 msgid "Breakpoints go on the lines of a saved PHP script"
 msgstr "Los puntos de ruptura van en las líneas de un script PHP guardado"
+
+msgid "Bright: in composer.json · dim: came with them"
+msgstr "Brillante: en composer.json · tenue: dependencia"
 
 msgid "Call stack"
 msgstr "Pila de llamadas"
@@ -410,6 +413,9 @@ msgstr "Eliminar la carpeta {rel}"
 #, python-brace-format
 msgid "Delete {path!s} and its {count} item(s)?"
 msgstr "¿Eliminar {path!s} y sus {count} elemento(s)?"
+
+msgid "Development (require-dev)"
+msgstr "Desarrollo (require-dev)"
 
 msgid "De~l~ete..."
 msgstr "~E~liminar..."
@@ -868,8 +874,8 @@ msgstr "Información"
 msgid "Ins"
 msgstr "Ins"
 
-msgid "Ins add · Del remove · Enter its folder · Ctrl+R reload · Alt+F10 update, install, outdated, new composer.json"
-msgstr "Ins añadir · Supr quitar · Enter su carpeta · Ctrl+R recargar · Alt+F10 actualizar, instalar, versiones nuevas, nuevo composer.json"
+msgid "Ins add · Del remove · Enter its folder · Space fold · Ctrl+R reload · Alt+F10 update, install, outdated"
+msgstr "Ins añadir · Supr quitar · Enter su carpeta · Espacio plegar · Ctrl+R recargar · Alt+F10 actualizar, instalar, versiones nuevas"
 
 msgid "Ins adds a package (Div is divengine/div)."
 msgstr "Ins añade un paquete (Div es divengine/div)."
@@ -1177,6 +1183,9 @@ msgstr "Salida: {name}"
 msgid "O~K~"
 msgstr "O~K~"
 
+msgid "PHP and its extensions: composer checks them, it does not install them."
+msgstr "PHP y sus extensiones: composer las comprueba, no las instala."
+
 msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
 msgstr "PHP terminó antes de que Xdebug conectara: ¿está cargado Xdebug?\n"
 
@@ -1216,6 +1225,9 @@ msgstr "En pausa en {place}{request} · {debug_hint}"
 
 msgid "Plain ~s~ymbols"
 msgstr "~S~ímbolos simples"
+
+msgid "Platform (php, extensions)"
+msgstr "Plataforma (php, extensiones)"
 
 msgid "Pre-processed begin"
 msgstr "Inicio de preprocesado"
@@ -1358,6 +1370,9 @@ msgstr "Ejecutar en ter~m~inal"
 
 msgid "Running"
 msgstr "Ejecutando"
+
+msgid "Runtime (require)"
+msgstr "Ejecución (require)"
 
 msgid "Save a~l~l"
 msgstr "Guardar ~t~odo"
@@ -1739,6 +1754,12 @@ msgstr "Lo que Div añade al nombre de una plantilla o de un archivo de datos (s
 
 msgid "What every template gets besides its data: globals (setGlobal()), defaults, system variables."
 msgstr "Lo que recibe cada plantilla además de sus datos: globales (setGlobal()), valores por defecto, variables de sistema."
+
+msgid "What the project needs only while it is developed (require-dev), and what came with it."
+msgstr "Lo que el proyecto necesita solo mientras se desarrolla (require-dev), y lo que vino con ello."
+
+msgid "What the project needs to run (require), and what came with it."
+msgstr "Lo que el proyecto necesita para funcionar (require), y lo que vino con ello."
 
 msgid "Which Div, and where it looks for templates (PACKAGES, DIV_REPO, addIncludePath())."
 msgstr "Qué Div, y dónde busca las plantillas (PACKAGES, DIV_REPO, addIncludePath())."
@@ -2969,8 +2990,11 @@ msgstr "── ejecución de {name}: {split} ──"
 msgid "── web server {address} ──"
 msgstr "── servidor web {address} ──"
 
-#~ msgid "~L~anguage of the interface"
-#~ msgstr "~I~dioma de la interfaz"
+#~ msgid "  (no packages)"
+#~ msgstr "  (sin paquetes)"
+
+#~ msgid "\"{key}\" is not applied yet: this divide leaves it out"
+#~ msgstr "«{key}» todavía no se aplica: esta versión de divide lo omite"
 
 #~ msgid "(no Div tags)"
 #~ msgstr "(sin etiquetas de Div)"
@@ -2984,21 +3008,24 @@ msgstr "── servidor web {address} ──"
 #~ msgid "(the outline is for PHP files and Div templates)"
 #~ msgstr "(el esquema es para archivos PHP y plantillas Div)"
 
+#~ msgid "Class names~p~ace (PSR-4)"
+#~ msgstr ""
+
 #~ msgid "Enter go to the declaration · + public  # protected  - private"
 #~ msgstr "Enter ir a la declaración · + public  # protected  - private"
 
 #~ msgid "Enter go to the tag · below a block, what it holds"
 #~ msgstr "Enter ir a la etiqueta · bajo un bloque, lo que contiene"
 
+#~ msgid "Ins add · Del remove · Enter its folder · Ctrl+R reload · Alt+F10 update, install, outdated, new composer.json"
+#~ msgstr "Ins añadir · Supr quitar · Enter su carpeta · Ctrl+R recargar · Alt+F10 actualizar, instalar, versiones nuevas, nuevo composer.json"
+
 #~ msgid "a number or PHP levels are expected, like \"E_ALL & ~E_NOTICE\""
 #~ msgstr "se espera un número o niveles de PHP, como \"E_ALL & ~E_NOTICE\""
-
-#~ msgid "\"{key}\" is not applied yet: this divide leaves it out"
-#~ msgstr "«{key}» todavía no se aplica: esta versión de divide lo omite"
 
 #~ msgid "~E~rror reporting (E_ALL, E_ALL & ~E_NOTICE...)"
 #~ msgstr ""
 
-#~ msgid "Class names~p~ace (PSR-4)"
-#~ msgstr ""
+#~ msgid "~L~anguage of the interface"
+#~ msgstr "~I~dioma de la interfaz"
 

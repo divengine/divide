@@ -61,7 +61,7 @@ def _command(path: Path) -> list[str]:
 class Package:
     name: str
     constraint: str | None = None  # as composer.json requires it (None: only a dependency)
-    dev: bool = False  # require-dev
+    dev: bool = False  # require-dev (a dependency: installed for the dev packages, packages-dev)
     version: str | None = None  # installed (composer.lock)
     description: str = ""
     type: str = ""
@@ -123,16 +123,19 @@ def read(root: Path) -> Project:
     except (OSError, UnicodeDecodeError, ValueError):
         pass
     locked: dict[str, dict] = {}
+    locked_dev: set[str] = set()
     for section in ("packages", "packages-dev"):
         for item in (lock or {}).get(section) or []:
             if isinstance(item, dict) and item.get("name"):
                 locked[item["name"]] = item
+                if section == "packages-dev":
+                    locked_dev.add(item["name"])
     packages: dict[str, Package] = {}
     for section, dev in (("require", False), ("require-dev", True)):
         for name, constraint in (data.get(section) or {}).items():
             packages[name] = Package(name, str(constraint), dev, platform=is_platform(name))
     for name, item in locked.items():
-        package = packages.setdefault(name, Package(name))
+        package = packages.setdefault(name, Package(name, dev=name in locked_dev))
         package.version = str(item.get("version") or "") or None
         package.description = str(item.get("description") or "")
         package.type = str(item.get("type") or "")

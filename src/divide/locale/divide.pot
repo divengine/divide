@@ -8,17 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 01:57+0000\n"
+"POT-Creation-Date: 2026-11-17 17:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
-
-msgid "  (no packages)"
-msgstr ""
+"Generated-By: Babel 2.18.0\n"
 
 msgid "  (nothing found)"
 msgstr ""
@@ -69,6 +66,9 @@ msgid "(no messages)"
 msgstr ""
 
 msgid "(no outline for this kind of file)"
+msgstr ""
+
+msgid "(no packages)"
 msgstr ""
 
 msgid "(none)"
@@ -157,6 +157,9 @@ msgid "Break"
 msgstr ""
 
 msgid "Breakpoints go on the lines of a saved PHP script"
+msgstr ""
+
+msgid "Bright: in composer.json · dim: came with them"
 msgstr ""
 
 msgid "Call stack"
@@ -415,6 +418,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "Delete {path!s} and its {count} item(s)?"
+msgstr ""
+
+msgid "Development (require-dev)"
 msgstr ""
 
 msgid "De~l~ete..."
@@ -872,8 +878,8 @@ msgid "Ins"
 msgstr ""
 
 msgid ""
-"Ins add · Del remove · Enter its folder · Ctrl+R reload · Alt+F10 update,"
-" install, outdated, new composer.json"
+"Ins add · Del remove · Enter its folder · Space fold · Ctrl+R reload · "
+"Alt+F10 update, install, outdated"
 msgstr ""
 
 msgid "Ins adds a package (Div is divengine/div)."
@@ -1184,6 +1190,9 @@ msgstr ""
 msgid "O~K~"
 msgstr ""
 
+msgid "PHP and its extensions: composer checks them, it does not install them."
+msgstr ""
+
 msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
 msgstr ""
 
@@ -1224,6 +1233,9 @@ msgid "Paused at {place}{request} · {debug_hint}"
 msgstr ""
 
 msgid "Plain ~s~ymbols"
+msgstr ""
+
+msgid "Platform (php, extensions)"
 msgstr ""
 
 msgid "Pre-processed begin"
@@ -1370,6 +1382,9 @@ msgid "Run in termi~n~al"
 msgstr ""
 
 msgid "Running"
+msgstr ""
+
+msgid "Runtime (require)"
 msgstr ""
 
 msgid "Save a~l~l"
@@ -1764,6 +1779,14 @@ msgstr ""
 msgid ""
 "What every template gets besides its data: globals (setGlobal()), "
 "defaults, system variables."
+msgstr ""
+
+msgid ""
+"What the project needs only while it is developed (require-dev), and what"
+" came with it."
+msgstr ""
+
+msgid "What the project needs to run (require), and what came with it."
 msgstr ""
 
 msgid ""
