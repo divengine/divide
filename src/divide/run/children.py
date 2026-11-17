@@ -39,6 +39,14 @@ def track(process):
     return process
 
 
+def kill(process) -> None:
+    """Kill ``process`` if it still runs (one that just ended is not an error)."""
+    try:
+        process.kill()
+    except (ProcessLookupError, OSError):
+        pass
+
+
 def running() -> list:
     return [p for p in _running if p.returncode is None]
 
@@ -46,10 +54,7 @@ def running() -> list:
 def kill_all() -> None:
     """Kill every process divide started that still runs."""
     for process in running():
-        try:
-            process.kill()
-        except (ProcessLookupError, OSError):
-            pass
+        kill(process)
     _running.clear()
 
 

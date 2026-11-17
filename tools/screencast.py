@@ -611,17 +611,17 @@ async def dialector(rec_dir: Path) -> Recorder:
         first, second = list(dialog.inputs.values())[:2]
         await clear_and_type(rec, first, "<% for $")
         await rec.snap(2.5, 10)
-        rec.caption(tr("End like the beginning: the preview marks the clash in red",
-                       "El final igual que el principio: la vista previa marca el choque en rojo"))
+        rec.caption(tr("End like the beginning: the preview marks it in red, and Div says it is not valid",
+                       "El final igual que el principio: la vista previa lo marca en rojo y Div dice que no es válido"))
         end_prefix = dialog.inputs.get("DIV_TAG_LOOP_END_PREFIX")
         if end_prefix is not None:
             await clear_and_type(rec, end_prefix, "<% for $")
-            await pilot.pause(1.5)
-            await rec.snap(3.0, 10)
+            await rec.until(lambda: dialog.verdict.has_class("-bad"), tries=200)
+            await rec.snap(3.5, 10)
             rec.caption(tr("Fixed, and OK: the dialect file changes (F2 saves it)",
                            "Arreglada, y Aceptar: el archivo del dialecto cambia (F2 lo guarda)"))
             await clear_and_type(rec, end_prefix, "<% next $")
-            await pilot.pause(1.5)
+            await rec.until(lambda: not dialog.verdict.has_class("-bad"), tries=200)
             await rec.snap(2.0, 10)
         await pilot.press("enter")
         await rec.until(lambda: not isinstance(app.screen, DialogScreen))

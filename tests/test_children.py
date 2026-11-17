@@ -29,6 +29,15 @@ async def test_kill_all_kills_what_still_runs():
     assert children.running() == []
 
 
+async def test_killing_a_process_that_just_ended_is_no_error():
+    """A worker cancelled as its php ends (the dialector's verdict as you type)."""
+    proc = await asyncio.create_subprocess_exec("true", stdout=asyncio.subprocess.PIPE)
+    await proc.communicate()
+    with pytest.raises(ProcessLookupError):
+        proc.kill()
+    children.kill(proc)
+
+
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="PR_SET_PDEATHSIG is Linux's")
 def test_a_child_dies_when_divide_is_killed(tmp_path):
     """divide killed outright (no atexit, no unmount): the kernel ends its children."""

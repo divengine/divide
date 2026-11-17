@@ -172,11 +172,11 @@ async def _raw_bridge(request: dict, *, cwd: Path, php: str, timeout: float) -> 
     try:
         out, err = await asyncio.wait_for(proc.communicate(json.dumps(request).encode()), timeout)
     except TimeoutError:
-        proc.kill()
+        children.kill(proc)
         await proc.wait()
         raise RenderError(_('php took longer than {timeout:.0f}s and was stopped').format(timeout=timeout)) from None
     except asyncio.CancelledError:  # stopped from the progress box
-        proc.kill()
+        children.kill(proc)
         await asyncio.shield(proc.wait())
         raise
     try:

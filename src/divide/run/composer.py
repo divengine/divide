@@ -183,7 +183,7 @@ async def run(command: list[str], args: list[str], cwd: Path, on_line: Callable[
     try:
         await asyncio.wait_for(asyncio.gather(pump(), proc.wait()), timeout)
     except (asyncio.CancelledError, TimeoutError):
-        proc.kill()
+        children.kill(proc)
         await asyncio.shield(proc.wait())
         raise
     return Result(proc.returncode or 0, "\n".join(lines))

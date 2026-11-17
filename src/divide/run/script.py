@@ -152,8 +152,7 @@ async def run_script(
         result.exit_code = await proc.wait()
     except asyncio.CancelledError:
         result.stopped = True
-        if proc.returncode is None:
-            proc.kill()
+        children.kill(proc)
         result.exit_code = await asyncio.shield(proc.wait())
     result.seconds = time.monotonic() - started
     result.output = out.decode("utf-8", "replace")
