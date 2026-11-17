@@ -4,6 +4,8 @@ Div puede reescribir una plantilla de un dialecto a otro. **Herramientas > Tradu
 
 ![traducción de index.tpl a un dialecto parecido a ERB](images/translate.png)
 
+![una plantilla traducida al dialecto ERB y abierta junto al original](images/translate.gif)
+
 ## Los tres campos
 
 - **Plantilla:** la plantilla que traducir. Se propone la plantilla activa. Si la plantilla está abierta, se usa el texto de su editor, guardado o no.

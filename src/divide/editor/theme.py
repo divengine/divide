@@ -9,6 +9,7 @@ from divide import themes
 from divide.themes import CGA  # noqa: F401  (the CGA colours, for whoever needs a slot's RGB)
 
 EDITOR, OUTPUT = "editor", "output"
+SELECTION = "divide.selection"  # the selection, drawn over the syntax colours (DivEditor._render_line)
 
 
 def theme_name(palette: themes.Palette, kind: str) -> str:
@@ -25,7 +26,7 @@ def editor_theme(p: themes.Palette) -> TextAreaTheme:
         cursor_line_gutter_style=p.style("editor-cursor-line", "editor-bg"),
         bracket_matching_style=p.style("editor-bracket", "editor-bracket-bg", bold=True),
         selection_style=p.style("editor-selection", "editor-selection-bg"),
-        syntax_styles=dict(p.token_styles()),
+        syntax_styles={**p.token_styles(), SELECTION: p.style("editor-selection", "editor-selection-bg")},
     )
 
 
@@ -40,7 +41,8 @@ def output_theme(p: themes.Palette) -> TextAreaTheme:
         cursor_line_gutter_style=p.style("output-cursor-bg", "output-bg"),
         bracket_matching_style=p.style("output-text", "output-bg"),
         selection_style=p.style("output-selection", "output-selection-bg"),
-        syntax_styles={k: v for k, v in p.token_styles().items() if k.startswith("div.")},
+        syntax_styles={**{k: v for k, v in p.token_styles().items() if k.startswith("div.")},
+                       SELECTION: p.style("output-selection", "output-selection-bg")},
     )
 
 

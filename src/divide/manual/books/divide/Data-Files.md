@@ -6,6 +6,8 @@
 - single quotes, unquoted keys, trailing commas;
 - comments.
 
+![the data as a tree: folding, a value edited, the JSON rewritten](images/data.gif)
+
 ## As code
 
 The editor highlights keys, strings, numbers, constants and references, and validates as you type: an error is painted in place and the status line says `JSON [!] line 6, col 47: unexpected 'r', expected a value`. When everything is fine it says `JSON ok`, and how many references the file uses.

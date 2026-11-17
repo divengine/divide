@@ -114,19 +114,19 @@ async def outline(rec_dir: Path) -> Recorder:
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot, 10)
         rec = Recorder(app, pilot, rec_dir)
-        rec.caption("divide: a Turbo Vision IDE for Div templates and PHP")
+        rec.caption(tr("divide: a Turbo Vision IDE for Div templates and PHP", "divide: un IDE Turbo Vision para plantillas Div y PHP"))
         await rec.snap(3.0, 10)
 
-        rec.caption("Ctrl+O: the outline of the template, as a tree")
+        rec.caption(tr("Ctrl+O: the outline of the template, as a tree", "Ctrl+O: el esquema de la plantilla, como un árbol"))
         await pilot.press("ctrl+o")
         await rec.snap(2.5)
         await rec.press("down", "down", hold=0.7)
 
-        rec.caption("Enter jumps to the tag in the editor")
+        rec.caption(tr("Enter jumps to the tag in the editor", "Enter salta a la etiqueta en el editor"))
         await pilot.press("enter")
         await rec.snap(2.5)
 
-        rec.caption("Ctrl+F9 renders the template with Div itself")
+        rec.caption(tr("Ctrl+F9 renders the template with Div itself", "Ctrl+F9 renderiza la plantilla con el propio Div"))
         await pilot.press("ctrl+f9")
         for _ in range(40):  # the progress box, while Div works
             await rec.snap(0.25, 2)
@@ -134,10 +134,10 @@ async def outline(rec_dir: Path) -> Recorder:
                 break
         await rec.snap(1.5)
         await pilot.press("escape")
-        rec.caption("The output, beside the template")
+        rec.caption(tr("The output, beside the template", "La salida, junto a la plantilla"))
         await rec.snap(3.0, 8)
 
-        rec.caption("Ctrl+B: the project window unfolds each file into its members")
+        rec.caption(tr("Ctrl+B: the project window unfolds each file into its members", "Ctrl+B: la ventana del proyecto despliega cada archivo en sus miembros"))
         await pilot.press("ctrl+b")
         await rec.snap(1.5, 8)
         tree = app.project_window().project_tree
@@ -571,6 +571,266 @@ SCENES = {"outline": outline, "tour": tour, "completion": completion, "checking"
           "trace": trace, "div-setup": div_setup, "composer": composer}
 
 
+async def clear_and_type(rec: Recorder, line, text: str, per: float = 0.1) -> None:
+    """An input line emptied as a person would (a click on it, End, Backspace...), then typed.
+    (A click: inside a Turbo Vision dialog, focus() alone does not take the keys there.)"""
+    await rec.pilot.click(line)
+    await rec.pilot.press("end")
+    for _ in range(len(line.data)):
+        await rec.pilot.press("backspace")
+    await rec.snap(0.3, 3)
+    await rec.type(text, per)
+
+
+async def dialector(rec_dir: Path) -> Recorder:
+    """Dialector.md: a dialect's sections, a section edited with its preview and Div's verdict as you type."""
+    from divide.ui.dialector import DialectorWindow, SectionDialog
+    from divide.ui.dialogs import DialogScreen
+    app = Divide(DEMO, [DEMO / "erb.dialect"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("Tools > Dialector on erb.dialect: its sections, an example in it, Div's verdict",
+                       "Herramientas > Dialector sobre erb.dialect: sus secciones, un ejemplo en él, el veredicto de Div"))
+        await rec.snap(1.0, 8)
+        await pilot.press(wiki_shots.key("tools"))
+        await rec.snap(0.8)
+        await pilot.press("d")
+        await rec.until(lambda: isinstance(app.active_window(), DialectorWindow))
+        win = app.active_window()
+        await rec.until(lambda: win.verdict is not None, tries=200)
+        await rec.snap(2.0, 8)
+        await rec.press("down", "down", "down", "down", hold=0.5)  # Loops and iterations
+        await rec.snap(1.5)
+        rec.caption(tr("Enter edits the section: the preview follows every key",
+                       "Enter edita la sección: la vista previa sigue cada tecla"))
+        await pilot.press("enter")
+        await rec.until(lambda: isinstance(app.screen, DialogScreen) and isinstance(app.screen.dialog, SectionDialog))
+        dialog = app.screen.dialog
+        await rec.snap(2.0, 10)
+        first, second = list(dialog.inputs.values())[:2]
+        await clear_and_type(rec, first, "<% for $")
+        await rec.snap(2.5, 10)
+        rec.caption(tr("End like the beginning: the preview marks the clash in red",
+                       "El final igual que el principio: la vista previa marca el choque en rojo"))
+        end_prefix = dialog.inputs.get("DIV_TAG_LOOP_END_PREFIX")
+        if end_prefix is not None:
+            await clear_and_type(rec, end_prefix, "<% for $")
+            await pilot.pause(1.5)
+            await rec.snap(3.0, 10)
+            rec.caption(tr("Fixed, and OK: the dialect file changes (F2 saves it)",
+                           "Arreglada, y Aceptar: el archivo del dialecto cambia (F2 lo guarda)"))
+            await clear_and_type(rec, end_prefix, "<% next $")
+            await pilot.pause(1.5)
+            await rec.snap(2.0, 10)
+        await pilot.press("enter")
+        await rec.until(lambda: not isinstance(app.screen, DialogScreen))
+        await rec.snap(3.0, 10)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def translate(rec_dir: Path) -> Recorder:
+    """Translating-Templates.md: index.tpl into the ERB dialect, previewed, then opened beside it."""
+    from divide.ui.dialogs import DialogScreen
+    index = DEMO / "index.tpl"
+    app = Divide(DEMO, [index])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("Tools > Translate: a template from one dialect to another, by Div",
+                       "Herramientas > Traducir: una plantilla de un dialecto a otro, con Div"))
+        await rec.snap(1.2, 8)
+        await pilot.press(wiki_shots.key("tools"))
+        await rec.snap(0.8)
+        await pilot.press("t")
+        await rec.until(lambda: isinstance(app.screen, DialogScreen))
+        dialog = app.screen.dialog
+        await rec.until(lambda: dialog.text is not None, tries=200)
+        await rec.snap(1.5, 8)
+        rec.caption(tr("The dialect to translate to: erb.dialect, and the preview",
+                       "El dialecto de destino: erb.dialect, y la vista previa"))
+        await pilot.click(dialog.target_input)
+        await rec.type("erb.dialect", 0.08)
+        await pilot.press("enter")
+        await rec.until(lambda: "<% each" in (dialog.text or ""), tries=200)
+        await rec.snap(3.0, 8)
+        rec.caption(tr("Open: the translation in an editor, beside the original",
+                       "Abrir: la traducción en un editor, junto al original"))
+        await pilot.click("#open")
+        await rec.until(lambda: not isinstance(app.screen, DialogScreen), tries=200)
+        await rec.snap(0.8, 8)
+        app.desktop.tile()
+        await rec.snap(4.0, 10)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def data_files(rec_dir: Path) -> Recorder:
+    """Data-Files.md: the data as code and as a tree; a value edited in the tree shows in the JSON."""
+    data = DEMO / "index.json"
+    app = Divide(DEMO, [data])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("index.json, the data of index.tpl: checked as you type",
+                       "index.json, los datos de index.tpl: verificados mientras escribes"))
+        await rec.snap(2.0, 8)
+        rec.caption(tr("Ctrl+T: the same data as a tree; Space folds and unfolds",
+                       "Ctrl+T: los mismos datos como un árbol; Espacio pliega y despliega"))
+        await pilot.press("ctrl+t")
+        await rec.snap(1.2, 8)
+        await rec.press("down", "down", "down", "down", hold=0.4)  # products
+        await rec.press("space", hold=0.8)
+        await rec.press("down", hold=0.4)
+        await rec.press("space", hold=0.8)
+        await rec.press("down", "down", hold=0.5)  # price
+        rec.caption(tr("Enter edits a value", "Enter edita un valor"))
+        await pilot.press("enter")
+        await rec.snap(1.2, 8)
+        await pilot.press("end")
+        for _ in range(4):
+            await pilot.press("backspace")
+        await rec.type("1.25")
+        await rec.snap(0.8)
+        await pilot.press("enter")
+        await rec.snap(2.0, 8)
+        rec.caption(tr("Ctrl+T again: the code, rewritten as standard JSON (one edit: Ctrl+Z undoes it)",
+                       "Ctrl+T otra vez: el código, reescrito como JSON estándar (una edición: Ctrl+Z la deshace)"))
+        await pilot.press("ctrl+t")
+        await rec.snap(3.5, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+def _xdebug_config() -> None:
+    """The debugger's scenes need Xdebug: $DIVIDE_SHOT_XDEBUG (its xdebug.so) or Xdebug in php.ini."""
+    import json
+    config = Path(os.environ["XDG_CONFIG_HOME"]) / "divide" / "config.json"
+    config.write_text(json.dumps({"palette": PALETTE, "xdebug": os.environ.get("DIVIDE_SHOT_XDEBUG") or None}))
+
+
+async def debugging(rec_dir: Path) -> Recorder:
+    """Debugging-PHP.md: a breakpoint, stepping, a watch, the output."""
+    _xdebug_config()
+    script = DEMO / "index.php"
+    app = Divide(DEMO, [script])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.window_for(script).editor
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("Ctrl+F8: a breakpoint", "Ctrl+F8: un punto de parada"))
+        await rec.snap(1.2, 8)
+        ed.move_cursor((15, 0))  # echo new div(...)
+        await rec.snap(0.5)
+        await rec.press("ctrl+f8", hold=1.5)
+        rec.caption(tr("F8 starts the script with Xdebug and stops at its first line",
+                       "F8 arranca el script con Xdebug y para en su primera línea"))
+        await pilot.press("f8")
+        await rec.until(lambda: app.paused, tries=400)
+        await rec.snap(2.0, 8)
+        rec.caption(tr("F8 steps over a line; Ctrl+F9 runs to the breakpoint",
+                       "F8 pasa una línea; Ctrl+F9 corre hasta el punto de parada"))
+        await pilot.press("f8")
+        await rec.until(lambda: app.paused and ed.execution_row not in (None, 8), tries=400)
+        await rec.snap(1.2, 6)
+        await pilot.press("ctrl+f9")
+        await rec.until(lambda: app.paused and ed.execution_row == 15, tries=400)
+        await rec.snap(2.0, 8)
+        rec.caption(tr("Ctrl+F7: a watch, shown at every stop", "Ctrl+F7: una expresión vigilada, en cada parada"))
+        ed.move_cursor((13, 1))  # on $data
+        await pilot.press("ctrl+f7")
+        await rec.snap(1.0, 8)  # the word at the cursor, $data, already in it
+        await pilot.press("end")
+        await rec.type("['today']", 0.08)
+        await rec.snap(0.6)
+        await pilot.press("enter")
+        await rec.until(lambda: app.watches_window() is not None, tries=200)
+        await rec.snap(3.0, 10)
+        rec.caption(tr("Ctrl+F9 runs on to the end: the page is in the Output window",
+                       "Ctrl+F9 sigue hasta el final: la página queda en la ventana Salida"))
+        await pilot.press("ctrl+f9")
+        await rec.until(lambda: not app.paused and app.output_window() is not None, tries=400)
+        await rec.snap(3.5, 10)
+        rec.finish()
+        await app.debug_reset()
+        await settle(pilot)
+    return rec
+
+
+async def web_server(rec_dir: Path) -> Recorder:
+    """Web-Server.md: php -S from divide, a request stopped at a breakpoint, then answered."""
+    import socket
+    from divide.ui.webserver import WebServerDialog
+    _xdebug_config()
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    script = DEMO / "index.php"
+    app = Divide(DEMO, [script])
+    app.open_url = lambda url, **kw: None  # no browser in a recording
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        ed = app.window_for(script).editor
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("Run > Web server: PHP's own server (php -S) on the project",
+                       "Ejecutar > Servidor web: el servidor de PHP (php -S) sobre el proyecto"))
+        await rec.snap(1.0, 8)
+        await pilot.press(wiki_shots.key("run"))
+        await rec.snap(0.8)
+        await pilot.press("w")
+        await rec.until(lambda: isinstance(getattr(app.screen, "dialog", None), WebServerDialog), tries=200)
+        app.screen.dialog.address_input.data = f"127.0.0.1:{port}"
+        await rec.snap(2.0, 8)
+        await pilot.press("enter")
+        await rec.until(lambda: app.serving, tries=200)
+        await rec.snap(2.0, 10)
+        rec.caption(tr("A breakpoint, and a request from the browser (/?page=2) stops there",
+                       "Un punto de parada, y una petición del navegador (/?page=2) se detiene ahí"))
+        app.raise_window(app.window_for(script))
+        ed.move_cursor((13, 0))  # $data['today'] = ...
+        await rec.press("ctrl+f8", hold=1.0)
+        reader, writer = await asyncio.open_connection("127.0.0.1", port)
+        writer.write(b"GET /?page=2 HTTP/1.0\r\nHost: localhost\r\n\r\n")
+        await writer.drain()
+        await rec.until(lambda: app.paused, tries=400)
+        app._web_tick()
+        await rec.snap(2.0, 10)
+        rec.caption(tr("The request's own data: $_GET in a watch", "Los datos de la petición: $_GET vigilado"))
+        app.watches.append("$_GET")
+        app.show_watches()
+        await app.refresh_debug_windows()
+        await rec.snap(3.0, 10)
+        rec.caption(tr("Ctrl+F9: the page goes to the browser; the server's log keeps the request",
+                       "Ctrl+F9: la página va al navegador; el registro del servidor guarda la petición"))
+        await pilot.press("ctrl+f9")
+        await reader.read()
+        writer.close()
+        await settle(pilot, 10)
+        watches = app.watches_window()
+        if watches is not None:  # nothing to watch once the request is answered
+            app.raise_window(watches)
+            await settle(pilot, 4)
+            await pilot.press("alt+f3")
+        app.watches.clear()
+        app._web_tick()
+        log = app.server_log_window()
+        if log is not None:
+            app.raise_window(log)
+        await rec.snap(3.5, 10)
+        rec.finish()
+        await app.web_stop()
+        await settle(pilot)
+    return rec
+
+
+SCENES.update({"dialector": dialector, "translate": translate, "data": data_files,
+               "debugging": debugging, "web-server": web_server})
+
+
 # ------------------------------------------------------------------ output
 def _stamp(seconds: float) -> str:
     ms = round(seconds * 1000)
@@ -623,8 +883,13 @@ def captions_ass(rec: Recorder, width: int, path: Path) -> tuple[int, int, int]:
              "BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV",
              f"Style: Caption,{FONT},{size},&H00F0F0F0,&H00000000,&H00000000,0,0,1,0,0,2,20,20,{(band - size) // 2}",
              "", "[Events]", "Format: Layer, Start, End, Style, Text"]
-    for start, end, text in rec.captions:
-        lines.append(f"Dialogue: 0,{_ass_time(start)},{_ass_time(end)},Caption,{text}")
+    # A GIF counts in hundredths and ffmpeg floors each frame's start (7.05 s comes out 7.04 s), so a
+    # frame could begin just before its caption and show the one before: captions start 15 ms early
+    # (less than the shortest frame; the error is under a hundredth and does not add up).
+    early = 0.015
+    for n, (start, end, text) in enumerate(rec.captions):
+        end = end + 0.1 if n == len(rec.captions) - 1 else end - early  # the last one, to the very end
+        lines.append(f"Dialogue: 0,{_ass_time(max(0.0, start - early))},{_ass_time(max(0.0, end))},Caption,{text}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return screen, band, screen + band
 
@@ -688,6 +953,13 @@ def main() -> None:
         frames.mkdir()
         rec = asyncio.run(SCENES[args.scene](frames))
         print(f"{len(rec.frames)} frames, {rec.time:.1f} s")
+        if os.environ.get("SCREENCAST_DEBUG"):  # each frame's start and length, and the captions' times
+            start = 0.0
+            for png, seconds, _svg in rec.frames:
+                print(f"  frame {png.name} {start:7.2f} +{seconds:.2f}")
+                start += seconds
+            for begin, end, text in rec.captions:
+                print(f"  caption {begin:7.2f}-{end:7.2f} {text}")
         srt, concat = out / f"{args.scene}.srt", work / "frames.txt"
         write_srt(rec, srt)
         write_concat(rec, concat)

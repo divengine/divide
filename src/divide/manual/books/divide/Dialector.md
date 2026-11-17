@@ -4,6 +4,8 @@ A Div dialect changes the tags of the language: `{$name}` can become `<%$name%>`
 
 ![the dialector: sections, preview and Div's verdict](images/dialector.png)
 
+![the Dialector: a section edited, its preview following every key](images/dialector.gif)
+
 ## Opening it
 
 **Tools > Dialector...** opens it on:

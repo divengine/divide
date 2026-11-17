@@ -6,6 +6,8 @@ Los archivos `.json` (y los archivos `.dialect`) son **Div JSON**: todo lo que a
 - comillas simples, claves sin comillas, comas finales;
 - comentarios.
 
+![los datos como árbol: plegar, editar un valor, el JSON reescrito](images/data.gif)
+
 ## Como código
 
 El editor resalta claves, cadenas, números, constantes y referencias, y valida mientras escribes: un error se pinta en su sitio y la línea de estado dice `JSON [!] line 6, col 47: unexpected 'r', expected a value`. Cuando todo está bien dice `JSON correcto`, y cuántas referencias usa el archivo.

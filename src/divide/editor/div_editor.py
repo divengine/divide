@@ -85,6 +85,33 @@ class DivEditor(TextArea):
             self.editor = editor
             self.dialect = dialect
 
+    def _render_line(self, y: int):
+        """TextArea paints the selection before the syntax colours, so a selected keyword kept its
+        own colour on the selection's background (yellow on light grey: unreadable). As Borland's
+        editors do, a block is drawn in the selection's colours only: the selection goes last, as
+        one more highlight of its lines."""
+        start, end = self.selection
+        if start == end:
+            return super()._render_line(y)
+        try:
+            row = self.wrapped_document._offset_to_line_info[y + self.scroll_offset.y][0]
+        except (IndexError, KeyError, TypeError):
+            return super()._render_line(y)
+        (top_row, top_col), (bottom_row, bottom_col) = sorted((start, end))
+        if not top_row <= row <= bottom_row:
+            return super()._render_line(y)
+        text = self.document.get_line(row)
+        a = top_col if row == top_row else 0
+        b = bottom_col if row == bottom_row else len(text)
+        if b <= a:
+            return super()._render_line(y)
+        spans = self._highlights[row]
+        spans.append((len(text[:a].encode()), len(text[:b].encode()), editor_themes.SELECTION))
+        try:
+            return super()._render_line(y)
+        finally:
+            spans.pop()
+
     def __init__(
         self,
         text: str = "",

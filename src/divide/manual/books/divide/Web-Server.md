@@ -4,6 +4,8 @@
 
 ![Run > Web server: the address, the document root and the router](images/web-server-dialog.png)
 
+![php -S from divide: a request stopped at a breakpoint, $_GET watched, the log](images/web-server.gif)
+
 ## Starting it
 
 The dialog asks for:

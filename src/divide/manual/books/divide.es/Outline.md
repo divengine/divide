@@ -4,6 +4,8 @@
 
 ![el esquema de la página de inicio de la tienda, en el bucle de productos](images/outline_tpl.png)
 
+![el esquema de una plantilla, un salto, un render, los miembros en la ventana del proyecto](images/outline.gif)
+
 ## Cómo se lee
 
 Cada fila empieza con una letra que dice qué es, en su color: **C** una clase, **m** un método, **l** una lista de Div... Los miembros de una clase llevan después la marca de UML de su visibilidad: **+** public (verde), **#** protected (amarillo), **-** private (rojo). Luego el nombre, coloreado como lo colorea el editor: en `m + add(string $name, int $qty = 1): self` el nombre del método, los tipos y los parámetros tienen cada uno el color que tienen en el código, en cada paleta de **Opciones > Colores**.

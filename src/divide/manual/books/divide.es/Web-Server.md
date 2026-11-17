@@ -4,6 +4,8 @@
 
 ![Ejecutar > Servidor web: la dirección, la carpeta raíz y el enrutador](images/web-server-dialog.png)
 
+![php -S desde divide: una petición detenida en un punto de parada, $_GET vigilado, el registro](images/web-server.gif)
+
 ## Iniciarlo
 
 El diálogo pide:

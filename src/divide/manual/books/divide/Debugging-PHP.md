@@ -4,6 +4,8 @@ divide debugs PHP scripts the way Turbo Pascal debugged programs: you step throu
 
 ![paused on a breakpoint in index.php, with the Watches and Call stack windows](images/debug.png)
 
+![a breakpoint, stepping, a watch and the output](images/debugging.gif)
+
 ## What it needs
 
 The debugger is [Xdebug](https://xdebug.org), the PHP extension. Install it:

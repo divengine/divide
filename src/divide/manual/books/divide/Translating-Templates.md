@@ -4,6 +4,8 @@ Div can rewrite a template from one dialect to another. **Tools > Translate a te
 
 ![translating index.tpl into an ERB-like dialect](images/translate.png)
 
+![a template translated into the ERB dialect and opened beside the original](images/translate.gif)
+
 ## The three fields
 
 - **Template:** the template to translate. The active template is proposed. If the template is open, its editor text is used, saved or not.

@@ -4,6 +4,8 @@ Un dialecto de Div cambia las etiquetas del lenguaje: `{$name}` puede pasar a se
 
 ![el dialector: secciones, vista previa y veredicto de Div](images/dialector.png)
 
+![el Dialector: una sección editada, su vista previa siguiendo cada tecla](images/dialector.gif)
+
 ## Abrirlo
 
 **Herramientas > Dialector...** lo abre sobre:

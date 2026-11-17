@@ -4,6 +4,8 @@
 
 ![the outline of the shop's home page, on the products loop](images/outline_tpl.png)
 
+![a template's outline, a jump, a render, the project window's members](images/outline.gif)
+
 ## How it reads
 
 Each row starts with a letter that says what it is, in its colour: **C** a class, **m** a method, **l** a Div list... Members of a class have UML's mark for their visibility after it: **+** public (green), **#** protected (yellow), **-** private (red). Then the name, coloured as the editor colours it: in `m + add(string $name, int $qty = 1): self` the method's name, the types and the parameters each have the colour they have in the code, in every palette of **Options > Colors**.

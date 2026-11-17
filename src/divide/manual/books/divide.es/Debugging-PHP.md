@@ -4,6 +4,8 @@ divide depura scripts PHP como Turbo Pascal depuraba programas: avanzas por el c
 
 ![detenido en un punto de ruptura en index.php, con las ventanas Vigilancias y Pila de llamadas](images/debug.png)
 
+![un punto de parada, paso a paso, una expresión vigilada y la salida](images/debugging.gif)
+
 ## Qué necesita
 
 El depurador es [Xdebug](https://xdebug.org), la extensión de PHP. Instálalo:
