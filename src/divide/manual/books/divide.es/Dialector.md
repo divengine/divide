@@ -47,7 +47,7 @@ Unas líneas dividen la ventana en estos tres recuadros y la vista previa. Los p
 
 divide no decide si un dialecto funciona: lo decide Div, en dos pasos.
 
-1. **¿Es válido?** Las etiquetas se le dan a Div antes de que cargue, y el propio `isValidCurrentDialect()` de Div las juzga. Comprueba que estén las etiquetas obligatorias y que las que deben ser únicas lo sean. Si una etiqueta está mal, Div dice por qué, por ejemplo `DIV_TAG_BREAK must be unique and not equal to DIV_TAG_EMPTY`, y la sección que contiene la etiqueta recibe un `!`.
+1. **¿Es válido?** Las etiquetas se le dan a Div antes de que cargue, y el propio `isValidCurrentDialect()` de Div las juzga. Comprueba que estén las etiquetas obligatorias, que las que deben ser únicas lo sean y (desde Div 6.1.4) que ningún bloque termine con su propia etiqueta de inicio: un bucle que empieza y termina con `<% for $lista %>` no puede saber dónde se cierra. Con un Div anterior, divide comprueba esa última regla por su cuenta, con las palabras de Div. Si una etiqueta está mal, Div dice por qué, por ejemplo `DIV_TAG_BREAK must be unique and not equal to DIV_TAG_EMPTY`, y la sección que contiene la etiqueta recibe un `!`.
 2. **¿Lo lee Div?** El ejemplo, escrito en tu dialecto, lo traduce de vuelta el `translateFrom()` de Div y se compara, sección por sección, con el mismo ejemplo en el dialecto por defecto de Div. El veredicto dice cuántas secciones vuelven exactamente igual. Para la primera que no, muestra la línea que escribiste y lo que leyó Div.
 
 El veredicto aparece debajo de las secciones y en cada diálogo de sección, y se actualiza tras cada cambio. Necesita PHP y Div (ver [[Instalación|Installation]]).
