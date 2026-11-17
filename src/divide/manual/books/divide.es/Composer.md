@@ -2,21 +2,22 @@
 
 **Herramientas > Paquetes Composer...** muestra los paquetes del proyecto y ejecuta [Composer](https://getcomposer.org) para ellos: añadir Div o cualquier paquete de Packagist, quitar, actualizar, instalar, buscar versiones más nuevas. divide nunca edita `composer.json` a espaldas de composer: composer hace cada cambio, bajo el cuadro de progreso, y su salida queda en la ventana **Composer**.
 
-![Herramientas > Paquetes Composer: los paquetes, y el que está bajo la barra](images/composer.png)
+![Herramientas > Paquetes Composer: los paquetes por grupo y vendor, y el que está bajo la barra](images/composer.png)
 
 ![añadir un paquete: Packagist consultado, composer require bajo el cuadro de progreso](images/composer.gif)
 
 ## La ventana
 
-- **Izquierda: los paquetes.** Lo que requiere `composer.json` (`req`), sus paquetes de desarrollo (`dev`), los paquetes que composer instaló con ellos (`dep`) y la plataforma (`php`, extensiones), cada uno con su versión instalada (de `composer.lock`). `↑` marca un paquete con una versión más nueva, una vez que las buscaste.
-- **Derecha: el paquete bajo la barra.** Su descripción, tipo, la versión requerida e instalada, la más nueva, tipo de paquete, licencia, web, fuente, lo que requiere y lo que lo requiere.
-- **Debajo de la lista:** el proyecto (su nombre, cuántos paquetes), si está instalado, y cómo terminó la última orden.
+- **Izquierda: los paquetes, como un árbol.** Primero lo que el proyecto necesita para ejecutarse (**Ejecución**, `require`), lo que necesita solo para desarrollar (**Desarrollo**, `require-dev`) y la **Plataforma** (`php`, extensiones); debajo de cada uno, el vendor (`divengine/`), y luego el paquete por su propio nombre con su versión instalada (de `composer.lock`), todo en orden alfabético. Un paquete que requiere `composer.json` se ve brillante; uno que composer instaló con ellos, tenue, y va bajo el grupo de la sección del lock en que vino. `↑` marca un paquete con una versión más nueva, una vez que las buscaste. **Espacio** pliega un grupo o un vendor (y siguen plegados tras recargar); la línea de filtro encima del árbol deja solo los paquetes cuyo nombre contiene lo que escribes (ver [[El escritorio|The Desktop]]).
+- **Derecha: el paquete bajo la barra** (en un grupo o un vendor, lo que contiene). Su descripción, tipo, la versión requerida e instalada, la más nueva, tipo de paquete, licencia, web, fuente, lo que requiere y lo que lo requiere.
+- **Debajo del árbol:** el proyecto (su nombre, cuántos paquetes), si está instalado, y cómo terminó la última orden.
 
 | Tecla | |
 |---|---|
 | **Ins** | añadir un paquete (el asistente de abajo) |
 | **Supr** | quitar el paquete (`composer remove`), tras confirmar. Solo los paquetes que requiere el proyecto: una dependencia se va cuando se va lo que la requiere. |
-| **Enter** / doble clic | la carpeta del paquete (`vendor/...`) en la [[Ventana de proyecto\|Project Window]] |
+| **Enter** / doble clic | la carpeta del paquete (`vendor/...`) en la [[Ventana de proyecto\|Project Window]]; en un grupo o un vendor, plegarlo o desplegarlo |
+| **Espacio** | plegar o desplegar un grupo o un vendor |
 | **Ctrl+R** | leer de nuevo `composer.json` y `composer.lock` |
 | **Alt+F10** / **Shift+F10** | menú local: actualizar el paquete (`composer update nombre --with-dependencies`), actualizar todos los paquetes, instalar, buscar versiones más nuevas (`composer outdated --direct`), validar `composer.json`, regenerar el autoloader, abrir `composer.json`, un `composer.json` nuevo, elegir el programa composer |
 

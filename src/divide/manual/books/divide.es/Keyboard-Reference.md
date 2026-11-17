@@ -62,6 +62,16 @@
 | **Esc** | detener el render o el script mientras se ejecuta |
 | cualquier tecla | cerrar el cuadro tras el veredicto (también se cierra solo: a los 2 segundos si todo fue bien, a los 5 con avisos o errores) |
 
+## Listas y árboles
+
+Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|The Desktop]].
+
+| Tecla | Acción |
+|---|---|
+| una letra, un dígito, un signo | añadirlo al filtro: solo quedan los elementos que lo contienen (da igual mayúsculas o minúsculas) |
+| **Retroceso** | quitar una letra |
+| **Esc** | vaciar el filtro (con el filtro vacío, Esc hace lo de siempre) |
+
 ## Lista de autocompletado
 
 | Tecla | Acción |
@@ -145,7 +155,8 @@ En los diálogos con una ruta, el botón **...** / **Examinar...** abre el diál
 |---|---|
 | **Ins** | añadir un paquete |
 | **Supr** | quitar el paquete |
-| **Enter** / doble clic | su carpeta en la ventana de proyecto |
+| **Enter** / doble clic | su carpeta en la ventana de proyecto (en un grupo o un vendor: plegarlo o desplegarlo) |
+| **Espacio** / **→** / **←** | plegar / desplegar un grupo o un vendor |
 | **Ctrl+R** | leer de nuevo composer.json y composer.lock |
 | **Alt+F10** / **Shift+F10** | menú local: actualizar, instalar, versiones nuevas, validar, autoloader, nuevo composer.json |
 

@@ -50,6 +50,18 @@ El lado izquierdo muestra las teclas que importan. El lado derecho te informa so
 - en la ventana de proyecto, el dialector y la ventana de ayuda, sus teclas;
 - mientras algo se ejecuta en segundo plano (un render, por ejemplo), un indicador que gira (`|` `/` `-` `\`) y lo que se está ejecutando.
 
+## Filtrar una lista o un árbol
+
+Cada árbol y cada lista tiene encima una línea de filtro: `» escribe para filtrar`. Con la lista enfocada, escribe: solo quedan los elementos que contienen lo escrito (un trozo del nombre, da igual mayúsculas o minúsculas), y la línea dice cuántos, `» tpl  5/14`. **Retroceso** quita una letra, **Esc** vacía el filtro (solo entonces Esc cierra un diálogo). **Espacio** conserva su función: plegar, elegir.
+
+En un árbol se ve lo que coincide, las ramas que lo contienen y todo lo que cuelga de un nodo que coincide: filtra por una carpeta o un vendor y verás lo que contiene. La [[Ventana de proyecto|Project Window]] busca en todo el proyecto, también en carpetas que nunca abriste.
+
+![la ventana del proyecto filtrada por tpl: las plantillas de todas las carpetas](images/filter.png)
+
+![escribir en la ventana del proyecto y en el esquema: solo queda lo que coincide](images/filter.gif)
+
+El filtro está en la ventana de proyecto, el [[Esquema|Outline]], el [[árbol de datos|Data Files]], los paquetes de [[Composer|Composer]], las ventanas Mensajes y Buscar en archivos, Vigilancias, Pila de llamadas, la [[Traza del render|Render Trace]], las secciones del [[Dialector|Dialector]] y de la [[configuración de Div|Div Setup]], los archivos de Archivo > Abrir y el historial de las líneas de entrada (ahí, en el marco de la lista). La paleta de comandos, Ayuda > Buscar y el asistente para añadir paquetes de Composer tienen su propia línea de búsqueda.
+
 ## Diálogos
 
 Los diálogos funcionan como en Turbo Vision: **Tab** / **Shift+Tab** van de un control al siguiente, **Alt + la letra amarilla** salta a un control, **Enter** pulsa el botón por defecto (también desde una línea de entrada o un grupo de opciones), **Esc** cancela.

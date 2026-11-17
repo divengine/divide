@@ -6,6 +6,8 @@
 
 **Enter** abre un archivo, o pliega y despliega una carpeta. **→** despliega una carpeta (o un archivo, ver abajo) y **←** la pliega, o sube a la carpeta que contiene la barra. Con el ratón, un clic pone la barra sobre un archivo y un doble clic lo abre; un clic en una carpeta la pliega o la despliega. Las carpetas de control de versiones y de caché (`.git`, `__pycache__`, `.venv`, `node_modules`, cachés de herramientas) se ocultan; `vendor/` sigue visible.
 
+Escribe con el árbol enfocado y solo quedan los archivos y carpetas cuyo nombre lo contiene, de todo el proyecto, también de carpetas que nunca abriste (ver [[El escritorio|The Desktop]]). **Esc** vacía el filtro.
+
 ![la ventana del proyecto: una carpeta desplegada, un archivo nuevo, las marcas de tipo](images/project.gif)
 
 ## Los miembros de un archivo
