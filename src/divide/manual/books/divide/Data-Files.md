@@ -6,7 +6,7 @@
 - single quotes, unquoted keys, trailing commas;
 - comments.
 
-![the data as a tree: folding, a value edited, the JSON rewritten](images/data.gif)
+![the data as a tree: folding, a value edited, only that value changed in the JSON](images/data.gif)
 
 ## As code
 
@@ -33,4 +33,4 @@ The edit dialog lets you change the type as well as the value: String, Number, T
 
 ![editing an item](images/data-tree-edit.png)
 
-The tree and the code are one buffer: typing in the code rebuilds the tree (while the JSON is broken, the last good tree stays and editing is refused until it is fixed), and every tree edit rewrites the code as standard JSON, keeping references bare. If the file uses comments, single quotes or unquoted keys, which a rewrite would drop, divide asks first.
+The tree and the code are one buffer: typing in the code rebuilds the tree (while the JSON is broken, the last good tree stays and editing is refused until it is fixed), and every tree edit is one edit of the code (Ctrl+Z takes it back). **Enter** changes only that item in the code: its value, and its key if you renamed it; the rest stays as you wrote it, comments and layout included. Adding, deleting and moving rewrite the code as standard JSON, keeping references bare; if the file uses comments, single quotes or unquoted keys, which a rewrite would drop, divide asks first.

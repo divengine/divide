@@ -88,3 +88,21 @@ def test_tree_edits():
         rename_key(doc, ("a",), "list")
     assert make_value("Object", "", {"k": 1}) == {"k": 1}
     assert dumps(doc).startswith('{\n  "a": $person.name,')
+
+
+def test_spans_and_an_edit_in_place():
+    from divide.lang.divjson import Ref, edit_in_place, spans
+
+    text = "// the shop\n{\n  name: 'Shop', // its name\n  items: [1, {a: $x.y}]\n}"
+    where = spans(text)
+    assert text[where[("name",)].start:where[("name",)].end] == "'Shop'"
+    assert text[where[("name",)].key_start:where[("name",)].key_end] == "name"
+    assert text[where[("items", 1, "a")].start:where[("items", 1, "a")].end] == "$x.y"
+    start, end, new = edit_in_place(text, ("name",), "Store")
+    assert text[:start] + new + text[end:] == "// the shop\n{\n  name: \"Store\", // its name\n  items: [1, {a: $x.y}]\n}"
+    start, end, new = edit_in_place(text, ("items", 1, "a"), Ref("z"), key="b")
+    assert text[:start] + new + text[end:] == "// the shop\n{\n  name: 'Shop', // its name\n  items: [1, {\"b\": $z}]\n}"
+    start, end, new = edit_in_place(text, ("items", 0), [1, 2])
+    assert new == "[\n    1,\n    2\n  ]"  # at the depth of its line
+    assert edit_in_place(text, ("nothing",), 1) is None
+    assert edit_in_place("{broken", ("a",), 1) is None

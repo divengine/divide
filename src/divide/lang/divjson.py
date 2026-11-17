@@ -231,6 +231,119 @@ def loads(text: str) -> Any:
     return _Parser(text).document()
 
 
+@dataclass(frozen=True)
+class Span:
+    """Where a member or an item is written: its value, and its key (None in an array)."""
+
+    start: int
+    end: int
+    key_start: int | None = None
+    key_end: int | None = None
+
+
+class _SpanParser(_Parser):
+    """The parser, writing down where every value (and every key) of the document is."""
+
+    def __init__(self, text: str) -> None:
+        super().__init__(text)
+        self.path: list[str | int] = []
+        self.spans: dict[Path_, Span] = {}
+        self._key: tuple[int, int] | None = None
+
+    def value(self) -> Any:
+        key, self._key = self._key, None
+        start = self.pos
+        result = super().value()
+        self.spans[tuple(self.path)] = Span(start, self.pos, *(key or (None, None)))
+        return result
+
+    def key(self) -> str:
+        start = self.pos
+        result = super().key()
+        self._key = (start, self.pos)
+        self.path.append(result)
+        return result
+
+    def object(self) -> dict[str, Any]:
+        # every member's value is parsed right after its key: the key is pushed by key(), popped here
+        self.pos += 1
+        result: dict[str, Any] = {}
+        while True:
+            self.ws()
+            if self.peek() == "}":
+                self.pos += 1
+                return result
+            key = self.key()
+            self.ws()
+            if self.peek() != ":":
+                raise self.fail(_("expected ':' after the key {key!r}").format(key=key))
+            self.pos += 1
+            self.ws()
+            result[key] = self.value()
+            self.path.pop()
+            self.ws()
+            c = self.peek()
+            if c == ",":
+                self.pos += 1
+            elif c == "}":
+                self.pos += 1
+                return result
+            else:
+                raise self.fail("expected ',' or '}'" if c else _("unexpected end, expected '}'"))
+
+    def array(self) -> list[Any]:
+        self.pos += 1
+        result: list[Any] = []
+        while True:
+            self.ws()
+            if self.peek() == "]":
+                self.pos += 1
+                return result
+            self.path.append(len(result))
+            result.append(self.value())
+            self.path.pop()
+            self.ws()
+            c = self.peek()
+            if c == ",":
+                self.pos += 1
+            elif c == "]":
+                self.pos += 1
+                return result
+            else:
+                raise self.fail("expected ',' or ']'" if c else _("unexpected end, expected ']'"))
+
+
+def spans(text: str) -> dict[Path_, Span]:
+    """Where each value of the document is written (path -> :class:`Span`; () is the whole document).
+    Raises :class:`DivJsonError` as :func:`loads` does."""
+    parser = _SpanParser(text)
+    parser.document()
+    return parser.spans
+
+
+def edit_in_place(text: str, path: Path_, value: Any, key: str | None = None) -> tuple[int, int, str] | None:
+    """The smallest change of ``text`` that writes ``value`` at ``path`` (and renames its key to
+    ``key``), leaving the rest as it is written (comments, quotes, layout): ``(start, end, new)``,
+    or None when ``path`` is not in the text."""
+    try:
+        where = spans(text).get(tuple(path))
+    except DivJsonError:
+        return None
+    if where is None:
+        return None
+    written = dumps(value, _level=_depth(text, where.start))
+    if key is None or where.key_start is None:
+        return where.start, where.end, written
+    between = text[where.key_end : where.start]
+    return where.key_start, where.end, json.dumps(key, ensure_ascii=False) + between + written
+
+
+def _depth(text: str, offset: int) -> int:
+    """The indentation level of the line ``offset`` is on (two spaces a level), for nested values."""
+    line = text[text.rfind("\n", 0, offset) + 1 : offset]
+    return (len(line) - len(line.lstrip(" "))) // 2
+
+
 # ------------------------------------------------------------------ writer
 def dumps(value: Any, indent: int = 2, _level: int = 0) -> str:
     """Write standard JSON, with :class:`Ref` values as bare ``$refs``."""

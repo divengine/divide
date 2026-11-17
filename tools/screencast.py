@@ -697,8 +697,8 @@ async def data_files(rec_dir: Path) -> Recorder:
         await rec.snap(0.8)
         await pilot.press("enter")
         await rec.snap(2.0, 8)
-        rec.caption(tr("Ctrl+T again: the code, rewritten as standard JSON (one edit: Ctrl+Z undoes it)",
-                       "Ctrl+T otra vez: el código, reescrito como JSON estándar (una edición: Ctrl+Z la deshace)"))
+        rec.caption(tr("Ctrl+T again: only that value changed in the code (Ctrl+Z takes it back)",
+                       "Ctrl+T otra vez: en el código solo cambió ese valor (Ctrl+Z lo deshace)"))
         await pilot.press("ctrl+t")
         await rec.snap(3.5, 8)
         rec.finish()

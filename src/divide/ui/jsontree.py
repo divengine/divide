@@ -302,14 +302,25 @@ class JsonTreeWindow(_TVWindow):
         editor.replace(text, (0, 0), editor.document.end, maintain_selection_offset=False)
         self.rebuild(cursor)
 
-    async def _can_edit(self) -> bool:
+    async def _write_part(self, start: int, end: int, new: str, cursor: Path_) -> None:
+        """Replace ``start:end`` of the source buffer with ``new``, as one edit."""
+        editor = self.source.editor
+        doc = editor.document
+        editor.replace(new, doc.get_location_from_index(start), doc.get_location_from_index(end),
+                       maintain_selection_offset=False)
+        self._written = editor.text
+        self.rebuild(cursor)
+
+    async def _can_edit(self, rewrite: bool = True) -> bool:
+        """The JSON must be valid; a ``rewrite`` (adding, deleting, moving) writes the whole file as
+        standard JSON, so a file with comments or quirks asks first. Editing one item does not."""
         app = self.app
         if self.error is not None:
             await app.run_dialog(  # type: ignore[attr-defined]
                 _info(_("Data"), _('Fix the JSON in the code editor first:\n{error}').format(error=self.error))
             )
             return False
-        if not self._rewrite_ok and divjson.has_extensions(self.source.editor.text):
+        if rewrite and not self._rewrite_ok and divjson.has_extensions(self.source.editor.text):
             from divide.ui.dialogs import MessageBox
 
             box = MessageBox(
@@ -321,7 +332,8 @@ class JsonTreeWindow(_TVWindow):
             )
             if await app.run_dialog(box) != Command.YES:  # type: ignore[attr-defined]
                 return False
-        self._rewrite_ok = True
+        if rewrite:
+            self._rewrite_ok = True
         return True
 
     def _cursor_path(self) -> Path_:
@@ -336,7 +348,7 @@ class JsonTreeWindow(_TVWindow):
         self._run(self._edit_item())
 
     async def _edit_item(self) -> None:
-        if not await self._can_edit():
+        if not await self._can_edit(rewrite=False):
             return
         path = self._cursor_path()
         current = divjson.get_at(self.value, path)
@@ -344,14 +356,22 @@ class JsonTreeWindow(_TVWindow):
         dialog = EditItemDialog(_('Edit item'), key=path[-1] if is_member else None, value=current)
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
+        old_path = path
+        renamed = is_member and dialog.result_key != path[-1]
         try:
-            if is_member and dialog.result_key != path[-1]:
+            if renamed:
                 path = divjson.rename_key(self.value, path, dialog.result_key or "")
             self.value = divjson.set_at(self.value, path, dialog.result_value)
         except ValueError as exc:
             self.app.notify(str(exc), severity="error")
             return
-        await self._write(path)
+        # only what was edited changes in the code: the rest stays as it is written
+        change = divjson.edit_in_place(self.source.editor.text, old_path, dialog.result_value,
+                                       dialog.result_key if renamed else None)
+        if change is None:
+            await self._write(path)
+            return
+        await self._write_part(*change, cursor=path)
 
     def add_item(self) -> None:
         self._run(self._add_item())

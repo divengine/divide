@@ -135,26 +135,76 @@ async def test_code_edits_rebuild_tree_and_ctrl_t_flips(tmp_path):
 
 async def test_rewrite_warning_for_div_extensions(tmp_path):
     f = tmp_path / "page.json"
-    f.write_text("// comment\n{name: 'x'}")
+    f.write_text("// comment\n{name: 'x', n: 1}")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)
         code = app.query_one(EditorWindow)
         tree_win = await open_tree(pilot, app)
+        # editing one item changes only that item: no question, the comment and the quirks stay
         goto(tree_win, ("name",))
         await settle(pilot)
         await pilot.press("enter")
+        await settle(pilot)
+        await fill_dialog(pilot, app, value="y")
+        assert code.editor.text == '// comment\n{name: "y", n: 1}'
+        # adding rewrites the whole file: asked first
+        await pilot.press("insert")
         await settle(pilot)
         assert isinstance(app.screen.dialog, MessageBox)
         await pilot.press("n")  # keep the file as it is
         await settle(pilot)
         assert code.editor.text.startswith("// comment")
-        await pilot.press("enter")
+        await pilot.press("insert")
         await settle(pilot)
         await pilot.press("y")
         await settle(pilot)
-        await fill_dialog(pilot, app, value="y")
-        assert code.editor.text == '{\n  "name": "y"\n}\n'
+        await fill_dialog(pilot, app, key="m", type_="Number", value="2")
+        assert code.editor.text == '{\n  "name": "y",\n  "m": 2,\n  "n": 1\n}\n'
+
+
+async def test_an_edit_keeps_the_rest_as_it_is_written(tmp_path):
+    f = tmp_path / "index.json"
+    text = ('{\n  "title": "the shop",\n  "products": [\n'
+            '    {"name": "Potato", "price": 1.5, "offer": true},\n'
+            '    {"name": "Tomato", "price": 2.25, "offer": false}\n  ]\n}\n')
+    f.write_text(text)
+    app = Divide(tmp_path, [f])
+    async with app.run_test(size=(100, 34)) as pilot:
+        await settle(pilot)
+        code = app.query_one(EditorWindow)
+        tree_win = await open_tree(pilot, app)
+        goto(tree_win, ("products", 0, "price"))  # unfolds the way there
+        await settle(pilot)
+        goto(tree_win, ("products", 0, "price"))  # and goes, once it is drawn
+        await settle(pilot)
+        assert tree_win.json_tree.cursor_node.data == ("products", 0, "price")
+        await pilot.press("enter")
+        await settle(pilot)
+        await fill_dialog(pilot, app, value="1.25")
+        assert code.editor.text == text.replace("1.5", "1.25")
+        # a key renamed, in place
+        goto(tree_win, ("products", 1, "offer"))
+        await settle(pilot)
+        goto(tree_win, ("products", 1, "offer"))
+        await settle(pilot)
+        assert tree_win.json_tree.cursor_node.data == ("products", 1, "offer")
+        await pilot.press("enter")
+        await settle(pilot)
+        await fill_dialog(pilot, app, key="sale")
+        assert code.editor.text == text.replace("1.5", "1.25").replace('"offer": false', '"sale": false')
+        # a value that becomes an object is written at its depth
+        goto(tree_win, ("title",))
+        await settle(pilot)
+        await pilot.press("enter")
+        await settle(pilot)
+        await fill_dialog(pilot, app, type_="Object")
+        assert code.editor.text.startswith('{\n  "title": {},\n  "products": [\n    {"name": "Potato", "price": 1.25')
+        # one edit each: undo takes the last one back
+        await pilot.press("ctrl+z")
+        await settle(pilot)
+        assert '"title": "the shop"' in code.editor.text and '"sale": false' in code.editor.text
+        assert tree_win.value["title"] == "the shop"
 
 
 async def test_tree_closes_with_its_code_window(tmp_path):

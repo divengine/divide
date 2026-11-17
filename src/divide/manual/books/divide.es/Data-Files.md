@@ -6,7 +6,7 @@ Los archivos `.json` (y los archivos `.dialect`) son **Div JSON**: todo lo que a
 - comillas simples, claves sin comillas, comas finales;
 - comentarios.
 
-![los datos como árbol: plegar, editar un valor, el JSON reescrito](images/data.gif)
+![los datos como árbol: plegar, editar un valor, solo ese valor cambia en el JSON](images/data.gif)
 
 ## Como código
 
@@ -33,4 +33,4 @@ El diálogo de edición te deja cambiar el tipo además del valor: Texto, Númer
 
 ![edición de un elemento](images/data-tree-edit.png)
 
-El árbol y el código son un solo buffer: escribir en el código reconstruye el árbol (mientras el JSON está roto, se queda el último árbol bueno y se rechaza la edición hasta que se arregle), y cada edición del árbol reescribe el código como JSON estándar, manteniendo las referencias sin comillas. Si el archivo usa comentarios, comillas simples o claves sin comillas, que una reescritura eliminaría, divide pregunta antes.
+El árbol y el código son un solo buffer: escribir en el código reconstruye el árbol (mientras el JSON está roto, se queda el último árbol bueno y se rechaza la edición hasta que se arregle), y cada edición del árbol es una sola edición del código (Ctrl+Z la deshace). **Enter** cambia solo ese elemento en el código: su valor, y su clave si la renombraste; el resto queda como lo escribiste, comentarios y formato incluidos. Añadir, borrar y mover reescriben el código como JSON estándar, manteniendo las referencias sin comillas; si el archivo usa comentarios, comillas simples o claves sin comillas, que una reescritura eliminaría, divide pregunta antes.
