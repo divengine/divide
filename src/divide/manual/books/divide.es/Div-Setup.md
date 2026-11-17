@@ -4,6 +4,8 @@ Tu aplicación PHP configura Div en su propio código: la carpeta de sus plantil
 
 **Opciones > Configuración de Div...** la edita sección a sección. También puedes abrir el archivo y editarlo como JSON: divide marca lo que omitiría mientras escribes.
 
+![Opciones > Configuración de Div: las secciones, lo que está en vigor y de dónde viene, el veredicto de Div](images/div-setup.png)
+
 ## Dónde está
 
 | Archivo | Para |
@@ -16,6 +18,10 @@ Tu aplicación PHP configura Div en su propio código: la carpeta de sus plantil
 - Las rutas relativas son relativas a la carpeta que contiene ese `.div`: la raíz del proyecto, o tu carpeta personal.
 - Todo es opcional. Sin ninguna configuración, divide usa Div tal como viene.
 - Una entrada incorrecta se omite y el resto sigue valiendo. Aparece en la [[ventana Mensajes|Checking Templates]] como `SETUP: .div/setup.json: ...` (Enter lleva a ella), y en el editor mientras editas el archivo.
+
+En el editor, una entrada que se omite queda marcada, y con el cursor sobre ella la línea de estado dice por qué (`Aviso: parser.max_cycles: ...`); en otro sitio las cuenta (`JSON ok · 2 avisos`).
+
+![setup.json en el editor: las entradas que divide omite quedan marcadas, y la línea de estado dice por qué](images/div-setup-json.png)
 
 ## Qué configura
 
@@ -68,6 +74,8 @@ Div juzga el dialecto antes que nada. Uno que rechaza se omite, con el motivo de
 
 Mientras tanto se aplica el resto de la configuración, y la ventana Mensajes dice qué espera.
 
+![la pregunta cuando la configuración de un proyecto permite a las plantillas llamar a PHP](images/div-setup-trust.png)
+
 ## Lo que no se configura aquí
 
 Los hooks (`beforeBuild`, `afterParse`...), las subclases de `div`, las closures y los sub-parsers son código PHP. divide no ejecuta el código de tu aplicación para diseñar sus plantillas, así que no forman parte de la configuración. La sección `Código PHP propio` de la ventana lo explica.
@@ -88,5 +96,9 @@ Los hooks (`beforeBuild`, `afterParse`...), las subclases de `div`, las closures
 | **Ctrl+Z / Ctrl+Y** | deshacer / rehacer |
 | **Ctrl+T** | el archivo como JSON |
 | **Alt+F10** / **Shift+F10** | menú local: la configuración del usuario o la del proyecto, editar como JSON, el dialecto en el Dialector, confiar en los ajustes PHP del proyecto, verificar con Div |
+
+![editar la sección Datos: globales como JSON, variables de sistema como casillas](images/div-setup-dialog.png)
+
+![el menú local (Alt+F10)](images/div-setup-menu.png)
 
 Como el Dialector, la ventana es una vista del archivo: cada cambio es una edición de su buffer. Antes del primer cambio, si el archivo tiene comentarios, la ventana pregunta antes de reescribirlo como JSON estándar.

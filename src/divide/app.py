@@ -2390,10 +2390,17 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return
         ed = win.editor
         if ed.lang == "json":
+            here = ed.document.get_index_from_location(min(ed.selection.start, ed.selection.end))
+            if ed.json_error is None and (diag := ed.diagnostic_at(here)) is not None:  # a Div setup's entry left out
+                status.set_hint(_("Warning: ") + diag.message)
+                return
             if ed.json_error is not None:
                 hint = f"JSON [!] {ed.json_error}"
             else:
                 hint = _('JSON ok')
+                if ed.diagnostics:
+                    hint += " · " + ngettext("{n} warning", "{n} warnings", len(ed.diagnostics)).format(
+                        n=len(ed.diagnostics))
             if ed.json_refs:
                 hint += f" · {len(ed.json_refs)} $ref" + ("s" if len(ed.json_refs) > 1 else "")
             status.set_hint(hint)

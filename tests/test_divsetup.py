@@ -122,6 +122,22 @@ async def test_left_out_settings_show_as_you_edit(tmp_path):
         assert Path(win.source.path).name == "setup.json"
 
 
+async def test_the_status_line_says_why_an_entry_is_left_out(tmp_path):
+    (tmp_path / ".div").mkdir()
+    file = tmp_path / ".div" / "setup.json"
+    file.write_text('{\n  "parser": {"max_cycles": 0}\n}\n')
+    app = Divide(tmp_path, [file])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        ed = app.window_for(file).editor
+        await until(pilot, lambda: ed.diagnostics)
+        await settle(pilot)
+        assert "JSON ok" in app.status_line._hint_text and "1 warning" in app.status_line._hint_text
+        ed.move_cursor((1, 16))
+        await settle(pilot)
+        assert app.status_line._hint_text.startswith("Warning: parser.max_cycles")
+
+
 async def test_divide_asks_once_to_trust_a_projects_php(tmp_path):
     (tmp_path / ".div").mkdir()
     (tmp_path / ".div" / "setup.json").write_text('{"php": {"allowed_functions": ["md5"]}}')

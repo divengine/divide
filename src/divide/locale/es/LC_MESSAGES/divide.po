@@ -257,7 +257,7 @@ msgid "Close a~l~l"
 msgstr "Cerrar ~t~odas"
 
 msgid "Cl~a~ss namespace (PSR-4)"
-msgstr "Esp~a~cio de nombres de las clases (PSR-4)"
+msgstr "N~a~mespace (PSR-4)"
 
 msgid "Colors"
 msgstr "Colores"

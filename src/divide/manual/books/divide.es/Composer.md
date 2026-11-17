@@ -2,6 +2,8 @@
 
 **Herramientas > Paquetes Composer...** muestra los paquetes del proyecto y ejecuta [Composer](https://getcomposer.org) para ellos: añadir Div o cualquier paquete de Packagist, quitar, actualizar, instalar, buscar versiones más nuevas. divide nunca edita `composer.json` a espaldas de composer: composer hace cada cambio, bajo el cuadro de progreso, y su salida queda en la ventana **Composer**.
 
+![Herramientas > Paquetes Composer: los paquetes, y el que está bajo la barra](images/composer.png)
+
 ## La ventana
 
 - **Izquierda: los paquetes.** Lo que requiere `composer.json` (`req`), sus paquetes de desarrollo (`dev`), los paquetes que composer instaló con ellos (`dep`) y la plataforma (`php`, extensiones), cada uno con su versión instalada (de `composer.lock`). `↑` marca un paquete con una versión más nueva, una vez que las buscaste.
@@ -18,6 +20,8 @@
 
 Cuando composer falla, la ventana Composer pasa al frente con sus palabras.
 
+![las propias palabras de composer en la ventana Composer, bajo los paquetes](images/composer-log.png)
+
 ## Añadir un paquete
 
 **Ins** abre un asistente:
@@ -27,11 +31,15 @@ Cuando composer falla, la ventana Composer pasa al frente con sus palabras.
 3. **Versión:** divide pregunta a Packagist las versiones del paquete y sugiere una restricción a partir de la estable más nueva (`^6.1` para Div 6.1.3). Escribe la tuya si lo prefieres: divide deja de sugerir.
 4. **Solo desarrollo:** `require-dev` en lugar de `require`.
 
+![añadir un paquete: Packagist consultado mientras escribes, la versión sugerida](images/composer-add.png)
+
 **Añadir** ejecuta `composer require` (con `--dev` para un paquete de desarrollo). Div es `divengine/div`.
 
 ## Un composer.json nuevo
 
 Un proyecto sin `composer.json` recibe un asistente (también **Alt+F10 > Nuevo composer.json**) que lo escribe como lo haría `composer init`:
+
+![el asistente de un composer.json nuevo](images/composer-new.png)
 
 | Campo | |
 |---|---|

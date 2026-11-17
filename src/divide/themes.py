@@ -123,7 +123,7 @@ _tok("punct", "csv.sep")
 _tok("error", "ts.error", "ts.html.end_tag_error", "ts.toml.error", bg="error-bg")
 _tok("error", "div.error", "json.error", bg="error-bg", **B)
 _tok("error", "diag.error", bg="error-bg")  # diagnostics, over the syntax colours
-_tok(None, "diag.warning", bg="warning-bg")
+_tok("error", "diag.warning", bg="warning-bg")  # its own colour: a number or a constant may be brown too
 _tok("focus", "dialector.focus", bg="focus-bg", **B)
 _tok("inserted", "trace.new", bg="inserted-bg", **B)  # what a mutation wrote
 _tok("deleted", "trace.old", bg="deleted-bg", **B)  # what it took away

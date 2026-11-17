@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import os
 import re
 import shutil
@@ -40,9 +41,9 @@ LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in En
 # the menu hotkeys the shots press, in the interface's language
 _KEYS = {
     "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
-           "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f"},
+           "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y"},
     "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
-           "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n"},
+           "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s"},
 }
 
 
@@ -633,6 +634,121 @@ async def language():
         save(app, "language-dialog")
 
 
+SHOP_SETUP = {  # the Div setup of the shop's copy in the Div setup shots
+    "paths": {"include": ["components"]},
+    "parser": {"max_cycles": 50, "error_reporting": "E_ALL & ~E_DEPRECATED"},
+    "data": {"globals": {"site": "The divide shop", "currency": "EUR"}, "system_vars": ["server"]},
+    "php": {"allowed_functions": ["number_format"], "modifiers": {"rev:": "strrev"}},
+    "request": {"get": {"page": 2}, "server": {"HTTP_HOST": "shop.test"}},
+}
+
+
+def shop_copy(work: Path, setup: dict | None = None) -> Path:
+    """The shop in a temporary folder (with its vendor/): shots that save, or need a .div/, leave the example alone."""
+    root = Path(work) / "shop"
+    shutil.copytree(DEMO, root, symlinks=True)
+    if setup is not None:
+        (root / ".div").mkdir()
+        (root / ".div" / "setup.json").write_text(json.dumps(setup, indent=2) + "\n")
+    return root
+
+
+class own_engine:
+    """The project's own Div (vendor/) instead of $DIVIDE_DIV_PHP: the setup window shows it relative."""
+    def __enter__(self):
+        self.saved = os.environ.pop("DIVIDE_DIV_PHP", None)
+    def __exit__(self, *exc):
+        if self.saved:
+            os.environ["DIVIDE_DIV_PHP"] = self.saved
+
+
+@shot
+async def div_setup():
+    """Options > Div setup on a copy of the shop: the trust question first, the window, a section's dialog, its menu;
+    then setup.json in the editor with two entries divide leaves out."""
+    from divide.ui.dialogs import DialogScreen
+    from divide.ui.divsetup import DivSetupWindow
+    with tempfile.TemporaryDirectory() as work, own_engine():
+        root = shop_copy(Path(work), SHOP_SETUP)
+        app = Divide(root, [root / "index.tpl"])
+        async with app.run_test(size=SIZE) as pilot:
+            await until(pilot, lambda: isinstance(app.screen, DialogScreen), tries=200)
+            await settle(pilot)
+            save(app, "div-setup-trust")
+            await pilot.press(key("yes"))
+            await until(pilot, lambda: not isinstance(app.screen, DialogScreen))
+            await pilot.pause(2.5); await settle(pilot)  # the "trusted" notice goes
+            await app.open_div_setup(); await settle(pilot, 10)
+            win = app.active_window()
+            assert isinstance(win, DivSetupWindow)
+            await until(pilot, lambda: win.check is not None, tries=300)
+            win.sections.focus_item(4); await settle(pilot)  # Data
+            save(app, "div-setup")
+            win.edit_section(4)
+            await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+            await pilot.pause(0.5); await settle(pilot)
+            save(app, "div-setup-dialog")
+            await pilot.press("escape"); await settle(pilot)
+            await pilot.press("alt+f10"); await settle(pilot)
+            save(app, "div-setup-menu")
+        wrong = {**SHOP_SETUP, "paths": {"include": ["components", "partials"]},
+                 "parser": {**SHOP_SETUP["parser"], "max_cycles": 0}}
+        (root / ".div" / "setup.json").write_text(json.dumps(wrong, indent=2) + "\n")
+        app = Divide(root, [root / ".div" / "setup.json"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            if isinstance(app.screen, DialogScreen):  # trusted already: no question
+                await pilot.press("escape"); await settle(pilot)
+            ed = app.window_for(root / ".div" / "setup.json").editor
+            await until(pilot, lambda: ed.diagnostics, tries=200)
+            ed.move_cursor((8, 8)); await settle(pilot, 10)  # on max_cycles: the status bar says why
+            save(app, "div-setup-json")
+
+
+@shot
+async def composer():
+    """Tools > Composer packages on a copy of the shop (the real composer: the search asks Packagist),
+    the add assistant, composer's words in its window, and the assistant of a new composer.json."""
+    from divide.ui.composer import ComposerLogWindow, ComposerWindow
+    from divide.ui.dialogs import DialogScreen
+    with tempfile.TemporaryDirectory() as work:
+        root = shop_copy(Path(work))
+        app = Divide(root, [root / "index.tpl"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot)
+            await app.open_composer(); await settle(pilot, 10)
+            win = app.active_window()
+            assert isinstance(win, ComposerWindow)
+            save(app, "composer")
+            app.composer_action(win, "add")
+            await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+            dialog = app.screen.dialog
+            dialog.query_input.focus()
+            await pilot.press(*"divengine")
+            await until(pilot, lambda: dialog.found and dialog.version_input.data, tries=600)
+            await settle(pilot)
+            save(app, "composer-add")
+            await pilot.press("escape"); await settle(pilot)
+            app.composer_action(win, "validate")
+            await until(pilot, lambda: any(isinstance(w, ComposerLogWindow) and w.lines for w in app.windows()), tries=600)
+            await until(pilot, lambda: all(w.is_finished for w in app.workers if w.group == "composer"), tries=600)
+            if isinstance(app.screen, ProgressScreen):
+                await pilot.press("escape")
+            await settle(pilot, 10)
+            save(app, "composer-log")
+        root = Path(work) / "acme" / "my-shop"  # the name it suggests: acme/my-shop
+        root.mkdir(parents=True)
+        app = Divide(root, [])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot)
+            app.run_worker(app.open_composer())
+            await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+            app.screen.dialog.inputs["namespace"].data = "Acme\\Shop"
+            await settle(pilot)
+            save(app, "composer-new")
+            await pilot.press("escape"); await settle(pilot)
+
+
 @shot
 async def spanish():
     """The Run menu in Spanish: a process of its own, the interface's language is chosen at start."""
@@ -674,6 +790,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as work:  # removed afterwards: /tmp is often in RAM
         os.environ["XDG_CONFIG_HOME"] = str(Path(work) / "config")  # no personal settings in the pictures
+        os.environ["DIV_HOME"] = str(Path(work) / "div-home")  # nor the user's Div setup, nor what they trust
         (Path(work) / "config" / "divide").mkdir(parents=True)
         (Path(work) / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}')
         SVG_DIR = Path(work)

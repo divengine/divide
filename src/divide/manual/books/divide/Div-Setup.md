@@ -4,6 +4,8 @@ Your PHP application sets Div up in its own code: the folder of its templates, a
 
 **Options > Div setup...** edits it section by section. Or open the file and edit it as JSON: divide marks what it would leave out as you type.
 
+![Options > Div setup: the sections, what is in effect and where it comes from, Div's verdict](images/div-setup.png)
+
 ## Where it lives
 
 | File | For |
@@ -16,6 +18,10 @@ Your PHP application sets Div up in its own code: the folder of its templates, a
 - Relative paths are relative to the folder that holds that `.div`: the project's root, or your home folder.
 - Everything is optional. Without any setup, divide uses Div exactly as it comes.
 - An entry that is wrong is left out, and the rest still counts. It shows in the [[Messages window|Checking Templates]] as `SETUP: .div/setup.json: ...` (Enter goes to it), and in the editor while you edit the file.
+
+In the editor, an entry that is left out is marked, and with the cursor on it the status line says why (`Warning: parser.max_cycles: ...`); elsewhere it counts them (`JSON ok · 2 warnings`).
+
+![setup.json in the editor: the entries divide leaves out are marked, and the status line says why](images/div-setup-json.png)
 
 ## What it sets
 
@@ -68,6 +74,8 @@ Div judges the dialect before anything else. One it rejects is left out, with Di
 
 Until then the rest of the setup applies, and the Messages window says what waits.
 
+![the question when a project's setup lets templates call PHP](images/div-setup-trust.png)
+
 ## What cannot be set here
 
 Hooks (`beforeBuild`, `afterParse`...), subclasses of `div`, closures and sub-parsers are PHP code. divide does not run your application's code to design its templates, so they are not part of the setup. The `Custom PHP code` section of the window says so.
@@ -88,5 +96,9 @@ Hooks (`beforeBuild`, `afterParse`...), subclasses of `div`, closures and sub-pa
 | **Ctrl+Z / Ctrl+Y** | undo / redo |
 | **Ctrl+T** | the file as JSON |
 | **Alt+F10** / **Shift+F10** | local menu: the user's or the project's setup, edit as JSON, the dialect in the Dialector, trust the project's PHP settings, check with Div |
+
+![editing the Data section: globals as JSON, system variables as check boxes](images/div-setup-dialog.png)
+
+![the local menu (Alt+F10)](images/div-setup-menu.png)
 
 Like the Dialector, the window is a view of the file: every change is one edit of its buffer. Before the first change, if the file has comments, the window asks before rewriting it as standard JSON.

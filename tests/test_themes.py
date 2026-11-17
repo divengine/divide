@@ -98,7 +98,7 @@ BORLAND_GOLDEN = {
     "dialector.focus": "black/lightcyan/b",
     "trace.new": "black/lightgreen/b",
     "trace.old": "white/red/b",
-    "diag.warning": "/brown/",
+    "diag.warning": "white/brown/",  # its own colour: brown numbers vanished on it
 }
 
 

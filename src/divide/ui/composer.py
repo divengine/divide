@@ -417,7 +417,7 @@ class NewComposerDialog(_Dialog):
     """``composer init`` as a dialog: the project's name and kind, PHP, Div, its classes."""
 
     DEFAULT_CSS = """
-    NewComposerDialog { width: 76; height: 27; }
+    NewComposerDialog { width: 76; height: 19; }
     NewComposerDialog InputLine { width: 1fr; }
     NewComposerDialog .nc-row { height: 1; }
     NewComposerDialog .nc-row Label { width: 24; }
