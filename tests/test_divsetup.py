@@ -120,3 +120,20 @@ async def test_left_out_settings_show_as_you_edit(tmp_path):
         editor = win.source.editor
         assert any("max_cycles" in d.message for d in editor.diagnostics)  # in the editor too
         assert Path(win.source.path).name == "setup.json"
+
+
+async def test_divide_asks_once_to_trust_a_projects_php(tmp_path):
+    (tmp_path / ".div").mkdir()
+    (tmp_path / ".div" / "setup.json").write_text('{"php": {"allowed_functions": ["md5"]}}')
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+        assert "md5" in str(app.screen.dialog.query_one(".dlg-text").render())
+        await pilot.press("y")
+        await until(pilot, lambda: not isinstance(app.screen, DialogScreen))
+        await settle(pilot)
+        assert app.div_setup().allowed_functions == ("md5",) and app.div_setup().untrusted is None
+    app = Divide(tmp_path, [])  # trusted: no question the next time
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot, 20)
+        assert not isinstance(app.screen, DialogScreen)
