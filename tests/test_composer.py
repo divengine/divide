@@ -305,3 +305,27 @@ async def test_the_window_shows_the_tree_and_folds(tmp_path, fake):
         win.reload()  # what is folded stays folded
         await settle(pilot)
         assert win.rows()[-1] == "divengine/"
+
+
+async def test_typing_filters_the_tree(tmp_path, fake):
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1", "acme/forms": "^1"}}))
+    (tmp_path / "composer.lock").write_text(json.dumps({"packages": [
+        {"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"},
+        {"name": "acme/forms", "version": "1.2.0"}]}))
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await app.open_composer()
+        await settle(pilot)
+        win = app.active_window()
+        await pilot.press(*"FUNC")  # a substring, case ignored
+        await settle(pilot)
+        assert win.rows() == ["Runtime (require)  3", "divengine/", " divengine/functions 1.0.2"]
+        assert win.package.name == "divengine/functions"
+        assert "FUNC" in str(win.packages.filter_line.render()) and "1/" in str(win.packages.filter_line.render())
+        await pilot.press("backspace", "backspace", "backspace", "backspace", *"acme")  # a vendor: all it holds
+        await settle(pilot)
+        assert win.rows() == ["Runtime (require)  3", "acme/", " acme/forms 1.2.0"]
+        await pilot.press("escape")
+        await settle(pilot)
+        assert len(win.rows()) == 6 and win.packages.filter_text == ""

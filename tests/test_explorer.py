@@ -197,3 +197,25 @@ async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
         app.set_icons(icons.PLAIN)
         await pilot.pause()
         assert lines() == plain
+
+
+async def test_the_filter_finds_files_in_folders_never_opened(tmp_path):
+    (tmp_path / "src" / "deep").mkdir(parents=True)
+    (tmp_path / "src" / "deep" / "Invoice.tpl").write_text("x")
+    (tmp_path / "src" / "other.tpl").write_text("x")
+    (tmp_path / "readme.md").write_text("x")
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = app.project_window().project_tree
+        tree.focus()
+        await settle(pilot)
+        await pilot.press(*"invo")
+        await until(pilot, lambda: any(line.node.data.path.name == "Invoice.tpl" for line in tree._tree_lines))
+        await settle(pilot)
+        names = [line.node.data.path.name for line in tree._tree_lines]
+        assert names == ["src", "deep", "Invoice.tpl"]
+        assert tree.cursor_node.data.path.name == "Invoice.tpl"
+        await pilot.press("escape")
+        await settle(pilot)
+        assert "readme.md" in [line.node.data.path.name for line in tree._tree_lines]

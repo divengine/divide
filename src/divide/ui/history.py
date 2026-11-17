@@ -22,6 +22,7 @@ from textual_vision.input_line import InputLine
 from textual_vision.list_box import ListBox
 
 from divide import config
+from divide.ui.filter import PROMPT, FilteredList
 
 MAX_ENTRIES = 20  # per history
 MAX_SHOWN = 8  # rows of the list before it scrolls
@@ -69,7 +70,7 @@ class HistoryArrow(Widget):
             self.parent.toggle()
 
 
-class HistoryList(ListBox):
+class HistoryList(FilteredList, ListBox):
     """The earlier entries, in a small blue window under the line."""
 
     DEFAULT_CSS = """
@@ -84,8 +85,13 @@ class HistoryList(ListBox):
 
     def __init__(self, items: list[str], owner: HistoryInput) -> None:
         super().__init__(items=items)
+        self._all, self._shown = list(items), list(range(len(items)))
         self.owner = owner
         self.can_focus = True
+
+    def filter_changed(self) -> None:
+        """The filter in the frame's title: the popup has no room for a line."""
+        self.border_title = f"{PROMPT}{self.filter_text}" if self.filter_text else ""
 
     def on_mount(self) -> None:
         self.focus()
@@ -94,7 +100,7 @@ class HistoryList(ListBox):
         self.owner.close()
 
     def on_key(self, event: events.Key) -> None:
-        if event.key == "escape":
+        if event.key == "escape" and not self.filter_text:
             event.stop()
             event.prevent_default()
             self.owner.close()

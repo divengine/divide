@@ -109,3 +109,51 @@ async def test_find_remembers(tmp_path):
         await pilot.press(*"two", "enter")
         await settle(pilot)
         assert history.entries("find") == ["two"]
+
+
+async def test_typing_in_the_files_filters_them_escape_empties_it_first(tmp_path):
+    (tmp_path / "sub").mkdir()
+    for name in ("a.tpl", "b.tpl", "notes.txt"):
+        (tmp_path / name).write_text(name)
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        await pilot.press("f3")
+        await settle(pilot)
+        dialog = app.screen.query_one(FileDialog)
+        files = dialog.query_one(FileList)
+        await pilot.press("tab")
+        await settle(pilot, 3)
+        await pilot.press(*"B.T")
+        await settle(pilot, 3)
+        assert files.items == ["b.tpl"] and files.all_items == dialog._entries
+        assert dialog.input.data == "b.tpl"  # the bar on it: its name in the line
+        await pilot.press("escape")  # the filter goes, the dialog stays
+        await settle(pilot, 3)
+        assert files.items == dialog._entries and app.screen.query(FileDialog)
+        await pilot.press(*"note", "enter")
+        await settle(pilot)
+        assert app.active_editor().path == tmp_path / "notes.txt"
+
+
+async def test_the_history_popup_filters_in_its_title(tmp_path):
+    for name in ("alpha.tpl", "beta.tpl", "gamma.tpl"):
+        history.add("file", name)
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        await pilot.press("f3")
+        await settle(pilot)
+        dialog = app.screen.query_one(FileDialog)
+        await pilot.press("down")
+        await settle(pilot, 3)
+        popup = app.screen.query_one(HistoryList)
+        await pilot.press(*"ET")
+        await settle(pilot, 3)
+        assert popup.items == ["beta.tpl"] and "ET" in str(popup.border_title)
+        await pilot.press("escape")  # the filter first
+        await settle(pilot, 3)
+        assert app.screen.query(HistoryList) and len(popup.items) == 3
+        await pilot.press(*"gam", "enter")
+        await settle(pilot, 3)
+        assert not app.screen.query(HistoryList) and dialog.input.data == "gamma.tpl"

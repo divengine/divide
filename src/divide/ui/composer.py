@@ -42,6 +42,7 @@ from divide import config, themes
 from divide.editor.theme import OUTPUT
 from divide.run import composer as cmp
 from divide.ui.dialogs import _Dialog, information, confirm
+from divide.ui.filter import Filtered, FilteredTree
 from divide.ui.progress import ProgressDialog, run_with_progress
 from divide.ui.windows import OUTPUT_CSS, EditorView, HRule, VRule, _TVWindow
 
@@ -98,7 +99,7 @@ def tree_of(packages: list[cmp.Package]) -> list[tuple[str, str, list[tuple[str,
     return out
 
 
-class PackageTree(Tree[Row], TVViewMixin):
+class PackageTree(FilteredTree, Tree[Row], TVViewMixin):
     """Runtime / development / platform, the vendors under them, then the packages:
     a required one (composer.json) bright, a dependency (it came with them) dim."""
 
@@ -140,6 +141,10 @@ class PackageTree(Tree[Row], TVViewMixin):
     def repaint(self) -> None:
         self._invalidate()
         self.refresh()
+
+    def filter_text_of(self, node) -> str:
+        row: Row | None = node.data
+        return row.key if row is not None and row.kind == "package" else str(node.label)
 
     def render_label(self, node, base_style, style):
         row: Row | None = node.data
@@ -229,7 +234,7 @@ class ComposerWindow(_TVWindow):
     def compose_content(self) -> ComposeResult:
         with Horizontal():
             with Vertical(classes="cp-left"):
-                yield self.packages
+                yield Filtered(self.packages)
                 yield HRule()
                 yield self.state
             yield VRule()

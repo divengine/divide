@@ -212,6 +212,6 @@ class FindInFilesMixin:
         if window is None:
             window = self._open_messages_window(window=FindResultsWindow(number=self._free_number()))
         window.show(result_items(root, dialog.search_text, dialog.mask, hits, in_files))
-        window.list.focus_item(1 if hits else 0)
+        window.list.focus_original(1 if hits else 0)
         self.raise_window(window)
         window.list.focus()

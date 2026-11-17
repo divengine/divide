@@ -25,6 +25,7 @@ from textual_vision.label import Label
 from textual_vision.list_box import ListBox
 
 from divide.editor.search import SearchOptions
+from divide.ui.filter import Filtered, FilteredList
 from divide.ui.history import HistoryInput
 from divide.ui.shadow import install_shadows
 from divide.ui.windows import PassiveScrollBar, RuleFrame
@@ -145,7 +146,7 @@ def about_box(version: str) -> MessageBox:
     )
 
 
-class FileList(ListBox):
+class FileList(FilteredList, ListBox):
     """The files of the folder, on Turbo Pascal's cyan: the chosen one white on
     green while the list has the focus, yellow when the focus is elsewhere.
     Reports the chosen entry and accepts on a double click."""
@@ -166,10 +167,10 @@ class FileList(ListBox):
 
     def focus_item(self, item: int) -> None:
         super().focus_item(item)
-        self._dialog.entry_focused(self.focused)
+        self._dialog.entry_focused(self.current)
 
     def select_item(self, item: int) -> None:
-        self._dialog.entry_chosen(item)
+        self._dialog.entry_chosen(self.original(item))
 
     def on_click(self, event: events.Click) -> None:
         if event.chain >= 2:
@@ -274,7 +275,7 @@ class FileDialog(_Dialog):
                 yield HistoryInput(self.input, "folder" if self.folders else "file")
                 yield Label(_('~F~olders') if self.folders else _('~F~iles'), link=self.list, classes="fd-files-label")
                 with Horizontal(classes="fd-files"):
-                    yield self.list
+                    yield Filtered(self.list)
                     yield self.bar
             with Vertical(classes="fd-buttons"):
                 yield Button(self.ok_label, Command.OK, is_default=True, id="ok")
@@ -312,9 +313,10 @@ class FileDialog(_Dialog):
                 entries.append(child.name)
         self._entries = entries
         self._syncing = True
+        self.list.filter_text = ""  # another folder: the filter starts again
         self.list.set_list(entries)
         self._syncing = False
-        self.show_info(self.list.focused if entries else None)
+        self.show_info(self.list.current if entries else None)
         self.input.refresh()
 
     def entry_focused(self, index: int) -> None:
@@ -364,8 +366,8 @@ class FileDialog(_Dialog):
         if message.command == Command.OK:
             message.stop()
             message.prevent_default()  # Dialog would end_modal(OK) without a chosen path
-            if self.current is self.list and 0 <= self.list.focused < len(self._entries):
-                entry = self._entries[self.list.focused]
+            if self.current is self.list and 0 <= self.list.current < len(self._entries):
+                entry = self._entries[self.list.current]
                 if entry.endswith("/") or entry == "..":
                     self.accept(entry)
                     return

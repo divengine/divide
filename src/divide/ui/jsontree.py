@@ -30,6 +30,7 @@ from divide import themes
 from divide.lang import divjson
 from divide.lang.divjson import Ref
 from divide.ui.dialogs import _Dialog
+from divide.ui.filter import Filtered, FilteredTree
 from divide.ui.windows import EditorWindow, _TVWindow
 
 Path_ = tuple
@@ -149,7 +150,7 @@ class EditItemDialog(_Dialog):
         return True
 
 
-class JsonTree(Tree[Path_], TVViewMixin):
+class JsonTree(FilteredTree, Tree[Path_], TVViewMixin):
     ICON_NODE = "► "  # Turbo Vision's own (CP437); Textual's ▶ is not
     ICON_NODE_EXPANDED = "▼ "
     DEFAULT_CSS = """
@@ -182,7 +183,7 @@ class JsonTree(Tree[Path_], TVViewMixin):
         self.guide_depth = 3
 
     def _window(self) -> "JsonTreeWindow":
-        return self.parent.parent  # type: ignore[return-value]
+        return next(a for a in self.ancestors if isinstance(a, JsonTreeWindow))
 
     def action_edit(self) -> None:
         self._window().edit_item()
@@ -224,7 +225,7 @@ class JsonTreeWindow(_TVWindow):
         return f"Data: {self.source.display_name}" + (" [invalid JSON]" if invalid else "")
 
     def compose_content(self) -> ComposeResult:
-        yield self.json_tree
+        yield Filtered(self.json_tree)
 
     def on_mount(self) -> None:
         self.call_after_refresh(self.reload)

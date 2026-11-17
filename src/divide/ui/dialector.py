@@ -39,6 +39,7 @@ from divide import themes
 from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
 from divide.ui.dialogs import _Dialog, browse_into
+from divide.ui.filter import Filtered, FilteredList
 from divide.ui.windows import EditorView, EditorWindow, HRule, VRule, _TVWindow
 
 CM_DEFAULTS = Command.USER + 60
@@ -97,7 +98,7 @@ def _editor_styles(view: EditorView) -> tuple[Style, Style]:
     return theme.base_style, theme.syntax_styles.get("dialector.focus", Style(reverse=True))
 
 
-class SectionList(ListBox):
+class SectionList(FilteredList, ListBox):
     """The sections, in the editor's colours; the focused one as its tags in the preview."""
 
     DEFAULT_CSS = "SectionList { width: 1fr; height: 1fr; }"
@@ -111,11 +112,11 @@ class SectionList(ListBox):
     def focus_item(self, item: int) -> None:
         super().focus_item(item)
         if not self._syncing:
-            self._window.section_focused(self.focused)
+            self._window.section_focused(self.current)
 
     def select_item(self, item: int) -> None:
         super().select_item(item)
-        self._window.edit_section(item)
+        self._window.edit_section(self.original(item))
 
     def on_click(self, event: events.Click) -> None:
         if event.chain >= 2:
@@ -167,7 +168,7 @@ class DialectorWindow(_TVWindow):
     def compose_content(self) -> ComposeResult:
         with Horizontal():
             with Vertical(classes="dx-left"):
-                yield self.sections
+                yield Filtered(self.sections)
                 yield HRule()
                 yield self.about
                 yield HRule()
@@ -282,7 +283,7 @@ class DialectorWindow(_TVWindow):
         keep = self.section_index
         self.sections._syncing = True
         self.sections.set_list(self._section_rows())
-        self.sections.focus_item(keep)
+        self.sections.focus_original(keep)
         self.sections._syncing = False
         self.section_focused(keep)
 
@@ -316,7 +317,7 @@ class DialectorWindow(_TVWindow):
         self._set_verdict(*_verdict_text(verdict, self.tags))
         self.sections._syncing = True
         self.sections.set_list(self._section_rows())
-        self.sections.focus_item(self.section_index)
+        self.sections.focus_original(self.section_index)
         self.sections._syncing = False
         self.app.update_status()  # type: ignore[attr-defined]
 

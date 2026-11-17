@@ -1727,7 +1727,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         if messages is not None:
             for index, item in enumerate(messages.items):
                 if item.path == win.path and item.start == start:
-                    messages.list.focus_item(index)
+                    messages.list.focus_original(index)
                     break
         self.update_status()
 

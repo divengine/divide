@@ -31,6 +31,7 @@ from divide import config
 from divide.run.dbgp import DebugError, DebugSession, Location, xdebug_ini
 from divide.run.script import ScriptMessage, ScriptResult, command, run_script, size_text, split_args
 from divide.ui.dialogs import InputDialog, information
+from divide.ui.filter import Filtered, FilteredList
 from divide.ui.progress import ProgressDialog, run_with_progress
 from divide.ui.windows import MessageItem, _TVWindow
 
@@ -45,7 +46,7 @@ DEBUG_HINT = _('F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 re
 # (in the Borland palettes: the colours are the palette's debug-* roles).
 
 
-class PickList(ListBox):
+class PickList(FilteredList, ListBox):
     DEFAULT_CSS = """
     PickList { background: $divide-debug-bg; }
     PickList > .list-viewer--normal { color: $divide-debug-text; background: $divide-debug-bg; }
@@ -55,9 +56,9 @@ class PickList(ListBox):
 
     def select_item(self, item: int) -> None:
         super().select_item(item)
-        window = self.parent.parent if self.parent is not None else None
+        window = next((a for a in self.ancestors if isinstance(a, _TVWindow)), None)
         if hasattr(window, "activate"):
-            window.activate(item)  # type: ignore[union-attr]
+            window.activate(self.original(item))  # type: ignore[union-attr]
 
     def on_click(self, event) -> None:
         if event.chain >= 2:
@@ -79,16 +80,16 @@ class _ListWindow(_TVWindow):
         self.lines: list[str] = []
 
     def compose_content(self) -> ComposeResult:
-        yield self.list
+        yield Filtered(self.list)
 
     def show(self, lines: list[str]) -> None:
         if lines == self.lines:
             return
-        keep = self.list.focused if self.lines else 0
+        keep = self.list.current if self.lines else 0
         self.lines = lines or ["(empty)"]
         self.list.set_list(self.lines)
-        if keep:
-            self.list.focus_item(min(keep, len(self.lines) - 1))
+        if keep > 0:
+            self.list.focus_original(min(keep, len(self.lines) - 1))
 
     def activate(self, index: int) -> None:
         pass
@@ -110,7 +111,7 @@ class WatchesWindow(_ListWindow):
             app.run_worker(app.add_watch(), group="command")  # type: ignore[attr-defined]
         elif event.key == "delete":
             event.stop()
-            focused = self.list.focused
+            focused = self.list.current
             if 0 <= focused < len(self.rows) and self.rows[focused] is not None:
                 app.run_worker(app.remove_watch(self.rows[focused]), group="command")  # type: ignore[attr-defined]
 

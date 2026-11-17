@@ -43,6 +43,7 @@ from divide import themes
 from divide.lang import divjson
 from divide.run import setup as div_setup
 from divide.ui.dialogs import _Dialog, browse_into, shown_path
+from divide.ui.filter import Filtered, FilteredList
 from divide.ui.windows import EditorWindow, HRule, VRule, _TVWindow
 
 CM_SETUP_BROWSE = Command.USER + 120  # + the field's row
@@ -204,7 +205,7 @@ def rewrite_loses(text: str) -> bool:
 
 
 # ------------------------------------------------------------------ the window
-class SetupSectionList(ListBox):
+class SetupSectionList(FilteredList, ListBox):
     """The sections, in the editor's colours (as the dialector's)."""
 
     DEFAULT_CSS = "SetupSectionList { width: 1fr; height: 1fr; }"
@@ -228,11 +229,11 @@ class SetupSectionList(ListBox):
     def focus_item(self, item: int) -> None:
         super().focus_item(item)
         if not self._syncing:
-            self._window.section_focused(self.focused)
+            self._window.section_focused(self.current)
 
     def select_item(self, item: int) -> None:
         super().select_item(item)
-        self._window.edit_section(item)
+        self._window.edit_section(self.original(item))
 
     def on_click(self, event: events.Click) -> None:
         if event.chain >= 2:
@@ -282,7 +283,7 @@ class DivSetupWindow(_TVWindow):
     def compose_content(self) -> ComposeResult:
         with Horizontal():
             with Vertical(classes="ds-left"):
-                yield self.sections
+                yield Filtered(self.sections)
                 yield HRule()
                 yield self.about
                 yield HRule()
@@ -377,7 +378,7 @@ class DivSetupWindow(_TVWindow):
         keep = self.section_index
         self.sections._syncing = True
         self.sections.set_list(self._section_rows())
-        self.sections.focus_item(keep)
+        self.sections.focus_original(keep)
         self.sections._syncing = False
         self.section_focused(keep)
         self.show_verdict()

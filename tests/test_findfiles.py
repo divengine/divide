@@ -65,3 +65,29 @@ async def test_find_in_files_window(tmp_path):
         editor = app.active_editor()
         assert editor.path == tmp_path / "parts" / "header.tpl" and editor.editor.selected_text == "header"
         assert dialog.search_text == "header" and app.search_query == "header"
+
+
+async def test_filtering_the_results_keeps_where_each_one_goes(tmp_path):
+    tmp_path = tmp_path / "project"
+    (tmp_path / "parts").mkdir(parents=True)
+    (tmp_path / "page.tpl").write_text("{% parts/header %}\nbody\n")
+    (tmp_path / "parts" / "header.tpl").write_text("<h1>{$title}</h1>\n<p>header</p>\n")
+    app = Divide(tmp_path, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        await pilot.press("shift+f2")
+        await settle(pilot)
+        await pilot.press(*"header", "enter")
+        for _ in range(60):
+            await pilot.pause(0.05)
+            if app.find_results_window() is not None:
+                break
+        await settle(pilot)
+        window = app.find_results_window()
+        await pilot.press(*"<P>")  # only the second file's line: the first one shown
+        await settle(pilot)
+        assert window.list.items == ["parts/header.tpl(2): <p>header</p>"] and window.list.current == 2
+        await pilot.press("enter")
+        await settle(pilot)
+        editor = app.active_editor()
+        assert editor.path == tmp_path / "parts" / "header.tpl" and editor.editor.selected_text == "header"

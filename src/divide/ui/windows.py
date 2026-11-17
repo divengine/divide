@@ -4,13 +4,15 @@ from __future__ import annotations
 
 from divide.i18n import _
 
+import asyncio
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
-from textual import events
+from textual import events, work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
@@ -37,6 +39,7 @@ from divide.editor.theme import OUTPUT
 from divide.lang.div.complete import CARET, CompletionResult, complete
 from divide.ui.completion import CompletionPopup, InfoPopup
 from divide.ui import icons as icons_mod
+from divide.ui.filter import Filtered, FilteredList, FilteredTree
 
 UNTITLED = "NONAME{:02d}.TPL"
 
@@ -724,7 +727,7 @@ MEMBERS_MAX_BYTES = 2_000_000  # a bigger file unfolds into nothing (open it: Se
 HIDDEN_NAMES = {".git", ".hg", ".svn", "__pycache__", ".venv", "node_modules", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".idea"}
 
 
-class ProjectTree(DirectoryTree, TVViewMixin):
+class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
     """Project explorer: Ins new file, F7 new folder, F2 rename, Del delete,
     Ctrl+R refresh, Alt+F10 (or a right click) the local menu."""
 
@@ -923,7 +926,37 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         return node.data.member if node is not None and isinstance(node.data, MemberEntry) else None
 
     def filter_paths(self, paths):
-        return [p for p in paths if p.name not in HIDDEN_NAMES and not p.name.endswith(".egg-info")]
+        return [p for p in paths if shown_in_project(p)]
+
+    def apply_filter(self) -> None:
+        super().apply_filter()
+        if self.filter_text:
+            self._load_matches(self.filter_text)
+
+    @work(exclusive=True, group="project-filter")
+    async def _load_matches(self, query: str) -> None:
+        """The folders that hold a match, loaded (a folder loads when it opens: the
+        filter looks in the whole project, not only in what was opened)."""
+        await asyncio.sleep(0.2)  # the next key is likely on its way
+        root = Path(self.path)
+        found = await asyncio.to_thread(find_in_project, root, query)
+        if query != self.filter_text:
+            return
+        for path in found:
+            node = self.root
+            for part in path.relative_to(root).parts[:-1]:
+                if node.data is not None and not node.data.loaded:
+                    await self._add_to_load_queue(node)
+                node = next((c for c in node.children if c.data is not None and c.data.path.name == part), None)
+                if node is None:
+                    break
+            else:
+                if node.data is not None and not node.data.loaded:
+                    await self._add_to_load_queue(node)
+        if query == self.filter_text:
+            super().apply_filter()
+            if self.filter_line is not None:
+                self.filter_line.show()
 
     def action_request(self, action: str) -> None:
         self.post_message(self.Request(self, action, self.cursor_screen_at() if action == "menu" else None))
@@ -999,6 +1032,29 @@ class ProjectTree(DirectoryTree, TVViewMixin):
         self.move_cursor(node, animate=False)
 
 
+def shown_in_project(path: Path) -> bool:
+    return path.name not in HIDDEN_NAMES and not path.name.endswith(".egg-info")
+
+
+def find_in_project(root: Path, query: str, limit: int = 300, budget: int = 50000) -> list[Path]:
+    """The files and folders whose name holds ``query`` (case ignored), as the project
+    window shows them: at most ``limit``, after looking at ``budget`` entries at most."""
+    query = query.lower()
+    found: list[Path] = []
+    seen = 0
+    for folder, dirs, files in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if shown_in_project(Path(d)))
+        for name in (*dirs, *sorted(files)):
+            seen += 1
+            if query in name.lower() and shown_in_project(Path(name)):
+                found.append(Path(folder) / name)
+                if len(found) >= limit:
+                    return found
+        if seen >= budget:
+            break
+    return found
+
+
 class ProjectWindow(_TVWindow):
     WIDTH = 32
 
@@ -1008,7 +1064,7 @@ class ProjectWindow(_TVWindow):
         self.project_tree = ProjectTree(root, icons=icons)
 
     def compose_content(self) -> ComposeResult:
-        yield self.project_tree
+        yield Filtered(self.project_tree)
 
     def on_command_message(self, message: CommandMessage) -> None:
         if message.command == Command.CLOSE:
@@ -1059,7 +1115,7 @@ class MessageItem:
     end: int | None = None
 
 
-class MessageList(ListBox):
+class MessageList(FilteredList, ListBox):
     DEFAULT_CSS = """
     MessageList { background: $panel; }
     MessageList > .list-viewer--normal { color: $text; background: $panel; }
@@ -1069,9 +1125,9 @@ class MessageList(ListBox):
 
     def select_item(self, item: int) -> None:
         super().select_item(item)
-        window = self.parent.parent if self.parent is not None else None
-        if isinstance(window, LocationsWindow):
-            window.activate(item)
+        window = next((a for a in self.ancestors if isinstance(a, LocationsWindow)), None)
+        if window is not None:
+            window.activate(self.original(item))
 
     def on_click(self, event) -> None:
         if event.chain >= 2:
@@ -1090,16 +1146,16 @@ class LocationsWindow(_TVWindow):
         self.items: list[MessageItem] = []
 
     def compose_content(self) -> ComposeResult:
-        yield self.list
+        yield Filtered(self.list)
 
     def show(self, items: list[MessageItem]) -> None:
         if items == self.items:
             return
-        keep = self.list.focused if self.items and len(items) == len(self.items) else 0
+        keep = self.list.current if self.items and len(items) == len(self.items) else 0
         self.items = items or [MessageItem(self.EMPTY)]
         self.list.set_list([item.text for item in self.items])
-        if keep:
-            self.list.focus_item(min(keep, len(self.items) - 1))
+        if keep > 0:
+            self.list.focus_original(min(keep, len(self.items) - 1))
 
     def activate(self, index: int) -> None:
         if 0 <= index < len(self.items):

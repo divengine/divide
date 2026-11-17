@@ -27,6 +27,7 @@ from divide.run.render import RenderError
 from divide.run.script import size_text
 from divide.run.trace import Mutation, RenderTrace, trace_render
 from divide.ui.dialogs import information
+from divide.ui.filter import Filtered
 from divide.ui.progress import ProgressDialog, run_with_progress
 from divide.ui.runner import PickList
 from divide.ui.windows import EditorView, HRule, IndicatorFrame, _TVWindow
@@ -41,9 +42,9 @@ class TraceList(PickList):
 
     def focus_item(self, item: int) -> None:
         super().focus_item(item)
-        window = self.parent.parent if self.parent is not None else None
-        if isinstance(window, TraceWindow):
-            window.show_row(self.focused)
+        window = next((a for a in self.ancestors if isinstance(a, TraceWindow)), None)
+        if window is not None:
+            window.show_row(self.current)
 
 
 def row_text(m: Mutation) -> str:
@@ -72,7 +73,7 @@ class TraceWindow(_TVWindow):
     def compose_content(self) -> ComposeResult:
         yield self.view
         yield HRule()
-        yield self.list
+        yield Filtered(self.list, fill=False)
 
     # ------------------------------------------------------------ load
     def load(self, template: Path, trace: RenderTrace) -> None:
@@ -114,19 +115,19 @@ class TraceWindow(_TVWindow):
 
     def hint(self) -> str:
         """The row in full, for the status line."""
-        index = self.list.focused
+        index = self.list.current
         if not 0 <= index < len(self.rows):
             return self.HINT
         return f"{self.rows[index].label} · {self.HINT}"
 
     def toggle_before(self) -> None:
         self.before = not self.before
-        self.show_row(self.list.focused)
+        self.show_row(self.list.current)
 
     # ----------------------------------------------------------- steps
     def step(self, how: str) -> None:
         """``into`` the next row, ``over`` the next of this parse, ``out`` to the parse above."""
-        here = self.list.focused
+        here = self.list.current
         if not 0 <= here < len(self.rows):
             return
         current = self.rows[here]
@@ -140,7 +141,7 @@ class TraceWindow(_TVWindow):
                 break
         else:
             return
-        self.list.focus_item(index)
+        self.list.focus_original(index)
 
     def on_key(self, event: events.Key) -> None:
         steps = {"f7": "into", "f8": "over", "shift+f8": "out"}

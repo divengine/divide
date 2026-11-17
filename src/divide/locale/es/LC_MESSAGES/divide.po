@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 17:12+0000\n"
+"POT-Creation-Date: 2026-11-17 20:29+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -2154,6 +2154,9 @@ msgstr "color real"
 
 msgid "txt block"
 msgstr "bloque txt"
+
+msgid "type to filter"
+msgstr "escribe para filtrar"
 
 msgid "unexpected end, expected ']'"
 msgstr "final inesperado, se esperaba ']'"

@@ -27,6 +27,7 @@ from textual_vision.group import TVViewMixin
 from divide import outline as outline_mod
 from divide import themes
 from divide.outline import Node
+from divide.ui.filter import Filtered, FilteredTree
 from divide.ui.runner import _ListWindow
 from divide.ui.windows import EditorWindow, LocationsWindow, ProjectWindow, _TVWindow
 
@@ -48,7 +49,7 @@ def _path(node: TreeNode) -> tuple[str, ...]:
     return tuple(reversed(keys))
 
 
-class OutlineTree(Tree[Node], TVViewMixin):
+class OutlineTree(FilteredTree, Tree[Node], TVViewMixin):
     """The outline's rows: a letter for the kind, the label in the editor's colours."""
 
     ICON_NODE = "► "  # Turbo Vision's own (CP437), like the project window's
@@ -86,6 +87,9 @@ class OutlineTree(Tree[Node], TVViewMixin):
     def repaint(self) -> None:
         self._invalidate()
         self.refresh()
+
+    def filter_text_of(self, node) -> str:
+        return node.data.text if node.data is not None else str(node.label)
 
     def render_label(self, node, base_style, style):
         if node.data is None:  # a note: (no declarations)
@@ -139,7 +143,7 @@ class OutlineWindow(_TVWindow):
         self.folded: set[tuple[str, ...]] = set()  # the paths of the nodes folded, kept across edits
 
     def compose_content(self) -> ComposeResult:
-        yield self.outline_tree
+        yield Filtered(self.outline_tree)
 
     # ------------------------------------------------------------ the rows
     @property
