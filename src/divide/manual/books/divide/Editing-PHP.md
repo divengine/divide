@@ -4,6 +4,8 @@ Files ending in `.php` (and `.phtml`) open in a PHP editor: the code that calls 
 
 ![a PHP file with a syntax error found by PHP](images/php.png)
 
+![phpactor's completion with documentation, then a signature](images/php-lsp.gif)
+
 ## Highlighting
 
 The colours come from [tree-sitter](https://tree-sitter.github.io/)'s PHP grammar, the same one many editors use. In the Borland palette, reserved words are white, variables light cyan like Div's, strings light green, comments light gray, and the `<?php` tags light red. HTML outside the PHP tags is left plain.

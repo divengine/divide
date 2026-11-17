@@ -1,5 +1,7 @@
 # Getting Started
 
+![a tour: completion, checking, rendering, the trace, the data, the outline, the Dialector](images/tour.gif)
+
 A five-minute tour with a tiny shop. The repository ships it ready in
 [`examples/shop`](https://github.com/divengine/divide/tree/main/examples/shop)
 (`divide examples/shop`); its layout, simplified:

@@ -2,6 +2,8 @@
 
 Tres formas de llegar a algún sitio sin los menús ni el árbol del proyecto: **Ir a archivo** abre un archivo escribiendo unas pocas letras de su nombre, la **paleta de comandos** ejecuta cualquier entrada del menú de la misma forma, y **Buscar en archivos** busca un texto en todos los archivos del proyecto.
 
+![ir a un archivo, la paleta de órdenes, buscar en archivos](images/finding.gif)
+
 ## Ir a archivo
 
 **Ctrl+P** (o **Buscar > Ir a archivo**) abre una línea donde escribir, con los archivos del proyecto debajo. Escribe unas pocas letras del nombre y la lista se queda con los archivos que las tienen, en ese orden, los mejores primero. Las letras que escribiste aparecen resaltadas, y las carpetas se atenúan para que destaquen los nombres de los archivos.

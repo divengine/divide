@@ -6,6 +6,8 @@
 
 **Enter** abre un archivo, o pliega y despliega una carpeta. **→** despliega una carpeta (o un archivo, ver abajo) y **←** la pliega, o sube a la carpeta que contiene la barra. Con el ratón, un clic pone la barra sobre un archivo y un doble clic lo abre; un clic en una carpeta la pliega o la despliega. Las carpetas de control de versiones y de caché (`.git`, `__pycache__`, `.venv`, `node_modules`, cachés de herramientas) se ocultan; `vendor/` sigue visible.
 
+![la ventana del proyecto: una carpeta desplegada, un archivo nuevo, las marcas de tipo](images/project.gif)
+
 ## Los miembros de un archivo
 
 Un archivo de un lenguaje con [[esquema|Outline]] (plantillas, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...) también lleva un `►`: desplegado, muestra sus miembros debajo, el mismo árbol que **Buscar > Esquema**: un archivo PHP sus clases, sus métodos y propiedades, sus funciones; una plantilla sus etiquetas; un archivo Markdown sus encabezados; un archivo JSON sus claves...

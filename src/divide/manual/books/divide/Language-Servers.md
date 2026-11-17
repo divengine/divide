@@ -4,6 +4,8 @@ A language server is a program that knows a language deeply: it reads the whole 
 
 ![completion of a Div method, with its documentation beside the list](images/lsp.png)
 
+![phpactor's completion with documentation, then a signature](images/php-lsp.gif)
+
 ## What it gives
 
 | Key | |

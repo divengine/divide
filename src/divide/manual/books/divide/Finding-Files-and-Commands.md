@@ -2,6 +2,8 @@
 
 Three ways to get somewhere without the menus or the project tree: **Go to file** opens a file by typing a few letters of its name, the **command palette** runs any menu entry the same way, and **Find in files** looks for a text in every file of the project.
 
+![go to a file, the command palette, find in files](images/finding.gif)
+
 ## Go to file
 
 **Ctrl+P** (or **Search > Go to file**) opens a line to type in, with the project's files below it. Type a few letters of the name and the list keeps the files that have them, in that order, best first. The letters you typed show up highlighted, and the folders are dimmed so the file names stand out.

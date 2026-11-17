@@ -4,6 +4,8 @@ Los archivos que terminan en `.php` (y `.phtml`) se abren en un editor de PHP: e
 
 ![un archivo PHP con un error de sintaxis encontrado por PHP](images/php.png)
 
+![el completado de phpactor con su documentación, y una firma](images/php-lsp.gif)
+
 ## Resaltado
 
 Los colores vienen de la gramática de PHP de [tree-sitter](https://tree-sitter.github.io/), la misma que usan muchos editores. En la paleta Borland, las palabras reservadas son blancas, las variables cian claro como las de Div, las cadenas verde claro, los comentarios gris claro y las etiquetas `<?php` rojo claro. El HTML fuera de las etiquetas de PHP queda sin colorear.

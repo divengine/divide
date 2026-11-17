@@ -4,6 +4,8 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 
 ![Window > Tile with the project, a template and a component](images/window-tile.png)
 
+![windows tiled, zoomed and cascaded; the themes previewed on the whole desktop](images/desktop.gif)
+
 ## Menus
 
 **F10** opens the first menu, **Alt + the red letter** opens a menu directly (Alt+F File, Alt+R Run, Alt+T Tools, Alt+W Window…). Inside a menu, the arrows move, the red letter or **Enter** chooses, **Esc** closes. The mouse works too.

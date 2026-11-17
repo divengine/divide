@@ -4,6 +4,8 @@ Un servidor de lenguaje es un programa que conoce un lenguaje a fondo: lee el pr
 
 ![autocompletado de un método de Div, con su documentación junto a la lista](images/lsp.png)
 
+![el completado de phpactor con su documentación, y una firma](images/php-lsp.gif)
+
 ## Qué aporta
 
 | Tecla | |

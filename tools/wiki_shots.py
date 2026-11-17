@@ -43,10 +43,10 @@ LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in En
 _KEYS = {
     "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
            "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y",
-           "div-setup": "e", "composer": "c"},
+           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c"},
     "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
            "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s",
-           "div-setup": "f", "composer": "c"},
+           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c"},
 }
 
 

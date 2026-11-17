@@ -1,5 +1,7 @@
 # Primeros pasos
 
+![un recorrido: completado, verificación, render, la traza, los datos, el esquema, el Dialector](images/tour.gif)
+
 Un recorrido de cinco minutos con una tienda diminuta. El repositorio la trae lista en
 [`examples/shop`](https://github.com/divengine/divide/tree/main/examples/shop)
 (`divide examples/shop`); su estructura, simplificada:

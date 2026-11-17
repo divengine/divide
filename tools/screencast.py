@@ -163,10 +163,10 @@ async def tour(rec_dir: Path) -> Recorder:
         app.raise_window(app.window_for(index))
         await settle(pilot, 10)
         rec = Recorder(app, pilot, rec_dir)
-        rec.caption("divide: the IDE for Div templates and PHP, in your terminal")
+        rec.caption(tr("divide: the IDE for Div templates and PHP, in your terminal", "divide: el IDE para plantillas Div y PHP, en tu terminal"))
         await rec.snap(3.0, 10)
 
-        rec.caption("Completion from your data: {$ offers the keys of index.json")
+        rec.caption(tr("Completion from your data: {$ offers the keys of index.json", "Completado desde tus datos: {$ ofrece las claves de index.json"))
         ed = app.window_for(index).editor
         original = ed.text
         ed.move_cursor((8, 21))
@@ -186,24 +186,24 @@ async def tour(rec_dir: Path) -> Recorder:
             ed.load_text(original)
         ed.move_cursor((10, 2))
 
-        rec.caption("Errors before you render: checkout.tpl is broken on purpose")
+        rec.caption(tr("Errors before you render: checkout.tpl is broken on purpose", "Errores antes de renderizar: checkout.tpl está roto a propósito"))
         await rec.go_to_file("checkout")
         await rec.until(lambda: app.window_for(DEMO / "checkout.tpl") is not None)
         await rec.snap(2.0, 10)
-        rec.caption("Alt+F9 checks it; Alt+F8 walks through the errors")
+        rec.caption(tr("Alt+F9 checks it; Alt+F8 walks through the errors", "Alt+F9 lo verifica; Alt+F8 recorre los errores"))
         await pilot.press("alt+f9")
         await rec.box()
         await rec.snap(1.5, 6)
         await rec.press("alt+f8", "alt+f8", hold=1.0)
 
-        rec.caption("Ctrl+F9 renders with the real Div engine, unsaved edits included")
+        rec.caption(tr("Ctrl+F9 renders with the real Div engine, unsaved edits included", "Ctrl+F9 renderiza con el motor Div real, cambios sin guardar incluidos"))
         await rec.go_to_file("index.tpl")
         await rec.snap(0.8, 6)
         await pilot.press("ctrl+f9")
         await rec.box()
         await rec.snap(3.0, 8)
 
-        rec.caption("F7: the render trace replays how Div rewrote the template")
+        rec.caption(tr("F7: the render trace replays how Div rewrote the template", "F7: la traza de render repite cómo Div reescribió la plantilla"))
         app.raise_window(app.window_for(index))
         await rec.snap(0.5, 6)
         await pilot.press("f7")
@@ -215,7 +215,7 @@ async def tour(rec_dir: Path) -> Recorder:
         await rec.press("f8", "f8", "f8", "f8", hold=0.9)
         await rec.press("space", hold=1.6)
 
-        rec.caption("Ctrl+T: the data, as code or as a tree")
+        rec.caption(tr("Ctrl+T: the data, as code or as a tree", "Ctrl+T: los datos, como código o como árbol"))
         await rec.go_to_file("index.json")
         await rec.snap(1.2, 8)
         await pilot.press("ctrl+t")
@@ -224,7 +224,7 @@ async def tour(rec_dir: Path) -> Recorder:
         await rec.press("space", "down", "space", hold=0.6)
         await rec.snap(1.2)
 
-        rec.caption("Ctrl+O: the outline of a template; Enter jumps to it")
+        rec.caption(tr("Ctrl+O: the outline of a template; Enter jumps to it", "Ctrl+O: el esquema de una plantilla; Enter salta a él"))
         for window in list(app.windows()):  # a tidy desktop again
             if window is not app.window_for(index) and window is not app.project_window():
                 app.raise_window(window)
@@ -239,7 +239,7 @@ async def tour(rec_dir: Path) -> Recorder:
         await pilot.press("enter")
         await rec.snap(1.8)
 
-        rec.caption("Tools > Dialector: your own Div dialect, checked by Div as you build it")
+        rec.caption(tr("Tools > Dialector: your own Div dialect, checked by Div as you build it", "Herramientas > Dialector: tu propio dialecto Div, verificado por Div mientras lo construyes"))
         await rec.go_to_file("erb.dialect")
         await rec.snap(1.0, 8)
         await pilot.press(wiki_shots.key("tools"))
@@ -829,6 +829,185 @@ async def web_server(rec_dir: Path) -> Recorder:
 
 SCENES.update({"dialector": dialector, "translate": translate, "data": data_files,
                "debugging": debugging, "web-server": web_server})
+
+
+async def project_window(rec_dir: Path) -> Recorder:
+    """Project-Window.md: the project's tree, a folder unfolded, a new file in it, the file type marks."""
+    from divide.ui.dialogs import DialogScreen
+    with tempfile.TemporaryDirectory() as work:
+        root = wiki_shots.shop_copy(Path(work))
+        app = Divide(root, [root / "index.tpl"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            rec.caption(tr("Ctrl+B: the project window, the project's files as a tree",
+                           "Ctrl+B: la ventana del proyecto, sus archivos como un árbol"))
+            await rec.snap(1.0, 8)
+            await pilot.press("ctrl+b")
+            await rec.snap(1.5, 8)
+            tree = app.project_window().project_tree
+            target = next(c for c in tree.root.children if c.label.plain.endswith("components"))
+            while tree.cursor_node is not target:
+                await rec.press("down", hold=0.3)
+            rec.caption(tr("Right unfolds a folder; a template unfolds into its tags",
+                           "Derecha despliega una carpeta; una plantilla se despliega en sus etiquetas"))
+            await rec.press("right", hold=1.0)
+            await rec.press("down", hold=0.5)
+            await rec.press("right", hold=1.8)
+            rec.caption(tr("Ins: a new file in that folder, opened at once",
+                           "Ins: un archivo nuevo en esa carpeta, abierto al momento"))
+            await pilot.press("insert")
+            await rec.until(lambda: isinstance(app.screen, DialogScreen))
+            await rec.snap(0.8, 8)
+            await rec.type("badge.tpl", 0.1)
+            await rec.snap(0.8)
+            await pilot.press("enter")
+            await rec.until(lambda: app.window_for(root / "components" / "badge.tpl") is not None, tries=120)
+            await rec.snap(2.0, 10)
+            rec.caption(tr("Options > File type marks: each kind of file with its mark",
+                           "Opciones > Marcas de tipo de archivo: cada tipo de archivo con su marca"))
+            app.raise_window(app.project_window())
+            await rec.snap(0.6, 6)
+            await pilot.press(wiki_shots.key("options"))
+            await rec.snap(0.9)
+            await pilot.press(wiki_shots.key("marks"))
+            await rec.snap(3.5, 10)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
+async def finding(rec_dir: Path) -> Recorder:
+    """Finding-Files-and-Commands.md: go to a file, the command palette, find in files."""
+    from divide.ui.dialogs import DialogScreen
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("Ctrl+P: a few letters of a file's name, Enter opens it",
+                       "Ctrl+P: unas letras del nombre de un archivo, Enter lo abre"))
+        await rec.snap(1.0, 8)
+        await rec.go_to_file("card")
+        await rec.until(lambda: app.window_for(DEMO / "components" / "card.tpl") is not None)
+        await rec.snap(1.8, 8)
+        rec.caption(tr("A > first: every command of the menus, by its name",
+                       "Un > delante: cada orden de los menús, por su nombre"))
+        await pilot.press("ctrl+p")
+        await rec.snap(0.5)
+        await rec.type(">" + tr("tile", "mosaico"), 0.12)
+        await rec.snap(1.8, 8)
+        await pilot.press("enter")
+        await rec.snap(2.0, 10)
+        rec.caption(tr("Shift+F2: find in files; the results in a window, Enter goes to each one",
+                       "Mayús+F2: buscar en archivos; los resultados en una ventana, Enter va a cada uno"))
+        await pilot.press("shift+f2")
+        await rec.until(lambda: isinstance(app.screen, DialogScreen))
+        await pilot.press("ctrl+a")
+        await rec.type("product", 0.1)
+        await rec.snap(1.0)
+        await pilot.press("enter")
+        await rec.until(lambda: app.find_results_window() is not None, tries=200)
+        await rec.snap(1.8, 8)
+        await rec.press("down", "down", hold=0.6)
+        await pilot.press("enter")
+        await rec.snap(3.0, 10)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def desktop(rec_dir: Path) -> Recorder:
+    """The-Desktop.md: windows tiled and cascaded, the themes previewed live."""
+    from divide.ui.dialogs import DialogScreen
+    app = Divide(DEMO, [DEMO / "index.tpl", DEMO / "components" / "card.tpl", DEMO / "index.json"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("A Turbo Vision desktop: Window > Tile puts every window side by side",
+                       "Un escritorio Turbo Vision: Ventana > Mosaico pone cada ventana lado a lado"))
+        await rec.snap(1.5, 8)
+        await pilot.press(wiki_shots.key("window"))
+        await rec.snap(0.9)
+        await pilot.press(wiki_shots.key("tile"))
+        await rec.snap(2.0, 8)
+        rec.caption(tr("F6 goes to the next window; F5 zooms it, and back",
+                       "F6 pasa a la siguiente ventana; F5 la amplía, y vuelve"))
+        await rec.press("f6", hold=1.0)
+        await rec.press("f6", hold=1.0)
+        await rec.press("f5", hold=1.6)
+        await rec.press("f5", hold=1.0)
+        rec.caption(tr("Window > Cascade", "Ventana > Cascada"))
+        await pilot.press(wiki_shots.key("window"))
+        await rec.snap(0.9)
+        await pilot.press(wiki_shots.key("cascade"))
+        await rec.snap(2.0, 8)
+        rec.caption(tr("Options > Colors: each theme on the whole desktop as you choose it",
+                       "Opciones > Colores: cada tema en todo el escritorio mientras lo eliges"))
+        await pilot.press(wiki_shots.key("options"))
+        await rec.snap(0.8)
+        await pilot.press(wiki_shots.key("colors"))
+        await rec.until(lambda: isinstance(app.screen, DialogScreen))
+        await rec.snap(1.2, 8)
+        for theme in ("m", "p", "c", "f"):  # Modern dark, Turbo Pascal, Turbo C, Free Pascal
+            await pilot.press(theme)
+            await rec.snap(1.8, 10)
+        await pilot.press("escape")
+        await rec.snap(1.0, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+async def php_lsp(rec_dir: Path) -> Recorder:
+    """Editing-PHP.md and Language-Servers.md: phpactor's completion with documentation, then a signature.
+    Needs phpactor in the PATH (or $DIVIDE_SHOT_LSP="name command...") and composer install in examples/shop."""
+    import json
+    spec = os.environ.get("DIVIDE_SHOT_LSP", "phpactor phpactor language-server").split()
+    name, command = spec[0], spec[1:]
+    if not shutil.which(command[0]):
+        raise SystemExit(f"{command[0]} not found: set DIVIDE_SHOT_LSP")
+    config = Path(os.environ["XDG_CONFIG_HOME"]) / "divide" / "config.json"
+    config.write_text(json.dumps({"palette": PALETTE, "lsp": {"php": name}, "lsp_commands": {name: command}}))
+    script = DEMO / "index.php"
+    app = Divide(DEMO, [script])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        for _ in range(1200):  # the server starts and indexes, off camera
+            if app.lsp_session("php") is not None and not app.lsp_working:
+                break
+            await pilot.pause(0.1)
+        await settle(pilot, 10)
+        ed = app.window_for(script).editor
+        ed.move_cursor((16, len("echo new div('index.tpl', $data);")))
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("A language server (phpactor) completes PHP: Div's own methods, documented",
+                       "Un servidor de lenguaje (phpactor) completa PHP: los métodos de Div, documentados"))
+        await rec.snap(1.0, 8)
+        await pilot.press("enter")
+        await rec.type("$tpl = new div('index.tpl', $data);", 0.04)
+        await pilot.press("enter")
+        await rec.type("$tpl->", 0.1)
+        await rec.type("par", 0.25)
+        await rec.until(lambda: ed.completing and ed._doc is not None and ed._doc.display, tries=200)
+        await rec.snap(3.0, 8)
+        await rec.press("down", hold=1.2)
+        await rec.press("up", hold=0.8)
+        rec.caption(tr("Its signature over the line, the argument you are typing marked",
+                       "Su firma sobre la línea, el argumento que escribes marcado"))
+        await pilot.press("escape")
+        await rec.type("se(", 0.15)
+        await rec.until(lambda: ed.signature_shown, tries=200)
+        await rec.snap(1.8, 8)
+        await rec.type("true, ", 0.15)
+        await rec.until(lambda: ed.signature_shown and ed._signature.mark is not None and ed._signature.mark[1] > 20, tries=200)
+        await rec.snap(3.0, 8)
+        rec.finish()
+        await app.lsp_stop_all()
+        await settle(pilot)
+    return rec
+
+
+SCENES.update({"project": project_window, "finding": finding, "desktop": desktop, "php-lsp": php_lsp})
 
 
 # ------------------------------------------------------------------ output

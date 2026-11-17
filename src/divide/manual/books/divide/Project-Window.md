@@ -6,6 +6,8 @@
 
 **Enter** opens a file, or folds and unfolds a folder. **→** unfolds a folder (or a file, below) and **←** folds it, or goes up to the folder that holds the bar. With the mouse, a click puts the bar on a file and a double click opens it; a click on a folder folds or unfolds it. Version control and cache folders (`.git`, `__pycache__`, `.venv`, `node_modules`, tool caches) are hidden; `vendor/` stays visible.
 
+![the project window: a folder unfolded, a new file, the file type marks](images/project.gif)
+
 ## A file's members
 
 A file in a language with an [[Outline]] (templates, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...) has a `►` too: unfolded, it shows its members below it, the same tree as **Search > Outline**: a PHP file its classes, their methods and properties, its functions; a template its tags; a Markdown file its headings; a JSON file its keys...

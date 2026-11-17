@@ -4,6 +4,8 @@ divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas super
 
 ![Ventana > Mosaico con el proyecto, una plantilla y un componente](images/window-tile.png)
 
+![ventanas en mosaico, ampliadas y en cascada; los temas en todo el escritorio](images/desktop.gif)
+
 ## Menús
 
 **F10** abre el primer menú, **Alt + la letra roja** abre un menú directamente (Alt+A Archivo, Alt+J Ejecutar, Alt+H Herramientas, Alt+V Ventana…). Dentro de un menú, las flechas mueven, la letra roja o **Enter** eligen y **Esc** cierra. El ratón también funciona.
