@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from divide.run.render import RenderMessage, RenderResult, _call_bridge, _message, references
+from divide.run.render import RenderMessage, RenderResult, _call_bridge, _message, php_path, references
 
 TIMEOUT = 60.0
 _START = ("Parsing all...", "Parsing from the original source", "Parsing with '")  # Div's log: not translated
@@ -188,7 +188,7 @@ async def trace_render(
     """Render ``code`` as ``render`` does, keeping every mutation Div made."""
     import time
 
-    request = {"engine": str(engine), "op": "trace", "path": str(template), "code": code, "data": data}
+    request = {"engine": str(engine), "op": "trace", "path": php_path(template), "code": code, "data": data}
     started = time.monotonic()
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     result = RenderResult(

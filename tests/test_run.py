@@ -84,11 +84,13 @@ def test_php_errors_become_messages():
         "a line of the script's own\n"
     )
     found = php_messages(stderr)
-    assert [(m.level, m.text, str(m.file), m.line) for m in found] == [
+    assert [(m.level, m.text, m.file.as_posix(), m.line) for m in found] == [
         ("warning", "Warning: Undefined variable $nope", "/p/a.php", 3),
         ("warning", "Deprecated: old", "/p/b.php", 7),
         ("error", "Fatal error: Uncaught RuntimeException: boom", "/p/a.php", 5),
     ]
+    found = php_messages("Warning: Undefined variable $nope in C:\\p\\a.php on line 3\n")  # PHP on Windows
+    assert [(str(m.file), m.line) for m in found] == [("C:\\p\\a.php", 3)]
     assert split_args('one "two words" three') == ["one", "two words", "three"]
     assert split_args('broken "quote') == ["broken", '"quote']
 

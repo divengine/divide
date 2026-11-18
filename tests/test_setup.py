@@ -51,7 +51,7 @@ def test_a_project_setup_relative_to_its_root(tmp_path):
     setup = div_setup.load(sub)  # found walking up
     assert setup.problems == ()
     assert setup.engine == tmp_path.resolve() / "vendor" / "autoload.php"
-    root = str(tmp_path.resolve())
+    root = tmp_path.resolve().as_posix()  # Div gets folders with /, Windows too
     assert setup.bridge() == {
         "constants": {
             "PACKAGES": f"{root}/templates/", "DIV_REPO": f"{root}/templates/",
@@ -112,7 +112,7 @@ def test_the_users_setup_counts_for_every_project(tmp_path, monkeypatch):
     project.mkdir()
     setup = div_setup.load(project)
     assert setup.constants == {"DIV_MAX_PARSE_CYCLES": 9}
-    assert setup.include_paths == (str((home / "lib").resolve()) + "/",)
+    assert setup.include_paths == ((home / "lib").resolve().as_posix() + "/",)
 
 
 def test_the_users_div_is_never_a_projects(tmp_path, monkeypatch):
@@ -139,7 +139,7 @@ def test_the_project_wins_and_null_means_divs_default(tmp_path, monkeypatch):
     setup = div_setup.load(project)
     assert setup.files[0] == project / ".div" / "setup.json"
     assert setup.constants == {"DIV_MAX_FILENAME_SIZE": 120, "DIV_DEFAULT_TPL_FILE_EXT": "html"}
-    assert setup.include_paths == (str((project / "b").resolve()) + "/", str((home / "a").resolve()) + "/")
+    assert setup.include_paths == ((project / "b").resolve().as_posix() + "/", (home / "a").resolve().as_posix() + "/")
     write_setup(project, {"paths": {"include": None}, "files": None})
     setup = div_setup.load(project)
     assert setup.include_paths == () and "DIV_DEFAULT_TPL_FILE_EXT" not in setup.constants

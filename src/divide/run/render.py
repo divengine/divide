@@ -196,6 +196,11 @@ def _message(m: dict) -> RenderMessage:
     return RenderMessage(m.get("level", "?"), m.get("text", ""), Path(path) if path else None, int(m.get("offset") or 0))
 
 
+def php_path(path: Path | None) -> str:
+    """A path as Div takes it: with / (Div splits paths on /; PHP on Windows takes them so)."""
+    return path.as_posix() if path is not None else ""
+
+
 @dataclass(frozen=True)
 class IncludeTarget:
     """Where Div takes an include: ``path`` is the include without its data part."""
@@ -220,8 +225,8 @@ async def resolve_includes(
     ``cwd`` must be the one renders use: Div tries paths relative to it first.
     """
     request: dict = {
-        "engine": str(engine), "op": "resolve", "path": str(template),
-        "includes": includes, "history": [str(h) for h in history or []],
+        "engine": str(engine), "op": "resolve", "path": php_path(template),
+        "includes": includes, "history": [php_path(h) for h in history or []],
     }
     if separator is not None:
         request["separator"] = separator
@@ -245,7 +250,7 @@ async def render(
     timeout: float = TIMEOUT,
 ) -> RenderResult:
     """Render ``code`` (the source of ``template``) with ``data`` (JSON text)."""
-    request = {"engine": str(engine), "path": str(template), "code": code, "data": data}
+    request = {"engine": str(engine), "path": php_path(template), "code": code, "data": data}
     started = time.monotonic()
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     result = RenderResult(
@@ -376,9 +381,9 @@ async def load_dialect(
     if code is not None:
         request["code"] = code
     elif ref is not None:
-        request.update(path=str(template or ""), ref=ref, history=[str(h) for h in history or []])
+        request.update(path=php_path(template), ref=ref, history=[php_path(h) for h in history or []])
     else:
-        request["file"] = str(file or "")
+        request["file"] = php_path(file)
     reply = await _call_bridge(request, cwd=cwd, php=php, timeout=timeout)
     found = reply.get("file")
     tags = reply.get("tags")

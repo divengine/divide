@@ -1152,12 +1152,15 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
 
         A reload that just ended may still have its folders queued for the tree's
         loader, which fills them again (new nodes): the node found then hangs from
-        nothing. It is looked for again once the loader is done."""
-        for attempt in range(4):
-            if await self._reveal_once(path):
-                return
-            await asyncio.sleep(0.05 * (attempt + 1))
-            while not self._load_queue.empty():
+        nothing. It is looked for again once the loader is done (for a few seconds:
+        a busy machine takes its time)."""
+        loop = asyncio.get_running_loop()
+        give_up = loop.time() + 3.0
+        attempt = 0
+        while not await self._reveal_once(path) and loop.time() < give_up:
+            attempt += 1
+            await asyncio.sleep(min(0.05 * attempt, 0.25))
+            while not self._load_queue.empty() and loop.time() < give_up:
                 await asyncio.sleep(0.02)
 
     async def _reveal_once(self, path: Path) -> bool:

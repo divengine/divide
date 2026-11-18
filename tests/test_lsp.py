@@ -176,7 +176,7 @@ def test_servers_get_a_temp_dir_of_their_own(tmp_path, monkeypatch):
     from divide.lsp.client import server_temp_dir, temp_root
 
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
-    gone = subprocess.run(["true"]).args and subprocess.Popen(["true"])
+    gone = subprocess.Popen([sys.executable, "-c", "pass"])
     gone.wait()
     stale = temp_root() / f"{gone.pid}-old"
     stale.mkdir(parents=True)

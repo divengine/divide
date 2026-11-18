@@ -22,7 +22,7 @@ def alive(pid: int) -> bool:
 
 
 async def test_kill_all_kills_what_still_runs():
-    proc = children.track(await asyncio.create_subprocess_exec("sleep", "30", **children.options()))
+    proc = children.track(await asyncio.create_subprocess_exec(sys.executable, "-c", "import time; time.sleep(30)", **children.options()))
     assert proc in children.running()
     children.kill_all()
     await asyncio.wait_for(proc.wait(), 5)
@@ -31,11 +31,9 @@ async def test_kill_all_kills_what_still_runs():
 
 async def test_killing_a_process_that_just_ended_is_no_error():
     """A worker cancelled as its php ends (the dialector's verdict as you type)."""
-    proc = await asyncio.create_subprocess_exec("true", stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(sys.executable, "-c", "pass", stdout=asyncio.subprocess.PIPE)
     await proc.communicate()
-    with pytest.raises(ProcessLookupError):
-        proc.kill()
-    children.kill(proc)
+    children.kill(proc)  # (proc.kill() itself may raise ProcessLookupError here, or not: it depends on the Python)
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="PR_SET_PDEATHSIG is Linux's")

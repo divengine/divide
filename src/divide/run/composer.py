@@ -20,6 +20,7 @@ import json
 import os
 import re
 import shutil
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -50,7 +51,10 @@ def find(root: Path, configured: str | None = None) -> list[str] | None:
 
 
 def _command(path: Path) -> list[str]:
-    if path.suffix == ".phar":
+    # a phar runs with php; on Windows so does anything that is not a program
+    # (composer's own file has no extension, its #! line means nothing there)
+    windows_script = sys.platform == "win32" and path.suffix.lower() not in (".exe", ".bat", ".cmd", ".com")
+    if path.suffix == ".phar" or windows_script:
         php = shutil.which("php")
         return [php, str(path)] if php else [str(path)]
     return [str(path)]

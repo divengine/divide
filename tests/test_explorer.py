@@ -179,11 +179,8 @@ async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
     (project / "b.tpl").write_text("x\n", encoding="utf-8")
     app = Divide(project, [])
     async with app.run_test(size=(100, 30)) as pilot:
-        await pilot.pause()
-        if app.project_window() is None:
-            app.toggle_project()
-        for _ in range(6):
-            await pilot.pause()
+        await until(pilot, lambda: app.project_window() is not None)  # it opens by itself: no files given
+        await settle(pilot)
         tree = app.project_window().project_tree
         lines = lambda: [tree.render_line(y).text.rstrip() for y in range(4)]
         plain = lines()

@@ -66,6 +66,10 @@ def fake(tmp_path, monkeypatch):
     script.parent.mkdir()
     script.write_text(FAKE.replace("PYTHON", sys.executable).replace("LOG", repr(str(log))), encoding="utf-8")
     script.chmod(0o755)
+    if sys.platform == "win32":  # no #! there: a .bat runs the script, as composer.bat runs composer
+        bat = script.with_suffix(".bat")
+        bat.write_text(f'@"{sys.executable}" "{script}" %*\r\n', encoding="utf-8")
+        script = bat
     monkeypatch.setenv(cmp.ENV, str(script))
     return log
 

@@ -80,7 +80,7 @@ async def test_edit_a_section_and_save(tmp_path):
         await settle(pilot)
         file = tmp_path / ".div" / "setup.json"
         assert json.loads(file.read_text(encoding="utf-8")) == {"paths": {"packages": "templates"}}
-        assert app.div_setup().constants["PACKAGES"] == str((tmp_path / "templates").resolve()) + "/"
+        assert app.div_setup().constants["PACKAGES"] == (tmp_path / "templates").resolve().as_posix() + "/"
         assert "project" in str(win.effect.render())
 
 
