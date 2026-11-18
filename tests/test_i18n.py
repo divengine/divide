@@ -115,7 +115,7 @@ def test_dialogs_in_spanish():
 async def test_spanish_process(tmp_path):
     """The main dialogs open in Spanish, each with its own hotkeys."""
     page = tmp_path / "page.tpl"
-    page.write_text("{$title}\n")
+    page.write_text("{$title}\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(110, 34)) as pilot:
         for _ in range(8):
@@ -144,7 +144,7 @@ def test_language_choice(monkeypatch, tmp_path):
     monkeypatch.setenv("LANGUAGE", "fr_FR:en")
     assert i18n.system_language() == "fr"
     (tmp_path / "divide").mkdir()
-    (tmp_path / "divide" / "config.json").write_text('{"language": "en"}')
+    (tmp_path / "divide" / "config.json").write_text('{"language": "en"}', encoding="utf-8")
     assert i18n.chosen() == "en"  # Options > Language over the system's
     monkeypatch.setenv("DIVIDE_LANGUAGE", "es")
     assert i18n.chosen() == "es"  # the environment over all

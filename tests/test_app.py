@@ -34,17 +34,17 @@ async def test_open_edit_save(tmp_path):
         assert win.frame.indicator == "* 1:2"
         await pilot.press("f2")
         await settle(pilot)
-        assert tpl.read_text().startswith("X<!--{")
+        assert tpl.read_text(encoding="utf-8").startswith("X<!--{")
         assert not win.dirty
         await pilot.press("Y", "ctrl+s")
         await settle(pilot)
-        assert tpl.read_text().startswith("XY<!--{")
+        assert tpl.read_text(encoding="utf-8").startswith("XY<!--{")
 
 
 async def test_dialect_detected(tmp_path):
-    (tmp_path / "angle.dialect").write_text("{'DIV_TAG_REPLACEMENT_PREFIX': '<<', 'DIV_TAG_REPLACEMENT_SUFFIX': '>>'}")
+    (tmp_path / "angle.dialect").write_text("{'DIV_TAG_REPLACEMENT_PREFIX': '<<', 'DIV_TAG_REPLACEMENT_SUFFIX': '>>'}", encoding="utf-8")
     tpl = tmp_path / "a.tpl"
-    tpl.write_text("@_DIALECT = angle.dialect\nHello <<$name>>\n")
+    tpl.write_text("@_DIALECT = angle.dialect\nHello <<$name>>\n", encoding="utf-8")
     app = Divide(tmp_path, [tpl])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -56,7 +56,7 @@ async def test_dialect_detected(tmp_path):
 
 async def test_close_dirty_window_asks(tmp_path):
     f = tmp_path / "x.tpl"
-    f.write_text("{$a}")
+    f.write_text("{$a}", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -66,12 +66,12 @@ async def test_close_dirty_window_asks(tmp_path):
         await pilot.click("#no")
         await settle(pilot)
         assert not app.editor_windows()
-        assert f.read_text() == "{$a}"
+        assert f.read_text(encoding="utf-8") == "{$a}"
 
 
 async def test_close_dirty_cancel_and_yes_letter(tmp_path):
     f = tmp_path / "x.tpl"
-    f.write_text("{$a}")
+    f.write_text("{$a}", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -85,12 +85,12 @@ async def test_close_dirty_cancel_and_yes_letter(tmp_path):
         await pilot.press("y")  # plain letter presses ~Y~es
         await settle(pilot)
         assert not app.editor_windows()
-        assert f.read_text() == "Z{$a}"
+        assert f.read_text(encoding="utf-8") == "Z{$a}"
 
 
 async def test_open_dialog(tmp_path):
     (tmp_path / "sub").mkdir()
-    (tmp_path / "sub" / "page.tpl").write_text("{$x}")
+    (tmp_path / "sub" / "page.tpl").write_text("{$x}", encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -115,8 +115,8 @@ async def test_open_dialog(tmp_path):
 
 async def test_menu_and_windows(tmp_path):
     a, b = tmp_path / "a.tpl", tmp_path / "b.tpl"
-    a.write_text("a")
-    b.write_text("b")
+    a.write_text("a", encoding="utf-8")
+    b.write_text("b", encoding="utf-8")
     app = Divide(tmp_path, [a, b])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -161,7 +161,7 @@ async def test_new_and_save_as(tmp_path):
         dialog.input.data = "hello.tpl"
         await pilot.press("enter")
         await settle(pilot)
-        assert (tmp_path / "hello.tpl").read_text() == "Hi"
+        assert (tmp_path / "hello.tpl").read_text(encoding="utf-8") == "Hi"
         assert win.path == (tmp_path / "hello.tpl").resolve() and win.title == "hello.tpl"
 
 
@@ -181,12 +181,12 @@ async def test_save_as_with_ok_button(tmp_path):
         await pilot.click("#ok")
         await settle(pilot)
         assert not isinstance(app.screen, DialogScreen)
-        assert (tmp_path / "new.tpl").read_text() == "A"
+        assert (tmp_path / "new.tpl").read_text(encoding="utf-8") == "A"
 
 
 async def test_exit_asks_about_unsaved(tmp_path):
     f = tmp_path / "x.tpl"
-    f.write_text("")
+    f.write_text("", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -204,7 +204,7 @@ async def test_frame_close_and_zoom_icons(tmp_path):
     from textual_vision.events import CommandMessage
 
     f = tmp_path / "x.tpl"
-    f.write_text("")
+    f.write_text("", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -225,7 +225,7 @@ async def test_f10_opens_menu_and_arrows_navigate(tmp_path):
     from textual_vision.menus import MenuBox
 
     f = tmp_path / "x.tpl"
-    f.write_text("abc")
+    f.write_text("abc", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -243,7 +243,7 @@ async def test_alt_letter_opens_only_its_menu(tmp_path):
     from textual_vision.menus import MenuBox
 
     f = tmp_path / "x.tpl"
-    f.write_text("abc")
+    f.write_text("abc", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)

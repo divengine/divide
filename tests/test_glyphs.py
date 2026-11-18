@@ -31,7 +31,7 @@ def test_only_ascii_and_cp437_glyphs():
     for path in sorted(SOURCE.rglob("*.py")):
         if path.name == "glyphs.py":
             continue  # the table of what is translated
-        for node in drawn_strings(ast.parse(path.read_text(), str(path))):
+        for node in drawn_strings(ast.parse(path.read_text(encoding="utf-8"), str(path))):
             for ch in node.value:
                 if ord(ch) > 127 and ch not in CP437:
                     found.append(f"{path.relative_to(SOURCE)}:{node.lineno} {ch!r} U+{ord(ch):04X}")

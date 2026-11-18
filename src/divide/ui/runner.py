@@ -205,7 +205,7 @@ class RunMixin:
 
     def _relative(self, path: Path) -> str:
         try:
-            return str(path.relative_to(self.root))
+            return path.relative_to(self.root).as_posix()
         except ValueError:
             return str(path)
 

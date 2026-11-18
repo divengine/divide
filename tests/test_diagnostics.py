@@ -76,7 +76,7 @@ async def settle(pilot, n=4):
 
 async def test_check_messages_and_navigation(tmp_path):
     tpl = tmp_path / "page.tpl"
-    tpl.write_text("ok\n[$items]\n{?( 1 )?}\n")
+    tpl.write_text("ok\n[$items]\n{?( 1 )?}\n", encoding="utf-8")
     app = Divide(tmp_path, [tpl])
     async with app.run_test(size=(110, 34)) as pilot:
         await settle(pilot)

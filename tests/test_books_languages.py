@@ -92,7 +92,7 @@ def test_search_in_each_language(library, monkeypatch):
 def test_a_stale_index_of_a_language_is_rebuilt(library, monkeypatch):
     fulltext.build_all()
     in_language(monkeypatch, "es")
-    (library / "books" / "guide.es" / "Other-Files.md").write_text("# Otros archivos\n\nHojas de estilo.\n")
+    (library / "books" / "guide.es" / "Other-Files.md").write_text("# Otros archivos\n\nHojas de estilo.\n", encoding="utf-8")
     manual.use_root(library)  # the pages changed under the caches
     db = fulltext.connection()
     assert db.execute("PRAGMA database_list").fetchone()[2] == ""  # in memory
@@ -107,10 +107,10 @@ def test_sync_book_copies_a_translation(library, tmp_path, monkeypatch):
     monkeypatch.setattr(sync_book, "REGISTRY", library / "books.json")
     wiki = tmp_path / "guide-es.wiki"
     wiki.mkdir()
-    (wiki / "Home.md").write_text("# La guía\n\nOtra vez.\n")
-    (wiki / "Other-Files.md").write_text("# Otros archivos\n\nHojas de estilo.\n")
-    (wiki / "_Footer.md").write_text("pie\n")
-    (wiki / "Getting-Started.md").write_text("Welcome to the guide-es wiki!\n")  # GitHub's placeholder: not copied
+    (wiki / "Home.md").write_text("# La guía\n\nOtra vez.\n", encoding="utf-8")
+    (wiki / "Other-Files.md").write_text("# Otros archivos\n\nHojas de estilo.\n", encoding="utf-8")
+    (wiki / "_Footer.md").write_text("pie\n", encoding="utf-8")
+    (wiki / "Getting-Started.md").write_text("Welcome to the guide-es wiki!\n", encoding="utf-8")  # GitHub's placeholder: not copied
     monkeypatch.setattr("sys.argv", ["sync_book.py", "guide", str(wiki), "--language", "es"])
     assert sync_book.main() == 0
     copied = sorted(p.name for p in (library / "books" / "guide.es").iterdir())
@@ -131,7 +131,7 @@ def test_sync_book_a_translation_with_nothing_yet(library, tmp_path, monkeypatch
     monkeypatch.setattr(sync_book, "REGISTRY", library / "books.json")
     wiki = tmp_path / "guide-es.wiki"
     wiki.mkdir()
-    (wiki / "Home.md").write_text("Welcome to the guide-es wiki!\n")
+    (wiki / "Home.md").write_text("Welcome to the guide-es wiki!\n", encoding="utf-8")
     monkeypatch.setattr("sys.argv", ["sync_book.py", "guide", str(wiki), "--language", "es"])
     assert sync_book.main() == 0
     assert list((library / "books" / "guide.es").iterdir()) == []

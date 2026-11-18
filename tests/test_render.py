@@ -30,17 +30,17 @@ def isolated_config(tmp_path, monkeypatch):
 
 def make_project(tmp_path: Path) -> Path:
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "greet.tpl").write_text("Hi {$name}!")
+    (tmp_path / "parts" / "greet.tpl").write_text("Hi {$name}!", encoding="utf-8")
     page = tmp_path / "page.tpl"
-    page.write_text("{% parts/greet %}|[$items]<{$value}>[/$items]")
-    (tmp_path / "page.json").write_text('// data for page.tpl\n{"name": "Rafa", "items": [1, 2]}\n')
+    page.write_text("{% parts/greet %}|[$items]<{$value}>[/$items]", encoding="utf-8")
+    (tmp_path / "page.json").write_text('// data for page.tpl\n{"name": "Rafa", "items": [1, 2]}\n', encoding="utf-8")
     return page
 
 
 def test_find_engine_in_vendor(tmp_path, monkeypatch):
     monkeypatch.delenv(ENV_ENGINE, raising=False)
     (tmp_path / "vendor" / "divengine" / "div").mkdir(parents=True)
-    (tmp_path / "vendor" / "autoload.php").write_text("<?php")
+    (tmp_path / "vendor" / "autoload.php").write_text("<?php", encoding="utf-8")
     sub = tmp_path / "templates" / "x"
     sub.mkdir(parents=True)
     assert find_engine([sub]) == (tmp_path / "vendor" / "autoload.php").resolve()
@@ -58,7 +58,7 @@ def test_check_data():
 @needs_div
 async def test_render_bridge(tmp_path):
     page = make_project(tmp_path)
-    result = await render(Path(ENGINE), page, page.read_text(), (tmp_path / "page.json").read_text(), cwd=tmp_path)
+    result = await render(Path(ENGINE), page, page.read_text(encoding="utf-8"), (tmp_path / "page.json").read_text(encoding="utf-8"), cwd=tmp_path)
     assert result.output == "Hi Rafa!|<1><2>"
     assert not result.fatal and result.version
 
@@ -102,7 +102,7 @@ async def test_run_render_window_and_unsaved_changes(tmp_path):
         await settle(pilot)
         await pilot.press("X", "ctrl+f9")
         await wait_output(pilot, app, "XHi Rafa!|<1><2>")
-        assert page.read_text().startswith("{%")
+        assert page.read_text(encoding="utf-8").startswith("{%")
 
 
 @needs_div
@@ -136,7 +136,7 @@ async def test_edit_data_save_rerenders_and_reports(tmp_path):
 async def test_render_without_engine_explains(tmp_path, monkeypatch):
     monkeypatch.setenv(ENV_ENGINE, str(tmp_path / "missing.php"))
     page = tmp_path / "a.tpl"
-    page.write_text("{$x}")
+    page.write_text("{$x}", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -148,9 +148,9 @@ async def test_render_without_engine_explains(tmp_path, monkeypatch):
 
 async def test_data_file_choice_is_used(tmp_path):
     page = tmp_path / "a.tpl"
-    page.write_text("{$x}")
+    page.write_text("{$x}", encoding="utf-8")
     other = tmp_path / "other.json"
-    other.write_text("{}")
+    other.write_text("{}", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test() as pilot:
         await settle(pilot)
@@ -163,9 +163,9 @@ async def test_data_file_choice_is_used(tmp_path):
 def site(tmp_path: Path) -> Path:
     """examples/showcase.tpl including components/card relative to itself, project root above."""
     (tmp_path / "examples" / "components").mkdir(parents=True)
-    (tmp_path / "examples" / "components" / "card.tpl").write_text("<card/>")
+    (tmp_path / "examples" / "components" / "card.tpl").write_text("<card/>", encoding="utf-8")
     page = tmp_path / "examples" / "showcase.tpl"
-    page.write_text("{% layout %}\n{%% components/card %%}\n")
+    page.write_text("{% layout %}\n{%% components/card %%}\n", encoding="utf-8")
     return page
 
 

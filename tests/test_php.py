@@ -50,8 +50,8 @@ async def test_lint_asks_php():
 
 @needs_php
 async def test_php_editor(tmp_path: Path):
-    (tmp_path / "Page.php").write_text(SRC)
-    (tmp_path / "page.tpl").write_text("Hello {$name}\n")
+    (tmp_path / "Page.php").write_text(SRC, encoding="utf-8")
+    (tmp_path / "page.tpl").write_text("Hello {$name}\n", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "Page.php"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)

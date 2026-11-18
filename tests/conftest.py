@@ -21,7 +21,7 @@ def own_config(tmp_path_factory, monkeypatch):
     tests that need settings point XDG_CONFIG_HOME elsewhere themselves."""
     home = tmp_path_factory.mktemp("config")
     (home / "divide").mkdir()
-    (home / "divide" / "config.json").write_text(json.dumps({"lsp": {"php": "off"}}))
+    (home / "divide" / "config.json").write_text(json.dumps({"lsp": {"php": "off"}}), encoding="utf-8")
     monkeypatch.setenv("XDG_CONFIG_HOME", str(home))
 
 

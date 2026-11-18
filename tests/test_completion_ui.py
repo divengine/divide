@@ -8,8 +8,8 @@ async def settle(pilot, n=4):
 
 
 async def test_popup_while_typing_and_accept(tmp_path):
-    (tmp_path / "page.tpl").write_text("")
-    (tmp_path / "page.json").write_text('{"title": "T", "products": [{"name": "a", "price": 2}]}')
+    (tmp_path / "page.tpl").write_text("", encoding="utf-8")
+    (tmp_path / "page.json").write_text('{"title": "T", "products": [{"name": "a", "price": 2}]}', encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "page.tpl"])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -37,9 +37,9 @@ async def test_popup_while_typing_and_accept(tmp_path):
 
 
 async def test_snippet_reopens_the_list(tmp_path):
-    (tmp_path / "page.tpl").write_text("")
+    (tmp_path / "page.tpl").write_text("", encoding="utf-8")
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "menu.tpl").write_text("")
+    (tmp_path / "parts" / "menu.tpl").write_text("", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "page.tpl"])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)

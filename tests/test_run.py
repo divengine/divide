@@ -59,7 +59,7 @@ def isolated_config(tmp_path, monkeypatch):
     if XDEBUG:
         settings["xdebug"] = XDEBUG
     (home / "divide").mkdir(parents=True)
-    (home / "divide" / "config.json").write_text(json.dumps(settings))
+    (home / "divide" / "config.json").write_text(json.dumps(settings), encoding="utf-8")
 
 
 async def settle(pilot, n=6):
@@ -112,11 +112,11 @@ def test_dbgp_packets_and_values():
 @needs_php
 async def test_run_script_and_stop(tmp_path):
     script = tmp_path / "a.php"
-    script.write_text(SCRIPT)
+    script.write_text(SCRIPT, encoding="utf-8")
     result = await run_script(script, ["x", "y z"])
     assert result.output == "args: x,y z\ntotal 6\n" and result.exit_code == 0 and not result.failed
     slow = tmp_path / "slow.php"
-    slow.write_text("<?php echo 'go'; flush(); sleep(30);")
+    slow.write_text("<?php echo 'go'; flush(); sleep(30);", encoding="utf-8")
     task = asyncio.ensure_future(run_script(slow))
     await asyncio.sleep(0.5)
     task.cancel()
@@ -127,7 +127,7 @@ async def test_run_script_and_stop(tmp_path):
 @needs_php
 async def test_ctrl_f9_runs_the_script(tmp_path):
     script = tmp_path / "a.php"
-    script.write_text(SCRIPT)
+    script.write_text(SCRIPT, encoding="utf-8")
     app = Divide(tmp_path, [script])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -146,7 +146,7 @@ async def test_ctrl_f9_runs_the_script(tmp_path):
         assert await until(pilot, lambda: isinstance(app.screen, ProgressScreen) and not app.screen.dialog.running)
         dialog = app.screen.dialog
         assert dialog.verdict == "Errors: press any key" and dialog.rows["Exit code"] == "255"
-        assert script.read_text().count("boom") == 1  # saved before running
+        assert script.read_text(encoding="utf-8").count("boom") == 1  # saved before running
         await pilot.press("enter")
         await settle(pilot)
         messages = app.messages_window()
@@ -163,7 +163,7 @@ async def test_ctrl_f9_runs_the_script(tmp_path):
 @needs_php
 async def test_esc_stops_and_parameters(tmp_path):
     script = tmp_path / "slow.php"
-    script.write_text("<?php echo implode('+', array_slice($argv, 1)); flush(); sleep(30);")
+    script.write_text("<?php echo implode('+', array_slice($argv, 1)); flush(); sleep(30);", encoding="utf-8")
     app = Divide(tmp_path, [script])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -189,7 +189,7 @@ async def test_esc_stops_and_parameters(tmp_path):
 @needs_xdebug
 async def test_debugger(tmp_path):
     script = tmp_path / "a.php"
-    script.write_text(SCRIPT)
+    script.write_text(SCRIPT, encoding="utf-8")
     app = Divide(tmp_path, [script])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -270,7 +270,7 @@ class AsyncCalls:
 
 async def test_debug_keys_belong_to_php(tmp_path):
     page = tmp_path / "a.tpl"
-    page.write_text("hello\nworld\n")
+    page.write_text("hello\nworld\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -283,7 +283,7 @@ async def test_debug_keys_belong_to_php(tmp_path):
 @needs_xdebug
 async def test_ctrl_f9_stops_at_breakpoints_and_watches_keys(tmp_path):
     script = tmp_path / "a.php"
-    script.write_text(SCRIPT)
+    script.write_text(SCRIPT, encoding="utf-8")
     app = Divide(tmp_path, [script])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)

@@ -34,7 +34,7 @@ def isolated_config(tmp_path, monkeypatch):
     if XDEBUG:
         settings["xdebug"] = XDEBUG
     (home / "divide").mkdir(parents=True)
-    (home / "divide" / "config.json").write_text(json.dumps(settings))
+    (home / "divide" / "config.json").write_text(json.dumps(settings), encoding="utf-8")
 
 
 def free_address() -> str:
@@ -56,7 +56,7 @@ async def get(address: str, path: str) -> str:
 def site(tmp_path: Path) -> Path:
     root = tmp_path / "public"
     root.mkdir()
-    (root / "index.php").write_text(PAGE)
+    (root / "index.php").write_text(PAGE, encoding="utf-8")
     return root
 
 
@@ -118,7 +118,7 @@ async def soon(pred) -> bool:  # the log arrives a moment after the answer
 async def test_folder_dialog(tmp_path):
     project = tmp_path / "site"
     (project / "public" / "css").mkdir(parents=True)
-    (project / "public" / "index.php").write_text("<?php\n")
+    (project / "public" / "index.php").write_text("<?php\n", encoding="utf-8")
     app = Divide(project, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -158,7 +158,7 @@ async def test_debug_web_requests(tmp_path, monkeypatch):
         assert app.web.root == root.resolve() and app.web.debugging
         assert opened == [f"http://{address}/"]  # "Open in the browser" was on
         assert isinstance(app.server_log_window(), ServerLogWindow)
-        saved = json.loads((tmp_path / "config" / "divide" / "config.json").read_text())["web"][str(tmp_path)]
+        saved = json.loads((tmp_path / "config" / "divide" / "config.json").read_text(encoding="utf-8"))["web"][str(tmp_path)]
         assert saved["address"] == address and saved["root"] == str(root.resolve())
 
         # no breakpoint: a request runs through

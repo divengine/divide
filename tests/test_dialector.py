@@ -137,7 +137,7 @@ async def test_dialector_end_to_end(tmp_path):
         await pilot.press("enter")
         await settle(pilot)
         win = app.active_window()
-        assert isinstance(win, DialectorWindow) and (tmp_path / "my.dialect").read_text() == "{}\n"
+        assert isinstance(win, DialectorWindow) and (tmp_path / "my.dialect").read_text(encoding="utf-8") == "{}\n"
         await until(pilot, lambda: win.verdict is not None)
         assert win.verdict.valid and win.verdict.readable
 
@@ -206,7 +206,7 @@ async def test_dialector_end_to_end(tmp_path):
         await pilot.press("enter")
         await settle(pilot)
         example = tmp_path / "my.example.tpl"
-        assert example.read_text().startswith("@_DIALECT = my.dialect\n")
+        assert example.read_text(encoding="utf-8").startswith("@_DIALECT = my.dialect\n")
         assert not win.source.dirty
         opened = app.active_editor()
         assert opened.path == example.resolve()
@@ -216,7 +216,7 @@ async def test_dialector_end_to_end(tmp_path):
 
 async def test_dialector_without_div_says_so(tmp_path, monkeypatch):
     monkeypatch.setenv(ENV_ENGINE, str(tmp_path / "missing.php"))
-    (tmp_path / "x.dialect").write_text('{"DIV_TAG_EMPTY": "@nothing@"}')
+    (tmp_path / "x.dialect").write_text('{"DIV_TAG_EMPTY": "@nothing@"}', encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "x.dialect"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -242,11 +242,11 @@ def test_dialect_property_and_import():
 
 @needs_div
 async def test_translate_a_template_between_dialects(tmp_path):
-    (tmp_path / "erb.dialect").write_text(json.dumps(ERB))
+    (tmp_path / "erb.dialect").write_text(json.dumps(ERB), encoding="utf-8")
     (tmp_path / "views").mkdir()
-    (tmp_path / "mustache.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "{{", "DIV_TAG_REPLACEMENT_SUFFIX": "}}"}')
+    (tmp_path / "mustache.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "{{", "DIV_TAG_REPLACEMENT_SUFFIX": "}}"}', encoding="utf-8")
     page = tmp_path / "views" / "page.tpl"
-    page.write_text("@_DIALECT = ../erb.dialect\nHi <%$name%>\n[$items]<li><%$value%></li>[/$items]\n")
+    page.write_text("@_DIALECT = ../erb.dialect\nHi <%$name%>\n[$items]<li><%$value%></li>[/$items]\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -269,16 +269,16 @@ async def test_translate_a_template_between_dialects(tmp_path):
         await pilot.press("enter")  # the proposed name: page.mustache.tpl
         await settle(pilot)
         out = tmp_path / "views" / "page.mustache.tpl"
-        assert out.read_text() == "@_DIALECT = ../mustache.dialect\nHi {{$name}}\n[$items]<li>{{$value}}</li>[/$items]\n"
+        assert out.read_text(encoding="utf-8") == "@_DIALECT = ../mustache.dialect\nHi {{$name}}\n[$items]<li>{{$value}}</li>[/$items]\n"
         opened = app.active_editor()
         assert opened.path == out.resolve() and opened.editor.dialect.name == "mustache"
-        assert page.read_text().startswith("@_DIALECT = ../erb.dialect")  # the original is untouched
+        assert page.read_text(encoding="utf-8").startswith("@_DIALECT = ../erb.dialect")  # the original is untouched
 
 
 @needs_div
 async def test_dialector_imports_php_defines(tmp_path):
-    (tmp_path / "x.dialect").write_text("{}")
-    (tmp_path / "old.php").write_text("<?php define('DIV_TAG_EMPTY', '@none@'); define('DIV_TAG_ELSE', '@or@');")
+    (tmp_path / "x.dialect").write_text("{}", encoding="utf-8")
+    (tmp_path / "old.php").write_text("<?php define('DIV_TAG_EMPTY', '@none@'); define('DIV_TAG_ELSE', '@or@');", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "x.dialect"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -298,11 +298,11 @@ async def test_dialector_imports_php_defines(tmp_path):
 
 @needs_div
 async def test_translate_suggests_the_default_dialect_and_respects_a_choice(tmp_path):
-    (tmp_path / "erb.dialect").write_text(json.dumps(ERB))
+    (tmp_path / "erb.dialect").write_text(json.dumps(ERB), encoding="utf-8")
     plain = tmp_path / "plain.tpl"
-    plain.write_text("Hi {$name}\n")
+    plain.write_text("Hi {$name}\n", encoding="utf-8")
     erb = tmp_path / "erb.tpl"
-    erb.write_text("Hi <%$name%>\n")  # in ERB, but it does not say so
+    erb.write_text("Hi <%$name%>\n", encoding="utf-8")  # in ERB, but it does not say so
     app = Divide(tmp_path, [plain])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -328,7 +328,7 @@ async def test_translate_suggests_the_default_dialect_and_respects_a_choice(tmp_
 
 async def test_div_tags_in_texts_are_not_markup(tmp_path):
     # "[/]" and "[/$x]" are Div tags, not Textual markup: shown as they are
-    (tmp_path / "x.dialect").write_text('{"DIV_TAG_EMPTY": "[/$none]"}')
+    (tmp_path / "x.dialect").write_text('{"DIV_TAG_EMPTY": "[/$none]"}', encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "x.dialect"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -345,9 +345,9 @@ async def test_div_tags_in_texts_are_not_markup(tmp_path):
 @needs_div
 async def test_translate_browse_puts_absolute_paths(tmp_path):
     (tmp_path / "dialects").mkdir()
-    (tmp_path / "dialects" / "erb.dialect").write_text(json.dumps(ERB))
+    (tmp_path / "dialects" / "erb.dialect").write_text(json.dumps(ERB), encoding="utf-8")
     page = tmp_path / "page.tpl"
-    page.write_text("Hi {$name}\n")
+    page.write_text("Hi {$name}\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -371,7 +371,7 @@ async def test_translate_browse_puts_absolute_paths(tmp_path):
 
 async def test_new_dialect_name_can_be_browsed(tmp_path):
     (tmp_path / "d").mkdir()
-    (tmp_path / "d" / "old.dialect").write_text('{"DIV_TAG_EMPTY": "@none@"}')
+    (tmp_path / "d" / "old.dialect").write_text('{"DIV_TAG_EMPTY": "@none@"}', encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -395,11 +395,11 @@ async def test_new_dialect_name_can_be_browsed(tmp_path):
 @needs_div
 async def test_editor_dialect_is_the_one_div_loads(tmp_path):
     # single quotes and unquoted keys: decoded by Div's jsonDecode()
-    (tmp_path / "erb.dialect").write_text("{ 'DIV_TAG_REPLACEMENT_PREFIX': '<%', DIV_TAG_REPLACEMENT_SUFFIX: '%>' }")
+    (tmp_path / "erb.dialect").write_text("{ 'DIV_TAG_REPLACEMENT_PREFIX': '<%', DIV_TAG_REPLACEMENT_SUFFIX: '%>' }", encoding="utf-8")
     (tmp_path / "views").mkdir()
-    (tmp_path / "views" / "bad.dialect").write_text('{"DIV_TAG_EMPTY": ')
+    (tmp_path / "views" / "bad.dialect").write_text('{"DIV_TAG_EMPTY": ', encoding="utf-8")
     page = tmp_path / "views" / "page.tpl"
-    page.write_text("@_DIALECT = ../erb.dialect\nHi <%$name%>\n")
+    page.write_text("@_DIALECT = ../erb.dialect\nHi <%$name%>\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -421,9 +421,9 @@ async def test_editor_dialect_is_the_one_div_loads(tmp_path):
 
 async def test_editor_dialect_without_div_only_colours(tmp_path, monkeypatch):
     monkeypatch.setenv(ENV_ENGINE, str(tmp_path / "missing.php"))
-    (tmp_path / "erb.dialect").write_text(json.dumps(ERB))
+    (tmp_path / "erb.dialect").write_text(json.dumps(ERB), encoding="utf-8")
     page = tmp_path / "page.tpl"
-    page.write_text("@_DIALECT = erb.dialect\n@_X = 1\nHi <%$name%>\n")
+    page.write_text("@_DIALECT = erb.dialect\n@_X = 1\nHi <%$name%>\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -437,7 +437,7 @@ async def test_editor_dialect_without_div_only_colours(tmp_path, monkeypatch):
 @needs_div
 async def test_dialector_buffer_is_decoded_by_div(tmp_path):
     # unquoted keys and single quotes: what Div's jsonDecode() accepts
-    (tmp_path / "x.dialect").write_text("{DIV_TAG_EMPTY: '@nada@', 'DIV_TAG_ELSE': '@si-no@'}")
+    (tmp_path / "x.dialect").write_text("{DIV_TAG_EMPTY: '@nada@', 'DIV_TAG_ELSE': '@si-no@'}", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "x.dialect"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -466,7 +466,7 @@ def test_rewrite_loses():
 async def test_dialector_rules_meet_the_frame(tmp_path):
     from divide.ui.windows import IndicatorFrame, RuleFrame
 
-    (tmp_path / "x.dialect").write_text("{}")
+    (tmp_path / "x.dialect").write_text("{}", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "x.dialect"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)

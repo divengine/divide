@@ -53,7 +53,7 @@ async def settle(pilot, n=3):
 
 async def open_app(tmp_path, text):
     f = tmp_path / "s.tpl"
-    f.write_text(text)
+    f.write_text(text, encoding="utf-8")
     return Divide(tmp_path, [f])
 
 

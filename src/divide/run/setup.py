@@ -335,7 +335,7 @@ class Layer:
             raise ValueError(_('{path} is not a folder').format(path=path))
         if not folder and not path.is_file():
             raise ValueError(_('{path} is not a file').format(path=path))
-        return str(path) + ("/" if folder else "")
+        return path.as_posix() + ("/" if folder else "")
 
     def engine(self, value: Any) -> str:
         path = self.path(value, folder=False)

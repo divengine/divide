@@ -648,7 +648,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             win.title = win.display_name
             return
         try:
-            win.title = str(win.path.relative_to(self.root))
+            win.title = win.path.relative_to(self.root).as_posix()
         except ValueError:
             win.title = str(win.path)
 
@@ -2066,7 +2066,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             ref = source.path.relative_to(target.parent)
         except ValueError:
             ref = source.path
-        text = f"@_DIALECT = {ref}\n\n" + dx.example(dx.overrides(win.tags)).text
+        text = f"@_DIALECT = {ref.as_posix()}\n\n" + dx.example(dx.overrides(win.tags)).text
         try:
             target.write_text(text, encoding="utf-8")
         except OSError as exc:
@@ -2145,7 +2145,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         target_path = self._project_path(target)
         ref = None
         if target_path is not None:
-            ref = os.path.relpath(target_path, tpl.parent)
+            ref = Path(os.path.relpath(target_path, tpl.parent)).as_posix()
         tags: dict[str, str] = {}
         if target_path is not None:  # to show the result: the target as Div decodes it
             try:
@@ -2218,7 +2218,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return
         text = dialog.text
         if dialog.target_dialect and dialog.target_dialect.source is not None:
-            text = dx.set_dialect_property(text, os.path.relpath(dialog.target_dialect.source, out.parent))
+            text = dx.set_dialect_property(text, Path(os.path.relpath(dialog.target_dialect.source, out.parent)).as_posix())
         try:
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(text, encoding="utf-8")

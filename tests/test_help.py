@@ -87,7 +87,7 @@ def test_index_and_search():
 
 
 async def test_help_window(tmp_path: Path):
-    (tmp_path / "a.tpl").write_text("{$dialector}\n")
+    (tmp_path / "a.tpl").write_text("{$dialector}\n", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "a.tpl"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)

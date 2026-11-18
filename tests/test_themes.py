@@ -205,7 +205,7 @@ def test_16_colours_keep_the_slots(palette):
 
 async def test_switching_repaints_everything(tmp_path):
     path = tmp_path / "a.tpl"
-    path.write_text("{$name}\n")
+    path.write_text("{$name}\n", encoding="utf-8")
     app = Divide(tmp_path, [path])
     async with app.run_test(size=(90, 26)) as pilot:
         await settle(pilot)
@@ -227,7 +227,7 @@ async def test_switching_repaints_everything(tmp_path):
 
 async def test_options_colors_previews_and_remembers(tmp_path):
     path = tmp_path / "a.tpl"
-    path.write_text("{$name}\n")
+    path.write_text("{$name}\n", encoding="utf-8")
     app = Divide(tmp_path, [path])
     async with app.run_test(size=(90, 30)) as pilot:
         await settle(pilot)

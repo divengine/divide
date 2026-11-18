@@ -49,9 +49,9 @@ def labels(node, depth=0) -> list[str]:
 def project(tmp_path: Path) -> Path:
     root = tmp_path / "shop"
     root.mkdir()
-    (root / "cart.php").write_text(CART)
-    (root / "notes.txt").write_text("plain\n")
-    (root / "README.md").write_text("# Shop\n\n## Install\n")
+    (root / "cart.php").write_text(CART, encoding="utf-8")
+    (root / "notes.txt").write_text("plain\n", encoding="utf-8")
+    (root / "README.md").write_text("# Shop\n\n## Install\n", encoding="utf-8")
     return root.resolve()
 
 

@@ -19,14 +19,14 @@ async def settle(pilot, times: int = 8) -> None:
 
 
 def test_search(tmp_path):
-    (tmp_path / "a.tpl").write_text("one\nTitle: {$title}\nend title\n")
-    (tmp_path / "b.php").write_text("<?php\n$title = 'x';\n")
+    (tmp_path / "a.tpl").write_text("one\nTitle: {$title}\nend title\n", encoding="utf-8")
+    (tmp_path / "b.php").write_text("<?php\n$title = 'x';\n", encoding="utf-8")
     (tmp_path / "c.bin").write_bytes(b"title\0\0")
     files = ["a.tpl", "b.php", "c.bin"]
     hits, in_files = search(tmp_path, files, compile_pattern("title", SearchOptions()))
     assert in_files == 2 and [(h.rel, h.line) for h in hits] == [("a.tpl", 2), ("a.tpl", 2), ("a.tpl", 3), ("b.php", 2)]
     first = hits[0]
-    assert (tmp_path / "a.tpl").read_text()[first.start:first.end] == "Title" and first.text == "Title: {$title}"
+    assert (tmp_path / "a.tpl").read_text(encoding="utf-8")[first.start:first.end] == "Title" and first.text == "Title: {$title}"
     whole = compile_pattern("title", SearchOptions(case_sensitive=True, whole_words=True))
     assert [h.line for h in search(tmp_path, ["a.tpl"], whole)[0]] == [2, 3]
     # what an editor holds wins over the file
@@ -40,8 +40,8 @@ def test_search(tmp_path):
 async def test_find_in_files_window(tmp_path):
     tmp_path = tmp_path / "project"  # the config (its histories) lives beside it
     (tmp_path / "parts").mkdir(parents=True)
-    (tmp_path / "page.tpl").write_text("{% parts/header %}\nbody\n")
-    (tmp_path / "parts" / "header.tpl").write_text("<h1>{$title}</h1>\n<p>header</p>\n")
+    (tmp_path / "page.tpl").write_text("{% parts/header %}\nbody\n", encoding="utf-8")
+    (tmp_path / "parts" / "header.tpl").write_text("<h1>{$title}</h1>\n<p>header</p>\n", encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -70,8 +70,8 @@ async def test_find_in_files_window(tmp_path):
 async def test_filtering_the_results_keeps_where_each_one_goes(tmp_path):
     tmp_path = tmp_path / "project"
     (tmp_path / "parts").mkdir(parents=True)
-    (tmp_path / "page.tpl").write_text("{% parts/header %}\nbody\n")
-    (tmp_path / "parts" / "header.tpl").write_text("<h1>{$title}</h1>\n<p>header</p>\n")
+    (tmp_path / "page.tpl").write_text("{% parts/header %}\nbody\n", encoding="utf-8")
+    (tmp_path / "parts" / "header.tpl").write_text("<h1>{$title}</h1>\n<p>header</p>\n", encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)

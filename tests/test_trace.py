@@ -69,17 +69,17 @@ def test_cause_text_of_lists():
 
 def make_page(tmp_path: Path) -> Path:
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "greet.tpl").write_text("Hi {$name}!")
+    (tmp_path / "parts" / "greet.tpl").write_text("Hi {$name}!", encoding="utf-8")
     page = tmp_path / "page.tpl"
-    page.write_text("{% parts/greet %}\n?$vip VIP $vip?\n[$items]<{$value}>[/$items]\n")
-    (tmp_path / "page.json").write_text('{"name": "Rafa", "vip": true, "items": [1, 2]}')
+    page.write_text("{% parts/greet %}\n?$vip VIP $vip?\n[$items]<{$value}>[/$items]\n", encoding="utf-8")
+    (tmp_path / "page.json").write_text('{"name": "Rafa", "vip": true, "items": [1, 2]}', encoding="utf-8")
     return page
 
 
 @needs_div
 async def test_trace_renders_like_render(tmp_path):
     page = make_page(tmp_path)
-    code, data = page.read_text(), (tmp_path / "page.json").read_text()
+    code, data = page.read_text(encoding="utf-8"), (tmp_path / "page.json").read_text(encoding="utf-8")
     plain = await render(Path(ENGINE), page, code, data, cwd=tmp_path)
     trace = await trace_render(Path(ENGINE), page, code, data, cwd=tmp_path)
     assert trace.result.output == plain.output == "Hi Rafa!\nVIP\n<1><2>\n"
@@ -111,7 +111,7 @@ async def test_trace_window(tmp_path, monkeypatch):
             await pilot.pause(0.05)
         window = app.active_window()
         assert isinstance(window, TraceWindow) and window.list.focused == 0
-        assert window.view.text == page.read_text() and window.view.lang == "div"
+        assert window.view.text == page.read_text(encoding="utf-8") and window.view.lang == "div"
         assert window.rows[-1].kind == "output" and window.rows[-1].after == "Hi Rafa!\nVIP\n<1><2>\n"
 
         # F8 goes over the sub-parses, F7 into them, Shift+F8 back out

@@ -148,7 +148,7 @@ def test_lenient_dialect_json():
 
 
 def test_resolve_dialect_relative_to_template(tmp_path):
-    (tmp_path / "angle.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<<", "DIV_TAG_REPLACEMENT_SUFFIX": ">>"}')
+    (tmp_path / "angle.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<<", "DIV_TAG_REPLACEMENT_SUFFIX": ">>"}', encoding="utf-8")
     tpl = tmp_path / "a.tpl"
     text = "@_DIALECT = angle.dialect\nHello <<$name>>"
     d = resolve_dialect(text, tpl)
@@ -159,7 +159,7 @@ def test_resolve_dialect_relative_to_template(tmp_path):
 
 @pytest.mark.parametrize("path", sorted((ROOT / "examples").glob("*.tpl")))
 def test_examples_tokens_are_sane(path):
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     toks = tokenize(text)
     assert toks or not text.strip()
     prev_end = 0

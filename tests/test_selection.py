@@ -12,7 +12,7 @@ async def settle(pilot, n=10):
 
 async def test_a_selection_hides_the_syntax_colours(tmp_path):
     page = tmp_path / "page.tpl"
-    page.write_text("<p>{$title}</p>\n[$products] product =>\n[/$products]\n")
+    page.write_text("<p>{$title}</p>\n[$products] product =>\n[/$products]\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)

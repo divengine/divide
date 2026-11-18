@@ -713,7 +713,7 @@ def _xdebug_config() -> None:
     """The debugger's scenes need Xdebug: $DIVIDE_SHOT_XDEBUG (its xdebug.so) or Xdebug in php.ini."""
     import json
     config = Path(os.environ["XDG_CONFIG_HOME"]) / "divide" / "config.json"
-    config.write_text(json.dumps({"palette": PALETTE, "xdebug": os.environ.get("DIVIDE_SHOT_XDEBUG") or None}))
+    config.write_text(json.dumps({"palette": PALETTE, "xdebug": os.environ.get("DIVIDE_SHOT_XDEBUG") or None}), encoding="utf-8")
 
 
 async def debugging(rec_dir: Path) -> Recorder:
@@ -970,7 +970,7 @@ async def php_lsp(rec_dir: Path) -> Recorder:
     if not shutil.which(command[0]):
         raise SystemExit(f"{command[0]} not found: set DIVIDE_SHOT_LSP")
     config = Path(os.environ["XDG_CONFIG_HOME"]) / "divide" / "config.json"
-    config.write_text(json.dumps({"palette": PALETTE, "lsp": {"php": name}, "lsp_commands": {name: command}}))
+    config.write_text(json.dumps({"palette": PALETTE, "lsp": {"php": name}, "lsp_commands": {name: command}}), encoding="utf-8")
     script = DEMO / "index.php"
     app = Divide(DEMO, [script])
     async with app.run_test(size=SIZE) as pilot:
@@ -1140,7 +1140,7 @@ def write_concat(rec: Recorder, path: Path) -> None:
     for png, seconds, _svg in rec.frames:
         lines += [f"file '{png}'", f"duration {seconds:.3f}"]
     lines.append(f"file '{rec.frames[-1][0]}'")
-    path.write_text("\n".join(lines) + "\n")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def ffmpeg(*args: str) -> None:
@@ -1238,7 +1238,7 @@ def main() -> None:
         os.environ["XDG_CONFIG_HOME"] = str(work / "config")
         os.environ["DIV_HOME"] = str(work / "div-home")  # nor the user's Div setup, nor what they trust
         (work / "config" / "divide").mkdir(parents=True)
-        (work / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}')
+        (work / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}', encoding="utf-8")
         frames = work / "frames"
         frames.mkdir()
         rec = asyncio.run(SCENES[args.scene](frames))

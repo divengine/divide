@@ -75,7 +75,7 @@ def test_lit():
 
 
 async def test_help_search_dialog(tmp_path: Path):
-    (tmp_path / "a.tpl").write_text("{$nothingtofind}\n")
+    (tmp_path / "a.tpl").write_text("{$nothingtofind}\n", encoding="utf-8")
     app = Divide(tmp_path, [tmp_path / "a.tpl"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)

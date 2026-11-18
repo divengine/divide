@@ -48,7 +48,7 @@ def test_tokens():
 
 async def test_json_editor_highlights_and_validates(tmp_path):
     f = tmp_path / "page.json"
-    f.write_text('{"a": $b}')
+    f.write_text('{"a": $b}', encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test() as pilot:
         for _ in range(3):

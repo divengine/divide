@@ -40,12 +40,12 @@ def test_shown_path(monkeypatch, tmp_path):
 
     monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
     assert shown_path(tmp_path / "work" / "*") == "~/work/*"
-    assert shown_path(Path("/elsewhere/x")) == "/elsewhere/x"
+    assert shown_path(Path("/elsewhere/x")) == str(Path("/elsewhere/x"))  # as the system writes it
 
 
 def test_file_info(tmp_path):
     path = tmp_path / "about.pas"
-    path.write_text("x" * 77)
+    path.write_text("x" * 77, encoding="utf-8")
     when = datetime(2019, 5, 4, 22, 16).timestamp()
     import os
 
@@ -58,7 +58,7 @@ def test_file_info(tmp_path):
 async def test_open_dialog_and_its_history(tmp_path):
     (tmp_path / "sub").mkdir()
     for name in ("a.tpl", "b.tpl", "notes.txt"):
-        (tmp_path / name).write_text(name)
+        (tmp_path / name).write_text(name, encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -100,7 +100,7 @@ async def test_open_dialog_and_its_history(tmp_path):
 
 async def test_find_remembers(tmp_path):
     path = tmp_path / "a.txt"
-    path.write_text("one two three\n")
+    path.write_text("one two three\n", encoding="utf-8")
     app = Divide(tmp_path, [path])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -114,7 +114,7 @@ async def test_find_remembers(tmp_path):
 async def test_typing_in_the_files_filters_them_escape_empties_it_first(tmp_path):
     (tmp_path / "sub").mkdir()
     for name in ("a.tpl", "b.tpl", "notes.txt"):
-        (tmp_path / name).write_text(name)
+        (tmp_path / name).write_text(name, encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)

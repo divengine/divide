@@ -23,7 +23,7 @@ needs_div = pytest.mark.skipif(
 def write_setup(folder: Path, text: str | dict) -> Path:
     (folder / ".div").mkdir(parents=True, exist_ok=True)
     file = folder / ".div" / "setup.json"
-    file.write_text(text if isinstance(text, str) else json.dumps(text))
+    file.write_text(text if isinstance(text, str) else json.dumps(text), encoding="utf-8")
     return file
 
 
@@ -38,7 +38,7 @@ def test_a_project_setup_relative_to_its_root(tmp_path):
     (tmp_path / "templates").mkdir()
     (tmp_path / "shared").mkdir()
     (tmp_path / "vendor").mkdir()
-    (tmp_path / "vendor" / "autoload.php").write_text("<?php\n")
+    (tmp_path / "vendor" / "autoload.php").write_text("<?php\n", encoding="utf-8")
     write_setup(tmp_path, """{
         // comments are fine: Div JSON
         engine: 'vendor/autoload.php',
@@ -148,8 +148,8 @@ def test_the_project_wins_and_null_means_divs_default(tmp_path, monkeypatch):
 def test_engine_order(tmp_path, monkeypatch):
     monkeypatch.delenv(ENV_ENGINE, raising=False)
     mine, chosen = tmp_path / "mine.php", tmp_path / "chosen.php"
-    mine.write_text("<?php\n")
-    chosen.write_text("<?php\n")
+    mine.write_text("<?php\n", encoding="utf-8")
+    chosen.write_text("<?php\n", encoding="utf-8")
     assert find_engine([tmp_path], str(chosen), mine) == mine.resolve()
     assert find_engine([tmp_path], str(chosen), None) == chosen.resolve()
     monkeypatch.setenv(ENV_ENGINE, str(chosen))
@@ -227,9 +227,9 @@ async def test_left_out_settings_reach_the_messages(tmp_path, requests):
 @needs_div
 async def test_div_finds_templates_where_the_setup_says(tmp_path):
     (tmp_path / "tpls").mkdir()
-    (tmp_path / "tpls" / "part.html").write_text("from packages")
+    (tmp_path / "tpls" / "part.html").write_text("from packages", encoding="utf-8")
     (tmp_path / "shared").mkdir()
-    (tmp_path / "shared" / "box.html").write_text("from an include path")
+    (tmp_path / "shared" / "box.html").write_text("from an include path", encoding="utf-8")
     (tmp_path / "pages").mkdir()
     page = tmp_path / "pages" / "page.html"
     code = "[{% part %}] [{% box %}]"
@@ -249,7 +249,7 @@ async def test_a_left_out_setting_in_the_messages_window_goes_to_its_place(tmp_p
     from divide.ui.windows import MessagesWindow
 
     page = tmp_path / "page.tpl"
-    page.write_text("Hi")
+    page.write_text("Hi", encoding="utf-8")
     text = '{\n  "parser": {"max_cycles": "many"}\n}\n'
     file = write_setup(tmp_path, text)
     app = Divide(tmp_path, [page])
@@ -283,7 +283,7 @@ def test_every_section_read_and_merged(tmp_path, monkeypatch):
     monkeypatch.setenv("DIV_HOME", str(home / ".div"))
     project = tmp_path / "shop"
     project.mkdir()
-    (project / "erb.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>", name: "erb"}')
+    (project / "erb.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>", name: "erb"}', encoding="utf-8")
     write_setup(project, {
         "dialect": "erb.dialect",
         "data": {"globals": {"site": "Shop"}, "system_vars": ["div.ascii", "now"],
@@ -311,7 +311,7 @@ def test_every_section_read_and_merged(tmp_path, monkeypatch):
 
 
 def test_bad_parts_of_sections(tmp_path):
-    (tmp_path / "x.dialect").write_text('{"DIV_TAG_NOPE": "x", "DIV_TAG_EMPTY": true}')
+    (tmp_path / "x.dialect").write_text('{"DIV_TAG_NOPE": "x", "DIV_TAG_EMPTY": true}', encoding="utf-8")
     write_setup(tmp_path, {
         "dialect": "x.dialect",
         "data": {"globals": [1], "system_vars": ["cookies"], "defaults": [{"search": 1}],
@@ -365,8 +365,8 @@ def test_the_projects_extensions(tmp_path):
 def test_include_completion_with_the_projects_extension(tmp_path):
     from divide.lang.div.complete import template_paths
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "menu.html").write_text("")
-    (tmp_path / "parts" / "old.tpl").write_text("")
+    (tmp_path / "parts" / "menu.html").write_text("", encoding="utf-8")
+    (tmp_path / "parts" / "old.tpl").write_text("", encoding="utf-8")
     names = [c.label for c in template_paths("parts/", None, [tmp_path], ".html")]
     assert names == ["parts/menu"]
 
@@ -380,7 +380,7 @@ def test_a_template_dialect_is_completed_with_the_projects():
 
 @needs_div
 async def test_div_takes_the_whole_setup(tmp_path):
-    (tmp_path / "erb.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>"}')
+    (tmp_path / "erb.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "<%= ", "DIV_TAG_REPLACEMENT_SUFFIX": " %>"}', encoding="utf-8")
     file = write_setup(tmp_path, {
         "dialect": "erb.dialect",
         "data": {"globals": {"site": "Shop"}, "system_vars": ["server"],
@@ -401,7 +401,7 @@ async def test_div_takes_the_whole_setup(tmp_path):
 
 @needs_div
 async def test_a_dialect_div_rejects_is_left_out(tmp_path):
-    (tmp_path / "bad.dialect").write_text('{"DIV_TAG_EMPTY": "@break@"}')  # the same as DIV_TAG_BREAK
+    (tmp_path / "bad.dialect").write_text('{"DIV_TAG_EMPTY": "@break@"}', encoding="utf-8")  # the same as DIV_TAG_BREAK
     write_setup(tmp_path, {"dialect": "bad.dialect"})
     result = await render(Path(ENGINE), tmp_path / "p.tpl", "{$x}", '{"x": "ok"}', cwd=tmp_path)
     assert result.output == "ok" and not result.fatal

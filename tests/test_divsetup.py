@@ -47,7 +47,7 @@ def test_fields_and_values():
 async def test_edit_a_section_and_save(tmp_path):
     (tmp_path / "templates").mkdir()
     page = tmp_path / "page.tpl"
-    page.write_text("Hi")
+    page.write_text("Hi", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -79,7 +79,7 @@ async def test_edit_a_section_and_save(tmp_path):
         await pilot.press("f2")
         await settle(pilot)
         file = tmp_path / ".div" / "setup.json"
-        assert json.loads(file.read_text()) == {"paths": {"packages": "templates"}}
+        assert json.loads(file.read_text(encoding="utf-8")) == {"paths": {"packages": "templates"}}
         assert app.div_setup().constants["PACKAGES"] == str((tmp_path / "templates").resolve()) + "/"
         assert "project" in str(win.effect.render())
 
@@ -107,7 +107,7 @@ async def test_the_users_setup_and_restore(tmp_path):
 
 async def test_left_out_settings_show_as_you_edit(tmp_path):
     (tmp_path / ".div").mkdir()
-    (tmp_path / ".div" / "setup.json").write_text('{"parser": {"max_cycles": 0}}')
+    (tmp_path / ".div" / "setup.json").write_text('{"parser": {"max_cycles": 0}}', encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -125,7 +125,7 @@ async def test_left_out_settings_show_as_you_edit(tmp_path):
 async def test_the_status_line_says_why_an_entry_is_left_out(tmp_path):
     (tmp_path / ".div").mkdir()
     file = tmp_path / ".div" / "setup.json"
-    file.write_text('{\n  "parser": {"max_cycles": 0}\n}\n')
+    file.write_text('{\n  "parser": {"max_cycles": 0}\n}\n', encoding="utf-8")
     app = Divide(tmp_path, [file])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -140,7 +140,7 @@ async def test_the_status_line_says_why_an_entry_is_left_out(tmp_path):
 
 async def test_divide_asks_once_to_trust_a_projects_php(tmp_path):
     (tmp_path / ".div").mkdir()
-    (tmp_path / ".div" / "setup.json").write_text('{"php": {"allowed_functions": ["md5"]}}')
+    (tmp_path / ".div" / "setup.json").write_text('{"php": {"allowed_functions": ["md5"]}}', encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await until(pilot, lambda: isinstance(app.screen, DialogScreen))
@@ -157,13 +157,13 @@ async def test_divide_asks_once_to_trust_a_projects_php(tmp_path):
 
 async def test_a_global_saved_in_the_setup_is_completed_at_once(tmp_path):
     page = tmp_path / "page.tpl"
-    page.write_text("Hi")
-    (tmp_path / "page.json").write_text('{"shop": "Acme"}')
+    page.write_text("Hi", encoding="utf-8")
+    (tmp_path / "page.json").write_text('{"shop": "Acme"}', encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
         ed = app.window_for(page).editor
         assert app.completion_data_for(ed) == {"shop": "Acme"}  # the data, cached now
         (tmp_path / ".div").mkdir()
-        (tmp_path / ".div" / "setup.json").write_text('{"data": {"globals": {"site": "The shop"}}}')
+        (tmp_path / ".div" / "setup.json").write_text('{"data": {"globals": {"site": "The shop"}}}', encoding="utf-8")
         assert app.completion_data_for(ed) == {"site": "The shop", "shop": "Acme"}

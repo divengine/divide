@@ -23,7 +23,7 @@ LINES[170] = "x" * 300 + "[$far]"
 
 async def test_jump_keeps_a_line_that_fits_from_its_start(tmp_path):
     page = tmp_path / "page.tpl"
-    page.write_text("\n".join(LINES) + "\n")
+    page.write_text("\n".join(LINES) + "\n", encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(60, 30)) as pilot:
         await settle(pilot)

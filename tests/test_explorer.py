@@ -23,9 +23,9 @@ async def until(pilot, check, tries=100):
 
 
 def project(tmp_path: Path) -> Path:
-    (tmp_path / "page.tpl").write_text("x")
+    (tmp_path / "page.tpl").write_text("x", encoding="utf-8")
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "a.tpl").write_text("a")
+    (tmp_path / "parts" / "a.tpl").write_text("a", encoding="utf-8")
     (tmp_path / ".git").mkdir()
     return tmp_path.resolve()
 
@@ -175,8 +175,8 @@ async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
     project = tmp_path / "p"
     (project / "sub").mkdir(parents=True)
-    (project / "a.php").write_text("<?php\n")
-    (project / "b.tpl").write_text("x\n")
+    (project / "a.php").write_text("<?php\n", encoding="utf-8")
+    (project / "b.tpl").write_text("x\n", encoding="utf-8")
     app = Divide(project, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await pilot.pause()
@@ -202,9 +202,9 @@ async def test_file_type_marks_are_an_option(tmp_path, monkeypatch):
 
 async def test_the_filter_finds_files_in_folders_never_opened(tmp_path):
     (tmp_path / "src" / "deep").mkdir(parents=True)
-    (tmp_path / "src" / "deep" / "Invoice.tpl").write_text("x")
-    (tmp_path / "src" / "other.tpl").write_text("x")
-    (tmp_path / "readme.md").write_text("x")
+    (tmp_path / "src" / "deep" / "Invoice.tpl").write_text("x", encoding="utf-8")
+    (tmp_path / "src" / "other.tpl").write_text("x", encoding="utf-8")
+    (tmp_path / "readme.md").write_text("x", encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -264,7 +264,7 @@ async def test_cut_and_paste_moves_a_file_with_its_window_and_breakpoints(tmp_pa
         await pilot.press("ctrl+v")
         moved = root / "parts" / "page.tpl"
         await until(pilot, lambda: tree.selected_path == moved)
-        assert moved.read_text() == "x" and not page.exists()
+        assert moved.read_text(encoding="utf-8") == "x" and not page.exists()
         assert [w.path for w in app.editor_windows()] == [moved]
         assert app.editor_windows()[0].title == "parts/page.tpl"
         assert app.breakpoints == {moved: {1}}
@@ -274,14 +274,14 @@ async def test_cut_and_paste_moves_a_file_with_its_window_and_breakpoints(tmp_pa
 async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
     root = project(tmp_path)
     page = root / "page.tpl"
-    (root / "a.tpl").write_text("old")
+    (root / "a.tpl").write_text("old", encoding="utf-8")
     app = Divide(root, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
         tree = await on_tree(pilot, app, page)
         await pilot.press("ctrl+c", "ctrl+v")  # in its own folder: a copy beside it
         await until(pilot, lambda: (root / "page copy.tpl").is_file())
-        assert page.read_text() == "x" and tree.clipboard == (page, False)  # a copy can be pasted again
+        assert page.read_text(encoding="utf-8") == "x" and tree.clipboard == (page, False)  # a copy can be pasted again
 
         await on_tree(pilot, app, root / "parts" / "a.tpl")
         await pilot.press("ctrl+x")
@@ -291,7 +291,7 @@ async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
         assert isinstance(app.screen.dialog, MessageBox) and "a.tpl already exists" in app.screen.dialog._text
         await pilot.press("y")
         await until(pilot, lambda: not (root / "parts" / "a.tpl").exists())
-        assert (root / "a.tpl").read_text() == "a"
+        assert (root / "a.tpl").read_text(encoding="utf-8") == "a"
 
 
 async def test_a_paste_from_the_terminal_pastes_what_was_cut(tmp_path):

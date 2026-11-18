@@ -17,7 +17,7 @@ def alive(pid: int) -> bool:
     except ProcessLookupError:
         return False
     # a zombie is dead too: it only waits for its parent to read it
-    with open(f"/proc/{pid}/stat") as stat:
+    with open(f"/proc/{pid}/stat", encoding="utf-8") as stat:
         return stat.read().split(")")[-1].split()[0] != "Z"
 
 
@@ -53,9 +53,9 @@ asyncio.run(main())
 """])
     try:
         deadline = time.monotonic() + 10
-        while not (pidfile.exists() and pidfile.read_text()) and time.monotonic() < deadline:
+        while not (pidfile.exists() and pidfile.read_text(encoding="utf-8")) and time.monotonic() < deadline:
             time.sleep(0.05)
-        pid = int(pidfile.read_text())
+        pid = int(pidfile.read_text(encoding="utf-8"))
         assert alive(pid)
         parent.kill()
         parent.wait(5)

@@ -64,14 +64,14 @@ def fake(tmp_path, monkeypatch):
     log = tmp_path / "composer-calls.log"
     script = tmp_path / "bin" / "composer"
     script.parent.mkdir()
-    script.write_text(FAKE.replace("PYTHON", sys.executable).replace("LOG", repr(str(log))))
+    script.write_text(FAKE.replace("PYTHON", sys.executable).replace("LOG", repr(str(log))), encoding="utf-8")
     script.chmod(0o755)
     monkeypatch.setenv(cmp.ENV, str(script))
     return log
 
 
 def calls(log: Path) -> list[list[str]]:
-    return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+    return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()] if log.exists() else []
 
 
 SHOP = Path(__file__).resolve().parent.parent / "examples" / "shop"
@@ -106,8 +106,8 @@ async def close_progress(pilot, app):
 def test_the_packages_of_a_project(tmp_path):
     (tmp_path / "composer.json").write_text(json.dumps({
         "name": "acme/shop", "require": {"php": ">=8.0", "divengine/div": "^6.1", "ext-mbstring": "*"},
-        "require-dev": {"phpunit/phpunit": "^10"}}))
-    (tmp_path / "composer.lock").write_text((SHOP / "composer.lock").read_text())
+        "require-dev": {"phpunit/phpunit": "^10"}}), encoding="utf-8")
+    (tmp_path / "composer.lock").write_text((SHOP / "composer.lock").read_text(encoding="utf-8"), encoding="utf-8")
     project = cmp.read(tmp_path)
     names = [(p.name, p.kind) for p in project.packages]
     assert names[0] == ("divengine/div", "require")
@@ -117,7 +117,7 @@ def test_the_packages_of_a_project(tmp_path):
     div = project.packages[0]
     assert div.version and div.description and "divengine/functions" in div.requires
     assert cmp.read(tmp_path / "nothing").json is None
-    (tmp_path / "composer.json").write_text("{broken")
+    (tmp_path / "composer.json").write_text("{broken", encoding="utf-8")
     assert cmp.read(tmp_path).problem is not None
 
 
@@ -136,15 +136,15 @@ def test_constraints_names_and_the_new_file(tmp_path):
 
 def test_finding_composer(tmp_path, monkeypatch):
     monkeypatch.delenv(cmp.ENV, raising=False)
-    (tmp_path / "composer.phar").write_text("")
+    (tmp_path / "composer.phar").write_text("", encoding="utf-8")
     assert cmp.find(tmp_path)[-1] == str(tmp_path / "composer.phar")
     chosen = tmp_path / "mine"
-    chosen.write_text("")
+    chosen.write_text("", encoding="utf-8")
     assert cmp.find(tmp_path, str(chosen)) == [str(chosen)]
 
 
 async def test_run_streams_and_stops(tmp_path, fake):
-    (tmp_path / "composer.json").write_text("{}")
+    (tmp_path / "composer.json").write_text("{}", encoding="utf-8")
     command = cmp.find(tmp_path)
     seen: list[str] = []
     result = await cmp.run(command, ["install"], tmp_path, seen.append)
@@ -176,7 +176,7 @@ async def test_a_new_composer_json_and_install(tmp_path, fake):
         dialog.inputs["namespace"].data = "Acme\\Shop"
         dialog.end_modal(Command.OK)
         await close_progress(pilot, app)
-        data = json.loads((project / "composer.json").read_text())
+        data = json.loads((project / "composer.json").read_text(encoding="utf-8"))
         assert data["name"] == "acme/shop" and data["require"]["divengine/div"] == "^6.1"
         assert (project / "src").is_dir()
         assert calls(fake)[-1] == ["install"]
@@ -187,7 +187,7 @@ async def test_a_new_composer_json_and_install(tmp_path, fake):
 
 
 async def test_add_remove_and_newer_versions(tmp_path, fake):
-    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1"}}))
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1"}}), encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -208,7 +208,7 @@ async def test_add_remove_and_newer_versions(tmp_path, fake):
         dialog.end_modal(Command.OK)
         await close_progress(pilot, app)
         assert ["require", "--dev", "acme/tables:^2.1"] in calls(fake)
-        assert json.loads((tmp_path / "composer.json").read_text())["require-dev"] == {"acme/tables": "^2.1"}
+        assert json.loads((tmp_path / "composer.json").read_text(encoding="utf-8"))["require-dev"] == {"acme/tables": "^2.1"}
         await settle(pilot)
         assert any("acme/tables" in row for row in win.rows())
         # remove it again
@@ -219,7 +219,7 @@ async def test_add_remove_and_newer_versions(tmp_path, fake):
         await pilot.press("y")
         await close_progress(pilot, app)
         assert ["remove", "--dev", "acme/tables"] in calls(fake)
-        assert "acme/tables" not in json.loads((tmp_path / "composer.json").read_text()).get("require-dev", {})
+        assert "acme/tables" not in json.loads((tmp_path / "composer.json").read_text(encoding="utf-8")).get("require-dev", {})
         # newer versions are marked
         app.composer_action(win, "outdated")
         await close_progress(pilot, app)
@@ -229,7 +229,7 @@ async def test_add_remove_and_newer_versions(tmp_path, fake):
 
 
 async def test_a_failure_shows_composer_s_words(tmp_path, fake):
-    (tmp_path / "composer.json").write_text('{"name": "acme/shop"}')
+    (tmp_path / "composer.json").write_text('{"name": "acme/shop"}', encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -245,7 +245,7 @@ async def test_a_failure_shows_composer_s_words(tmp_path, fake):
 
 
 async def test_enter_on_a_package_adds_it(tmp_path, fake):
-    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop"}))
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop"}), encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -267,11 +267,11 @@ async def test_enter_on_a_package_adds_it(tmp_path, fake):
 def test_the_tree_groups_by_use_then_vendor(tmp_path):
     (tmp_path / "composer.json").write_text(json.dumps({
         "name": "acme/shop", "require": {"php": ">=8.0", "divengine/div": "^6.1", "acme/forms": "^1"},
-        "require-dev": {"phpunit/phpunit": "^10"}}))
+        "require-dev": {"phpunit/phpunit": "^10"}}), encoding="utf-8")
     (tmp_path / "composer.lock").write_text(json.dumps({
         "packages": [{"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"},
                      {"name": "acme/forms", "version": "1.2.0"}],
-        "packages-dev": [{"name": "phpunit/phpunit", "version": "10.5.0"}, {"name": "sebastian/diff", "version": "5.0.0"}]}))
+        "packages-dev": [{"name": "phpunit/phpunit", "version": "10.5.0"}, {"name": "sebastian/diff", "version": "5.0.0"}]}), encoding="utf-8")
     tree = tree_of(cmp.read(tmp_path).packages)
     shape = [(gid, [(vendor, [(p.name, p.direct) for p in members]) for vendor, members in vendors])
              for gid, _title, vendors in tree]
@@ -284,9 +284,9 @@ def test_the_tree_groups_by_use_then_vendor(tmp_path):
 
 
 async def test_the_window_shows_the_tree_and_folds(tmp_path, fake):
-    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1"}}))
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1"}}), encoding="utf-8")
     (tmp_path / "composer.lock").write_text(json.dumps({"packages": [
-        {"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"}]}))
+        {"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"}]}), encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -308,10 +308,10 @@ async def test_the_window_shows_the_tree_and_folds(tmp_path, fake):
 
 
 async def test_typing_filters_the_tree(tmp_path, fake):
-    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1", "acme/forms": "^1"}}))
+    (tmp_path / "composer.json").write_text(json.dumps({"name": "acme/shop", "require": {"divengine/div": "^6.1", "acme/forms": "^1"}}), encoding="utf-8")
     (tmp_path / "composer.lock").write_text(json.dumps({"packages": [
         {"name": "divengine/div", "version": "6.1.4"}, {"name": "divengine/functions", "version": "1.0.2"},
-        {"name": "acme/forms", "version": "1.2.0"}]}))
+        {"name": "acme/forms", "version": "1.2.0"}]}), encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)

@@ -62,14 +62,14 @@ def rasterise(svg: str, png: Path, work: Path) -> None:
     # rsvg drops a span's leading no-break space: plain spaces, preserved
     svg = svg.replace("&#160;", " ").replace("<svg ", '<svg xml:space="preserve" ', 1)
     tmp = work / (png.stem + ".svg")
-    tmp.write_text(svg)
+    tmp.write_text(svg, encoding="utf-8")
     subprocess.run(["rsvg-convert", str(tmp), "-o", str(png)], check=True)
 
 
 def save(app, name):
     svg = app.export_screenshot(title="divide")
     if os.environ.get("DIVIDE_SHOT_KEEP_SVG"):
-        (Path(os.environ["DIVIDE_SHOT_KEEP_SVG"]) / f"{name}.svg").write_text(svg)
+        (Path(os.environ["DIVIDE_SHOT_KEEP_SVG"]) / f"{name}.svg").write_text(svg, encoding="utf-8")
     rasterise(svg, OUT / f"{name}.png", SVG_DIR)
     print("saved", name)
 
@@ -417,7 +417,7 @@ async def lsp():
     config_home = Path(tempfile.mkdtemp())
     (config_home / "divide").mkdir()
     (config_home / "divide" / "config.json").write_text(
-        json.dumps({"palette": PALETTE, "lsp": {"php": name}, "lsp_commands": {name: command}}))
+        json.dumps({"palette": PALETTE, "lsp": {"php": name}, "lsp_commands": {name: command}}), encoding="utf-8")
     old = os.environ.get("XDG_CONFIG_HOME")
     os.environ["XDG_CONFIG_HOME"] = str(config_home)
     try:
@@ -510,7 +510,7 @@ async def debug():
         return
     config_home = Path(os.environ["XDG_CONFIG_HOME"])
     (config_home / "divide").mkdir(parents=True, exist_ok=True)
-    (config_home / "divide" / "config.json").write_text(json.dumps({"palette": PALETTE, "xdebug": xdebug or None}))
+    (config_home / "divide" / "config.json").write_text(json.dumps({"palette": PALETTE, "xdebug": xdebug or None}), encoding="utf-8")
     app = Divide(DEMO, [DEMO / "index.php"])
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot, 10)
@@ -543,7 +543,7 @@ async def web():
         return
     config_home = Path(os.environ["XDG_CONFIG_HOME"])
     (config_home / "divide").mkdir(parents=True, exist_ok=True)
-    (config_home / "divide" / "config.json").write_text(json.dumps({"palette": PALETTE, "xdebug": xdebug or None}))
+    (config_home / "divide" / "config.json").write_text(json.dumps({"palette": PALETTE, "xdebug": xdebug or None}), encoding="utf-8")
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
@@ -618,7 +618,7 @@ async def other_files():
         root = Path(work) / "shop"
         root.mkdir()
         for name, text in OTHER_FILES.items():
-            (root / name).write_text(text)
+            (root / name).write_text(text, encoding="utf-8")
         app = Divide(root, [root / name for name in OTHER_FILES])
         async with app.run_test(size=SIZE) as pilot:
             await settle(pilot, 10)
@@ -659,7 +659,7 @@ def shop_copy(work: Path, setup: dict | None = None) -> Path:
     atexit.register(shutil.rmtree, DEMO_COPY, True)
     if setup is not None:
         (root / ".div").mkdir()
-        (root / ".div" / "setup.json").write_text(json.dumps(setup, indent=2) + "\n")
+        (root / ".div" / "setup.json").write_text(json.dumps(setup, indent=2) + "\n", encoding="utf-8")
     return root
 
 
@@ -703,7 +703,7 @@ async def div_setup():
             save(app, "div-setup-menu")
         wrong = {**SHOP_SETUP, "paths": {"include": ["components", "partials"]},
                  "parser": {**SHOP_SETUP["parser"], "max_cycles": 0}}
-        (root / ".div" / "setup.json").write_text(json.dumps(wrong, indent=2) + "\n")
+        (root / ".div" / "setup.json").write_text(json.dumps(wrong, indent=2) + "\n", encoding="utf-8")
         app = Divide(root, [root / ".div" / "setup.json"])
         async with app.run_test(size=SIZE) as pilot:
             await settle(pilot, 10)
@@ -817,7 +817,7 @@ def main() -> None:
         os.environ["XDG_CONFIG_HOME"] = str(Path(work) / "config")  # no personal settings in the pictures
         os.environ["DIV_HOME"] = str(Path(work) / "div-home")  # nor the user's Div setup, nor what they trust
         (Path(work) / "config" / "divide").mkdir(parents=True)
-        (Path(work) / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}')
+        (Path(work) / "config" / "divide" / "config.json").write_text(f'{{"palette": "{PALETTE}"}}', encoding="utf-8")
         SVG_DIR = Path(work)
         asyncio.run(run(set(args.shots)))
 

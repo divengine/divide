@@ -127,9 +127,9 @@ async def until(pilot, ready, seconds: float = 10.0) -> None:
 
 async def test_outline_window_folds_follows_and_jumps(tmp_path):
     script = tmp_path / "cart.php"
-    script.write_text(SOURCE)
+    script.write_text(SOURCE, encoding="utf-8")
     page = tmp_path / "page.tpl"
-    page.write_text("hello\nworld\n")
+    page.write_text("hello\nworld\n", encoding="utf-8")
     app = Divide(tmp_path, [page, script])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -179,7 +179,7 @@ async def test_outline_window_folds_follows_and_jumps(tmp_path):
         assert window.source.path == page and window.lines == ["(nothing to list)"]
 
     notes = tmp_path / "notes.txt"
-    notes.write_text("plain\n")
+    notes.write_text("plain\n", encoding="utf-8")
     app = Divide(tmp_path, [notes])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -190,7 +190,7 @@ async def test_outline_window_folds_follows_and_jumps(tmp_path):
 
 async def test_outline_window_of_a_template(tmp_path):
     page = tmp_path / "page.tpl"
-    page.write_text(TEMPLATE)
+    page.write_text(TEMPLATE, encoding="utf-8")
     app = Divide(tmp_path, [page])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)
@@ -291,7 +291,7 @@ def test_every_language_divide_colours_has_an_outline():
 
 async def test_outline_window_of_markdown(tmp_path):
     notes = tmp_path / "README.md"
-    notes.write_text("# Shop\n\n## Install\n\n## Use\n")
+    notes.write_text("# Shop\n\n## Install\n\n## Use\n", encoding="utf-8")
     app = Divide(tmp_path, [notes])
     async with app.run_test(size=(120, 40)) as pilot:
         await settle(pilot)

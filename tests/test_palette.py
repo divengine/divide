@@ -42,11 +42,11 @@ def test_match_scores_words_runs_and_names():
 
 
 def test_project_files(tmp_path):
-    (tmp_path / "a.tpl").write_text("")
+    (tmp_path / "a.tpl").write_text("", encoding="utf-8")
     (tmp_path / "node_modules").mkdir()
-    (tmp_path / "node_modules" / "x.js").write_text("")
+    (tmp_path / "node_modules" / "x.js").write_text("", encoding="utf-8")
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "b.tpl").write_text("")
+    (tmp_path / "parts" / "b.tpl").write_text("", encoding="utf-8")
     assert project_files(tmp_path) == ["a.tpl", "parts/b.tpl"]  # not a repository: a walk
 
 
@@ -62,7 +62,7 @@ def test_menu_items():
 async def test_go_to_file_and_commands(tmp_path):
     (tmp_path / "parts").mkdir()
     for name in ("page.tpl", "parts/header.tpl", "parts/footer.tpl", "notes.txt"):
-        (tmp_path / name).write_text(name)
+        (tmp_path / name).write_text(name, encoding="utf-8")
     app = Divide(tmp_path, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)

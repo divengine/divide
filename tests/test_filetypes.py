@@ -80,13 +80,13 @@ class EditorApp(App):
         self.path = path
 
     def compose(self) -> ComposeResult:
-        yield DivEditor(self.path.read_text(), path=self.path)
+        yield DivEditor(self.path.read_text(encoding="utf-8"), path=self.path)
 
 
 @pytest.mark.parametrize("name", sorted(SAMPLES))
 async def test_files_are_coloured(name, tmp_path):
     path = tmp_path / name
-    path.write_text(SAMPLES[name])
+    path.write_text(SAMPLES[name], encoding="utf-8")
     app = EditorApp(path)
     async with app.run_test(size=(100, 20)) as pilot:
         await pilot.pause()

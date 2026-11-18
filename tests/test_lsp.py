@@ -62,7 +62,7 @@ def test_find_command(tmp_path):
     server = lsp.spec("phpactor")
     assert lsp.find_command(server, tmp_path, [sys.executable, str(FAKE)]) == [sys.executable, str(FAKE)]
     (tmp_path / "vendor" / "bin").mkdir(parents=True)
-    (tmp_path / "vendor" / "bin" / "phpactor").write_text("")
+    (tmp_path / "vendor" / "bin" / "phpactor").write_text("", encoding="utf-8")
     assert lsp.find_command(server, tmp_path) == [str(tmp_path / "vendor/bin/phpactor"), "language-server"]
     assert lsp.find_command(server, tmp_path, ["/nowhere/phpactor"]) is None
 
@@ -75,13 +75,13 @@ def fake_server(tmp_path, monkeypatch):
     (home / "divide" / "config.json").write_text(json.dumps({
         "lsp": {"php": "phpactor"},
         "lsp_commands": {"phpactor": [sys.executable, str(FAKE)]},
-    }))
+    }), encoding="utf-8")
 
 
 async def test_language_server_in_the_editor(tmp_path, fake_server):
     project = tmp_path / "p"
     project.mkdir()
-    (project / "a.php").write_text(SRC)
+    (project / "a.php").write_text(SRC, encoding="utf-8")
     app = Divide(project, [project / "a.php"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -160,7 +160,7 @@ async def test_without_a_server_the_status_says_so(tmp_path, monkeypatch):
     monkeypatch.setenv("PATH", "/nonexistent")
     project = tmp_path / "p"
     project.mkdir()
-    (project / "a.php").write_text("<?php\n")
+    (project / "a.php").write_text("<?php\n", encoding="utf-8")
     app = Divide(project, [project / "a.php"])
     async with app.run_test(size=(120, 36)) as pilot:
         await settle(pilot)
@@ -180,7 +180,7 @@ def test_servers_get_a_temp_dir_of_their_own(tmp_path, monkeypatch):
     gone.wait()
     stale = temp_root() / f"{gone.pid}-old"
     stale.mkdir(parents=True)
-    (stale / "php123").write_text("x")
+    (stale / "php123").write_text("x", encoding="utf-8")
     mine = temp_root() / f"{os.getpid()}-other"
     mine.mkdir()
     made = server_temp_dir()

@@ -173,7 +173,7 @@ def project_files(root: Path, limit: int = MAX_FILES) -> list[str]:
         dirs[:] = sorted(d for d in dirs if d not in HIDDEN_NAMES and not d.startswith(".") and not d.endswith(".egg-info"))
         rel = Path(folder).relative_to(root)
         for name in sorted(files):
-            found.append(str(rel / name) if rel.parts else name)
+            found.append((rel / name).as_posix() if rel.parts else name)
             if len(found) >= limit:
                 return found
     return found

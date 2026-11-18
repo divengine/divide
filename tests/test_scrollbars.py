@@ -29,7 +29,7 @@ def editor_of(app) -> EditorWindow:
 
 async def test_bars_on_the_border(tmp_path):
     path = tmp_path / "long.txt"
-    path.write_text(LONG)
+    path.write_text(LONG, encoding="utf-8")
     app = Divide(tmp_path, [path])
     async with app.run_test(size=(80, 24)) as pilot:
         await settle(pilot)
@@ -67,8 +67,8 @@ async def test_bars_on_the_border(tmp_path):
 
 async def test_only_the_active_window_shows_them(tmp_path):
     a, b = tmp_path / "a.txt", tmp_path / "b.txt"
-    a.write_text(LONG)
-    b.write_text("short\n")
+    a.write_text(LONG, encoding="utf-8")
+    b.write_text("short\n", encoding="utf-8")
     app = Divide(tmp_path, [a, b])
     async with app.run_test(size=(80, 24)) as pilot:
         await settle(pilot)
@@ -84,7 +84,7 @@ async def test_only_the_active_window_shows_them(tmp_path):
 
 async def test_a_list_drives_its_bar(tmp_path):
     path = tmp_path / "a.php"
-    path.write_text("<?php\n" + "".join(f"function f{n}() {{}}\n" for n in range(60)))
+    path.write_text("<?php\n" + "".join(f"function f{n}() {{}}\n" for n in range(60)), encoding="utf-8")
     app = Divide(tmp_path, [path])
     async with app.run_test(size=(80, 24)) as pilot:
         await settle(pilot)

@@ -56,7 +56,7 @@ async def fill_dialog(pilot, app, *, key=None, type_=None, value=None):
 
 async def test_tree_edit_add_delete_undo_save(tmp_path):
     f = tmp_path / "page.json"
-    f.write_text(DATA)
+    f.write_text(DATA, encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)
@@ -72,7 +72,7 @@ async def test_tree_edit_add_delete_undo_save(tmp_path):
         await fill_dialog(pilot, app, key="heading", type_="Reference", value="$site.title")
         assert loads(code.editor.text) == {"heading": Ref("site.title"), "products": [{"name": "Potato"}]}
         assert '"heading": $site.title' in code.editor.text
-        assert code.dirty and f.read_text() == DATA
+        assert code.dirty and f.read_text(encoding="utf-8") == DATA
 
         # add after the cursor: a number member
         await pilot.press("insert")
@@ -104,13 +104,13 @@ async def test_tree_edit_add_delete_undo_save(tmp_path):
         # F2 in the tree saves the file
         await pilot.press("f2")
         await settle(pilot)
-        assert loads(f.read_text())["products"] == ["Tomato", {"name": "Potato"}]
+        assert loads(f.read_text(encoding="utf-8"))["products"] == ["Tomato", {"name": "Potato"}]
         assert not code.dirty
 
 
 async def test_code_edits_rebuild_tree_and_ctrl_t_flips(tmp_path):
     f = tmp_path / "page.json"
-    f.write_text('{"a": 1}')
+    f.write_text('{"a": 1}', encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)
@@ -135,7 +135,7 @@ async def test_code_edits_rebuild_tree_and_ctrl_t_flips(tmp_path):
 
 async def test_rewrite_warning_for_div_extensions(tmp_path):
     f = tmp_path / "page.json"
-    f.write_text("// comment\n{name: 'x', n: 1}")
+    f.write_text("// comment\n{name: 'x', n: 1}", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)
@@ -168,7 +168,7 @@ async def test_an_edit_keeps_the_rest_as_it_is_written(tmp_path):
     text = ('{\n  "title": "the shop",\n  "products": [\n'
             '    {"name": "Potato", "price": 1.5, "offer": true},\n'
             '    {"name": "Tomato", "price": 2.25, "offer": false}\n  ]\n}\n')
-    f.write_text(text)
+    f.write_text(text, encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)
@@ -209,7 +209,7 @@ async def test_an_edit_keeps_the_rest_as_it_is_written(tmp_path):
 
 async def test_tree_closes_with_its_code_window(tmp_path):
     f = tmp_path / "page.json"
-    f.write_text("{}")
+    f.write_text("{}", encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)
@@ -221,7 +221,7 @@ async def test_tree_closes_with_its_code_window(tmp_path):
 
 async def test_template_ctrl_t_opens_its_data_tree(tmp_path):
     tpl = tmp_path / "page.tpl"
-    tpl.write_text("{$a}")
+    tpl.write_text("{$a}", encoding="utf-8")
     app = Divide(tmp_path, [tpl])
     async with app.run_test(size=(100, 34)) as pilot:
         await settle(pilot)

@@ -68,8 +68,8 @@ def test_tag_snippets_follow_the_dialect():
 
 def test_include_paths(tmp_path: Path):
     (tmp_path / "parts").mkdir()
-    (tmp_path / "parts" / "menu.tpl").write_text("")
-    (tmp_path / "page.tpl").write_text("")
+    (tmp_path / "parts" / "menu.tpl").write_text("", encoding="utf-8")
+    (tmp_path / "page.tpl").write_text("", encoding="utf-8")
     r = run("{% |", template=tmp_path / "page.tpl")
     assert r.context == "path" and labels(r) == ["parts/", "page"]
     assert r.items[0].retrigger and r.items[1].after == " %}"

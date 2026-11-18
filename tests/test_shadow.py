@@ -43,7 +43,7 @@ def test_shadow_clipped_to_container():
 
 async def test_menu_casts_shadow_on_screen(tmp_path):
     f = tmp_path / "a.tpl"
-    f.write_text("\n".join("x" * 60 for _ in range(30)))
+    f.write_text("\n".join("x" * 60 for _ in range(30)), encoding="utf-8")
     app = Divide(tmp_path, [f])
     async with app.run_test(size=(100, 30)) as pilot:
         for _ in range(3):
