@@ -38,6 +38,7 @@ def test_sha256sum_lines_are_read_in_text_and_binary_mode():
 def test_the_formula_downloads_each_platform_with_its_checksum():
     formula = manifests.homebrew("1.2.3", sums("1.2.3"))
     assert 'version "1.2.3"' in formula
+    assert 'license "GPL-3.0-or-later"' in formula
     for i, target in enumerate(TARGETS[:4], 1):
         url = f"https://github.com/divengine/divide/releases/download/v1.2.3/divide-1.2.3-{target}.tar.gz"
         assert f'url "{url}"\n      sha256 "{i:064x}"' in formula
@@ -55,6 +56,7 @@ def test_the_scoop_manifest_points_at_the_windows_zip_and_updates_itself():
     assert app == {"url": "https://github.com/divengine/divide/releases/download/v1.2.3/divide-1.2.3-windows-x86_64.zip",
                    "hash": f"{5:064x}", "extract_dir": "divide-1.2.3-windows-x86_64"}
     assert manifest["bin"] == "divide.exe"
+    assert manifest["license"] == "GPL-3.0-or-later"
     auto = manifest["autoupdate"]["architecture"]["64bit"]
     assert auto["url"].endswith("/v$version/divide-$version-windows-x86_64.zip")
 

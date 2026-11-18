@@ -14,6 +14,7 @@ from pathlib import Path
 
 REPO = "divengine/divide"
 HOMEPAGE = f"https://github.com/{REPO}"
+LICENSE = "GPL-3.0-or-later"
 DESCRIPTION = "Terminal IDE for the Divengine projects, starting with the Div template language"
 
 
@@ -46,6 +47,7 @@ def homebrew(version: str, sums: dict[str, str]) -> str:
         "class Divide < Formula\n"
         f'  desc "{DESCRIPTION}"\n'
         f'  homepage "{HOMEPAGE}"\n'
+        f'  license "{LICENSE}"\n'
         f'  version "{version}"\n'
         "\n"
         "  on_macos do\n"
@@ -75,6 +77,7 @@ def scoop(version: str, sums: dict[str, str]) -> str:
         "version": version,
         "description": DESCRIPTION,
         "homepage": HOMEPAGE,
+        "license": LICENSE,
         "architecture": {"64bit": {"url": download(version, name), "hash": sums[name],
                                    "extract_dir": name.removesuffix(".zip")}},
         "bin": "divide.exe",

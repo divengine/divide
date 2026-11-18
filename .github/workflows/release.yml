@@ -96,7 +96,7 @@ jobs:
         shell: bash
         run: |
           mkdir "$NAME"
-          cp README.md "$NAME/"
+          cp README.md LICENSE "$NAME/"
           if [ "$RUNNER_OS" = Windows ]; then
             cp dist/divide.exe "$NAME/"
             7z a -tzip "out/$NAME.zip" "$NAME" > /dev/null

@@ -218,3 +218,7 @@ works around, to revisit on upgrades:
 - no shadows → `divide.ui.shadow` restyles the composited lines (Textual compositor subclass).
 
 If the project stalls, its code (Apache-2.0, ~4.7k lines) can be vendored.
+
+## License
+
+divide is free software under the [GNU General Public License](LICENSE), version 3 or (at your option) any later version, like Div.

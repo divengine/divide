@@ -9,10 +9,13 @@ maintainer: Divengine <https://github.com/divengine>
 description: |
   A terminal IDE for the Divengine projects, starting with the Div template language.
 homepage: https://github.com/divengine/divide
+license: GPL-3.0-or-later
 # Running and checking templates needs PHP; editing does not.
 recommends:
   - php-cli
 contents:
+  - src: LICENSE
+    dst: /usr/share/licenses/divide/LICENSE
   - src: dist/divide
     dst: /usr/bin/divide
     file_info:
