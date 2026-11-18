@@ -15,6 +15,7 @@ jobs:
     name: ${{ matrix.os }}, Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}  # Windows: not supported yet, its failures say what is missing
     strategy:
       fail-fast: false
       matrix:

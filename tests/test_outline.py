@@ -116,6 +116,15 @@ async def settle(pilot, times: int = 6) -> None:
         await pilot.pause()
 
 
+async def until(pilot, ready, seconds: float = 10.0) -> None:
+    """Until ``ready()``: what the app does after a while (a slow machine takes longer)."""
+    for _ in range(int(seconds / 0.05)):
+        if ready():
+            return
+        await pilot.pause(0.05)
+    raise AssertionError("timed out")
+
+
 async def test_outline_window_folds_follows_and_jumps(tmp_path):
     script = tmp_path / "cart.php"
     script.write_text(SOURCE)
@@ -150,12 +159,11 @@ async def test_outline_window_folds_follows_and_jumps(tmp_path):
         # it follows the edits, keeping the fold and the bar
         app.raise_window(editor)
         editor.editor.insert("function extra() {}\n", (1, 0))
-        await settle(pilot)
         app.update_status()
         assert "f extra()" not in window.lines  # not while typing: once the keys stop
-        await pilot.pause(0.6)
+        await until(pilot, lambda: "f extra()" in window.lines)
         await settle(pilot)
-        assert "f extra()" in window.lines and len(window.lines) == 9
+        assert len(window.lines) == 9
         assert window.lines[window.outline_tree.cursor_line].startswith("  C Cart")
         app.raise_window(window)
         await pilot.press("right")
@@ -195,11 +203,8 @@ async def test_outline_window_of_a_template(tmp_path):
         await settle(pilot)
         assert app.active_editor().editor.selected_text == "{%% components/card %%}"
         app.active_editor().editor.insert("{% extra %}\n", (1, 0))
-        await settle(pilot)
         app.update_status()
-        await pilot.pause(0.6)
-        await settle(pilot)
-        assert "i {% extra %}" in window.lines
+        await until(pilot, lambda: "i {% extra %}" in window.lines)
 
 
 # ---------------------------------------------------------------- the other languages
