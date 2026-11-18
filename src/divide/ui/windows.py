@@ -800,6 +800,7 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         self._drag = None  # the node dragged
         self._drop = None  # the folder node it would go into
         self._swallow_click = False  # the click that ends a drag opens nothing
+        self._renewed: dict[int, tuple] = {}  # id(old node) -> (old, new): the last folder filled again
 
     def set_clipboard(self, path: Path | None, cut: bool = False) -> None:
         """What Ctrl+V pastes (None: nothing); a cut one is drawn dim."""
@@ -866,20 +867,35 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         selected = self.selected_path
         here = node.data.path if node.data is not None else Path(self.path)
         keep = selected is not None and selected.parent == here
+        old = {c.data.path: c for c in node.children if c.data is not None}
         node.remove_children()
         again = None
+        renewed: dict[int, tuple] = {}
         for path in content:
             folder = self._safe_is_dir(path)
             unfolds = not folder and outline_mod.has_outline(language_of(path))
             child = node.add(path.name, data=FileEntry(path) if unfolds else DirEntry(path), allow_expand=folder or unfolds)
+            if path in old:
+                renewed[id(old[path])] = (old[path], child)
             if keep and path == selected:
                 again = child
+        self._renewed = renewed
         node.expand()
         if again is not None:
             self._clear_line_cache()
             _ = self._tree_lines
             if again._line >= 0:
                 self.move_cursor(again, animate=False)
+
+    def move_cursor(self, node, animate: bool = False) -> None:
+        # Textual's loader puts the bar back on the node it was on before it filled the
+        # folder again; that node is gone then: its new one takes the bar instead
+        pair = getattr(self, "_renewed", {}).get(id(node)) if node is not None else None
+        if pair is not None and pair[0] is node:
+            node = pair[1]
+            self._clear_line_cache()
+            _ = self._tree_lines
+        super().move_cursor(node, animate=animate)
 
     def fill_members(self, node) -> None:
         """The members of the file of ``node``, from its open editor if it has one
