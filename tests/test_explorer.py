@@ -52,13 +52,6 @@ async def test_new_file_rename_delete(tmp_path):
         app.raise_window(app.project_window())
         tree.focus()
         await settle(pilot, 4)
-        reveals = []
-        reveal = tree.reveal
-
-        async def recorded(path):  # (said when it fails)
-            await reveal(path)
-            reveals.append((path.name, tree.cursor_line, tree.selected_path and tree.selected_path.name))
-        tree.reveal = recorded
         await pilot.press("f2")  # the name without the extension is selected
         await settle(pilot, 4)
         await pilot.press(*"nav", "enter")
@@ -68,7 +61,7 @@ async def test_new_file_rename_delete(tmp_path):
         def shown():  # what the tree has, when it fails
             node = tree._node_for(nav)
             return {"bar": (tree.cursor_line, tree.selected_path), "nav line": node._line if node else None,
-                    "reveals": reveals, "title": [w.title for w in app.editor_windows()],
+                    "title": [w.title for w in app.editor_windows()],
                     "parts": [c.label.plain for n in [tree._node_for(root / "parts")] if n for c in n.children]}
         await until(pilot, lambda: tree.selected_path == nav, message=shown)  # reloaded in the background
         assert nav.is_file() and not menu.exists()
