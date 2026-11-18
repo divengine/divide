@@ -300,7 +300,7 @@ async def test_blame_and_the_commit_of_a_line(tmp_path):
         blame.view.focus()
         await pilot.press("enter")
         await until(pilot, lambda: window(app, gitui.DiffWindow) is not None)
-        assert "+<p>more</p>" in window(app, gitui.DiffWindow).view.text
+        await until(pilot, lambda: "+<p>more</p>" in window(app, gitui.DiffWindow).view.text)
 
 
 async def test_a_merge_with_a_conflict_solved_and_committed(tmp_path):
@@ -351,6 +351,7 @@ async def test_stash_from_changes_and_back_from_branches(tmp_path):
         await bar_on(pilot, changes, "M index.tpl")
         app.git_action(changes, "stash")
         await until(pilot, lambda: hasattr(getattr(app.screen, "dialog", None), "input"))
+        await until(pilot, lambda: app.focused is app.screen.dialog.input)  # the keys go to the line
         await pilot.press(*"wip", "enter")
         await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "<h1>{$title}</h1>\n")
         await until(pilot, lambda: editor.editor.text == "<h1>{$title}</h1>\n")  # read again

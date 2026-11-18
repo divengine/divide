@@ -127,6 +127,7 @@ from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
+from divide.ui.forge import CM_FORGE, ForgeMixin
 from divide.ui.git import (
     CM_GIT_BLAME, CM_GIT_BRANCHES, CM_GIT_CHANGES, CM_GIT_COMMIT, CM_GIT_DIFF_FILE, CM_GIT_FETCH, CM_GIT_FILE_HISTORY,
     CM_GIT_HISTORY, CM_GIT_PULL, CM_GIT_PUSH, BlameWindow, DiffWindow, GitLogWindow, GitMixin, MessageView, _GitWindow,
@@ -349,7 +350,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerMixin, GitMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -534,6 +535,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                     MenuItem(_('~D~iff of the file'), CM_GIT_DIFF_FILE),
                     MenuItem(_('File h~i~story'), CM_GIT_FILE_HISTORY),
                     MenuItem(_('Bl~a~me'), CM_GIT_BLAME),
+                    Separator(),
+                    MenuItem(_('Pull ~r~equests and issues'), CM_FORGE),
                 ),
                 SubMenu(
                     _('~W~indow'),
@@ -908,6 +911,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 await self.open_composer()
             case _ if command in GIT_COMMANDS:
                 await self.git_command(command)
+            case _ if command == CM_FORGE:
+                await self.open_forge()
             case _ if command == CM_GOTO_INCLUDE and editor:
                 await self.goto_include(editor)
             case _ if command == CM_COMPLETE and editor:

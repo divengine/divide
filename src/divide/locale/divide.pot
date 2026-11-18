@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:50+0000\n"
+"POT-Creation-Date: 2026-11-18 17:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "  ... and {changes} more"
+msgstr ""
+
+msgid " (draft)"
 msgstr ""
 
 msgid " (no Xdebug: not debugged)"
@@ -54,6 +57,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "\"{query}\" in {mask}: {count} in {files}"
+msgstr ""
+
+#, python-brace-format
+msgid "#{n} merged: Git > Pull brings it here"
 msgstr ""
 
 msgid "(Ins adds a watch; variables show while the debugger is paused)"
@@ -99,6 +106,12 @@ msgid "(the project's, not trusted yet: Alt+F10)"
 msgstr ""
 
 #, python-brace-format
+msgid "({n} file changed and not committed stays here)."
+msgid_plural "({n} files changed and not committed stay here)."
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
 msgid "... {count} more lines not shown"
 msgstr ""
 
@@ -133,6 +146,9 @@ msgstr ""
 msgid "Adding {name}"
 msgstr ""
 
+msgid "Address"
+msgstr ""
+
 msgid "Aggregate functions"
 msgstr ""
 
@@ -152,7 +168,14 @@ msgstr ""
 msgid "Asking Packagist for the versions of {name}..."
 msgstr ""
 
+#, python-brace-format
+msgid "Asking {program}..."
+msgstr ""
+
 msgid "Assignment"
+msgstr ""
+
+msgid "Author"
 msgstr ""
 
 #, python-brace-format
@@ -423,6 +446,10 @@ msgstr ""
 msgid "Copied: {oid}"
 msgstr ""
 
+#, python-brace-format
+msgid "Copied: {url}"
+msgstr ""
+
 msgid "Copy"
 msgstr ""
 
@@ -464,6 +491,9 @@ msgid "Cu~t~"
 msgstr ""
 
 msgid "C~a~scade"
+msgstr ""
+
+msgid "C~h~eck out its branch"
 msgstr ""
 
 msgid "C~o~mmit"
@@ -738,6 +768,9 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+msgid "Draft"
+msgstr ""
+
 msgid "Drop the stash"
 msgstr ""
 
@@ -819,6 +852,11 @@ msgid "Enter its diff · Ctrl+R reload · Alt+F10 new branch here, copy the hash
 msgstr ""
 
 msgid "Enter new line ~n~umber"
+msgstr ""
+
+msgid ""
+"Enter open in the browser · Ins new pull request (on the issues: new "
+"issue) · Alt+F10 more"
 msgstr ""
 
 msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
@@ -1106,6 +1144,14 @@ msgstr ""
 msgid "Invalid name."
 msgstr ""
 
+#, python-brace-format
+msgid "Issue created: {url}"
+msgstr ""
+
+#, python-brace-format
+msgid "Issues  {n}"
+msgstr ""
+
 msgid "It applies from the next start."
 msgstr ""
 
@@ -1144,6 +1190,9 @@ msgid "JavaScript code"
 msgstr ""
 
 msgid "Kind"
+msgstr ""
+
+msgid "Labels"
 msgstr ""
 
 msgid "Language"
@@ -1220,7 +1269,14 @@ msgid "Merge"
 msgstr ""
 
 #, python-brace-format
+msgid "Merge #{n} ({title}) into {base} on {forge}, {how}?"
+msgstr ""
+
+#, python-brace-format
 msgid "Merge of {parents}"
+msgstr ""
+
+msgid "Merge the pull request"
 msgstr ""
 
 #, python-brace-format
@@ -1288,13 +1344,24 @@ msgstr ""
 msgid "New fol~d~er..."
 msgstr ""
 
+#, python-brace-format
+msgid "New issue on {repo}"
+msgstr ""
+
 msgid "New line"
 msgstr ""
 
 msgid "New line to <br>"
 msgstr ""
 
+#, python-brace-format
+msgid "New pull request: {branch}"
+msgstr ""
+
 msgid "New ~f~ile..."
+msgstr ""
+
+msgid "New ~i~ssue..."
 msgstr ""
 
 msgid "New ~n~ame"
@@ -1325,6 +1392,9 @@ msgid "No composer.json: Alt+F10 > New composer.json"
 msgstr ""
 
 msgid "No file matches"
+msgstr ""
+
+msgid "No forge"
 msgstr ""
 
 msgid "No merge is halfway"
@@ -1391,6 +1461,10 @@ msgid "N~u~ll"
 msgstr ""
 
 #, python-brace-format
+msgid "On the branch of #{n} now"
+msgstr ""
+
+#, python-brace-format
 msgid "On {branch} now"
 msgstr ""
 
@@ -1429,6 +1503,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Opening {target}"
+msgstr ""
+
+#, python-brace-format
+msgid "Opening {url}"
 msgstr ""
 
 msgid "Operator"
@@ -1548,6 +1626,20 @@ msgid "Property separator"
 msgstr ""
 
 msgid "Protector"
+msgstr ""
+
+#, python-brace-format
+msgid "Pull request created: {url}"
+msgstr ""
+
+#, python-brace-format
+msgid "Pull requests  {n}"
+msgstr ""
+
+msgid "Pull requests and issues"
+msgstr ""
+
+msgid "Pull ~r~equests and issues"
 msgstr ""
 
 #, python-brace-format
@@ -1717,6 +1809,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "Saved {name}"
+msgstr ""
+
+msgid "Say into which branch it goes (main, for example)."
 msgstr ""
 
 msgid "Script"
@@ -1941,6 +2036,16 @@ msgstr ""
 msgid "The next request will not stop"
 msgstr ""
 
+#, python-brace-format
+msgid "The open issues of {repo}. Ins writes a new one."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The open pull requests of {repo}. Ins proposes the current branch as a "
+"new one."
+msgstr ""
+
 msgid "The project has a composer.json already."
 msgstr ""
 
@@ -1957,12 +2062,21 @@ msgid ""
 "dialect file's missing tags are its."
 msgstr ""
 
+#, python-brace-format
+msgid "The remote {name} ({url}) is not on a forge divide knows."
+msgstr ""
+
 msgid "The repository has no commits yet: Git > Commit makes the first one."
 msgstr ""
 
 msgid ""
 "The repository has no remote: add one in a terminal (git remote add "
 "origin <url>)."
+msgstr ""
+
+msgid ""
+"The repository is on GitHub: install gh (https://cli.github.com) and sign"
+" in with gh auth login."
 msgstr ""
 
 msgid ""
@@ -2090,6 +2204,9 @@ msgstr ""
 msgid "Update ~e~very package"
 msgstr ""
 
+msgid "Updated"
+msgstr ""
+
 msgid "Updating every package"
 msgstr ""
 
@@ -2175,6 +2292,9 @@ msgid "Word wrap"
 msgstr ""
 
 msgid "Write a message: what this commit does, in a line."
+msgstr ""
+
+msgid "Write a title."
 msgstr ""
 
 msgid "Writing the autoloader"
@@ -2466,6 +2586,9 @@ msgstr ""
 msgid "loop {opened} is never closed with {loop_e}{key}{loop_es}"
 msgstr ""
 
+msgid "merge commit"
+msgstr ""
+
 msgid "no data"
 msgstr ""
 
@@ -2545,10 +2668,16 @@ msgstr ""
 msgid "project's"
 msgstr ""
 
+msgid "rebased"
+msgstr ""
+
 msgid "remote"
 msgstr ""
 
 msgid "require"
+msgstr ""
+
+msgid "squashed into one commit"
 msgstr ""
 
 msgid "starts the project with Div in it."
@@ -2692,11 +2821,21 @@ msgid "{address}: Address already in use (another server is listening there)"
 msgstr ""
 
 #, python-brace-format
+msgid "{branch} goes to {forge} as it is in its last commit"
+msgstr ""
+
+#, python-brace-format
 msgid "{branch} has commits that are in no other branch: delete it and lose them?"
 msgstr ""
 
 #, python-brace-format
 msgid "{branch} has no upstream to pull from: push it first (it is set then)."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{branch} is the branch pull requests go into: make a branch for the "
+"change (Git > Branches, Ins) and propose that one."
 msgstr ""
 
 #, python-brace-format
@@ -2772,7 +2911,17 @@ msgid "{file}: no changes since the last commit"
 msgstr ""
 
 #, python-brace-format
+msgid "{forge} gets it as you write it here (Markdown)."
+msgstr ""
+
+#, python-brace-format
 msgid "{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{host} is not GitHub: for Gitea, Forgejo or Codeberg install tea "
+"(https://gitea.com/gitea/tea) and sign in with tea login add."
 msgstr ""
 
 #, python-brace-format
@@ -2918,6 +3067,18 @@ msgid "{n} of {count} set in this file · Enter to edit"
 msgstr ""
 
 #, python-brace-format
+msgid "{n} open issue"
+msgid_plural "{n} open issues"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} open pull request"
+msgid_plural "{n} open pull requests"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
 msgid "{n} other change"
 msgid_plural "{n} other changes"
 msgstr[0] ""
@@ -2953,6 +3114,22 @@ msgstr ""
 
 #, python-brace-format
 msgid "{path} is not a folder"
+msgstr ""
+
+#, python-brace-format
+msgid "{program} could not answer"
+msgstr ""
+
+#, python-brace-format
+msgid "{program} could not start: {exc}"
+msgstr ""
+
+#, python-brace-format
+msgid "{program} failed"
+msgstr ""
+
+#, python-brace-format
+msgid "{program} was not found"
 msgstr ""
 
 #, python-brace-format
@@ -3138,6 +3315,9 @@ msgstr ""
 msgid "~C~opy"
 msgstr ""
 
+msgid "~C~opy the address"
+msgstr ""
+
 msgid "~C~opy the hash"
 msgstr ""
 
@@ -3185,6 +3365,9 @@ msgid "~D~iv engine..."
 msgstr ""
 
 msgid "~D~ocument root"
+msgstr ""
+
+msgid "~D~raft (not ready for review yet)"
 msgstr ""
 
 msgid "~D~rop it"
@@ -3304,6 +3487,9 @@ msgstr ""
 msgid "~I~nstall it now (composer install)"
 msgstr ""
 
+msgid "~I~nto branch"
+msgstr ""
+
 msgid "~K~ey"
 msgstr ""
 
@@ -3320,6 +3506,9 @@ msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
 msgstr ""
 
 msgid "~M~erge into the current branch"
+msgstr ""
+
+msgid "~M~erge it"
 msgstr ""
 
 msgid "~M~essage"
@@ -3358,6 +3547,9 @@ msgid "~N~ew branch here..."
 msgstr ""
 
 msgid "~N~ew branch..."
+msgstr ""
+
+msgid "~N~ew pull request..."
 msgstr ""
 
 msgid "~N~ew text"
@@ -3454,6 +3646,9 @@ msgstr ""
 msgid "~P~ull"
 msgstr ""
 
+msgid "~R~ebase and merge it"
+msgstr ""
+
 msgid "~R~edo"
 msgstr ""
 
@@ -3514,6 +3709,9 @@ msgstr ""
 msgid "~S~earch..."
 msgstr ""
 
+msgid "~S~quash and merge it"
+msgstr ""
+
 msgid "~S~tage / unstage"
 msgstr ""
 
@@ -3551,6 +3749,9 @@ msgid "~T~heme"
 msgstr ""
 
 msgid "~T~ile"
+msgstr ""
+
+msgid "~T~itle"
 msgstr ""
 
 msgid "~T~o folder"

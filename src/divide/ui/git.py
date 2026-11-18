@@ -393,6 +393,7 @@ class _GitWindow(_TVWindow):
     """A Git window: a tree at the left over the repository's state, a view at the right."""
 
     HINT = ""
+    REMOTE = False  # it asks a server (the forge): not reloaded after every local change
     LEFT = 44
     BINDINGS = [
         Binding("ctrl+r", "reload", show=False),
@@ -905,7 +906,7 @@ class MessageView(EditorView):
         if event.key in self.COMMIT_KEYS:
             event.stop()
             event.prevent_default()
-            dialog = next((a for a in self.ancestors if isinstance(a, CommitDialog)), None)
+            dialog = next((a for a in self.ancestors if isinstance(a, _Dialog) and hasattr(a, "action_commit")), None)
             if dialog is not None:
                 dialog.action_commit()
             return
@@ -1078,10 +1079,12 @@ class GitMixin:
             project.project_tree.set_git({}, set(), set())
         elif root is not None:
             project.project_tree.set_git(*git.marks(state, root))
-        if not project.is_mounted:  # just opened: its border once it is there
-            self.set_timer(0.2, lambda: self.git_status_changed(self.git_state, root))  # type: ignore[attr-defined]
+        frames = list(project.query(IndicatorFrame)) if project.is_mounted else []
+        if not frames:  # just opened (or closing): its border once it is there
+            if project.is_attached:
+                self.set_timer(0.2, lambda: self.git_status_changed(self.git_state, root))  # type: ignore[attr-defined]
             return
-        frame = project.query(IndicatorFrame).first()
+        frame = frames[0]
         if state is None:
             frame.set_indicator("")
             return
@@ -1241,7 +1244,8 @@ class GitMixin:
         except git.GitError as exc:
             await self.run_dialog(information(_('Git'), str(exc)))  # type: ignore[attr-defined]
         for w in self.git_windows():
-            w.reload()
+            if not w.REMOTE:
+                w.reload()
         self.refresh_git_state()
         if win is not None and win.is_attached:
             win.git_tree.focus()
