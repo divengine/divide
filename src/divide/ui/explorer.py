@@ -351,6 +351,8 @@ class ExplorerMixin:
             await tree.reveal(target)
         else:
             self.paths_moved(source, target)
+            if tree.clipboard == (source, True):  # what was cut is where it goes now (by Ctrl+V or otherwise)
+                tree.set_clipboard(None)
             await self._show_moved(tree, source, target)
         return target
 
@@ -360,10 +362,7 @@ class ExplorerMixin:
             self.notify(_('Nothing cut or copied: Ctrl+X or Ctrl+C on a file or a folder first'), timeout=3)  # type: ignore[attr-defined]
             return None
         source, cut = tree.clipboard
-        target = await self.transfer(tree, source, tree.target_folder, copy=not cut)
-        if target is not None and cut:
-            tree.set_clipboard(None)
-        return target
+        return await self.transfer(tree, source, tree.target_folder, copy=not cut)
 
     async def move_entry(self, tree: ProjectTree) -> Path | None:
         """Move to...: the folder typed (from the project's) or chosen with Browse."""

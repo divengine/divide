@@ -861,12 +861,25 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         if isinstance(node.data, MemberEntry):  # a reload reopens it as if it were a folder: it keeps its own
             node.expand()
             return
+        # the bar on one of its entries stays on it: the loader may fill a folder again
+        # after the bar was put there (a reveal, a move), and its nodes are new ones
+        selected = self.selected_path
+        here = node.data.path if node.data is not None else Path(self.path)
+        keep = selected is not None and selected.parent == here
         node.remove_children()
+        again = None
         for path in content:
             folder = self._safe_is_dir(path)
             unfolds = not folder and outline_mod.has_outline(language_of(path))
-            node.add(path.name, data=FileEntry(path) if unfolds else DirEntry(path), allow_expand=folder or unfolds)
+            child = node.add(path.name, data=FileEntry(path) if unfolds else DirEntry(path), allow_expand=folder or unfolds)
+            if keep and path == selected:
+                again = child
         node.expand()
+        if again is not None:
+            self._clear_line_cache()
+            _ = self._tree_lines
+            if again._line >= 0:
+                self.move_cursor(again, animate=False)
 
     def fill_members(self, node) -> None:
         """The members of the file of ``node``, from its open editor if it has one
