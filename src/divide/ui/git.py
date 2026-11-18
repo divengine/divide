@@ -579,7 +579,7 @@ class GitChangesWindow(_GitWindow):
             except (OSError, UnicodeDecodeError) as exc:
                 text = str(exc)
             if self.change is change:
-                self.diff.show(text, conflict=True)
+                self.diff.show(text, conflict=True, path=change.path)
             return
         try:
             text = await git.diff_of(self.repo, change)

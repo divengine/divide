@@ -36,6 +36,34 @@ from divide.run import git
 
 SETTING = "git_diff_side_by_side"
 TAB = 4
+SYNTAX_LINES = 20000  # a longer diff is shown without syntax colours (they take a moment per file)
+
+
+def syntax_of(path: str, text: str) -> list[list[tuple[int, int, str]]]:
+    """The editor's colours for ``text`` as a file at ``path``: per line, (start, end, token kind)
+    by character. A hidden editor colours it, so every language comes out as it does in the editor."""
+    from pathlib import Path
+
+    from divide.ui.windows import EditorView
+
+    editor = EditorView(text, path=Path(path), read_only=True)
+    if editor.lang is None:
+        return []
+    editor._build_highlight_map()
+    out: list[list[tuple[int, int, str]]] = []
+    for row, line in enumerate(text.split("\n")):
+        spans = []
+        for start, end, kind in editor._highlights.get(row, []):
+            if line.isascii():
+                a, b = start, len(line) if end is None else end
+            else:  # the editor counts bytes
+                raw = line.encode("utf-8")
+                a = len(raw[:start].decode("utf-8", "ignore"))
+                b = len(line) if end is None else len(raw[:end].decode("utf-8", "ignore"))
+            if b > a:
+                spans.append((a, b, kind))
+        out.append(spans)
+    return out
 
 
 @dataclass(frozen=True)
@@ -51,6 +79,8 @@ class Row:
     right: git.DiffLine | None = None  # pair: the new side
     left_spans: tuple = ()
     right_spans: tuple = ()
+    left_syntax: tuple = ()  # (start, end, token kind): the editor's colours of the line
+    right_syntax: tuple = ()
 
 
 def _spans_for(hunk: git.Hunk) -> dict[int, tuple]:
@@ -108,17 +138,21 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
         self.rows: list[Row] = []
         self.cursor = 0
         self.side_by_side = bool(config.load().get(SETTING, False))
+        self.path = ""  # a conflict's file (its colours)
+        self._syntax: dict[int, tuple] = {}  # id of a DiffLine -> its colours
 
     def on_mount(self) -> None:
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.refresh())
 
     # ------------------------------------------------------------ content
-    def show(self, text: str, conflict: bool = False) -> None:
-        """A diff (git's text); with ``conflict``, a file in conflict (git's markers, our side, theirs)."""
+    def show(self, text: str, conflict: bool = False, path: str = "") -> None:
+        """A diff (git's text); with ``conflict``, a file in conflict (git's markers, our side, theirs),
+        ``path`` the file (for its colours)."""
         if text == self.text and conflict == self.conflict and self.message is None:
             return
-        self.text, self.conflict, self.message = text, conflict, None
+        self.text, self.conflict, self.message, self.path = text, conflict, None, path
         self.diff = git.Diff([], []) if conflict else git.parse_diff(text)
+        self._syntax = self._colour(self.diff)
         if not conflict and not self.diff.files and not any(line.strip() for line in self.diff.preamble):
             self.message = git.lines(text)
         self._build(keep=False)
@@ -129,14 +163,42 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
         self.diff = git.Diff([], [])
         self._build(keep=False)
 
+    @staticmethod
+    def _colour(diff: git.Diff) -> dict[int, tuple]:
+        """Each line's syntax colours: the old side (context and removed lines) and the new side
+        (context and added ones) of every file, coloured as a whole by the editor."""
+        out: dict[int, tuple] = {}
+        total = 0
+        for f in diff.files:
+            total += sum(len(h.lines) for h in f.hunks)
+            if total > SYNTAX_LINES or f.status == "binary" or not f.hunks:
+                continue
+            for side in ("-", "+"):
+                lines = [line for h in f.hunks for line in h.lines if line.kind in (" ", side)]
+                if not any(line.kind == side for line in lines) and side == "-":
+                    continue
+                try:
+                    colours = syntax_of(f.path, "\n".join(line.text for line in lines))
+                except Exception:  # a grammar that fails on a piece of a file: no colours, the diff stays
+                    colours = []
+                for line, spans in zip(lines, colours):
+                    if line.kind == side or side == "+":
+                        out[id(line)] = tuple(spans)
+        return out
+
     def _build(self, keep: bool = True) -> None:
         here = self.rows[self.cursor] if keep and 0 <= self.cursor < len(self.rows) else None
         rows: list[Row] = []
         if self.message is not None:
             rows = [Row("text", line) for line in self.message]
         elif self.conflict:
-            for line, kind in zip(git.lines(self.text), git.conflict_kinds(self.text)):
-                rows.append(Row("conflict", line.expandtabs(TAB), kind))
+            try:
+                colours = syntax_of(self.path, self.text) if self.path else []
+            except Exception:
+                colours = []
+            for i, (line, kind) in enumerate(zip(git.lines(self.text), git.conflict_kinds(self.text))):
+                syntax = tuple(colours[i]) if i < len(colours) and kind != "meta" else ()
+                rows.append(Row("conflict", line, kind, left_syntax=syntax))
         else:
             for line in self.diff.preamble:
                 meta = line.startswith(("commit ", "Author", "Commit", "Date", "Merge:"))
@@ -155,7 +217,9 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
                         for old, new in git.pairs(h):
                             rows.append(Row("pair", file=f, hunk=h, left=old, right=new,
                                             left_spans=spans.get(id(old), ()) if old is not None else (),
-                                            right_spans=spans.get(id(new), ()) if new is not None else ()))
+                                            right_spans=spans.get(id(new), ()) if new is not None else (),
+                                            left_syntax=self._syntax.get(id(old), ()) if old is not None else (),
+                                            right_syntax=self._syntax.get(id(new), ()) if new is not None else ()))
                         notes = [line for line in h.lines if line.kind == "\\"]
                         rows += [Row("note", n.text) for n in notes[:1]]
                     else:
@@ -163,7 +227,8 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
                             if line.kind == "\\":
                                 rows.append(Row("note", line.text))
                             else:
-                                rows.append(Row("line", file=f, hunk=h, left=line, left_spans=spans.get(id(line), ())))
+                                rows.append(Row("line", file=f, hunk=h, left=line, left_spans=spans.get(id(line), ()),
+                                                left_syntax=self._syntax.get(id(line), ())))
         self.rows = rows
         self.cursor = self._first_line()
         if here is not None:  # the same place, in the other layout
@@ -240,15 +305,17 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
             style = palette.style("diff-text" if colour else "editor-text", colour or "editor-bg",
                                   bold=row.style == "meta")
             gutter = Segment(f"{index + 1:>{self._digits()}} ", self._gutter_style(style, on_bar))
-            return self._fill([gutter, *self._code(row.text, (), style, style, x)], width, style)
+            return self._fill([gutter, *self._code(row.text, (), style, style, x, row.left_syntax)], width, style)
         if row.kind == "line":
-            return self._fill(self._side(row.left, row.left_spans, x, both=True, on_bar=on_bar), width,
-                              self._line_style(row.left))
+            return self._fill(self._side(row.left, row.left_spans, x, both=True, on_bar=on_bar,
+                                         syntax=row.left_syntax), width, self._line_style(row.left))
         # side by side
         half = max(10, (width - 1) // 2)
-        left = self._fill(self._side(row.left, row.left_spans, x, both=False, on_bar=on_bar, old=True), half,
+        left = self._fill(self._side(row.left, row.left_spans, x, both=False, on_bar=on_bar, old=True,
+                                     syntax=row.left_syntax), half,
                           self._line_style(row.left, empty=True), hatch=row.left is None)
-        right = self._fill(self._side(row.right, row.right_spans, x, both=False, on_bar=on_bar, old=False),
+        right = self._fill(self._side(row.right, row.right_spans, x, both=False, on_bar=on_bar, old=False,
+                                      syntax=row.right_syntax),
                            width - half - 1, self._line_style(row.right, empty=True), hatch=row.right is None)
         return [*left, Segment("│", palette.style("editor-gutter", "editor-bg")), *right]
 
@@ -269,7 +336,7 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
         return Style(color=palette.colour("editor-gutter"), bgcolor=row_style.bgcolor)
 
     def _side(self, line: git.DiffLine | None, spans: tuple, x: int, *, both: bool, on_bar: bool,
-              old: bool = True) -> list[Segment]:
+              old: bool = True, syntax: tuple = ()) -> list[Segment]:
         palette = themes.current()
         digits = self._digits()
         if line is None:  # nothing on this side: hatched, as far as the side goes (``_fill``)
@@ -286,20 +353,38 @@ class DiffView(ScrollView, TVViewMixin, can_focus=True):
             numbers = f"{number if number is not None else '':>{digits}} "
         sign = {"+": "+", "-": "-"}.get(line.kind, " ")
         return [Segment(numbers, gutter), Segment(sign + " ", style),
-                *self._code(line.text.expandtabs(TAB), spans, style, word, x)]
+                *self._code(line.text, spans, style, word, x, syntax)]
 
     @staticmethod
-    def _code(text: str, spans: tuple, style: Style, word: Style, x: int) -> list[Segment]:
-        """``text`` from column ``x`` on, the ``spans`` in ``word``."""
-        segments: list[Segment] = []
-        at = 0
+    def _code(text: str, spans: tuple, style: Style, word: Style, x: int, syntax: tuple = ()) -> list[Segment]:
+        """``text`` from column ``x`` on: the row's colours, the syntax's on them (their foreground),
+        the changed ``spans`` in ``word``; tabs to the next stop of ``TAB``."""
+        styles = [style] * len(text)
+        if syntax:
+            tokens = themes.current().token_styles()
+            for start, end, kind in syntax:
+                token = tokens.get(kind)
+                if token is None:
+                    continue
+                fg = Style(color=token.color, bold=token.bold, italic=token.italic, underline=token.underline)
+                for i in range(max(0, start), min(end, len(text))):
+                    styles[i] = style + fg
         for start, end in spans:
-            if start > at:
-                segments.append(Segment(text[at:start], style))
-            segments.append(Segment(text[start:end], word))
-            at = end
-        if at < len(text):
-            segments.append(Segment(text[at:], style))
+            for i in range(max(0, start), min(end, len(text))):
+                styles[i] = word
+        segments: list[Segment] = []
+        column = 0
+        run, run_style = [], None
+        for ch, st in zip(text, styles):
+            piece = " " * (TAB - column % TAB) if ch == "\t" else ch
+            column += len(piece)
+            if st != run_style and run:
+                segments.append(Segment("".join(run), run_style))
+                run = []
+            run.append(piece)
+            run_style = st
+        if run:
+            segments.append(Segment("".join(run), run_style))
         if x <= 0:
             return segments
         strip = Strip(segments)

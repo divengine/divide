@@ -87,3 +87,29 @@ async def test_a_message_and_a_conflict(tmp_path, monkeypatch):
         await pilot.pause()
         assert [r.style for r in view.rows] == ["meta", "mod", "meta", "add", "meta"]
         assert view.rows_text()[1] == "2 ours"
+
+
+async def test_the_code_keeps_the_editor_s_colours(monkeypatch):
+    monkeypatch.setattr(config, "set_value", lambda key, value: None)
+    app = Host()
+    async with app.run_test(size=(100, 30)) as pilot:
+        view = app.view
+        view.side_by_side = False
+        view.show(DIFF)
+        await pilot.pause()
+        added = next(r for r in view.rows if r.kind == "line" and r.left.kind == "+")
+        kinds = {kind for _s, _e, kind in added.left_syntax}
+        assert "div.var" in kinds and any(k.startswith("html.") for k in kinds)  # a Div template's colours
+        removed = next(r for r in view.rows if r.kind == "line" and r.left.kind == "-")
+        assert removed.left_syntax  # the old side is coloured too
+        binary = next(r for r in view.rows if r.kind == "file" and r.file.status == "binary")
+        assert binary is not None
+
+
+def test_a_tab_takes_its_room_and_the_colours_stay_on_their_letters():
+    from rich.style import Style
+
+    base, word = Style(color="white"), Style(color="red")
+    segments = DiffView._code("\tab", ((1, 2),), base, word, 0)
+    assert "".join(s.text for s in segments) == "    ab"
+    assert [s.text for s in segments if s.style == word] == ["a"]
