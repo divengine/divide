@@ -61,6 +61,7 @@ CM_GIT_PUSH = Command.USER + 165
 CM_GIT_FETCH = Command.USER + 166
 CM_GIT_DIFF_FILE = Command.USER + 167
 CM_GIT_FILE_HISTORY = Command.USER + 168
+CM_GIT_BLAME = Command.USER + 169
 # the windows' local menus (Alt+F10)
 CM_GIT_STAGE = Command.USER + 170
 CM_GIT_STAGE_ALL = Command.USER + 171
@@ -152,6 +153,79 @@ class DiffWindow(_TVWindow):
         super().on_mount()
         self.view.show(self.text)
         self.call_after_refresh(self.view.focus)
+
+
+class BlameView(EditorView):
+    """The file's lines, each after the commit that last changed it; Enter shows that commit."""
+
+    BINDINGS = [Binding("enter", "commit", show=False)]
+
+    def __init__(self) -> None:
+        super().__init__("", read_only=True, path=Path("git.blame"))
+
+    def action_commit(self) -> None:
+        window = next((a for a in self.ancestors if isinstance(a, BlameWindow)), None)
+        if window is not None:
+            self.app.git_blame_commit(window)  # type: ignore[attr-defined]
+
+
+class BlameWindow(_TVWindow):
+    """Git > Blame: who changed each line of a file last, and in which commit."""
+
+    HINT = _('Enter the commit of the line · Ctrl+F find · Alt+F3 close')
+
+    def __init__(self, path: str, rows: list[git.BlameLine], line: int = 0, number: int = 0) -> None:
+        super().__init__(_('Blame: {file}').format(file=path), number=number)
+        self.path = path
+        self.view = BlameView()
+        self.rows = rows
+        self.line = line
+
+    def compose_content(self) -> ComposeResult:
+        yield self.view
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.show(self.rows)
+        self.view.move_cursor((min(self.line, max(0, len(self.rows) - 1)), 0))
+        self.call_after_refresh(self.view.reveal_cursor)
+        self.call_after_refresh(self.view.focus)
+
+    def show(self, rows: list[git.BlameLine]) -> None:
+        self.rows = rows
+        width = min(14, max([6, *(len(r.author) for r in rows)]))
+        text, marks, offset = [], [], 0
+        previous = None
+        for r in rows:
+            if not r.committed:
+                head = f"{'':7} {'':10} {_('not committed')[:width]:<{width}}"
+            elif r.oid == previous:  # the same commit as the line above: only the bar
+                head = " " * (19 + width)
+            else:
+                head = f"{r.oid[:7]} {when(r.time)[:10]} {r.author[:width]:<{width}}"
+            previous = r.oid
+            line = f"{head} │ {r.text}"
+            if not r.committed:
+                marks.append((offset, offset + len(head), "diff.add"))
+            elif head.strip():
+                marks.append((offset, offset + 7, "diff.meta"))
+                marks.append((offset + 8, offset + len(head), "diff.hunk"))
+            text.append(line)
+            offset += len(line) + 1
+        self.view.load_text("\n".join(text))
+        self.view.set_marks(marks)
+
+    def line_under_cursor(self) -> git.BlameLine | None:
+        row = self.view.cursor_location[0]
+        return self.rows[row] if 0 <= row < len(self.rows) else None
+
+    def hint(self) -> str:
+        r = self.line_under_cursor()
+        if r is None:
+            return self.HINT
+        if not r.committed:
+            return _('Not committed yet · ') + self.HINT
+        return f"{r.oid[:7]} {r.author}: {r.summary} · {self.HINT}"
 
 
 class GitLogWindow(_TVWindow):
@@ -1003,6 +1077,10 @@ class GitMixin:
                 path = self._git_file()
                 if path is not None:
                     await self._git_diff_file(path)
+            case _ if command == CM_GIT_BLAME:
+                path = self._git_file()
+                if path is not None:
+                    await self._git_blame(path)
             case _ if command in (CM_GIT_COMMIT, CM_GIT_PULL, CM_GIT_PUSH, CM_GIT_FETCH):
                 if await self._git_ready() is None:
                     return
@@ -1039,6 +1117,47 @@ class GitMixin:
             self.notify(_('{file}: no changes since the last commit').format(file=path), timeout=3)  # type: ignore[attr-defined]
             return
         self._show_diff(_('Diff: {file}').format(file=path), text)
+
+    async def _git_blame(self, path: str) -> None:
+        root = self.git_root
+        assert root is not None
+        win = self.active_window()  # type: ignore[attr-defined]
+        editor = getattr(win, "editor", None)
+        contents = editor.text if editor is not None and getattr(win, "dirty", False) else None
+        line = editor.cursor_location[0] if editor is not None else 0
+        try:
+            rows = await git.blame(root, path, contents)
+        except git.GitError as exc:
+            await self.run_dialog(information(_('Git'), str(exc)))  # type: ignore[attr-defined]
+            return
+        old = next((w for w in self.windows() if isinstance(w, BlameWindow) and w.path == path), None)  # type: ignore[attr-defined]
+        if old is not None:
+            old.show(rows)
+            old.view.move_cursor((min(line, max(0, len(rows) - 1)), 0))
+            self.raise_window(old)  # type: ignore[attr-defined]
+            return
+        self._insert(BlameWindow(path, rows, line, number=self._free_number()))  # type: ignore[attr-defined]
+
+    def git_blame_commit(self, win: BlameWindow) -> None:
+        r = win.line_under_cursor()
+        if r is None:
+            return
+        if not r.committed:
+            self.notify(_('This line is not committed yet'), timeout=3)  # type: ignore[attr-defined]
+            return
+        self._git_show_commit(r.oid)
+
+    @work(group="git-show", exclusive=True)
+    async def _git_show_commit(self, oid: str) -> None:
+        root = self.git_root
+        if root is None:
+            return
+        try:
+            text = await git.diff_of_commit(root, oid)
+        except git.GitError as exc:
+            await self.run_dialog(information(_('Git'), str(exc)))  # type: ignore[attr-defined]
+            return
+        self._show_diff(_('Commit {oid}').format(oid=oid[:7]), text)
 
     def _show_diff(self, title: str, text: str) -> None:
         old = next((w for w in self.windows() if isinstance(w, DiffWindow) and w._title == title), None)  # type: ignore[attr-defined]

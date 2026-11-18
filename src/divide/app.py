@@ -128,8 +128,8 @@ from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.git import (
-    CM_GIT_BRANCHES, CM_GIT_CHANGES, CM_GIT_COMMIT, CM_GIT_DIFF_FILE, CM_GIT_FETCH, CM_GIT_FILE_HISTORY,
-    CM_GIT_HISTORY, CM_GIT_PULL, CM_GIT_PUSH, DiffWindow, GitLogWindow, GitMixin, MessageView, _GitWindow,
+    CM_GIT_BLAME, CM_GIT_BRANCHES, CM_GIT_CHANGES, CM_GIT_COMMIT, CM_GIT_DIFF_FILE, CM_GIT_FETCH, CM_GIT_FILE_HISTORY,
+    CM_GIT_HISTORY, CM_GIT_PULL, CM_GIT_PUSH, BlameWindow, DiffWindow, GitLogWindow, GitMixin, MessageView, _GitWindow,
 )
 from divide.run.script import size_text
 from divide.run import children
@@ -171,7 +171,7 @@ CM_DS_TRUST = Command.USER + 46
 CM_DS_CHECK = Command.USER + 47
 CM_COMPOSER = Command.USER + 48
 GIT_COMMANDS = (CM_GIT_CHANGES, CM_GIT_HISTORY, CM_GIT_BRANCHES, CM_GIT_COMMIT, CM_GIT_PULL, CM_GIT_PUSH,
-                CM_GIT_FETCH, CM_GIT_DIFF_FILE, CM_GIT_FILE_HISTORY)
+                CM_GIT_FETCH, CM_GIT_DIFF_FILE, CM_GIT_FILE_HISTORY, CM_GIT_BLAME)
 CM_DATA_TREE = Command.USER + 14
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
@@ -533,6 +533,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                     Separator(),
                     MenuItem(_('~D~iff of the file'), CM_GIT_DIFF_FILE),
                     MenuItem(_('File h~i~story'), CM_GIT_FILE_HISTORY),
+                    MenuItem(_('Bl~a~me'), CM_GIT_BLAME),
                 ),
                 SubMenu(
                     _('~W~indow'),
@@ -1855,7 +1856,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return "Data-Files"
         if isinstance(active, (ComposerWindow, ComposerLogWindow)):
             return "Composer"
-        if isinstance(active, (_GitWindow, DiffWindow, GitLogWindow)):
+        if isinstance(active, (_GitWindow, DiffWindow, GitLogWindow, BlameWindow)):
             return "Git"
         if isinstance(active, ProjectWindow):
             return "Project-Window"
@@ -2389,6 +2390,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return
         if isinstance(active, ComposerWindow):
             status.set_hint(ComposerWindow.HINT)
+            return
+        if isinstance(active, BlameWindow):
+            status.set_hint(active.hint())
             return
         if isinstance(active, (_GitWindow, DiffWindow)):
             status.set_hint(type(active).HINT)

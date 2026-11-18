@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:29+0000\n"
+"POT-Creation-Date: 2026-11-18 17:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -167,7 +167,14 @@ msgstr ""
 msgid "Begin suffix"
 msgstr ""
 
+#, python-brace-format
+msgid "Blame: {file}"
+msgstr ""
+
 msgid "Blocks"
+msgstr ""
+
+msgid "Bl~a~me"
 msgstr ""
 
 msgid "Books"
@@ -790,6 +797,9 @@ msgid ""
 "branch."
 msgstr ""
 
+msgid "Enter the commit of the line · Ctrl+F find · Alt+F3 close"
+msgstr ""
+
 msgid "Error"
 msgstr ""
 
@@ -1292,6 +1302,9 @@ msgid "No {language} errors"
 msgstr ""
 
 msgid "Not a line number"
+msgstr ""
+
+msgid "Not committed yet · "
 msgstr ""
 
 msgid "Not installed yet: Alt+F10 > Install"
@@ -1899,6 +1912,9 @@ msgstr ""
 msgid "This is the current branch: switch to another one first"
 msgstr ""
 
+msgid "This line is not committed yet"
+msgstr ""
+
 #, python-brace-format
 msgid "This terminal cannot be handed over: {exc}"
 msgstr ""
@@ -2324,6 +2340,9 @@ msgstr ""
 msgid "friendly tag"
 msgstr ""
 
+msgid "git blame failed"
+msgstr ""
+
 msgid "git commit failed"
 msgstr ""
 
@@ -2390,6 +2409,9 @@ msgid ""
 msgstr ""
 
 msgid "none"
+msgstr ""
+
+msgid "not committed"
 msgstr ""
 
 msgid "not connected"

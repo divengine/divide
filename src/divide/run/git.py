@@ -369,6 +369,50 @@ async def details(root: Path, oid: str) -> Details:
     return Details(message.strip(), committer, int(when or 0), files)
 
 
+# ------------------------------------------------------------------ blame
+@dataclass(frozen=True)
+class BlameLine:
+    """A line of a file and the commit that last changed it (``oid`` all zeros: not committed yet)."""
+
+    oid: str
+    author: str
+    time: int
+    summary: str
+    text: str
+
+    @property
+    def committed(self) -> bool:
+        return self.oid.strip("0") != ""
+
+
+def parse_blame(text: str) -> list[BlameLine]:
+    """``git blame --porcelain``: a header per line, the commit's details the first time it comes."""
+    out: list[BlameLine] = []
+    info: dict[str, dict[str, str]] = {}
+    oid = ""
+    for line in lines(text):
+        if line.startswith("\t"):
+            d = info.get(oid, {})
+            out.append(BlameLine(oid, d.get("author", ""), int(d.get("author-time", "0") or 0), d.get("summary", ""), line[1:]))
+            continue
+        head, _sep, rest = line.partition(" ")
+        if len(head) == 40 and all(c in "0123456789abcdef" for c in head):
+            oid = head
+            info.setdefault(oid, {})
+        elif oid:
+            info[oid][head] = rest
+    return out
+
+
+async def blame(root: Path, path: str, contents: str | None = None) -> list[BlameLine]:
+    """Who changed each line last; with ``contents`` (an editor's unsaved text), of that text."""
+    args = ["blame", "--porcelain", *(["--contents", "-"] if contents is not None else []), "--", path]
+    result = await run(args, root, stdin=contents, timeout=120.0)
+    if not result.ok:
+        raise GitError(result.output.strip() or _('git blame failed'))
+    return parse_blame(result.output)
+
+
 # ------------------------------------------------------------------ diffs
 async def diff_of(root: Path, change: Change) -> str:
     """What changed in a file: the index against HEAD (staged), the working tree

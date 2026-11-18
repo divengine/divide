@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:29+0000\n"
+"POT-Creation-Date: 2026-11-18 17:45+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -168,8 +168,15 @@ msgstr "Prefijo de inicio"
 msgid "Begin suffix"
 msgstr "Sufijo de inicio"
 
+#, python-brace-format
+msgid "Blame: {file}"
+msgstr "Autoría: {file}"
+
 msgid "Blocks"
 msgstr "Bloques"
+
+msgid "Bl~a~me"
+msgstr "Au~t~oría (blame)"
 
 msgid "Books"
 msgstr "Libros"
@@ -782,6 +789,9 @@ msgstr "Enter cambiar a ella · Ins rama nueva · Supr borrar · Alt+F10 más"
 msgid "Enter switches to the branch under the bar; a remote one gets its local branch."
 msgstr "Enter cambia a la rama bajo la barra; una remota obtiene su rama local."
 
+msgid "Enter the commit of the line · Ctrl+F find · Alt+F3 close"
+msgstr "Enter el commit de la línea · Ctrl+F buscar · Alt+F3 cerrar"
+
 msgid "Error"
 msgstr "Error"
 
@@ -1284,6 +1294,9 @@ msgstr "Sin errores de {language}"
 
 msgid "Not a line number"
 msgstr "No es un número de línea"
+
+msgid "Not committed yet · "
+msgstr "Aún sin commit · "
 
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr "Aún sin instalar: Alt+F10 > Instalar"
@@ -1865,6 +1878,9 @@ msgstr "El script se está ejecutando: Ctrl+F2 lo detiene"
 msgid "This is the current branch: switch to another one first"
 msgstr "Es la rama actual: cambia antes a otra"
 
+msgid "This line is not committed yet"
+msgstr "Esta línea aún no tiene commit"
+
 #, python-brace-format
 msgid "This terminal cannot be handed over: {exc}"
 msgstr "No se puede ceder este terminal: {exc}"
@@ -2284,6 +2300,9 @@ msgstr "encontrado solo: {path}"
 msgid "friendly tag"
 msgstr "etiqueta amigable"
 
+msgid "git blame failed"
+msgstr "git blame falló"
+
 msgid "git commit failed"
 msgstr "git commit falló"
 
@@ -2347,6 +2366,9 @@ msgstr "sin servidor de lenguaje: instala {names} o indica uno en Opciones > Ser
 
 msgid "none"
 msgstr "ninguno"
+
+msgid "not committed"
+msgstr "sin commit"
 
 msgid "not connected"
 msgstr "sin conexión"

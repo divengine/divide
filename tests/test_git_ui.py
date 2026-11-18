@@ -273,3 +273,29 @@ async def test_the_gutter_marks_lines_changed_since_the_last_commit(tmp_path):
         await until(pilot, lambda: editor.change_rows == {0: "mod", 1: "add"}, message=lambda: editor.change_rows)
         await pilot.press("backspace")
         await until(pilot, lambda: editor.change_rows == {1: "add"}, message=lambda: editor.change_rows)
+
+
+async def test_blame_and_the_commit_of_a_line(tmp_path):
+    root = repo(tmp_path / "site")
+    (root / "index.tpl").write_text("<h1>{$title}</h1>\n<p>more</p>\n", encoding="utf-8")
+    sh(root, "commit", "-qam", "More on the page")
+    app = Divide(root, [root / "index.tpl"])
+    async with app.run_test(size=(120, 40)) as pilot:
+        editor = app.editor_windows()[0]
+        editor.editor.move_cursor((1, 0))
+        editor.editor.insert("new line\n")  # unsaved: blamed as it is in the editor
+        await app.git_command(gitui.CM_GIT_BLAME)
+        await until(pilot, lambda: window(app, gitui.BlameWindow) is not None)
+        blame = window(app, gitui.BlameWindow)
+        await until(pilot, lambda: blame.view.text.count("\n") == 2, message=lambda: blame.view.text)
+        lines = blame.view.text.split("\n")
+        assert "Test" in lines[0] and lines[0].endswith("│ <h1>{$title}</h1>")
+        assert "not committed" in lines[1] and lines[1].endswith("│ new line")
+        assert lines[2].endswith("│ <p>more</p>")
+        await until(pilot, lambda: blame.view.cursor_location[0] == 2)  # where the editor was
+        blame.view.move_cursor((2, 0))
+        await until(pilot, lambda: "More on the page" in blame.hint(), message=blame.hint)
+        blame.view.focus()
+        await pilot.press("enter")
+        await until(pilot, lambda: window(app, gitui.DiffWindow) is not None)
+        assert "+<p>more</p>" in window(app, gitui.DiffWindow).view.text

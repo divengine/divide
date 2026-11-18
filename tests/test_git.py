@@ -259,3 +259,15 @@ async def test_the_file_as_the_last_commit_has_it(tmp_path):
     commit_file(root, "a.tpl", "one\ntwo\n", "a")
     assert await git.head_text(root, "a.tpl") == "one\ntwo\n"
     assert await git.head_text(root, "missing.tpl") is None
+
+
+async def test_blame_says_who_changed_each_line(tmp_path):
+    root = repo(tmp_path)
+    commit_file(root, "a.tpl", "one\ntwo\n", "first")
+    sh(root, "config", "user.name", "Other")
+    commit_file(root, "a.tpl", "one\nTWO\n", "second")
+    rows = await git.blame(root, "a.tpl")
+    assert [(r.text, r.author, r.summary) for r in rows] == [("one", "Test", "first"), ("TWO", "Other", "second")]
+    assert all(r.committed and r.time for r in rows)
+    unsaved = await git.blame(root, "a.tpl", contents="one\nTWO\nthree\n")  # an editor's text
+    assert unsaved[2].text == "three" and not unsaved[2].committed
