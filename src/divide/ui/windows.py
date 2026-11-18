@@ -731,9 +731,9 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
     """Project explorer: Ins new file, F7 new folder, F2 rename, Del delete,
     Ctrl+R refresh, Alt+F10 (or a right click) the local menu.
 
-    Moving: Ctrl+X (Shift+Del) cuts, Ctrl+C (Ctrl+Ins) copies, Ctrl+V (Shift+Ins)
-    pastes in the folder under the bar; Esc forgets what was cut. With the mouse,
-    drag a file or a folder onto a folder (the app asks before moving it)."""
+    Moving: Ctrl+X cuts, Ctrl+C copies, Ctrl+V pastes in the folder under the bar;
+    Esc forgets what was cut. With the mouse, drag a file or a folder onto a folder
+    (the app asks before moving it)."""
 
     # Single-width glyphs: the default emoji icons are double width and not in the TV style.
     ICON_NODE = "► "  # Turbo Vision's own (CP437), like every glyph divide draws
@@ -745,9 +745,9 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         Binding("f2", "request('rename')", "Rename", show=False),
         Binding("delete", "request('delete')", "Delete", show=False),
         Binding("ctrl+r", "request('refresh')", "Refresh", show=False),
-        Binding("ctrl+x,shift+delete", "request('cut')", "Cut", show=False),
-        Binding("ctrl+c,ctrl+insert", "request('copy')", "Copy", show=False),
-        Binding("ctrl+v,shift+insert", "request('paste')", "Paste", show=False),
+        Binding("ctrl+x", "request('cut')", "Cut", show=False),
+        Binding("ctrl+c", "request('copy')", "Copy", show=False),
+        Binding("ctrl+v", "request('paste')", "Paste", show=False),
         Binding("alt+f10,shift+f10", "request('menu')", "Local menu", show=False),
         Binding("right", "unfold", "Unfold", show=False),
         Binding("left", "fold", "Fold", show=False),
@@ -1010,8 +1010,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         event.prevent_default()
 
     def on_paste(self, event: events.Paste) -> None:
-        # Shift+Ins (and Ctrl+V in many terminals) is taken by the terminal itself, which
-        # sends what its clipboard holds as a paste instead of the key: that is Ctrl+V too
+        # Ctrl+V is taken by some terminals themselves, which send what their clipboard
+        # holds as a paste instead of the key: that is Ctrl+V too
         if self.clipboard is not None:
             event.stop()
             event.prevent_default()

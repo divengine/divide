@@ -256,7 +256,7 @@ async def test_cut_and_paste_moves_a_file_with_its_window_and_breakpoints(tmp_pa
         await pilot.press("escape")  # never mind
         await settle(pilot, 4)
         assert tree.clipboard is None
-        await pilot.press("shift+delete")  # Turbo Vision's cut
+        await pilot.press("ctrl+x")
         await settle(pilot, 4)
         assert tree.clipboard == (page, True)
 
@@ -295,8 +295,8 @@ async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
 
 
 async def test_a_paste_from_the_terminal_pastes_what_was_cut(tmp_path):
-    """Shift+Ins (Ctrl+V in many terminals) never reaches divide as a key: the terminal
-    sends its clipboard as a paste, and on the tree that is Ctrl+V too."""
+    """Ctrl+V, in some terminals, never reaches divide as a key: the terminal sends its
+    clipboard as a paste, and on the tree that is Ctrl+V too."""
     root = project(tmp_path)
     page = root / "page.tpl"
     app = Divide(root, [])
