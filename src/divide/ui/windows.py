@@ -709,8 +709,9 @@ class EditorWindow(_TVWindow):
         self.call_after_refresh(self.refresh_indicator)
 
     def refresh_indicator(self) -> None:
-        frame = self.frame
-        if frame is None or not isinstance(frame, IndicatorFrame):
+        frames = list(self.query(IndicatorFrame)) if self.is_mounted else []
+        frame = frames[0] if frames else None  # (not there while the window opens or closes)
+        if frame is None:
             return
         row, col = self.editor.cursor_location
         frame.set_indicator(f"{'*' if self.dirty else ' '} {row + 1}:{col + 1}")

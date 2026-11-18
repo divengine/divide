@@ -287,7 +287,22 @@ async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
         await until(pilot, lambda: tree.selected_path == root / "page copy.tpl")  # the paste has put its bar there
         assert page.read_text(encoding="utf-8") == "x" and tree.clipboard == (page, False)  # a copy can be pasted again
 
-        await on_tree(pilot, app, root / "parts" / "a.tpl")
+        moves = []  # if the bar goes astray: each move after this, and who made it
+        original = type(tree).move_cursor
+
+        def recording(node, animate=False):
+            import traceback
+            caller = [f"{f.name}:{f.lineno}" for f in traceback.extract_stack(limit=6)[:-1]]
+            moves.append((getattr(getattr(node, "data", None), "path", None), caller))
+            original(tree, node, animate=animate)
+
+        tree.move_cursor = recording
+        app.raise_window(app.project_window())
+        tree.focus()
+        await tree.reveal(root / "parts" / "a.tpl")
+        await settle(pilot, 4)
+        assert tree.selected_path == root / "parts" / "a.tpl", (tree.selected_path, moves)
+        tree.move_cursor = original.__get__(tree)
         await pilot.press("ctrl+x")
         await on_tree(pilot, app, page)
         await pilot.press("ctrl+v")

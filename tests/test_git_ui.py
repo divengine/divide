@@ -37,6 +37,14 @@ async def until(pilot, check, tries=200, message=None):
     raise AssertionError(f"timed out: {message()}" if message else "timed out")
 
 
+def text_of(path: Path) -> str | None:
+    """A file's text, None while it is not there (git rewrites a file by replacing it)."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+
 def window(app, kind):
     return next((w for w in app.windows() if isinstance(w, kind)), None)
 
@@ -148,7 +156,7 @@ async def test_discard_reads_the_open_file_again(tmp_path):
         await pilot.press("delete")
         await until(pilot, lambda: getattr(app.screen, "dialog", None) is not None)
         await pilot.press("y")
-        await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "<h1>{$title}</h1>\n")
+        await until(pilot, lambda: text_of(root / "index.tpl") == "<h1>{$title}</h1>\n")
         await until(pilot, lambda: editor.editor.text == "<h1>{$title}</h1>\n" and not editor.dirty)
 
 
@@ -354,7 +362,7 @@ async def test_stash_from_changes_and_back_from_branches(tmp_path):
         await until(pilot, lambda: hasattr(getattr(app.screen, "dialog", None), "input"))
         await until(pilot, lambda: app.focused is app.screen.dialog.input)  # the keys go to the line
         await pilot.press(*"wip", "enter")
-        await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "<h1>{$title}</h1>\n")
+        await until(pilot, lambda: text_of(root / "index.tpl") == "<h1>{$title}</h1>\n")
         await until(pilot, lambda: editor.editor.text == "<h1>{$title}</h1>\n")  # read again
 
         await app.git_command(gitui.CM_GIT_BRANCHES)
@@ -363,7 +371,7 @@ async def test_stash_from_changes_and_back_from_branches(tmp_path):
         row = next(r for r in rows(branches) if "On main: wip" in r)
         await bar_on(pilot, branches, row)
         await pilot.press("enter")
-        await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "half done\n")
+        await until(pilot, lambda: text_of(root / "index.tpl") == "half done\n")
         await until(pilot, lambda: not any("wip" in r for r in rows(branches)), message=lambda: rows(branches))
 
 

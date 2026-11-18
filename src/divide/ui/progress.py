@@ -128,9 +128,13 @@ class ProgressDialog(_Dialog):
     def _show(self) -> None:
         if not self.is_mounted:
             return
-        self.query_one(".progress-rows", Static).update(self._rows_text())
-        self.query_one(".progress-bar", Static).update(self._bar())
-        verdict = self.query_one(".progress-verdict", Static)
+        found = [self.query(name).first() if self.query(name) else None
+                 for name in (".progress-rows", ".progress-bar", ".progress-verdict")]
+        if None in found:  # mounted, its rows not there yet (a quick job's first line) or no more
+            return
+        rows, bar, verdict = found
+        rows.update(self._rows_text())
+        bar.update(self._bar())
         verdict.update(self.verdict)
         verdict.set_class(not self.running and self.ok is True, "-done")
         verdict.set_class(not self.running and self.ok is False, "-failed")
