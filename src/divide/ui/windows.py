@@ -1009,6 +1009,14 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         event.stop()
         event.prevent_default()
 
+    def on_paste(self, event: events.Paste) -> None:
+        # Shift+Ins (and Ctrl+V in many terminals) is taken by the terminal itself, which
+        # sends what its clipboard holds as a paste instead of the key: that is Ctrl+V too
+        if self.clipboard is not None:
+            event.stop()
+            event.prevent_default()
+            self.action_request("paste")
+
     def on_mouse_down(self, event: events.MouseDown) -> None:
         self._swallow_click = False
         self._press = None

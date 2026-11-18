@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from textual import events
 from textual_vision.constants import Command
 from textual_vision.events import CommandMessage
 
@@ -291,6 +292,25 @@ async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
         await pilot.press("y")
         await until(pilot, lambda: not (root / "parts" / "a.tpl").exists())
         assert (root / "a.tpl").read_text() == "a"
+
+
+async def test_a_paste_from_the_terminal_pastes_what_was_cut(tmp_path):
+    """Shift+Ins (Ctrl+V in many terminals) never reaches divide as a key: the terminal
+    sends its clipboard as a paste, and on the tree that is Ctrl+V too."""
+    root = project(tmp_path)
+    page = root / "page.tpl"
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = await on_tree(pilot, app, page)
+        tree.post_message(events.Paste("whatever the terminal holds"))  # nothing cut: nothing done
+        await settle(pilot, 4)
+        assert page.exists() and not (root / "parts" / "page.tpl").exists()
+        await pilot.press("ctrl+x")
+        await on_tree(pilot, app, root / "parts")
+        tree.post_message(events.Paste("whatever the terminal holds"))
+        await until(pilot, lambda: (root / "parts" / "page.tpl").is_file())
+        assert not page.exists()
 
 
 async def test_a_folder_does_not_go_inside_itself_and_move_to(tmp_path):
