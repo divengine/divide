@@ -10,6 +10,8 @@ Escribe con el árbol enfocado y solo quedan los archivos y carpetas cuyo nombre
 
 ![la ventana del proyecto: una carpeta desplegada, un archivo nuevo, las marcas de tipo](images/project.gif)
 
+En un repositorio git cada archivo cambiado lleva una letra tras su nombre (`M`, `A`, `?`...), una carpeta con cambios lleva `•`, los archivos ignorados se ven atenuados y el borde inferior muestra la rama: ver [[Git]].
+
 ## Los miembros de un archivo
 
 Un archivo de un lenguaje con [[esquema|Outline]] (plantillas, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...) también lleva un `►`: desplegado, muestra sus miembros debajo, el mismo árbol que **Buscar > Esquema**: un archivo PHP sus clases, sus métodos y propiedades, sus funciones; una plantilla sus etiquetas; un archivo Markdown sus encabezados; un archivo JSON sus claves...

@@ -25,6 +25,7 @@
 * [[Dialector]]
 * [[Translating Templates]]
 * [[Composer]]
+* [[Git]]
 
 **Reference**
 

@@ -164,6 +164,24 @@ En los diálogos con una ruta, el botón **...** / **Examinar...** abre el diál
 
 Ver [[Composer|Composer]].
 
+## Ventanas Git
+
+| Tecla | Acción |
+|---|---|
+| **Espacio** | Cambios: preparar el archivo o quitarlo (un conflicto: marcarlo resuelto) |
+| **Enter** | Cambios: abrir el archivo · Historial: el diff del commit · Ramas: cambiar a ella (un stash: recuperarlo) · Pull requests e issues: abrir en el navegador |
+| **Supr** | Cambios: descartar los cambios del archivo · Ramas: borrar la rama, borrar el stash |
+| **Ins** | Ramas: una rama nueva · Pull requests e issues: una pull request nueva (en las issues, una issue nueva) |
+| **Ctrl+K** | Cambios: hacer commit |
+| **Tab** | Cambios: al diff y de vuelta |
+| **Ctrl+R** | leer de nuevo |
+| **Alt+F10** / **Shift+F10** | menú local: preparar todo, enmendar, stash, fusionar, rama nueva aquí, copiar el hash, pull, push, fetch... |
+| **Ctrl+Enter** | en el mensaje del commit: hacer commit |
+
+En un diff: **N** / **P** el cambio siguiente / anterior, **S** lado a lado o unificado, **← →** desplazar una línea larga, **Enter** abrir el archivo en esa línea. En la autoría: **Enter** el commit de la línea.
+
+Ver [[Git]].
+
 ## Ventana Configuración de Div
 
 | Tecla | Acción |

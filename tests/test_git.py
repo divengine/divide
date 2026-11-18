@@ -311,6 +311,7 @@ async def test_stash_and_bring_it_back(tmp_path):
     assert (await git.status(root)).clean
     rows = await git.stashes(root)
     assert [(s.ref, s.message) for s in rows] == [("stash@{0}", "On main: half done")]
+    assert [c.subject for c in await git.log(root) if c.oid] == ["first"]  # a stash is not history
     await git.unstash(root, "stash@{0}", keep=True)
     assert (root / "new.tpl").exists() and len(await git.stashes(root)) == 1
     sh(root, "checkout", "--", ".")

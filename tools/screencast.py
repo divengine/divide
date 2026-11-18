@@ -1117,8 +1117,93 @@ async def moving(rec_dir: Path) -> Recorder:
     return rec
 
 
+async def git_scene(rec_dir: Path) -> Recorder:
+    """Git.md: the marks, Git > Changes and its diff, a commit, the history, the branches (wiki_shots.git_shop)."""
+    from divide.ui import git as gitui
+    from divide.ui.dialogs import DialogScreen
+    letters = {"changes": tr("c", "c"), "history": tr("h", "h"), "branches": tr("b", "r")}
+    with tempfile.TemporaryDirectory() as work:
+        root = wiki_shots.git_shop(Path(work))
+        app = Divide(root, [])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            if app.project_window() is None:
+                app.toggle_project()
+            app.open_file(root / "index.tpl")
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            tree = app.project_window().project_tree
+            await tree.reveal(root / "layout" / "footer.tpl")
+            editor = app.window_for(root / "index.tpl")
+            await rec.until(lambda: tree.git_files and editor.editor.change_rows, tries=120)
+            app.raise_window(editor)
+            rec.caption(tr("In a git repository the project window and the margin mark what changed",
+                           "En un repositorio git, la ventana del proyecto y el margen marcan lo que cambió"))
+            await rec.snap(3.5, 10)
+            app._remove_window(app.project_window())
+            rec.caption(tr("Git > Changes: the files by area, and the diff of the one under the bar",
+                           "Git > Cambios: los archivos por área y el diff del que está bajo la barra"))
+            await rec.press("alt+g", hold=1.2)
+            await pilot.press(letters["changes"])
+            await rec.until(lambda: any(isinstance(w, gitui.GitChangesWindow) for w in app.windows()))
+            win = next(w for w in app.windows() if isinstance(w, gitui.GitChangesWindow))
+            await rec.until(lambda: win.git_tree.last_line > 4 and win.diff.rows_text(), tries=120)
+            while not (win.change is not None and win.change.path == "index.tpl"):
+                await rec.press("down", hold=0.5)
+                await rec.until(lambda: win.diff.rows_text())
+            win.diff.side_by_side = False
+            win.diff._build()
+            await rec.snap(3.5, 8)
+            rec.caption(tr("Tab goes to the diff; S shows it side by side (and back)",
+                           "Tab pasa al diff; S lo muestra lado a lado (y vuelta)"))
+            await rec.press("tab", hold=0.8)
+            await rec.press("s", hold=3.5)
+            await rec.press("tab", hold=0.6)
+            rec.caption(tr("Space stages the file; Ctrl+K commits what is staged",
+                           "Espacio lo prepara; Ctrl+K hace commit de lo preparado"))
+            await rec.press("space", hold=1.8)
+            await pilot.press("ctrl+k")
+            await rec.until(lambda: isinstance(app.screen, DialogScreen))
+            await rec.snap(0.6)
+            await rec.type(tr("Classes on the home page", "Clases en la portada"), 0.07)
+            await rec.snap(1.2)
+            await pilot.press("ctrl+j")
+            await rec.until(lambda: not isinstance(app.screen, DialogScreen), tries=120)
+            await rec.until(lambda: "index.tpl" not in str(win.git_tree.root.children and
+                                                            [n.label for g in win.git_tree.root.children for n in g.children]),
+                            tries=120)
+            await rec.snap(2.5, 8)
+            rec.caption(tr("Git > History: every branch as a graph; Enter, a commit's diff",
+                           "Git > Historial: todas las ramas como grafo; Enter, el diff de un commit"))
+            await rec.press("alt+g", hold=0.8)
+            await pilot.press(letters["history"])
+            await rec.until(lambda: any(isinstance(w, gitui.GitHistoryWindow) for w in app.windows()))
+            hist = next(w for w in app.windows() if isinstance(w, gitui.GitHistoryWindow))
+            await rec.until(lambda: hist.git_tree.last_line > 4, tries=120)
+            await rec.snap(2.0, 8)
+            for _ in range(3):
+                await rec.press("down", hold=0.7)
+            await rec.snap(1.0, 8)
+            await pilot.press("enter")
+            await rec.until(lambda: any(isinstance(w, gitui.DiffWindow) for w in app.windows()), tries=120)
+            await rec.snap(3.5, 10)
+            await pilot.press("alt+f3")
+            await rec.snap(0.6, 6)
+            rec.caption(tr("Git > Branches: Enter switches to one, Ins makes one; the stashes below",
+                           "Git > Ramas: Enter cambia a una, Ins crea otra; los stashes debajo"))
+            await rec.press("alt+g", hold=0.8)
+            await pilot.press(letters["branches"])
+            await rec.until(lambda: any(isinstance(w, gitui.GitBranchesWindow) for w in app.windows()))
+            await rec.snap(1.5, 10)
+            await rec.press("down", hold=0.8)
+            await rec.press("down", hold=3.5)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
 SCENES.update({"project": project_window, "finding": finding, "desktop": desktop, "php-lsp": php_lsp,
-                "filter": filtering, "moving": moving})
+                "filter": filtering, "moving": moving, "git": git_scene})
 
 
 # ------------------------------------------------------------------ output

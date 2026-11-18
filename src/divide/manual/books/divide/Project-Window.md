@@ -10,6 +10,8 @@ Type with the tree focused and only the files and folders whose name holds it st
 
 ![the project window: a folder unfolded, a new file, the file type marks](images/project.gif)
 
+In a git repository each changed file has a letter after its name (`M`, `A`, `?`...), a folder holding changes has `•`, ignored files are dimmed, and the bottom border shows the branch: see [[Git]].
+
 ## A file's members
 
 A file in a language with an [[Outline]] (templates, PHP, HTML, Markdown, CSS, JavaScript, SQL, JSON, YAML...) has a `►` too: unfolded, it shows its members below it, the same tree as **Search > Outline**: a PHP file its classes, their methods and properties, its functions; a template its tags; a Markdown file its headings; a JSON file its keys...

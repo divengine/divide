@@ -164,6 +164,24 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 
 See [[Composer]].
 
+## Git windows
+
+| Key | Action |
+|---|---|
+| **Space** | Changes: stage or unstage the file (a conflict: mark it solved) |
+| **Enter** | Changes: open the file · History: the commit's diff · Branches: switch to it (a stash: bring it back) · Pull requests and issues: open in the browser |
+| **Del** | Changes: discard the file's changes · Branches: delete the branch, drop the stash |
+| **Ins** | Branches: a new branch · Pull requests and issues: a new pull request (on the issues, a new issue) |
+| **Ctrl+K** | Changes: commit |
+| **Tab** | Changes: to the diff and back |
+| **Ctrl+R** | read again |
+| **Alt+F10** / **Shift+F10** | local menu: stage everything, amend, stash, merge, new branch here, copy the hash, pull, push, fetch... |
+| **Ctrl+Enter** | in the commit message: commit |
+
+In a diff: **N** / **P** the next / previous change, **S** side by side or unified, **← →** scroll a long line, **Enter** open the file at that line. In Blame: **Enter** the commit of the line.
+
+See [[Git]].
+
 ## Div setup window
 
 | Key | Action |

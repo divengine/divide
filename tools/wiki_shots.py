@@ -43,10 +43,10 @@ LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in En
 _KEYS = {
     "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
            "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y",
-           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c"},
+           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c", "git": "alt+g"},
     "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
            "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s",
-           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c"},
+           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c", "git": "alt+g"},
 }
 
 
@@ -786,6 +786,201 @@ async def spanish():
         await settle(pilot, 10)
         await pilot.press("alt+j"); await settle(pilot)
         save(app, "interface-spanish")
+
+
+# ------------------------------------------------------------------ git
+def _git(root: Path, *args: str, day: int = 0) -> str:
+    """git in the copy, as Ana Div, at a fixed time (the same history, the same pictures)."""
+    when = f"2026-11-{10 + day:02d}T{9 + day % 5}:30:00+00:00"
+    env = {**os.environ, "GIT_AUTHOR_NAME": "Ana Div", "GIT_AUTHOR_EMAIL": "ana@example.com",
+           "GIT_COMMITTER_NAME": "Ana Div", "GIT_COMMITTER_EMAIL": "ana@example.com",
+           "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when, "GIT_CONFIG_GLOBAL": os.devnull,
+           "GIT_CONFIG_NOSYSTEM": "1"}
+    return subprocess.run(["git", *args], cwd=root, env=env, check=True, capture_output=True, text=True).stdout
+
+
+def _edit(path: Path, *pairs: tuple[str, str]) -> None:
+    text = path.read_text(encoding="utf-8")
+    for old, new in pairs:
+        assert old in text, (path, old)
+        text = text.replace(old, new, 1)
+    path.write_text(text, encoding="utf-8")
+
+
+def git_shop(work: Path) -> Path:
+    """The shop as a repository with a history: a merged branch, one still open, a stash, and changes of
+    every kind (index.tpl changed, the footer staged, coupon.json new). Made anew, as shop_copy is."""
+    root = shop_copy(work)
+    later = {p: p.read_text(encoding="utf-8") for p in (root / "checkout.tpl", root / "components" / "card.tpl")}
+    (root / ".gitignore").write_text("vendor/\n", encoding="utf-8")
+    _git(root, "init", "-q", "-b", "main")
+    _git(root, "config", "core.autocrlf", "false")
+    _git(root, "config", "user.name", "Ana Div")  # a commit made in the pictures is hers too, never the
+    _git(root, "config", "user.email", "ana@example.com")  # identity of whoever takes them
+    for path in later:
+        path.unlink()
+    home = root / "index.tpl"
+    cart = "  {?( {$cart.items} > 0 )?}\n  <a href=\"/cart\">Cart: {$cart.items} items</a>\n  {/?}\n"
+    whole = home.read_text(encoding="utf-8")
+    home.write_text(whole.replace(cart, "", 1), encoding="utf-8")  # the cart comes with the checkout
+    _git(root, "add", ".gitignore", "README.md", "composer.json", "composer.lock", "index.json", "index.tpl",
+         "index.php", "erb.dialect")
+    _git(root, "commit", "-qm", "The home page", day=0)
+    footer = root / "layout" / "footer.tpl"
+    _git(root, "add", "layout")
+    _git(root, "commit", "-qm", "Header and footer layouts", day=1)
+    _git(root, "switch", "-qc", "feature/cards", day=2)
+    (root / "components" / "card.tpl").write_text(later[root / "components" / "card.tpl"], encoding="utf-8")
+    _git(root, "add", "components")
+    _git(root, "commit", "-qm", "A card per product", day=2)
+    _git(root, "switch", "-q", "main", day=3)
+    (root / "checkout.tpl").write_text(later[root / "checkout.tpl"], encoding="utf-8")
+    home.write_text(whole, encoding="utf-8")
+    _git(root, "add", "checkout.tpl", "index.tpl")
+    _git(root, "commit", "-qm", "Checkout page (broken on purpose)", day=3)
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "feature/cards", day=4)
+    _git(root, "switch", "-qc", "coupons", day=5)
+    (root / "coupon.tpl").write_text('<p class="coupon">{$coupon}</p>\n', encoding="utf-8")
+    _git(root, "add", "coupon.tpl")
+    _git(root, "commit", "-qm", "A coupon box", day=5)
+    _git(root, "switch", "-q", "main", day=6)
+    _edit(root / "layout" / "header.tpl", ("<body>", '<body class="dark">'))
+    _git(root, "stash", "push", "-qm", "A darker header", day=6)
+    _edit(footer, ("<footer", "<!-- the footer -->\n<footer"))
+    _git(root, "add", "layout/footer.tpl")
+    _edit(root / "index.tpl",
+          ("<h1>{^^title}</h1>", '<h1 class="title">{^^title}</h1>'),
+          ("<p>{$tagline}</p>", '<p class="tagline">{$tagline}</p>\n  <p class="note">Prices include taxes</p>'),
+          ("Nothing on sale today.", "Nothing on sale today. Come back tomorrow!"),
+          ("  </section>\n", ""))
+    (root / "coupon.json").write_text('{"coupon": "DIV10"}\n', encoding="utf-8")
+    return root
+
+
+def _git_window(app, kind):
+    return next(w for w in app.windows() if isinstance(w, kind))
+
+
+async def _git_bar_on(pilot, tree, pred):
+    """The bar on the first row ``pred(row)`` holds (a Row: its kind and its item)."""
+    await until(pilot, lambda: tree.last_line > 0, tries=200)
+    for line in range(tree.last_line + 1):
+        node = tree.get_node_at_line(line)
+        if node is not None and node.data is not None and pred(node.data):
+            tree.move_cursor(node)
+            await settle(pilot, 10)
+            return
+    raise SystemExit("no such row in the git window")
+
+
+def _on_change(path):
+    return lambda row: row.kind == "change" and row.item.path == path
+
+
+@shot
+async def git():
+    """Git: the menu; the changes with a diff (unified, side by side); the commit; the history; the branches;
+    blame; the marks in the project window and the editor's margin. On a repository made for the pictures."""
+    from divide.ui import git as gitui
+    from divide.ui.dialogs import DialogScreen
+    with tempfile.TemporaryDirectory() as work:
+        root = git_shop(Path(work))
+        app = Divide(root, [])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            if app.project_window() is None:
+                app.toggle_project(); await settle(pilot)
+            app.open_file(root / "index.tpl"); await settle(pilot, 10)  # beside the project window
+            tree = app.project_window().project_tree
+            await tree.reveal(root / "layout" / "footer.tpl")
+            ed = app.window_for(root / "index.tpl").editor
+            await until(pilot, lambda: tree.git_files and ed.change_rows, tries=200)
+            app.raise_window(app.window_for(root / "index.tpl")); ed.move_cursor((9, 4)); await settle(pilot, 10)
+            save(app, "git-marks")
+            await pilot.press(key("git")); await settle(pilot)
+            save(app, "git-menu")
+            await pilot.press("escape"); await settle(pilot)
+            app._remove_window(app.project_window()); await settle(pilot)  # room for the diff
+
+            await app.git_command(gitui.CM_GIT_CHANGES)
+            win = _git_window(app, gitui.GitChangesWindow)
+            await _git_bar_on(pilot, win.git_tree, _on_change("index.tpl"))
+            await until(pilot, lambda: win.diff.rows_text(), tries=200)
+            win.diff.side_by_side = False; win.diff._build(); await settle(pilot, 10)
+            save(app, "git-changes")
+            win.diff.side_by_side = True; win.diff._build(); await settle(pilot, 10)
+            save(app, "git-diff-split")
+            win.git_tree.focus(); await settle(pilot)
+            await pilot.press("ctrl+k")
+            await until(pilot, lambda: isinstance(app.screen, DialogScreen), tries=200)
+            await pilot.press(*"Classes on the home page"); await settle(pilot, 10)
+            save(app, "git-commit")
+            app.screen.action_cancel()
+            await until(pilot, lambda: not isinstance(app.screen, DialogScreen)); await settle(pilot, 10)
+
+            await app.git_command(gitui.CM_GIT_HISTORY)
+            hist = _git_window(app, gitui.GitHistoryWindow)
+            await _git_bar_on(pilot, hist.git_tree, lambda row: row.kind == "commit" and "Checkout" in row.item.subject)
+            await pilot.pause(0.5); await settle(pilot, 15)
+            save(app, "git-history")
+
+            await app.git_command(gitui.CM_GIT_BRANCHES)
+            branches = _git_window(app, gitui.GitBranchesWindow)
+            await _git_bar_on(pilot, branches.git_tree, lambda row: row.kind == "branch" and row.item.name == "coupons")
+            await pilot.pause(0.5); await settle(pilot, 15)
+            save(app, "git-branches")
+
+            app.raise_window(app.window_for(root / "index.tpl")); await settle(pilot)
+            await app.git_command(gitui.CM_GIT_BLAME)
+            await until(pilot, lambda: any(isinstance(w, gitui.BlameWindow) for w in app.windows()), tries=200)
+            blame = _git_window(app, gitui.BlameWindow)
+            await pilot.pause(0.5); await settle(pilot, 10)
+            blame.view.move_cursor((17, 0)); await settle(pilot, 10)
+            save(app, "git-blame")
+
+
+FAKE_GH = r"""
+import json, os, sys
+answers = json.loads(os.environ["DIVIDE_SHOT_GH"])
+print(answers.get(" ".join(sys.argv[1:3]), ""))
+"""
+
+
+@shot
+async def forge():
+    """Git > Pull requests and issues, from a stand-in for gh that answers as GitHub would (nothing leaves)."""
+    from divide.run import forge as forgerun
+    from divide.ui import forge as forgeui
+    pulls = [{"number": 12, "title": "A card per product", "author": {"login": "ana"}, "headRefName": "feature/cards",
+              "baseRefName": "main", "state": "OPEN", "url": "https://github.com/acme/shop/pull/12", "isDraft": False,
+              "updatedAt": "2026-11-18T10:00:00Z"},
+             {"number": 14, "title": "A coupon box", "author": {"login": "bo"}, "headRefName": "coupons",
+              "baseRefName": "main", "state": "OPEN", "url": "https://github.com/acme/shop/pull/14", "isDraft": True,
+              "updatedAt": "2026-11-18T12:30:00Z"}]
+    issues = [{"number": 9, "title": "The footer breaks on phones", "author": {"login": "carla"}, "state": "OPEN",
+               "url": "https://github.com/acme/shop/issues/9", "labels": [{"name": "bug"}, {"name": "css"}],
+               "updatedAt": "2026-11-17T09:00:00Z"},
+              {"number": 11, "title": "Prices with taxes", "author": {"login": "ana"}, "state": "OPEN",
+               "url": "https://github.com/acme/shop/issues/11", "labels": [], "updatedAt": "2026-11-16T09:00:00Z"}]
+    with tempfile.TemporaryDirectory() as work:
+        root = git_shop(Path(work))
+        _git(root, "remote", "add", "origin", "git@github.com:acme/shop.git")
+        script = Path(work) / "gh.py"
+        script.write_text(FAKE_GH, encoding="utf-8")
+        os.environ["DIVIDE_SHOT_GH"] = json.dumps({"pr list": json.dumps(pulls), "issue list": json.dumps(issues)})
+        saved, forgerun.COMMANDS = forgerun.COMMANDS, {"github": [sys.executable, str(script)], "gitea": None}
+        try:
+            app = Divide(root, [])
+            async with app.run_test(size=SIZE) as pilot:
+                await settle(pilot, 10)
+                await app.open_forge()
+                win = _git_window(app, forgeui.ForgeWindow)
+                await _git_bar_on(pilot, win.git_tree,
+                                  lambda row: getattr(row.item, "number", None) == 9)
+                await pilot.pause(0.5); await settle(pilot, 10)
+                save(app, "git-forge")
+        finally:
+            forgerun.COMMANDS = saved
 
 
 async def run(names: set[str]) -> None:

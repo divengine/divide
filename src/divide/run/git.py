@@ -324,13 +324,13 @@ def parse_log(text: str) -> list[Commit]:
 
 
 async def log(root: Path, limit: int = 400, path: str | None = None, everything: bool = True) -> list[Commit]:
-    """The history, newest first, with its graph: every branch (``everything``) or the current one;
+    """The history, newest first, with its graph: every branch and tag (``everything``) or the current one;
     only the commits that touched ``path`` when it is given (following its renames)."""
     args = ["log", "--graph", f"--format={LOG_FORMAT}", f"--max-count={limit}"]
     if path:
         args = ["log", f"--format={LOG_FORMAT}", f"--max-count={limit}", "--follow", "--", path]
     elif everything:
-        args.append("--all")
+        args += ["--exclude=refs/stash", "--all"]  # the stashes have their own place (Branches), not the graph
     try:
         return parse_log(await capture(args, root))
     except GitError as exc:
