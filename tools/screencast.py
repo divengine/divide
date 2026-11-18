@@ -1054,8 +1054,71 @@ async def filtering(rec_dir: Path) -> Recorder:
     return rec
 
 
+async def moving(rec_dir: Path) -> Recorder:
+    """Project-Window.md: moving files: cut and paste, Move to... from the local menu, a drag onto a folder."""
+    from textual import events
+    from divide.ui.dialogs import DialogScreen
+    with tempfile.TemporaryDirectory() as work:
+        root = wiki_shots.shop_copy(Path(work))
+        app = Divide(root, [root / "index.tpl"])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            rec = Recorder(app, pilot, rec_dir)
+            await pilot.press("ctrl+b")
+            tree = app.project_window().project_tree
+            await tree.reveal(root / "index.tpl")
+            await rec.snap(1.2, 8)
+            rec.caption(tr("Ctrl+X cuts a file: it stays dim until it is pasted (Esc: never mind)",
+                           "Ctrl+X corta un archivo: queda tenue hasta pegarlo (Esc: olvidarlo)"))
+            await rec.press("ctrl+x", hold=1.8)
+            rec.caption(tr("Ctrl+V on another folder moves it there; its window follows",
+                           "Ctrl+V en otra carpeta lo mueve allí; su ventana lo sigue"))
+            layout = tree._node_for(root / "layout")
+            while tree.cursor_node is not layout:
+                await rec.press("up" if tree.cursor_line > layout.line else "down", hold=0.3)
+            await rec.snap(0.6)
+            await pilot.press("ctrl+v")
+            await rec.until(lambda: tree.selected_path == root / "layout" / "index.tpl", tries=120)
+            await rec.snap(2.5, 8)
+            rec.caption(tr("Alt+F10 > Move to...: a folder typed or chosen with Browse, made if missing",
+                           "Alt+F10 > Mover a...: una carpeta escrita o elegida con Examinar, creada si falta"))
+            await tree.reveal(root / "components" / "card.tpl")
+            await rec.snap(1.0, 8)
+            await rec.press("alt+f10", hold=1.4)
+            await pilot.press("m")
+            await rec.until(lambda: isinstance(app.screen, DialogScreen))
+            await rec.snap(0.8, 6)
+            await clear_and_type(rec, app.screen.dialog.input, "parts", 0.15)
+            await rec.snap(0.8)
+            await pilot.press("enter")
+            await rec.until(lambda: tree.selected_path == root / "parts" / "card.tpl", tries=120)
+            await rec.snap(2.5, 8)
+            rec.caption(tr("Or drag it with the mouse onto a folder: divide asks first",
+                           "O arrástralo con el ratón sobre una carpeta: divide pregunta antes"))
+            await tree.reveal(root / "checkout.tpl")
+            await rec.snap(1.0, 8)
+            source, folder = tree._node_for(root / "checkout.tpl"), tree._node_for(root / "layout")
+            top = tree.scroll_offset.y
+            mouse = lambda kind, line: kind(tree, 12, line - top, 0, 0, 1, False, False, False)
+            tree.on_mouse_down(mouse(events.MouseDown, source.line))
+            step = -1 if folder.line < source.line else 1
+            for line in range(source.line + step, folder.line + step, step):
+                tree.on_mouse_move(mouse(events.MouseMove, line))
+                await rec.snap(0.25, 4)
+            await rec.snap(1.2, 6)
+            tree.on_mouse_up(mouse(events.MouseUp, folder.line))
+            await rec.until(lambda: isinstance(app.screen, DialogScreen))
+            await rec.snap(1.8, 6)
+            await pilot.press("enter")
+            await rec.until(lambda: tree.selected_path == root / "layout" / "checkout.tpl", tries=120)
+            await rec.snap(3.0, 10)
+            rec.finish()
+            await settle(pilot)
+    return rec
+
+
 SCENES.update({"project": project_window, "finding": finding, "desktop": desktop, "php-lsp": php_lsp,
-                "filter": filtering})
+                "filter": filtering, "moving": moving})
 
 
 # ------------------------------------------------------------------ output

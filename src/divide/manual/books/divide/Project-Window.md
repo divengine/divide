@@ -52,9 +52,10 @@ The marks are plain ASCII on purpose: every terminal, font and platform draws th
 |---|---|
 | **Ins** | new file in the folder under the cursor; `parts/menu.tpl` creates `parts/` too. The file opens. |
 | **F7** | new folder; nested paths like `assets/css` are fine |
-| **F2** | rename; the name without its extension comes selected. Open windows follow the file. |
+| **F2** | rename; the name without its extension comes selected. A path moves it too: `../name`, `parts/name`. Open windows follow the file. |
 | **Del** | delete, after confirming. Folders go with everything in them (divide tells you how many items). |
 | **Ctrl+R** | refresh from disk |
+| **Ctrl+X**, **Ctrl+C**, **Ctrl+V** | cut, copy, paste (see Moving files and folders, below) |
 | **Alt+F10**, **Shift+F10**, right click | the local menu with all of the above |
 
 ![creating a file](images/project-new-file.png)
@@ -64,6 +65,26 @@ Good to know:
 - Deleting is permanent (nothing goes to a trash can), which is why divide always asks.
 - Windows of deleted files close, except those with unsaved changes: your work stays open and can be saved again.
 - A data file chosen with Run > Data file stays with its template when either is renamed.
-- Names that would leave the project (`../x`) are refused.
+- Names and paths that would leave the project are refused.
 - Files created outside divide appear with Ctrl+R; files created with Save as appear by themselves.
 - After any of these operations, includes are checked again (see [[Checking Templates]]).
+
+## Moving files and folders
+
+![cut and paste, Move to... and a drag onto a folder](images/moving.gif)
+
+Three ways, whichever comes first to hand:
+
+- **Cut and paste.** **Ctrl+X** on a file or a folder cuts it: it stays dim in the tree until it goes somewhere. **Ctrl+V** with the bar on a folder moves it into that folder; on a file, into that file's folder. **Esc** forgets what was cut.
+- **Copy and paste.** **Ctrl+C** copies, **Ctrl+V** pastes a copy; what was copied can be pasted again, in as many folders as you like. Pasted in its own folder, the copy is called `name copy` (`name copy 2`...).
+- **Move to...** in the local menu (**Alt+F10**): type a folder of the project or choose it with **Browse**; a folder that does not exist yet is made. **F2** does the same with a path: `../card.tpl`, `parts/card.tpl`.
+- **With the mouse.** Drag a file or a folder onto a folder: the folder lights up as you go, and the tree scrolls when you reach its top or bottom. When you let go, divide asks before moving it, since a drag in a terminal is easy to slip. **Esc** during a drag cancels it. Your terminal has to report the mouse moving with the button held (most do).
+
+The local menu and **Edit > Cut / Copy / Paste** do the same when the project window is the active one.
+
+Good to know:
+
+- A folder never goes inside itself, and two folders are never merged: if a folder with that name is already there, divide says so and does nothing.
+- A file with that name already there is replaced only after asking. A file with unsaved changes open in a window is never replaced.
+- Open windows, the data file chosen for a template, and breakpoints follow what moved; the bar follows it too.
+- Moving never leaves the project.

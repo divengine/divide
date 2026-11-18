@@ -88,8 +88,10 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **→** / **←** | desplegar / plegar una carpeta, o un archivo en sus miembros (en uno plegado, **←** sube a lo que lo contiene) |
 | **Ins** | archivo nuevo |
 | **F7** | carpeta nueva |
-| **F2** | renombrar |
+| **F2** | renombrar (una ruta lo mueve: `../nombre`) |
 | **Supr** | eliminar |
+| **Ctrl+X** / **Ctrl+C** / **Ctrl+V** | cortar / copiar / pegar en la carpeta bajo la barra (**Esc** olvida lo cortado) |
+| arrastrar sobre una carpeta | mover allí, tras preguntar |
 | **Ctrl+R** | actualizar |
 | **Alt+F10** / **Shift+F10** / clic derecho | menú local |
 

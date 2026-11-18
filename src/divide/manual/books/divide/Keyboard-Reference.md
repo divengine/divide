@@ -88,8 +88,10 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **→** / **←** | unfold / fold a folder, or a file into its members (on a folded one, **←** goes up to what holds it) |
 | **Ins** | new file |
 | **F7** | new folder |
-| **F2** | rename |
+| **F2** | rename (a path moves it: `../name`) |
 | **Del** | delete |
+| **Ctrl+X** / **Ctrl+C** / **Ctrl+V** | cut / copy / paste in the folder under the bar (**Esc** forgets what was cut) |
+| drag onto a folder | move there, after asking |
 | **Ctrl+R** | refresh |
 | **Alt+F10** / **Shift+F10** / right click | local menu |
 
