@@ -144,7 +144,7 @@ async def test_divide_asks_once_to_trust_a_projects_php(tmp_path):
     app = Divide(tmp_path, [])
     async with app.run_test(size=(120, 40)) as pilot:
         await until(pilot, lambda: isinstance(app.screen, DialogScreen))
-        assert "md5" in str(app.screen.dialog.query_one(".dlg-text").render())
+        assert "md5" in app.screen.dialog._text  # (its text, even before the dialog is drawn)
         await pilot.press("y")
         await until(pilot, lambda: not isinstance(app.screen, DialogScreen))
         await settle(pilot)

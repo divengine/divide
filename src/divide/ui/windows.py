@@ -1189,7 +1189,10 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         attempt = 0
         target = path.resolve()
         while True:
-            found = await self._reveal_once(path)
+            # the first time the folders on the way are reloaded; after that only looked
+            # at: reloading them again makes the loader fill them anew, and on a slow
+            # machine that never settles
+            found = await self._reveal_once(path, reload=attempt == 0)
             while not self._load_queue.empty() and loop.time() < give_up:
                 await asyncio.sleep(0.02)
             await asyncio.sleep(0.05)  # (the loader's last folder, after the queue emptied)
@@ -1204,7 +1207,7 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         """``path`` is a file or a folder in the project (not the project itself: no bar there)."""
         return path.exists() and Path(self.path).resolve() in path.parents
 
-    async def _reveal_once(self, path: Path) -> bool:
+    async def _reveal_once(self, path: Path, reload: bool = True) -> bool:
         root = Path(self.path).resolve()
         path = path.resolve()
         try:
@@ -1212,16 +1215,25 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         except ValueError:
             return True
         node = self.root
-        await self.reload_node(node)
+        if reload:
+            await self.reload_node(node)
         current = root
         for part in parts:
             current = current / part
             child = next((c for c in node.children if c.data is not None and c.data.path == current), None)
             if child is None:
-                return not current.exists()  # not there (any more): nothing to show; else filled again meanwhile
+                if not current.exists():
+                    return True  # not there (any more): nothing to show
+                if not reload:
+                    await self.reload_node(node)  # this folder alone: it does not have it yet
+                return False  # else filled again meanwhile
             node = child
             if current != path and node.allow_expand:
-                await self.reload_node(node)
+                if reload:
+                    await self.reload_node(node)
+                elif not node.is_expanded:
+                    node.expand()  # the loader fills it: looked at again next time
+                    return False
         self._clear_line_cache()  # lines are rebuilt lazily (on idle): node.line may be stale or -1 until then
         _ = self._tree_lines
         if node._line < 0 and node is not self.root:
