@@ -918,8 +918,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             folder = self._safe_is_dir(path)
             unfolds = not folder and outline_mod.has_outline(language_of(path))
             child = node.add(path.name, data=FileEntry(path) if unfolds else DirEntry(path), allow_expand=folder or unfolds)
-            if path in old:
-                renewed[id(old[path])] = (old[path], child)
+            if path in old:  # the bar was elsewhere: the loader's late move back is not followed
+                renewed[id(old[path])] = (old[path], child if keep else None)
             if keep and path == selected:
                 again = child
         self._renewed = renewed
@@ -935,6 +935,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         # folder again; that node is gone then: its new one takes the bar instead
         pair = getattr(self, "_renewed", {}).get(id(node)) if node is not None else None
         if pair is not None and pair[0] is node:
+            if pair[1] is None:  # the bar has gone to another folder since: it stays there
+                return
             node = pair[1]
             self._clear_line_cache()
             _ = self._tree_lines
