@@ -74,6 +74,7 @@ async def test_a_new_pull_request_pushes_the_branch_first(tmp_path, gh):
         dialog = app.screen.dialog
         assert dialog.title_input.data == "A footer" and dialog.base_input.data == "main"
         dialog.body.focus()
+        await until(pilot, lambda: app.focused is dialog.body)
         await pilot.press(*"Fixes #3")
         await pilot.press("ctrl+j")
         await until(pilot, lambda: any(c["args"][:2] == ["pr", "create"] for c in gh()), tries=300)
