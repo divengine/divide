@@ -137,7 +137,7 @@ SYNTAX_ROLES = (
     "keyword", "name", "variable", "builtin", "string", "type", "number", "constant", "modifier",
     "comment", "operator", "punct", "special", "markup", "module",
     "error", "error-bg", "warning-bg", "focus", "focus-bg", "inserted", "inserted-bg", "deleted", "deleted-bg",
-    "diff-add", "diff-add-bg", "diff-del", "diff-del-bg", "diff-hunk", "diff-meta",
+    "diff-add", "diff-add-bg", "diff-del", "diff-del-bg", "diff-hunk", "diff-meta", "diff-mod", "diff-mod-bg",
 )
 
 # The roles of the UI; every theme gives every one (tests/test_themes.py checks).
@@ -201,7 +201,7 @@ BORLAND_SYNTAX = {
     "error": "white", "error-bg": "red", "warning-bg": "brown", "focus": "black", "focus-bg": "lightcyan",
     "inserted": "black", "inserted-bg": "lightgreen", "deleted": "white", "deleted-bg": "red",
     "diff-add": "white", "diff-add-bg": "green", "diff-del": "white", "diff-del-bg": "red",
-    "diff-hunk": "lightcyan", "diff-meta": "yellow",
+    "diff-hunk": "lightcyan", "diff-meta": "yellow", "diff-mod": "white", "diff-mod-bg": "brown",
 }
 
 # Campbell's blue is lighter than CGA's: its cyan, light red and light magenta
@@ -292,7 +292,7 @@ MODERN_SYNTAX = {
     "error": _BRIGHT, "error-bg": "#8E2B36", "warning-bg": "#5A4A1F", "focus": "#101216", "focus-bg": "#7DB4F5",
     "inserted": "#101216", "inserted-bg": "#A8DC8C", "deleted": _BRIGHT, "deleted-bg": "#8E2B36",
     "diff-add": "#D8F0CC", "diff-add-bg": "#1F3A24", "diff-del": "#F5C6CB", "diff-del-bg": "#4A1F26",
-    "diff-hunk": "#7FD8E3", "diff-meta": "#E8C77D",
+    "diff-hunk": "#7FD8E3", "diff-meta": "#E8C77D", "diff-mod": _BRIGHT, "diff-mod-bg": "#5A4A1F",
 }
 
 

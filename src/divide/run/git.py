@@ -387,6 +387,30 @@ async def diff_of_commit(root: Path, oid: str, path: str | None = None) -> str:
     return _cut(await capture([*args, *(["--", path] if path else [])], root))
 
 
+async def head_text(root: Path, path: str) -> str | None:
+    """The file as the last commit has it (None: not in it, or no commit yet)."""
+    result = await run(["show", f"HEAD:{path}"], root, timeout=30.0)
+    return result.output + "\n" if result.ok else None
+
+
+def line_changes(old: str, new: str) -> dict[int, str]:
+    """The rows of ``new`` (0-based) that differ from ``old``: ``add`` (new lines), ``mod``
+    (changed ones) and ``del`` (lines were removed just before this row; after the last
+    row, on the last one)."""
+    import difflib
+
+    a, b = old.splitlines(), new.splitlines()
+    rows: dict[int, str] = {}
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        if tag == "insert":
+            rows.update({j: "add" for j in range(j1, j2)})
+        elif tag == "replace":  # as many changed as there were, the rest new
+            rows.update({j: "mod" if j - j1 < i2 - i1 else "add" for j in range(j1, j2)})
+        elif tag == "delete" and b:
+            rows.setdefault(min(j1, len(b) - 1), "del")
+    return rows
+
+
 def new_file_diff(root: Path, path: str) -> str:
     """The diff git would show for a new file (``git diff`` does not show untracked ones)."""
     file = root / path

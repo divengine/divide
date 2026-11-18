@@ -863,6 +863,8 @@ class GitMixin:
 
     git_state: git.Status | None = None
     _git_timer = None
+    _git_bases: dict  # resolved path -> (HEAD's oid, the file as HEAD has it, or None)
+    _git_typing: dict  # id(editor) -> the timer that marks it again after typing
 
     @property
     def git_root(self) -> Path | None:
@@ -891,6 +893,47 @@ class GitMixin:
         except git.GitError:
             state = None
         self.git_status_changed(state, root)
+        await self._git_mark_editors(root, state)
+
+    async def _git_mark_editors(self, root: Path, state: git.Status | None) -> None:
+        """The gutter marks of every editor of a file in the repository."""
+        bases = self.__dict__.setdefault("_git_bases", {})
+        for win in self.editor_windows():  # type: ignore[attr-defined]
+            if win.path is None or state is None or not state.oid:
+                win.editor.set_change_marks({})
+                continue
+            path = win.path.resolve()
+            try:
+                rel = path.relative_to(root).as_posix()
+            except ValueError:
+                win.editor.set_change_marks({})
+                continue
+            cached = bases.get(path)
+            if cached is None or cached[0] != state.oid:
+                try:
+                    cached = (state.oid, await git.head_text(root, rel))
+                except git.GitError:
+                    cached = (state.oid, None)
+                bases[path] = cached
+            self._git_mark(win)
+
+    def _git_mark(self, win) -> None:
+        cached = self.__dict__.get("_git_bases", {}).get(win.path.resolve()) if win.path is not None else None
+        if cached is None or cached[1] is None:  # not in the last commit (new, or not in the repository)
+            win.editor.set_change_marks({})
+        else:
+            win.editor.set_change_marks(git.line_changes(cached[1], win.editor.text))
+
+    def git_editor_changed(self, editor) -> None:
+        """Typing: the gutter marks again, once the keys pause."""
+        win = next((w for w in self.editor_windows() if w.editor is editor), None)  # type: ignore[attr-defined]
+        if win is None or win.path is None or win.path.resolve() not in self.__dict__.get("_git_bases", {}):
+            return
+        timers = self.__dict__.setdefault("_git_typing", {})
+        old = timers.pop(id(editor), None)
+        if old is not None:
+            old.stop()
+        timers[id(editor)] = self.set_timer(0.4, lambda: self._git_mark(win))  # type: ignore[attr-defined]
 
     def git_status_changed(self, state: git.Status | None, root: Path | None = None) -> None:
         """The repository's state: the project window's border and its marks (``root`` given:

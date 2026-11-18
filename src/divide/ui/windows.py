@@ -417,6 +417,7 @@ class EditorView(DivEditor, TVViewMixin):
         self._completion_pending = False
         self.breakpoint_rows: set[int] = set()  # debugger marks, 0-based rows
         self.execution_row: int | None = None
+        self.change_rows: dict[int, str] = {}  # git: the rows changed since the last commit (add, mod, del)
 
     # ------------------------------------------------------------ debugger
     # Turbo Pascal's bars: breakpoints in red, the line about to run in cyan.
@@ -427,14 +428,28 @@ class EditorView(DivEditor, TVViewMixin):
             self.execution_row = execution
             self.refresh()
 
+    def set_change_marks(self, rows: dict[int, str]) -> None:
+        """git's marks in the gutter: the line number on green (added), brown (changed) or
+        red (lines removed just above)."""
+        if rows != self.change_rows:
+            self.change_rows = rows
+            self.refresh()
+
     def render_line(self, y: int) -> Strip:
         strip = super().render_line(y)
-        if not self.breakpoint_rows and self.execution_row is None:
+        if not self.breakpoint_rows and self.execution_row is None and not self.change_rows:
             return strip
         try:
-            row = self.wrapped_document._offset_to_line_info[y + self.scroll_offset.y][0]
-        except (IndexError, TypeError):
+            row, section = self.wrapped_document._offset_to_line_info[y + self.scroll_offset.y]
+        except (IndexError, TypeError, ValueError):
             return strip
+        change = self.change_rows.get(row) if section == 0 and self.show_line_numbers else None
+        if change is not None and self.gutter_width:
+            gutter = self.gutter_width
+            mark = themes.current().style(f"diff-{change}", f"diff-{change}-bg")
+            number = strip.crop(0, gutter - 1)
+            number = Strip(list(Segment.apply_style(list(number), post_style=mark)), number.cell_length)
+            strip = Strip.join([number, strip.crop(gutter - 1, strip.cell_length)])
         if row == self.execution_row:
             style = themes.current().style("execution", "execution-bg")
         elif row in self.breakpoint_rows:

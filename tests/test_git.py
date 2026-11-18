@@ -241,3 +241,21 @@ async def test_status_with_the_ignored(tmp_path):
     (root / "debug.log").write_text("a", encoding="utf-8")
     assert (await git.status(root)).ignored == []
     assert sorted((await git.status(root, ignored=True)).ignored) == ["debug.log", "vendor/"]
+
+
+def test_line_changes_against_the_last_commit():
+    old = "a\nb\nc\nd\n"
+    assert git.line_changes(old, old) == {}
+    assert git.line_changes(old, "a\nB\nc\nd\n") == {1: "mod"}
+    assert git.line_changes(old, "a\nb\nnew\nc\nd\n") == {2: "add"}
+    assert git.line_changes(old, "a\nd\n") == {1: "del"}
+    assert git.line_changes(old, "a\nb\nc\n") == {2: "del"}
+    assert git.line_changes("x\n", "X\ny\n") == {0: "mod", 1: "add"}  # the end removed: on the last row
+    assert git.line_changes(old, "") == {}
+
+
+async def test_the_file_as_the_last_commit_has_it(tmp_path):
+    root = repo(tmp_path)
+    commit_file(root, "a.tpl", "one\ntwo\n", "a")
+    assert await git.head_text(root, "a.tpl") == "one\ntwo\n"
+    assert await git.head_text(root, "missing.tpl") is None

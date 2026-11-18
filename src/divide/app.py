@@ -691,6 +691,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         self._insert(win)
         self.call_after_refresh(self.resolve_includes_of, win.editor)
         self.call_after_refresh(self.refresh_debug_marks)
+        self.call_after_refresh(self.refresh_git_state)  # its gutter marks
         return win
 
     def new_file(self, text: str = "", *, plain: bool = False) -> EditorWindow:
@@ -2330,6 +2331,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             for view in self.tree_windows() + self.dialector_windows() + self.setup_windows():
                 if view.source.editor is event.text_area:
                     view.reload()
+            self.git_editor_changed(event.text_area)
         self.update_status()
 
     @on(DivEditor.DialectChanged)

@@ -41,6 +41,11 @@ def window(app, kind):
     return next((w for w in app.windows() if isinstance(w, kind)), None)
 
 
+def shown(app, win):
+    """For a failure's message: the rows and any dialog over them."""
+    return rows(win), getattr(getattr(app.screen, "dialog", None), "_text", None)
+
+
 def rows(win) -> list[str]:
     tree = win.git_tree
     out = []
@@ -94,7 +99,7 @@ async def test_stage_unstage_and_commit(tmp_path):
         await until(pilot, lambda: rows(win)[:2] == ["Staged (the next commit)  1", "M index.tpl"], message=lambda: rows(win))
         await bar_on(pilot, win, "M index.tpl")
         await pilot.press("space")  # back out
-        await until(pilot, lambda: rows(win)[0] == "Changes  1", message=lambda: rows(win))
+        await until(pilot, lambda: rows(win)[0] == "Changes  1", message=lambda: shown(app, win))
         await bar_on(pilot, win, "Untracked  1")
         await pilot.press("space")  # an area: all of it
         await until(pilot, lambda: rows(win)[:2] == ["Staged (the next commit)  1", "A card.tpl"], message=lambda: rows(win))
@@ -253,3 +258,18 @@ async def test_the_project_window_marks_what_changed(tmp_path):
         assert label(root / ".gitignore").plain.endswith(".gitignore ?")
         vendor = label(root / "vendor")
         assert vendor.plain.endswith("vendor") and any(span.style.dim for span in vendor.spans if hasattr(span.style, "dim"))
+
+
+async def test_the_gutter_marks_lines_changed_since_the_last_commit(tmp_path):
+    root = repo(tmp_path / "site")
+    (root / "index.tpl").write_text("<h1>{$title}</h1>\n<p>new</p>\n", encoding="utf-8")
+    app = Divide(root, [root / "index.tpl"])
+    async with app.run_test(size=(120, 40)) as pilot:
+        editor = app.editor_windows()[0].editor
+        await until(pilot, lambda: editor.change_rows == {1: "add"}, message=lambda: editor.change_rows)
+        editor.focus()
+        editor.move_cursor((0, 0))
+        await pilot.press("X")  # typing: marked again, unsaved
+        await until(pilot, lambda: editor.change_rows == {0: "mod", 1: "add"}, message=lambda: editor.change_rows)
+        await pilot.press("backspace")
+        await until(pilot, lambda: editor.change_rows == {1: "add"}, message=lambda: editor.change_rows)
