@@ -1234,7 +1234,10 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         give_up = loop.time() + 3.0
         attempt = 0
         target = path.resolve()
+        self._reveals = turn = getattr(self, "_reveals", 0) + 1  # a later reveal takes over from this one
         while True:
+            if self._reveals != turn:
+                return
             # the first time the folders on the way are reloaded; after that only looked
             # at: reloading them again makes the loader fill them anew, and on a slow
             # machine that never settles
@@ -1242,6 +1245,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             while not self._load_queue.empty() and loop.time() < give_up:
                 await asyncio.sleep(0.02)
             await asyncio.sleep(0.05)  # (the loader's last folder, after the queue emptied)
+            if self._reveals != turn:  # another reveal started meanwhile: the bar is its own now
+                return
             if found and (self.selected_path == target or not self._can_show(target)):
                 return
             if loop.time() >= give_up:
