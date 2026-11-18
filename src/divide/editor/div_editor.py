@@ -312,7 +312,9 @@ class DivEditor(TextArea):
             super()._build_highlight_map()  # tree-sitter's colours (HTML, YAML...)
             return
         else:
-            return
+            tokens = []  # plain text: only the marks (a diff's lines)
+        if self.lang != "div":
+            tokens = tokens + [_Mark(start, end, kind) for start, end, kind in self.marks if end > start]
         self._overlay(tokens)
 
     def _overlay(self, tokens: list) -> None:

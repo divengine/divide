@@ -127,6 +127,10 @@ from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
+from divide.ui.git import (
+    CM_GIT_BRANCHES, CM_GIT_CHANGES, CM_GIT_COMMIT, CM_GIT_DIFF_FILE, CM_GIT_FETCH, CM_GIT_FILE_HISTORY,
+    CM_GIT_HISTORY, CM_GIT_PULL, CM_GIT_PUSH, DiffWindow, GitLogWindow, GitMixin, MessageView, _GitWindow,
+)
 from divide.run.script import size_text
 from divide.run import children
 from divide.run import setup as div_setup
@@ -166,6 +170,8 @@ CM_DS_DIALECT = Command.USER + 39
 CM_DS_TRUST = Command.USER + 46
 CM_DS_CHECK = Command.USER + 47
 CM_COMPOSER = Command.USER + 48
+GIT_COMMANDS = (CM_GIT_CHANGES, CM_GIT_HISTORY, CM_GIT_BRANCHES, CM_GIT_COMMIT, CM_GIT_PULL, CM_GIT_PUSH,
+                CM_GIT_FETCH, CM_GIT_DIFF_FILE, CM_GIT_FILE_HISTORY)
 CM_DATA_TREE = Command.USER + 14
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
@@ -343,7 +349,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerMixin, GitMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -515,6 +521,20 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                     MenuItem(_('~R~ender trace'), CM_TRACE_RENDER, "F7"),
                 ),
                 SubMenu(
+                    _('~G~it'),
+                    MenuItem(_('~C~hanges'), CM_GIT_CHANGES),
+                    MenuItem(_('~H~istory'), CM_GIT_HISTORY),
+                    MenuItem(_('~B~ranches'), CM_GIT_BRANCHES),
+                    Separator(),
+                    MenuItem(_('C~o~mmit...'), CM_GIT_COMMIT),
+                    MenuItem(_('~P~ull'), CM_GIT_PULL),
+                    MenuItem(_('P~u~sh'), CM_GIT_PUSH),
+                    MenuItem(_('~F~etch'), CM_GIT_FETCH),
+                    Separator(),
+                    MenuItem(_('~D~iff of the file'), CM_GIT_DIFF_FILE),
+                    MenuItem(_('File h~i~story'), CM_GIT_FILE_HISTORY),
+                ),
+                SubMenu(
                     _('~W~indow'),
                     MenuItem(_('~P~roject'), CM_PROJECT, "Ctrl+B"),
                     MenuItem(_('~M~essages'), CM_MESSAGES),
@@ -600,6 +620,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         else:
             self.call_after_refresh(self.toggle_project)
         self.call_after_refresh(self.update_status)
+        self.call_after_refresh(self.start_git_watch)
 
     # ----------------------------------------------------------- windows
     def windows(self) -> list[Window]:
@@ -691,6 +712,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             project.styles.width = ProjectWindow.WIDTH
             project.styles.height = "100%"
             self.insert_window(project)
+            self.call_after_refresh(self.refresh_git_state)  # its border says the branch
         elif self.active_window() is project:
             self._remove_window(project)
         else:
@@ -726,6 +748,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         self.recheck_includes()  # a template may now exist
         self._rerender_after_save(win.path)
         self.lsp_saved(win.path, win.editor.lang)
+        self.refresh_git_state()
         project = self.project_window()
         if project is not None:
             project.project_tree.refresh_members(win.path)  # an unfolded file shows its members as saved
@@ -784,6 +807,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         # elsewhere the key goes on (the trace window's own F7 / F8).
         if action == "command" and parameters and parameters[0] in DEBUG_KEYS:
             return self.debug_keys_active() or (parameters[0] == "TRACE" and self.traces_template())
+        if action == "command" and parameters and parameters[0] == "GOTO_INCLUDE":
+            # in the commit's message Ctrl+Enter commits (the message takes the key)
+            return not isinstance(self.focused, MessageView)
         return True
 
     def traces_template(self) -> bool:
@@ -878,6 +904,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 await self.translate_wizard()
             case _ if command == CM_COMPOSER:
                 await self.open_composer()
+            case _ if command in GIT_COMMANDS:
+                await self.git_command(command)
             case _ if command == CM_GOTO_INCLUDE and editor:
                 await self.goto_include(editor)
             case _ if command == CM_COMPLETE and editor:
@@ -1826,6 +1854,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return "Data-Files"
         if isinstance(active, (ComposerWindow, ComposerLogWindow)):
             return "Composer"
+        if isinstance(active, (_GitWindow, DiffWindow, GitLogWindow)):
+            return "Git"
         if isinstance(active, ProjectWindow):
             return "Project-Window"
         if isinstance(active, OutputWindow):
@@ -2357,6 +2387,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             return
         if isinstance(active, ComposerWindow):
             status.set_hint(ComposerWindow.HINT)
+            return
+        if isinstance(active, (_GitWindow, DiffWindow)):
+            status.set_hint(type(active).HINT)
             return
         if isinstance(active, DivSetupWindow):
             dirty = " *" if active.source.dirty else ""

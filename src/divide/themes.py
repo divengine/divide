@@ -127,12 +127,17 @@ _tok("error", "diag.warning", bg="warning-bg")  # its own colour: a number or a 
 _tok("focus", "dialector.focus", bg="focus-bg", **B)
 _tok("inserted", "trace.new", bg="inserted-bg", **B)  # what a mutation wrote
 _tok("deleted", "trace.old", bg="deleted-bg", **B)  # what it took away
+_tok("diff-add", "diff.add", bg="diff-add-bg")  # a diff's lines (Git): added, removed
+_tok("diff-del", "diff.del", bg="diff-del-bg")
+_tok("diff-hunk", "diff.hunk")  # @@ -1,3 +1,4 @@
+_tok("diff-meta", "diff.meta", **B)  # diff --git, index, ---, +++, a commit's header
 del B
 
 SYNTAX_ROLES = (
     "keyword", "name", "variable", "builtin", "string", "type", "number", "constant", "modifier",
     "comment", "operator", "punct", "special", "markup", "module",
     "error", "error-bg", "warning-bg", "focus", "focus-bg", "inserted", "inserted-bg", "deleted", "deleted-bg",
+    "diff-add", "diff-add-bg", "diff-del", "diff-del-bg", "diff-hunk", "diff-meta",
 )
 
 # The roles of the UI; every theme gives every one (tests/test_themes.py checks).
@@ -195,6 +200,8 @@ BORLAND_SYNTAX = {
     "special": "lightred", "markup": "cyan", "module": "cyan",
     "error": "white", "error-bg": "red", "warning-bg": "brown", "focus": "black", "focus-bg": "lightcyan",
     "inserted": "black", "inserted-bg": "lightgreen", "deleted": "white", "deleted-bg": "red",
+    "diff-add": "white", "diff-add-bg": "green", "diff-del": "white", "diff-del-bg": "red",
+    "diff-hunk": "lightcyan", "diff-meta": "yellow",
 }
 
 # Campbell's blue is lighter than CGA's: its cyan, light red and light magenta
@@ -284,6 +291,8 @@ MODERN_SYNTAX = {
     "special": "#FF7A85", "markup": "#F07178", "module": "#E8C77D",
     "error": _BRIGHT, "error-bg": "#8E2B36", "warning-bg": "#5A4A1F", "focus": "#101216", "focus-bg": "#7DB4F5",
     "inserted": "#101216", "inserted-bg": "#A8DC8C", "deleted": _BRIGHT, "deleted-bg": "#8E2B36",
+    "diff-add": "#D8F0CC", "diff-add-bg": "#1F3A24", "diff-del": "#F5C6CB", "diff-del-bg": "#4A1F26",
+    "diff-hunk": "#7FD8E3", "diff-meta": "#E8C77D",
 }
 
 

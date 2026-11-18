@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 10:19+0000\n"
+"POT-Creation-Date: 2026-11-18 17:29+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -28,12 +28,18 @@ msgstr "  ... y {changes} más"
 msgid " (no Xdebug: not debugged)"
 msgstr " (sin Xdebug: sin depurar)"
 
+msgid " (the newest)"
+msgstr " (los más recientes)"
+
 #, python-brace-format
 msgid " ({count} names that are not Div tags are left out)"
 msgstr " (se omiten {count} nombres que no son etiquetas de Div)"
 
 msgid " on the same line"
 msgstr " en la misma línea"
+
+msgid " · no upstream"
+msgstr " · sin upstream"
 
 #, python-brace-format
 msgid "\"{key}\" must be an object"
@@ -59,6 +65,9 @@ msgstr "(tal como está escrito)"
 
 msgid "(between cycles)"
 msgstr "(entre ciclos)"
+
+msgid "(no differences in the text)"
+msgstr "(sin diferencias en el texto)"
 
 msgid "(no grammar for this language: pip install its tree-sitter package)"
 msgstr "(sin gramática para este lenguaje: instala su paquete de tree-sitter con pip)"
@@ -89,6 +98,10 @@ msgstr "(nada que listar)"
 
 msgid "(the project's, not trusted yet: Alt+F10)"
 msgstr "(los del proyecto, aún sin confianza: Alt+F10)"
+
+#, python-brace-format
+msgid "... {count} more lines not shown"
+msgstr "... {count} líneas más sin mostrar"
 
 msgid "16 colours (Windows console)"
 msgstr "16 colores (consola de Windows)"
@@ -131,6 +144,10 @@ msgstr "Preguntando a Packagist las versiones de {name}..."
 msgid "Assignment"
 msgstr "Asignación"
 
+#, python-brace-format
+msgid "Author  {who} <{email}>"
+msgstr "Autor   {who} <{email}>"
+
 msgid "Average"
 msgstr "Media"
 
@@ -156,6 +173,9 @@ msgstr "Bloques"
 
 msgid "Books"
 msgstr "Libros"
+
+msgid "Branch"
+msgstr "Rama"
 
 msgid "Break"
 msgstr "Interrupción"
@@ -255,8 +275,15 @@ msgstr "Retorno de carro"
 msgid "Change ~a~ll"
 msgstr "Cambiar t~o~do"
 
+#, python-brace-format
+msgid "Changed on disk, not read again (they have unsaved changes): {files}"
+msgstr "Cambiados en disco, no se leen de nuevo (tienen cambios sin guardar): {files}"
+
 msgid "Changed: Preview again (Enter)"
 msgstr "Cambiado: previsualiza de nuevo (Enter)"
+
+msgid "Changes"
+msgstr "Cambios"
 
 msgid "Checking"
 msgstr "Verificando"
@@ -287,6 +314,25 @@ msgstr "Inicio de comentario"
 
 msgid "Comment end"
 msgstr "Fin de comentario"
+
+msgid "Commit"
+msgstr "Commit"
+
+#, python-brace-format
+msgid "Commit  {oid}"
+msgstr "Commit  {oid}"
+
+#, python-brace-format
+msgid "Commit by {who}"
+msgstr "Commit de {who}"
+
+#, python-brace-format
+msgid "Commit {oid}"
+msgstr "Commit {oid}"
+
+#, python-brace-format
+msgid "Committed: {summary}"
+msgstr "Commit hecho: {summary}"
 
 msgid "Composer"
 msgstr "Composer"
@@ -322,6 +368,9 @@ msgstr "Condiciones"
 msgid "Confirm"
 msgstr "Confirmar"
 
+msgid "Conflicts"
+msgstr "Conflictos"
+
 msgid "Content begin prefix"
 msgstr "Prefijo de inicio de contenido"
 
@@ -336,6 +385,10 @@ msgstr "Sufijo de fin de contenido"
 
 msgid "Contents"
 msgstr "Contenido"
+
+#, python-brace-format
+msgid "Copied: {oid}"
+msgstr "Copiado: {oid}"
 
 msgid "Copy"
 msgstr "Copiar"
@@ -362,6 +415,15 @@ msgstr "Contar palabras"
 msgid "Co~m~plete"
 msgstr "Co~m~pletar"
 
+msgid "Ctrl+F find · Alt+F3 close"
+msgstr "Ctrl+F buscar · Alt+F3 cerrar"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Current"
+msgstr "Actual"
+
 msgid "Custom PHP code"
 msgstr "Código PHP propio"
 
@@ -370,6 +432,12 @@ msgstr "Cor~t~ar"
 
 msgid "C~a~scade"
 msgstr "~C~ascada"
+
+msgid "C~o~mmit"
+msgstr "C~o~mmit"
+
+msgid "C~o~mmit..."
+msgstr "C~o~mmit..."
 
 msgid "C~r~eate"
 msgstr "C~r~ear"
@@ -390,6 +458,13 @@ msgstr "Archivo de datos"
 #, python-brace-format
 msgid "Data for {name}"
 msgstr "Datos de {name}"
+
+msgid "Date"
+msgstr "Fecha"
+
+#, python-brace-format
+msgid "Date  {when}"
+msgstr "Fecha  {when}"
 
 msgid "Date prefix"
 msgstr "Prefijo de fecha"
@@ -426,9 +501,20 @@ msgstr "Supr"
 msgid "Delete"
 msgstr "Eliminar"
 
+msgid "Delete branch"
+msgstr "Borrar rama"
+
+#, python-brace-format
+msgid "Delete the branch {branch}?"
+msgstr "¿Borrar la rama {branch}?"
+
 #, python-brace-format
 msgid "Delete the folder {rel}"
 msgstr "Eliminar la carpeta {rel}"
+
+#, python-brace-format
+msgid "Delete {file}? It is not in git: it cannot be brought back."
+msgstr "¿Borrar {file}? No está en git: no se podrá recuperar."
 
 #, python-brace-format
 msgid "Delete {path!s} and its {count} item(s)?"
@@ -455,11 +541,18 @@ msgstr "Ahora los dialectos se completan con el dialecto por defecto de Div"
 msgid "Dialects are now completed with the project's dialect"
 msgstr "Ahora los dialectos se completan con el dialecto del proyecto"
 
+#, python-brace-format
+msgid "Diff: {file}"
+msgstr "Diff: {file}"
+
 msgid "Direction"
 msgstr "Dirección"
 
 msgid "Directory"
 msgstr "Carpeta"
+
+msgid "Discard"
+msgstr "Descartar"
 
 msgid "Div"
 msgstr "Div"
@@ -677,8 +770,17 @@ msgstr "Enter ir a la coincidencia"
 msgid "Enter go to the tag · Space fold · below a block, what it holds"
 msgstr "Enter ir a la etiqueta · Espacio plegar · bajo un bloque, lo que contiene"
 
+msgid "Enter its diff · Ctrl+R reload · Alt+F10 new branch here, copy the hash"
+msgstr "Enter su diff · Ctrl+R recargar · Alt+F10 rama nueva aquí, copiar el hash"
+
 msgid "Enter new line ~n~umber"
 msgstr "~N~úmero de línea"
+
+msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
+msgstr "Enter cambiar a ella · Ins rama nueva · Supr borrar · Alt+F10 más"
+
+msgid "Enter switches to the branch under the bar; a remote one gets its local branch."
+msgstr "Enter cambia a la rama bajo la barra; una remota obtiene su rama local."
 
 msgid "Error"
 msgstr "Error"
@@ -738,11 +840,26 @@ msgstr "Prefijo de fin falso"
 msgid "False end suffix"
 msgstr "Sufijo de fin falso"
 
+msgid "Fetching from the remotes"
+msgstr "Fetch de los remotos"
+
 msgid "File"
 msgstr "Archivo"
 
 msgid "File extensions"
 msgstr "Extensiones de archivo"
+
+msgid "File h~i~story"
+msgstr "Historial del ~a~rchivo"
+
+msgid "Files changed since the last commit, not staged yet: Space stages them."
+msgstr "Archivos cambiados desde el último commit, aún sin preparar: Espacio los prepara."
+
+msgid "Files git could not merge by itself: edit them, then Space marks them solved."
+msgstr "Archivos que git no pudo fusionar solo: edítalos y luego Espacio los marca resueltos."
+
+msgid "Files git does not follow yet: Space stages them, Del deletes them."
+msgstr "Archivos que git aún no sigue: Espacio los prepara, Supr los borra."
 
 msgid "Find"
 msgstr "Buscar"
@@ -810,8 +927,31 @@ msgstr "Inicio de etiqueta amigable"
 msgid "Friendly tag end"
 msgstr "Fin de etiqueta amigable"
 
+msgid "From the current commit; it becomes the current branch"
+msgstr "Desde el commit actual; pasa a ser la rama actual"
+
+#, python-brace-format
+msgid "From {start}"
+msgstr "Desde {start}"
+
 msgid "Function separator"
 msgstr "Separador de función"
+
+msgid "Git"
+msgstr "Git"
+
+msgid "Git: branches"
+msgstr "Git: ramas"
+
+msgid "Git: changes"
+msgstr "Git: cambios"
+
+msgid "Git: history"
+msgstr "Git: historial"
+
+#, python-brace-format
+msgid "Git: history of {file}"
+msgstr "Git: historial de {file}"
 
 msgid "Go to File"
 msgstr "Ir a archivo"
@@ -968,6 +1108,9 @@ msgstr "Servidores de lenguaje"
 msgid "Lan~g~uage..."
 msgstr "~I~dioma..."
 
+msgid "Last commit"
+msgstr "Último commit"
+
 #, python-brace-format
 msgid "Last: {command}: done"
 msgstr "Último: {command}: hecho"
@@ -984,6 +1127,10 @@ msgstr "Líneas"
 
 msgid "Li~c~ense"
 msgstr "Li~c~encia"
+
+#, python-brace-format
+msgid "Local  {n}"
+msgstr "Locales  {n}"
 
 msgid "Location begin"
 msgstr "Inicio de location"
@@ -1017,6 +1164,10 @@ msgstr "Máximo"
 
 msgid "Member delimiter"
 msgstr "Delimitador de miembro"
+
+#, python-brace-format
+msgid "Merge of {parents}"
+msgstr "Fusión de {parents}"
 
 msgid "Messages"
 msgstr "Mensajes"
@@ -1054,6 +1205,9 @@ msgstr "Mutaciones"
 
 msgid "Nested folders are fine (a/b/c)"
 msgstr "Se admiten carpetas anidadas (a/b/c)"
+
+msgid "New branch"
+msgstr "Rama nueva"
 
 msgid "New composer.json"
 msgstr "Nuevo composer.json"
@@ -1094,8 +1248,14 @@ msgstr "Nuevo co~m~poser.json..."
 msgid "No Xdebug: it serves, but requests cannot be debugged"
 msgstr "Sin Xdebug: sirve las páginas, pero las peticiones no se pueden depurar"
 
+msgid "No branch is checked out (detached HEAD): switch to a branch first."
+msgstr "No hay ninguna rama activa (HEAD separado): cambia antes a una rama."
+
 msgid "No command matches"
 msgstr "Ningún comando coincide"
+
+msgid "No commits yet"
+msgstr "Aún no hay commits"
 
 msgid "No composer.json: Alt+F10 > New composer.json"
 msgstr "Sin composer.json: Alt+F10 > Nuevo composer.json"
@@ -1128,11 +1288,20 @@ msgstr "No es un número de línea"
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr "Aún sin instalar: Alt+F10 > Instalar"
 
+msgid "Nothing changed since the last commit"
+msgstr "Nada ha cambiado desde el último commit"
+
+msgid "Nothing changed: the working tree is the last commit."
+msgstr "Nada ha cambiado: los archivos son los del último commit."
+
 msgid "Nothing cut or copied: Ctrl+X or Ctrl+C on a file or a folder first"
 msgstr "Nada cortado ni copiado: primero Ctrl+X o Ctrl+C sobre un archivo o una carpeta"
 
 msgid "Nothing found: fewer or other words"
 msgstr "No se encontró nada: prueba con menos palabras o con otras"
+
+msgid "Nothing is staged: stage files (Space in Git > Changes) or tick Stage every change first."
+msgstr "No hay nada preparado: prepara archivos (Espacio en Git > Cambios) o marca Preparar todos los cambios antes."
 
 msgid "Number prefix"
 msgstr "Prefijo de número"
@@ -1145,6 +1314,10 @@ msgstr "Sufijo de número"
 
 msgid "N~u~ll"
 msgstr "N~u~lo"
+
+#, python-brace-format
+msgid "On {branch} now"
+msgstr "Ahora en {branch}"
 
 #, python-brace-format
 msgid "One-character transformations: {^name}, {_name}, {%name}, {html:name}..."
@@ -1170,6 +1343,9 @@ msgstr "Abre un script PHP (.php) para ejecutarlo."
 
 msgid "Open a file"
 msgstr "Abrir un archivo"
+
+msgid "Open a file of the repository first"
+msgstr "Abre antes un archivo del repositorio"
 
 msgid "Open ~c~omposer.json"
 msgstr "Abrir c~o~mposer.json"
@@ -1295,6 +1471,14 @@ msgstr "Separador de propiedad"
 msgid "Protector"
 msgstr "Protector"
 
+#, python-brace-format
+msgid "Pulling {branch}"
+msgstr "Pull de {branch}"
+
+#, python-brace-format
+msgid "Pushing {branch}"
+msgstr "Push de {branch}"
+
 msgid "Put every tag back to Div's default?"
 msgstr "¿Devolver todas las etiquetas a las de Div por defecto?"
 
@@ -1315,11 +1499,18 @@ msgstr "¿Devolver {section} a los valores por defecto de Div en este archivo?"
 msgid "P~H~P version"
 msgstr "Versión de P~H~P"
 
+msgid "P~u~sh"
+msgstr "Pu~s~h"
+
 msgid "Raw URL encode"
 msgstr "Codificar URL (raw)"
 
 msgid "Refre~s~h"
 msgstr "Ac~t~ualizar"
+
+#, python-brace-format
+msgid "Refs    {refs}"
+msgstr "Refs    {refs}"
 
 msgid "Relative to the project; an existing file is opened"
 msgstr "Relativo al proyecto; si el archivo existe, se abre"
@@ -1327,6 +1518,9 @@ msgstr "Relativo al proyecto; si el archivo existe, se abre"
 #, python-brace-format
 msgid "Relative to {name}/"
 msgstr "Relativo a {name}/"
+
+msgid "Remote branches are deleted on the remote (git push --delete)"
+msgstr "Las ramas remotas se borran en el remoto (git push --delete)"
 
 #, python-brace-format
 msgid "Remove {name} from the project (composer remove)?"
@@ -1370,6 +1564,9 @@ msgstr "¿Reemplazar esta coincidencia?"
 
 msgid "Replacements"
 msgstr "Reemplazos"
+
+msgid "Repository"
+msgstr "Repositorio"
 
 msgid "Require ~D~iv (divengine/div)"
 msgstr "Requerir ~D~iv (divengine/div)"
@@ -1481,14 +1678,26 @@ msgstr "Reemplazo simple"
 msgid "Simulated request"
 msgstr "Petición simulada"
 
+msgid "Some files are in conflict: solve them first."
+msgstr "Hay archivos en conflicto: resuélvelos antes."
+
 msgid "Source"
 msgstr "Fuente"
 
 msgid "Space"
 msgstr "Espacio"
 
+msgid "Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Alt+F10 more"
+msgstr "Espacio preparar/quitar · Enter abrir · Supr descartar · Ctrl+K commit · Alt+F10 más"
+
 msgid "Special characters"
 msgstr "Caracteres especiales"
+
+msgid "Stage ~e~verything"
+msgstr "Preparar ~t~odo"
+
+msgid "Staged (the next commit)"
+msgstr "Preparados (el próximo commit)"
 
 msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
 msgstr "Inicia primero el script en el depurador (F7, F8 o F4) y detente en una línea."
@@ -1616,6 +1825,9 @@ msgstr "El dialector reescribe {display_name} como JSON estándar con solo las e
 msgid "The documentation inside divide, one book each."
 msgstr "La documentación dentro de divide, un libro cada una."
 
+msgid "The first line is the summary; a blank line, then the details."
+msgstr "La primera línea es el resumen; una línea en blanco y luego los detalles."
+
 msgid "The key is empty"
 msgstr "La clave está vacía"
 
@@ -1629,17 +1841,29 @@ msgstr "La siguiente petición no se detendrá"
 msgid "The project has a composer.json already."
 msgstr "El proyecto ya tiene un composer.json."
 
+msgid "The project is not in a git repository (no .git in its folder or above it). In a terminal, git init makes one."
+msgstr "El proyecto no está en un repositorio git (no hay .git en su carpeta ni más arriba). En una terminal, git init crea uno."
+
 msgid "The project's PHP settings wait for your trust (Alt+F10)"
 msgstr "Los ajustes PHP del proyecto esperan tu confianza (Alt+F10)"
 
 msgid "The project's dialect: templates without @_DIALECT are in it, and a dialect file's missing tags are its."
 msgstr "El dialecto del proyecto: las plantillas sin @_DIALECT están en él, y las etiquetas que faltan en un archivo de dialecto son las suyas."
 
+msgid "The repository has no commits yet: Git > Commit makes the first one."
+msgstr "El repositorio aún no tiene commits: Git > Commit hace el primero."
+
+msgid "The repository has no remote: add one in a terminal (git remote add origin <url>)."
+msgstr "El repositorio no tiene remoto: añade uno en una terminal (git remote add origin <url>)."
+
 msgid "The request templates see while you design them: div.get, div.post, div.server, div.session."
 msgstr "La petición que ven las plantillas mientras las diseñas: div.get, div.post, div.server, div.session."
 
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr "El script se está ejecutando: Ctrl+F2 lo detiene"
+
+msgid "This is the current branch: switch to another one first"
+msgstr "Es la rama actual: cambia antes a otra"
 
 #, python-brace-format
 msgid "This terminal cannot be handed over: {exc}"
@@ -1648,6 +1872,10 @@ msgstr "No se puede ceder este terminal: {exc}"
 #, python-brace-format
 msgid "This terminal gets {shown} now."
 msgstr "Este terminal recibe ahora {shown}."
+
+#, python-brace-format
+msgid "Throw away the changes to {file}? They cannot be brought back."
+msgstr "¿Descartar los cambios de {file}? No se podrán recuperar."
 
 msgid "Time"
 msgstr "Tiempo"
@@ -1660,6 +1888,9 @@ msgstr "Traza"
 
 msgid "Tracing"
 msgstr "Trazando"
+
+msgid "Tracking"
+msgstr "Seguimiento"
 
 msgid "Transform all tags"
 msgstr "Transformar todas las etiquetas"
@@ -1733,6 +1964,12 @@ msgstr "Codificar URL"
 msgid "Unsaved: F2 saves (Div sees the saved file)"
 msgstr "Sin guardar: F2 guarda (Div ve el archivo guardado)"
 
+msgid "Unstage it first (Space): Del throws away what is not staged"
+msgstr "Quítalo antes de lo preparado (Espacio): Supr descarta lo que no está preparado"
+
+msgid "Untracked"
+msgstr "Sin seguimiento"
+
 msgid "Update ~e~very package"
 msgstr "Actualizar ~t~odos los paquetes"
 
@@ -1746,11 +1983,17 @@ msgstr "Actualizando {name}"
 msgid "Upper case"
 msgstr "Mayúsculas"
 
+msgid "Upstream"
+msgstr "Upstream"
+
 msgid "Use a folder inside the project."
 msgstr "Usa una carpeta dentro del proyecto."
 
 msgid "Use a name inside the project folder."
 msgstr "Usa un nombre dentro de la carpeta del proyecto."
+
+msgid "U~n~stage everything"
+msgstr "Q~u~itar todo lo preparado"
 
 msgid "Validating composer.json"
 msgstr "Validando composer.json"
@@ -1788,6 +2031,9 @@ msgstr "Lo que Div añade al nombre de una plantilla o de un archivo de datos (s
 msgid "What every template gets besides its data: globals (setGlobal()), defaults, system variables."
 msgstr "Lo que recibe cada plantilla además de sus datos: globales (setGlobal()), valores por defecto, variables de sistema."
 
+msgid "What the next commit takes (Ctrl+K commits it). Space takes a file out."
+msgstr "Lo que llevará el próximo commit (Ctrl+K lo hace). Espacio quita un archivo."
+
 msgid "What the project needs only while it is developed (require-dev), and what came with it."
 msgstr "Lo que el proyecto necesita solo mientras se desarrolla (require-dev), y lo que vino con ello."
 
@@ -1802,6 +2048,9 @@ msgstr "¿Qué plantilla? Escribe su ruta."
 
 msgid "Word wrap"
 msgstr "Ajuste de líneas"
+
+msgid "Write a message: what this commit does, in a line."
+msgstr "Escribe un mensaje: qué hace este commit, en una línea."
 
 msgid "Writing the autoloader"
 msgstr "Escribiendo el autoloader"
@@ -1986,6 +2235,10 @@ msgstr "por defecto: {value}"
 msgid "dependency"
 msgstr "dependencia"
 
+#, python-brace-format
+msgid "detached at {oid}"
+msgstr "separado en {oid}"
+
 msgid "dev"
 msgstr "dev"
 
@@ -2031,6 +2284,20 @@ msgstr "encontrado solo: {path}"
 msgid "friendly tag"
 msgstr "etiqueta amigable"
 
+msgid "git commit failed"
+msgstr "git commit falló"
+
+#, python-brace-format
+msgid "git could not start: {exc}"
+msgstr "git no pudo arrancar: {exc}"
+
+msgid "git was not found: install it (https://git-scm.com) and start divide again"
+msgstr "no se encontró git: instálalo (https://git-scm.com) y vuelve a abrir divide"
+
+#, python-brace-format
+msgid "git {command} failed"
+msgstr "git {command} falló"
+
 msgid "if var is false"
 msgstr "si la variable es falsa"
 
@@ -2057,6 +2324,9 @@ msgstr "la clave {new_key!r} ya existe"
 
 msgid "language of the interface for this run (default: Options > Language, else the system's)"
 msgstr "idioma de la interfaz para esta ejecución (por defecto: Opciones > Idioma; si no, el del sistema)"
+
+msgid "local"
+msgstr "local"
 
 msgid "loop is empty"
 msgstr "el bucle está vacío"
@@ -2138,6 +2408,9 @@ msgstr "carpeta del proyecto y/o archivos que abrir"
 
 msgid "project's"
 msgstr "del proyecto"
+
+msgid "remote"
+msgstr "remota"
 
 msgid "require"
 msgstr "require"
@@ -2252,6 +2525,9 @@ msgstr "falta vendor/: Alt+F10 > Instalar"
 msgid "written in the setup"
 msgstr "escrito en la configuración"
 
+msgid "yes"
+msgstr "sí"
+
 #, python-brace-format, python-format
 msgid "{% header %}, {%% footer %%}, and locations (( name )) filled by {{name ... name}}"
 msgstr "{% header %}, {%% footer %%}, y las locations (( name )) que llena {{name ... name}}"
@@ -2271,6 +2547,14 @@ msgstr ""
 #, python-brace-format
 msgid "{address}: Address already in use (another server is listening there)"
 msgstr "{address}: la dirección ya está en uso (otro servidor escucha allí)"
+
+#, python-brace-format
+msgid "{branch} has commits that are in no other branch: delete it and lose them?"
+msgstr "{branch} tiene commits que no están en ninguna otra rama: ¿borrarla y perderlos?"
+
+#, python-brace-format
+msgid "{branch} has no upstream to pull from: push it first (it is set then)."
+msgstr "{branch} no tiene upstream del que hacer pull: haz push antes (así se establece)."
 
 #, python-brace-format
 msgid "{changes} in {n} parse"
@@ -2319,6 +2603,14 @@ msgid "{expression}: (not running)"
 msgstr "{expression}: (no se ejecuta)"
 
 #, python-brace-format
+msgid "{file} is not in the repository"
+msgstr "{file} no está en el repositorio"
+
+#, python-brace-format
+msgid "{file} is not there (deleted)"
+msgstr "{file} no está (borrado)"
+
+#, python-brace-format
 msgid ""
 "{file} lets this project's templates call PHP:\n"
 "\n"
@@ -2333,6 +2625,10 @@ msgstr ""
 "¿Confiar en estos ajustes? (Hasta que cambien; Opciones > Configuración de Div permite confiar más tarde.)"
 
 #, python-brace-format
+msgid "{file}: no changes since the last commit"
+msgstr "{file}: sin cambios desde el último commit"
+
+#, python-brace-format
 msgid "{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})"
 msgstr "{frag} cierra un bucle que nunca se abrió ({loop_b}{key}{loop_bs})"
 
@@ -2343,6 +2639,10 @@ msgstr "{ignore_b} nunca se cierra con {ignore_e}"
 #, python-brace-format
 msgid "{key}: a $reference is not a value here"
 msgstr "{key}: una $referencia no es un valor aquí"
+
+#, python-brace-format
+msgid "{name} cannot be a branch name: no spaces or symbols such as .. : ? * [ ^, and not starting with - or ."
+msgstr "{name} no puede ser nombre de rama: sin espacios ni símbolos como .. : ? * [ ^, y sin empezar por - ni ."
 
 #, python-brace-format
 msgid "{name} copied: Ctrl+V in a folder copies it there"
@@ -2409,6 +2709,24 @@ msgid "{name}: {direct} required, {deps} with them"
 msgstr "{name}: {direct} requeridos, {deps} con ellos"
 
 #, python-brace-format
+msgid "{n} branch"
+msgid_plural "{n} branches"
+msgstr[0] "{n} rama"
+msgstr[1] "{n} ramas"
+
+#, python-brace-format
+msgid "{n} changed"
+msgid_plural "{n} changed"
+msgstr[0] "{n} cambiado"
+msgstr[1] "{n} cambiados"
+
+#, python-brace-format
+msgid "{n} commit"
+msgid_plural "{n} commits"
+msgstr[0] "{n} commit"
+msgstr[1] "{n} commits"
+
+#, python-brace-format
 msgid "{n} error"
 msgid_plural "{n} errors"
 msgstr[0] "{n} error"
@@ -2419,6 +2737,18 @@ msgid "{n} file"
 msgid_plural "{n} files"
 msgstr[0] "{n} archivo"
 msgstr[1] "{n} archivos"
+
+#, python-brace-format
+msgid "{n} file changed:"
+msgid_plural "{n} files changed:"
+msgstr[0] "{n} archivo cambiado:"
+msgstr[1] "{n} archivos cambiados:"
+
+#, python-brace-format
+msgid "{n} file staged"
+msgid_plural "{n} files staged"
+msgstr[0] "{n} archivo preparado"
+msgstr[1] "{n} archivos preparados"
 
 #, python-brace-format
 msgid "{n} item"
@@ -2435,6 +2765,18 @@ msgstr[1] "{n} coincidencias"
 #, python-brace-format
 msgid "{n} of {count} set in this file · Enter to edit"
 msgstr "{n} de {count} en este archivo · Enter para editar"
+
+#, python-brace-format
+msgid "{n} other change"
+msgid_plural "{n} other changes"
+msgstr[0] "{n} cambio más"
+msgstr[1] "{n} cambios más"
+
+#, python-brace-format
+msgid "{n} remote"
+msgid_plural "{n} remotes"
+msgstr[0] "{n} remoto"
+msgstr[1] "{n} remotos"
 
 #, python-brace-format
 msgid "{n} tag change:"
@@ -2557,6 +2899,12 @@ msgstr "~T~odas"
 msgid "~A~llowed functions (separated by ,)"
 msgstr "Funciones ~p~ermitidas (separadas por ,)"
 
+msgid "~A~mend the last commit (replace it)"
+msgstr "~E~nmendar el último commit (reemplazarlo)"
+
+msgid "~A~mend the last commit..."
+msgstr "~E~nmendar el último commit..."
+
 msgid "~A~rray"
 msgstr "~A~rray"
 
@@ -2585,6 +2933,9 @@ msgstr "~B~ase: el dialecto del proyecto ({name})"
 msgid "~B~ooks"
 msgstr "~L~ibros"
 
+msgid "~B~ranches"
+msgstr "~R~amas"
+
 msgid "~B~rowse..."
 msgstr "~E~xaminar..."
 
@@ -2599,6 +2950,9 @@ msgstr "~C~ancelar"
 
 msgid "~C~ase sensitive"
 msgstr "~M~ayúsculas y minúsculas"
+
+msgid "~C~hanges"
+msgstr "~C~ambios"
 
 msgid "~C~heck"
 msgstr "~V~erificar"
@@ -2618,6 +2972,9 @@ msgstr "~C~omando del servidor elegido (vacío: el del proyecto o el del PATH)"
 msgid "~C~ommand palette..."
 msgstr "Paleta de ~c~omandos..."
 
+msgid "~C~ommit..."
+msgstr "~C~ommit..."
+
 msgid "~C~omposer packages..."
 msgstr "Paquetes ~C~omposer..."
 
@@ -2626,6 +2983,9 @@ msgstr "~C~ontenido"
 
 msgid "~C~opy"
 msgstr "~C~opiar"
+
+msgid "~C~opy the hash"
+msgstr "~C~opiar el hash"
 
 msgid "~D~ata (DIV_DEFAULT_DATA_FILE_EXT)"
 msgstr "~D~atos (DIV_DEFAULT_DATA_FILE_EXT)"
@@ -2643,6 +3003,9 @@ msgstr "~P~or defecto"
 msgid "~D~efaults: [{\"search\": ..., \"replace\": ...}]"
 msgstr "Valores por ~d~efecto: [{\"search\": ..., \"replace\": ...}]"
 
+msgid "~D~elete"
+msgstr "~B~orrar"
+
 msgid "~D~evelopment only (require-dev)"
 msgstr "Solo ~d~esarrollo (require-dev)"
 
@@ -2654,6 +3017,15 @@ msgstr "~D~ialecto en el Dialector"
 
 msgid "~D~ialector..."
 msgstr "~D~ialector..."
+
+msgid "~D~iff of the commit"
+msgstr "~D~iff del commit"
+
+msgid "~D~iff of the file"
+msgstr "~D~iff del archivo"
+
+msgid "~D~iscard the changes"
+msgstr "~D~escartar los cambios"
 
 msgid "~D~iv engine..."
 msgstr "Motor ~D~iv..."
@@ -2706,6 +3078,9 @@ msgstr "~F6~ Siguiente"
 msgid "~F~alse"
 msgstr "~F~also"
 
+msgid "~F~etch"
+msgstr "~F~etch"
+
 msgid "~F~ile"
 msgstr "~A~rchivo"
 
@@ -2739,6 +3114,9 @@ msgstr "Dialecto de ~o~rigen"
 msgid "~G~ET (a JSON object)"
 msgstr "~G~ET (un objeto JSON)"
 
+msgid "~G~it"
+msgstr "~G~it"
+
 msgid "~G~lobals (a JSON object)"
 msgstr "~G~lobales (un objeto JSON)"
 
@@ -2750,6 +3128,9 @@ msgstr "Ir a ~l~ínea..."
 
 msgid "~H~elp"
 msgstr "A~y~uda"
+
+msgid "~H~istory"
+msgstr "~H~istorial"
 
 msgid "~I~mport tags..."
 msgstr "~I~mportar etiquetas..."
@@ -2781,6 +3162,9 @@ msgstr "~B~iblioteca (un paquete para otros)"
 msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
 msgstr "Ciclos ~m~áximos del parser (DIV_MAX_PARSE_CYCLES)"
 
+msgid "~M~essage"
+msgstr "~M~ensaje"
+
 msgid "~M~essages"
 msgstr "~M~ensajes"
 
@@ -2809,6 +3193,12 @@ msgstr "~N~ombre (vendor/proyecto)"
 
 msgid "~N~ew"
 msgstr "~N~uevo"
+
+msgid "~N~ew branch here..."
+msgstr "~N~ueva rama aquí..."
+
+msgid "~N~ew branch..."
+msgstr "~N~ueva rama..."
 
 msgid "~N~ew text"
 msgstr "Texto ~n~uevo"
@@ -2842,6 +3232,9 @@ msgstr "~A~brir en el navegador"
 
 msgid "~O~pen in the browser"
 msgstr "Abrir en el ~n~avegador"
+
+msgid "~O~pen the file"
+msgstr "~A~brir el archivo"
 
 msgid "~O~pen..."
 msgstr "~A~brir..."
@@ -2897,6 +3290,9 @@ msgstr "Configuración del ~p~royecto"
 
 msgid "~P~rompt on replace"
 msgstr "Pre~g~untar al reemplazar"
+
+msgid "~P~ull"
+msgstr "Pu~l~l"
 
 msgid "~R~edo"
 msgstr "~R~ehacer"
@@ -2958,6 +3354,12 @@ msgstr "Buscar de ~n~uevo"
 msgid "~S~earch..."
 msgstr "~B~uscar..."
 
+msgid "~S~tage / unstage"
+msgstr "~P~reparar / quitar"
+
+msgid "~S~tage every change first"
+msgstr "~P~reparar todos los cambios antes"
+
 msgid "~S~tart"
 msgstr "~I~niciar"
 
@@ -2969,6 +3371,9 @@ msgstr "~D~etener el servidor"
 
 msgid "~S~tring"
 msgstr "Te~x~to"
+
+msgid "~S~witch to it"
+msgstr "~C~ambiar a ella"
 
 msgid "~S~ystem variables (div.now, div.get... are always on)"
 msgstr "Variables de ~s~istema (div.now, div.get... siempre están activas)"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 10:19+0000\n"
+"POT-Creation-Date: 2026-11-18 17:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,11 +27,17 @@ msgstr ""
 msgid " (no Xdebug: not debugged)"
 msgstr ""
 
+msgid " (the newest)"
+msgstr ""
+
 #, python-brace-format
 msgid " ({count} names that are not Div tags are left out)"
 msgstr ""
 
 msgid " on the same line"
+msgstr ""
+
+msgid " · no upstream"
 msgstr ""
 
 #, python-brace-format
@@ -57,6 +63,9 @@ msgid "(as typed)"
 msgstr ""
 
 msgid "(between cycles)"
+msgstr ""
+
+msgid "(no differences in the text)"
 msgstr ""
 
 msgid "(no grammar for this language: pip install its tree-sitter package)"
@@ -87,6 +96,10 @@ msgid "(nothing to list)"
 msgstr ""
 
 msgid "(the project's, not trusted yet: Alt+F10)"
+msgstr ""
+
+#, python-brace-format
+msgid "... {count} more lines not shown"
 msgstr ""
 
 msgid "16 colours (Windows console)"
@@ -130,6 +143,10 @@ msgstr ""
 msgid "Assignment"
 msgstr ""
 
+#, python-brace-format
+msgid "Author  {who} <{email}>"
+msgstr ""
+
 msgid "Average"
 msgstr ""
 
@@ -154,6 +171,9 @@ msgid "Blocks"
 msgstr ""
 
 msgid "Books"
+msgstr ""
+
+msgid "Branch"
 msgstr ""
 
 msgid "Break"
@@ -256,7 +276,14 @@ msgstr ""
 msgid "Change ~a~ll"
 msgstr ""
 
+#, python-brace-format
+msgid "Changed on disk, not read again (they have unsaved changes): {files}"
+msgstr ""
+
 msgid "Changed: Preview again (Enter)"
+msgstr ""
+
+msgid "Changes"
 msgstr ""
 
 msgid "Checking"
@@ -287,6 +314,25 @@ msgid "Comment begin"
 msgstr ""
 
 msgid "Comment end"
+msgstr ""
+
+msgid "Commit"
+msgstr ""
+
+#, python-brace-format
+msgid "Commit  {oid}"
+msgstr ""
+
+#, python-brace-format
+msgid "Commit by {who}"
+msgstr ""
+
+#, python-brace-format
+msgid "Commit {oid}"
+msgstr ""
+
+#, python-brace-format
+msgid "Committed: {summary}"
 msgstr ""
 
 msgid "Composer"
@@ -326,6 +372,9 @@ msgstr ""
 msgid "Confirm"
 msgstr ""
 
+msgid "Conflicts"
+msgstr ""
+
 msgid "Content begin prefix"
 msgstr ""
 
@@ -339,6 +388,10 @@ msgid "Content end suffix"
 msgstr ""
 
 msgid "Contents"
+msgstr ""
+
+#, python-brace-format
+msgid "Copied: {oid}"
 msgstr ""
 
 msgid "Copy"
@@ -366,6 +419,15 @@ msgstr ""
 msgid "Co~m~plete"
 msgstr ""
 
+msgid "Ctrl+F find · Alt+F3 close"
+msgstr ""
+
+msgid "Ctrl+K"
+msgstr ""
+
+msgid "Current"
+msgstr ""
+
 msgid "Custom PHP code"
 msgstr ""
 
@@ -373,6 +435,12 @@ msgid "Cu~t~"
 msgstr ""
 
 msgid "C~a~scade"
+msgstr ""
+
+msgid "C~o~mmit"
+msgstr ""
+
+msgid "C~o~mmit..."
 msgstr ""
 
 msgid "C~r~eate"
@@ -393,6 +461,13 @@ msgstr ""
 
 #, python-brace-format
 msgid "Data for {name}"
+msgstr ""
+
+msgid "Date"
+msgstr ""
+
+#, python-brace-format
+msgid "Date  {when}"
 msgstr ""
 
 msgid "Date prefix"
@@ -432,8 +507,19 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+msgid "Delete branch"
+msgstr ""
+
+#, python-brace-format
+msgid "Delete the branch {branch}?"
+msgstr ""
+
 #, python-brace-format
 msgid "Delete the folder {rel}"
+msgstr ""
+
+#, python-brace-format
+msgid "Delete {file}? It is not in git: it cannot be brought back."
 msgstr ""
 
 #, python-brace-format
@@ -461,10 +547,17 @@ msgstr ""
 msgid "Dialects are now completed with the project's dialect"
 msgstr ""
 
+#, python-brace-format
+msgid "Diff: {file}"
+msgstr ""
+
 msgid "Direction"
 msgstr ""
 
 msgid "Directory"
+msgstr ""
+
+msgid "Discard"
 msgstr ""
 
 msgid "Div"
@@ -683,7 +776,18 @@ msgstr ""
 msgid "Enter go to the tag · Space fold · below a block, what it holds"
 msgstr ""
 
+msgid "Enter its diff · Ctrl+R reload · Alt+F10 new branch here, copy the hash"
+msgstr ""
+
 msgid "Enter new line ~n~umber"
+msgstr ""
+
+msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
+msgstr ""
+
+msgid ""
+"Enter switches to the branch under the bar; a remote one gets its local "
+"branch."
 msgstr ""
 
 msgid "Error"
@@ -744,10 +848,27 @@ msgstr ""
 msgid "False end suffix"
 msgstr ""
 
+msgid "Fetching from the remotes"
+msgstr ""
+
 msgid "File"
 msgstr ""
 
 msgid "File extensions"
+msgstr ""
+
+msgid "File h~i~story"
+msgstr ""
+
+msgid "Files changed since the last commit, not staged yet: Space stages them."
+msgstr ""
+
+msgid ""
+"Files git could not merge by itself: edit them, then Space marks them "
+"solved."
+msgstr ""
+
+msgid "Files git does not follow yet: Space stages them, Del deletes them."
 msgstr ""
 
 msgid "Find"
@@ -810,7 +931,30 @@ msgstr ""
 msgid "Friendly tag end"
 msgstr ""
 
+msgid "From the current commit; it becomes the current branch"
+msgstr ""
+
+#, python-brace-format
+msgid "From {start}"
+msgstr ""
+
 msgid "Function separator"
+msgstr ""
+
+msgid "Git"
+msgstr ""
+
+msgid "Git: branches"
+msgstr ""
+
+msgid "Git: changes"
+msgstr ""
+
+msgid "Git: history"
+msgstr ""
+
+#, python-brace-format
+msgid "Git: history of {file}"
 msgstr ""
 
 msgid "Go to File"
@@ -973,6 +1117,9 @@ msgstr ""
 msgid "Lan~g~uage..."
 msgstr ""
 
+msgid "Last commit"
+msgstr ""
+
 #, python-brace-format
 msgid "Last: {command}: done"
 msgstr ""
@@ -988,6 +1135,10 @@ msgid "Lines"
 msgstr ""
 
 msgid "Li~c~ense"
+msgstr ""
+
+#, python-brace-format
+msgid "Local  {n}"
 msgstr ""
 
 msgid "Location begin"
@@ -1021,6 +1172,10 @@ msgid "Maximum"
 msgstr ""
 
 msgid "Member delimiter"
+msgstr ""
+
+#, python-brace-format
+msgid "Merge of {parents}"
 msgstr ""
 
 msgid "Messages"
@@ -1058,6 +1213,9 @@ msgid "Mutations"
 msgstr ""
 
 msgid "Nested folders are fine (a/b/c)"
+msgstr ""
+
+msgid "New branch"
 msgstr ""
 
 msgid "New composer.json"
@@ -1099,7 +1257,13 @@ msgstr ""
 msgid "No Xdebug: it serves, but requests cannot be debugged"
 msgstr ""
 
+msgid "No branch is checked out (detached HEAD): switch to a branch first."
+msgstr ""
+
 msgid "No command matches"
+msgstr ""
+
+msgid "No commits yet"
 msgstr ""
 
 msgid "No composer.json: Alt+F10 > New composer.json"
@@ -1133,10 +1297,21 @@ msgstr ""
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr ""
 
+msgid "Nothing changed since the last commit"
+msgstr ""
+
+msgid "Nothing changed: the working tree is the last commit."
+msgstr ""
+
 msgid "Nothing cut or copied: Ctrl+X or Ctrl+C on a file or a folder first"
 msgstr ""
 
 msgid "Nothing found: fewer or other words"
+msgstr ""
+
+msgid ""
+"Nothing is staged: stage files (Space in Git > Changes) or tick Stage "
+"every change first."
 msgstr ""
 
 msgid "Number prefix"
@@ -1149,6 +1324,10 @@ msgid "Number suffix"
 msgstr ""
 
 msgid "N~u~ll"
+msgstr ""
+
+#, python-brace-format
+msgid "On {branch} now"
 msgstr ""
 
 #, python-brace-format
@@ -1176,6 +1355,9 @@ msgid "Open a PHP script (.php) to run it."
 msgstr ""
 
 msgid "Open a file"
+msgstr ""
+
+msgid "Open a file of the repository first"
 msgstr ""
 
 msgid "Open ~c~omposer.json"
@@ -1304,6 +1486,14 @@ msgstr ""
 msgid "Protector"
 msgstr ""
 
+#, python-brace-format
+msgid "Pulling {branch}"
+msgstr ""
+
+#, python-brace-format
+msgid "Pushing {branch}"
+msgstr ""
+
 msgid "Put every tag back to Div's default?"
 msgstr ""
 
@@ -1326,10 +1516,17 @@ msgstr ""
 msgid "P~H~P version"
 msgstr ""
 
+msgid "P~u~sh"
+msgstr ""
+
 msgid "Raw URL encode"
 msgstr ""
 
 msgid "Refre~s~h"
+msgstr ""
+
+#, python-brace-format
+msgid "Refs    {refs}"
 msgstr ""
 
 msgid "Relative to the project; an existing file is opened"
@@ -1337,6 +1534,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "Relative to {name}/"
+msgstr ""
+
+msgid "Remote branches are deleted on the remote (git push --delete)"
 msgstr ""
 
 #, python-brace-format
@@ -1382,6 +1582,9 @@ msgid "Replace this occurrence?"
 msgstr ""
 
 msgid "Replacements"
+msgstr ""
+
+msgid "Repository"
 msgstr ""
 
 msgid "Require ~D~iv (divengine/div)"
@@ -1497,13 +1700,27 @@ msgstr ""
 msgid "Simulated request"
 msgstr ""
 
+msgid "Some files are in conflict: solve them first."
+msgstr ""
+
 msgid "Source"
 msgstr ""
 
 msgid "Space"
 msgstr ""
 
+msgid ""
+"Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Alt+F10 "
+"more"
+msgstr ""
+
 msgid "Special characters"
+msgstr ""
+
+msgid "Stage ~e~verything"
+msgstr ""
+
+msgid "Staged (the next commit)"
 msgstr ""
 
 msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
@@ -1634,6 +1851,9 @@ msgstr ""
 msgid "The documentation inside divide, one book each."
 msgstr ""
 
+msgid "The first line is the summary; a blank line, then the details."
+msgstr ""
+
 msgid "The key is empty"
 msgstr ""
 
@@ -1647,12 +1867,25 @@ msgstr ""
 msgid "The project has a composer.json already."
 msgstr ""
 
+msgid ""
+"The project is not in a git repository (no .git in its folder or above "
+"it). In a terminal, git init makes one."
+msgstr ""
+
 msgid "The project's PHP settings wait for your trust (Alt+F10)"
 msgstr ""
 
 msgid ""
 "The project's dialect: templates without @_DIALECT are in it, and a "
 "dialect file's missing tags are its."
+msgstr ""
+
+msgid "The repository has no commits yet: Git > Commit makes the first one."
+msgstr ""
+
+msgid ""
+"The repository has no remote: add one in a terminal (git remote add "
+"origin <url>)."
 msgstr ""
 
 msgid ""
@@ -1663,12 +1896,19 @@ msgstr ""
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr ""
 
+msgid "This is the current branch: switch to another one first"
+msgstr ""
+
 #, python-brace-format
 msgid "This terminal cannot be handed over: {exc}"
 msgstr ""
 
 #, python-brace-format
 msgid "This terminal gets {shown} now."
+msgstr ""
+
+#, python-brace-format
+msgid "Throw away the changes to {file}? They cannot be brought back."
 msgstr ""
 
 msgid "Time"
@@ -1681,6 +1921,9 @@ msgid "Trace"
 msgstr ""
 
 msgid "Tracing"
+msgstr ""
+
+msgid "Tracking"
 msgstr ""
 
 msgid "Transform all tags"
@@ -1755,6 +1998,12 @@ msgstr ""
 msgid "Unsaved: F2 saves (Div sees the saved file)"
 msgstr ""
 
+msgid "Unstage it first (Space): Del throws away what is not staged"
+msgstr ""
+
+msgid "Untracked"
+msgstr ""
+
 msgid "Update ~e~very package"
 msgstr ""
 
@@ -1768,10 +2017,16 @@ msgstr ""
 msgid "Upper case"
 msgstr ""
 
+msgid "Upstream"
+msgstr ""
+
 msgid "Use a folder inside the project."
 msgstr ""
 
 msgid "Use a name inside the project folder."
+msgstr ""
+
+msgid "U~n~stage everything"
 msgstr ""
 
 msgid "Validating composer.json"
@@ -1814,6 +2069,9 @@ msgid ""
 "defaults, system variables."
 msgstr ""
 
+msgid "What the next commit takes (Ctrl+K commits it). Space takes a file out."
+msgstr ""
+
 msgid ""
 "What the project needs only while it is developed (require-dev), and what"
 " came with it."
@@ -1831,6 +2089,9 @@ msgid "Which template? Type its path."
 msgstr ""
 
 msgid "Word wrap"
+msgstr ""
+
+msgid "Write a message: what this commit does, in a line."
 msgstr ""
 
 msgid "Writing the autoloader"
@@ -2018,6 +2279,10 @@ msgstr ""
 msgid "dependency"
 msgstr ""
 
+#, python-brace-format
+msgid "detached at {oid}"
+msgstr ""
+
 msgid "dev"
 msgstr ""
 
@@ -2059,6 +2324,20 @@ msgstr ""
 msgid "friendly tag"
 msgstr ""
 
+msgid "git commit failed"
+msgstr ""
+
+#, python-brace-format
+msgid "git could not start: {exc}"
+msgstr ""
+
+msgid "git was not found: install it (https://git-scm.com) and start divide again"
+msgstr ""
+
+#, python-brace-format
+msgid "git {command} failed"
+msgstr ""
+
 msgid "if var is false"
 msgstr ""
 
@@ -2086,6 +2365,9 @@ msgstr ""
 msgid ""
 "language of the interface for this run (default: Options > Language, else"
 " the system's)"
+msgstr ""
+
+msgid "local"
 msgstr ""
 
 msgid "loop is empty"
@@ -2169,6 +2451,9 @@ msgid "project folder and/or files to open"
 msgstr ""
 
 msgid "project's"
+msgstr ""
+
+msgid "remote"
 msgstr ""
 
 msgid "require"
@@ -2289,6 +2574,9 @@ msgstr ""
 msgid "written in the setup"
 msgstr ""
 
+msgid "yes"
+msgstr ""
+
 #, python-brace-format, python-format
 msgid ""
 "{% header %}, {%% footer %%}, and locations (( name )) filled by {{name "
@@ -2309,6 +2597,14 @@ msgstr ""
 
 #, python-brace-format
 msgid "{address}: Address already in use (another server is listening there)"
+msgstr ""
+
+#, python-brace-format
+msgid "{branch} has commits that are in no other branch: delete it and lose them?"
+msgstr ""
+
+#, python-brace-format
+msgid "{branch} has no upstream to pull from: push it first (it is set then)."
 msgstr ""
 
 #, python-brace-format
@@ -2358,6 +2654,14 @@ msgid "{expression}: (not running)"
 msgstr ""
 
 #, python-brace-format
+msgid "{file} is not in the repository"
+msgstr ""
+
+#, python-brace-format
+msgid "{file} is not there (deleted)"
+msgstr ""
+
+#, python-brace-format
 msgid ""
 "{file} lets this project's templates call PHP:\n"
 "\n"
@@ -2365,6 +2669,10 @@ msgid ""
 "\n"
 "Trust these settings? (Until they change; Options > Div setup can trust "
 "them later.)"
+msgstr ""
+
+#, python-brace-format
+msgid "{file}: no changes since the last commit"
 msgstr ""
 
 #, python-brace-format
@@ -2377,6 +2685,12 @@ msgstr ""
 
 #, python-brace-format
 msgid "{key}: a $reference is not a value here"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{name} cannot be a branch name: no spaces or symbols such as .. : ? * [ "
+"^, and not starting with - or ."
 msgstr ""
 
 #, python-brace-format
@@ -2444,6 +2758,24 @@ msgid "{name}: {direct} required, {deps} with them"
 msgstr ""
 
 #, python-brace-format
+msgid "{n} branch"
+msgid_plural "{n} branches"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} changed"
+msgid_plural "{n} changed"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} commit"
+msgid_plural "{n} commits"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
 msgid "{n} error"
 msgid_plural "{n} errors"
 msgstr[0] ""
@@ -2452,6 +2784,18 @@ msgstr[1] ""
 #, python-brace-format
 msgid "{n} file"
 msgid_plural "{n} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} file changed:"
+msgid_plural "{n} files changed:"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} file staged"
+msgid_plural "{n} files staged"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -2470,6 +2814,18 @@ msgstr[1] ""
 #, python-brace-format
 msgid "{n} of {count} set in this file · Enter to edit"
 msgstr ""
+
+#, python-brace-format
+msgid "{n} other change"
+msgid_plural "{n} other changes"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} remote"
+msgid_plural "{n} remotes"
+msgstr[0] ""
+msgstr[1] ""
 
 #, python-brace-format
 msgid "{n} tag change:"
@@ -2592,6 +2948,12 @@ msgstr ""
 msgid "~A~llowed functions (separated by ,)"
 msgstr ""
 
+msgid "~A~mend the last commit (replace it)"
+msgstr ""
+
+msgid "~A~mend the last commit..."
+msgstr ""
+
 msgid "~A~rray"
 msgstr ""
 
@@ -2620,6 +2982,9 @@ msgstr ""
 msgid "~B~ooks"
 msgstr ""
 
+msgid "~B~ranches"
+msgstr ""
+
 msgid "~B~rowse..."
 msgstr ""
 
@@ -2633,6 +2998,9 @@ msgid "~C~ancel"
 msgstr ""
 
 msgid "~C~ase sensitive"
+msgstr ""
+
+msgid "~C~hanges"
 msgstr ""
 
 msgid "~C~heck"
@@ -2653,6 +3021,9 @@ msgstr ""
 msgid "~C~ommand palette..."
 msgstr ""
 
+msgid "~C~ommit..."
+msgstr ""
+
 msgid "~C~omposer packages..."
 msgstr ""
 
@@ -2660,6 +3031,9 @@ msgid "~C~ontents"
 msgstr ""
 
 msgid "~C~opy"
+msgstr ""
+
+msgid "~C~opy the hash"
 msgstr ""
 
 msgid "~D~ata (DIV_DEFAULT_DATA_FILE_EXT)"
@@ -2678,6 +3052,9 @@ msgstr ""
 msgid "~D~efaults: [{\"search\": ..., \"replace\": ...}]"
 msgstr ""
 
+msgid "~D~elete"
+msgstr ""
+
 msgid "~D~evelopment only (require-dev)"
 msgstr ""
 
@@ -2688,6 +3065,15 @@ msgid "~D~ialect in the Dialector"
 msgstr ""
 
 msgid "~D~ialector..."
+msgstr ""
+
+msgid "~D~iff of the commit"
+msgstr ""
+
+msgid "~D~iff of the file"
+msgstr ""
+
+msgid "~D~iscard the changes"
 msgstr ""
 
 msgid "~D~iv engine..."
@@ -2741,6 +3127,9 @@ msgstr ""
 msgid "~F~alse"
 msgstr ""
 
+msgid "~F~etch"
+msgstr ""
+
 msgid "~F~ile"
 msgstr ""
 
@@ -2774,6 +3163,9 @@ msgstr ""
 msgid "~G~ET (a JSON object)"
 msgstr ""
 
+msgid "~G~it"
+msgstr ""
+
 msgid "~G~lobals (a JSON object)"
 msgstr ""
 
@@ -2784,6 +3176,9 @@ msgid "~G~o to line number..."
 msgstr ""
 
 msgid "~H~elp"
+msgstr ""
+
+msgid "~H~istory"
 msgstr ""
 
 msgid "~I~mport tags..."
@@ -2816,6 +3211,9 @@ msgstr ""
 msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
 msgstr ""
 
+msgid "~M~essage"
+msgstr ""
+
 msgid "~M~essages"
 msgstr ""
 
@@ -2843,6 +3241,12 @@ msgid "~N~ame (vendor/project)"
 msgstr ""
 
 msgid "~N~ew"
+msgstr ""
+
+msgid "~N~ew branch here..."
+msgstr ""
+
+msgid "~N~ew branch..."
 msgstr ""
 
 msgid "~N~ew text"
@@ -2876,6 +3280,9 @@ msgid "~O~pen in browser"
 msgstr ""
 
 msgid "~O~pen in the browser"
+msgstr ""
+
+msgid "~O~pen the file"
 msgstr ""
 
 msgid "~O~pen..."
@@ -2931,6 +3338,9 @@ msgid "~P~roject's setup"
 msgstr ""
 
 msgid "~P~rompt on replace"
+msgstr ""
+
+msgid "~P~ull"
 msgstr ""
 
 msgid "~R~edo"
@@ -2993,6 +3403,12 @@ msgstr ""
 msgid "~S~earch..."
 msgstr ""
 
+msgid "~S~tage / unstage"
+msgstr ""
+
+msgid "~S~tage every change first"
+msgstr ""
+
 msgid "~S~tart"
 msgstr ""
 
@@ -3003,6 +3419,9 @@ msgid "~S~top server"
 msgstr ""
 
 msgid "~S~tring"
+msgstr ""
+
+msgid "~S~witch to it"
 msgstr ""
 
 msgid "~S~ystem variables (div.now, div.get... are always on)"
