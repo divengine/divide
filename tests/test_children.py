@@ -17,8 +17,11 @@ def alive(pid: int) -> bool:
     except ProcessLookupError:
         return False
     # a zombie is dead too: it only waits for its parent to read it
-    with open(f"/proc/{pid}/stat", encoding="utf-8") as stat:
-        return stat.read().split(")")[-1].split()[0] != "Z"
+    try:
+        with open(f"/proc/{pid}/stat", encoding="utf-8") as stat:
+            return stat.read().split(")")[-1].split()[0] != "Z"
+    except (ProcessLookupError, FileNotFoundError):  # it ended between the two looks
+        return False
 
 
 async def test_kill_all_kills_what_still_runs():

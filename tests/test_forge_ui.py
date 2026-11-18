@@ -73,6 +73,7 @@ async def test_a_new_pull_request_pushes_the_branch_first(tmp_path, gh):
         await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), forgeui.NewItemDialog))
         dialog = app.screen.dialog
         assert dialog.title_input.data == "A footer" and dialog.base_input.data == "main"
+        await until(pilot, lambda: app.focused is dialog.title_input)  # the dialog has put its focus first
         dialog.body.focus()
         await until(pilot, lambda: app.focused is dialog.body)
         await pilot.press(*"Fixes #3")
