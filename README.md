@@ -75,10 +75,23 @@ through the real Div engine, side by side with the code.
 
 ## Quick start
 
+Ready to run, with nothing else to install ([all the options](https://github.com/divengine/divide/wiki/Installation)):
+
+```bash
+brew install divengine/tap/divide          # macOS and Linux
+scoop install https://github.com/divengine/divide/releases/latest/download/divide.json   # Windows
+cd ~/sites/my-project && divide            # any folder; or: divide page.tpl
+```
+
+The [latest release](https://github.com/divengine/divide/releases/latest) also has an
+installer for Windows (`.msi`), `.deb`, `.rpm`, `.apk` and Arch packages, an
+AppImage, and the binary alone for Linux and macOS.
+
+From the source code, with Python 3.11+:
+
 ```bash
 git clone https://github.com/divengine/divide.git && cd divide
 tools/install.sh                           # the `divide` command, in ~/.local/bin
-cd ~/sites/my-project && divide            # any folder; or: divide page.tpl
 ```
 
 `tools/install.sh` installs divide in the checkout's `.venv` (editable) and

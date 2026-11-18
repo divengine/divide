@@ -4,16 +4,75 @@
 
 | | Needed for |
 |---|---|
-| **Python 3.11+** | divide itself |
 | **PHP 8** (the `php` command) | rendering, and checking includes |
 | **Div** (`divengine/div`) | rendering, and checking includes |
 | **Xdebug** (optional) | the PHP [[debugger\|Debugging PHP]] |
+| **Python 3.11+** | only to install divide from its source code |
 
-Editing, highlighting, completion and most checks work with Python alone. Everything that needs to know what Div would do (rendering, resolving `{% includes %}`) asks the real engine, so it needs PHP and Div.
+Editing, highlighting, completion and most checks work without PHP. Everything that needs to know what Div would do (rendering, resolving `{% includes %}`) asks the real engine, so it needs PHP and Div.
 
 ## Install divide
 
-From the repository, as a command for your user:
+Every [release](https://github.com/divengine/divide/releases/latest) carries divide ready to run, with Python inside: nothing else to install. Pick the way that suits your system.
+
+### macOS and Linux: Homebrew
+
+```bash
+brew install divengine/tap/divide
+```
+
+`brew upgrade divide` updates it.
+
+### Windows: Scoop
+
+```powershell
+scoop install https://github.com/divengine/divide/releases/latest/download/divide.json
+```
+
+`scoop update divide` updates it. Or download `divide-<version>-windows-x86_64.msi` from the release: the installer puts divide in Program Files and on the PATH (open a new terminal afterwards). The `.zip` holds `divide.exe` alone, to put wherever you like.
+
+### Linux packages
+
+From the release, for your architecture (`amd64`/`x86_64` or `arm64`/`aarch64`):
+
+| System | Package | Install |
+|---|---|---|
+| Debian, Ubuntu | `divide_<version>_amd64.deb` | `sudo apt install ./divide_<version>_amd64.deb` |
+| Fedora, RHEL, openSUSE | `divide-<version>-1.x86_64.rpm` | `sudo dnf install ./divide-<version>-1.x86_64.rpm` |
+| Alpine | `divide_<version>_x86_64.apk` | `sudo apk add --allow-untrusted divide_<version>_x86_64.apk` |
+| Arch | `divide-<version>-1-x86_64.pkg.tar.zst` | `sudo pacman -U divide-<version>-1-x86_64.pkg.tar.zst` |
+
+The packages put `divide` in `/usr/bin` and recommend `php-cli`.
+
+### Linux: AppImage or the binary alone
+
+```bash
+chmod +x divide-<version>-linux-x86_64.AppImage
+./divide-<version>-linux-x86_64.AppImage
+```
+
+Or the standalone binary, in a folder on your PATH:
+
+```bash
+curl -fLo ~/.local/bin/divide https://github.com/divengine/divide/releases/download/v<version>/divide-<version>-linux-x86_64
+chmod +x ~/.local/bin/divide
+```
+
+### macOS: the archive
+
+`divide-<version>-macos-arm64.tar.gz` (Apple silicon) or `-macos-x86_64.tar.gz` (Intel) holds the binary. It is not signed, so macOS stops it the first time; allow it with:
+
+```bash
+xattr -d com.apple.quarantine divide
+```
+
+(Homebrew does not need this.) On Windows, SmartScreen asks the same before the first run of the `.exe` or the `.msi`: **More info > Run anyway**.
+
+Each release has a `SHA256SUMS` file to check what you downloaded.
+
+### From the source code
+
+With Python 3.11 or newer, as a command for your user:
 
 ```bash
 git clone https://github.com/divengine/divide.git
@@ -21,21 +80,21 @@ cd divide
 tools/install.sh
 ```
 
-`tools/install.sh` creates the checkout's `.venv` if needed, installs divide there (editable) and links the `divide` command in `~/.local/bin` (or the folder you give it: `tools/install.sh /usr/local/bin`). Then, in any folder:
-
-```bash
-cd ~/sites/my-project
-divide              # the folder is the project
-divide page.tpl     # a file: its folder is the project
-```
-
-`git pull` in the checkout updates the command. To remove it, delete the link.
+`tools/install.sh` creates the checkout's `.venv` if needed, installs divide there (editable) and links the `divide` command in `~/.local/bin` (or the folder you give it: `tools/install.sh /usr/local/bin`). `git pull` in the checkout updates the command. To remove it, delete the link.
 
 Or as an isolated command with [pipx](https://pipx.pypa.io/):
 
 ```bash
 pipx install git+https://github.com/divengine/divide.git
-divide --help
+```
+
+### Check it
+
+```bash
+divide --version
+cd ~/sites/my-project
+divide              # the folder is the project
+divide page.tpl     # a file: its folder is the project
 ```
 
 ## Install Div for your project
