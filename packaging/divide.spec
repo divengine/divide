@@ -1,6 +1,7 @@
 # PyInstaller recipe for the standalone ``divide`` binary (one file, no Python needed).
 # Build from the repository root: pyinstaller packaging/divide.spec
 import os
+import sys
 
 from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules
 
@@ -36,4 +37,5 @@ exe = EXE(
     name="divide",
     console=True,
     upx=False,
+    strip=sys.platform.startswith("linux"),  # the Python of the build machines carries its debug symbols
 )
