@@ -1,8 +1,11 @@
 # PyInstaller recipe for the standalone ``divide`` binary (one file, no Python needed).
 # Build from the repository root: pyinstaller packaging/divide.spec
+import os
+
 from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules
 
-datas, binaries, hiddenimports = [], [], []
+# The version travels beside the package: divide reads it from there (divide.__version__).
+datas, binaries, hiddenimports = [(os.path.join(SPECPATH, "..", "VERSION"), "divide")], [], []
 # Textual and the Turbo Vision widgets load their parts lazily, and keep CSS and queries beside the code.
 for package in ("divide", "textual", "textual_vision"):
     d, b, h = collect_all(package)

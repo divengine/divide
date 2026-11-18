@@ -47,3 +47,25 @@ jobs:
         env:
           DIVIDE_DIV_PHP: ${{ github.workspace }}/examples/shop/vendor/autoload.php
         run: python -m pytest -q -p no:cacheprovider -rs
+
+  release-note:
+    name: A new version has its note
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: VERSION raised, releases/<version>.md written
+        run: |
+          version=$(tr -d '[:space:]' < VERSION)
+          before=$(git show "origin/$GITHUB_BASE_REF:VERSION" 2>/dev/null | tr -d '[:space:]' || true)
+          if [ "$version" = "$before" ]; then
+            echo "VERSION stays at $version."
+          elif [ ! -f "releases/$version.md" ]; then
+            echo "::error file=VERSION::VERSION is now $version: releases/$version.md, its release note, is missing"
+            exit 1
+          else
+            echo "divide $version, with its note: merged into main, it is released."
+          fi

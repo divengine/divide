@@ -1,100 +1,215 @@
 name: Release
 
-# A version tag (v0.1.0) builds the standalone binaries and publishes them in a GitHub release.
-# Started by hand (Actions > Release > Run workflow) it only builds them: they stay in the run's artifacts.
+# When the tests pass on main and VERSION holds a version with no tag yet and with its note in
+# releases/<version>.md, this builds divide for every platform, tags the commit and publishes the release.
+# Started by hand (Actions > Release > Run workflow) it only builds: the files stay in the run's artifacts.
 on:
-  push:
-    tags: ["v*"]
+  workflow_run:
+    workflows: [tests]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
-  binaries:
+  plan:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      sha: ${{ steps.plan.outputs.sha }}
+      publish: ${{ steps.plan.outputs.publish }}
+      build: ${{ steps.plan.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - id: plan
+        shell: bash
+        run: |
+          version=$(tr -d '[:space:]' < VERSION)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          publish=false
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            echo "Built by hand: divide $version is built, not published." >> "$GITHUB_STEP_SUMMARY"
+          elif git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+            echo "v$version is already released: nothing to publish." >> "$GITHUB_STEP_SUMMARY"
+          elif [ ! -f "releases/$version.md" ]; then
+            echo "::warning file=VERSION::divide $version has no note (releases/$version.md): it is not released"
+            echo "divide $version has no note (releases/$version.md): it is not released." >> "$GITHUB_STEP_SUMMARY"
+          else
+            publish=true
+            echo "divide $version is new and has its note: it is released." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          if [ "$publish" = true ] || [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
     name: ${{ matrix.target }}
+    needs: plan
+    if: needs.plan.outputs.build == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-22.04, target: linux-x86_64 }
-          - { os: ubuntu-22.04-arm, target: linux-arm64 }
+          - { os: ubuntu-22.04, target: linux-x86_64, arch: amd64 }
+          - { os: ubuntu-22.04-arm, target: linux-arm64, arch: arm64 }
           - { os: macos-latest, target: macos-arm64 }
           - { os: macos-15-intel, target: macos-x86_64 }
           - { os: windows-latest, target: windows-x86_64 }
     timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      NAME: divide-${{ needs.plan.outputs.version }}-${{ matrix.target }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: The tag is the version in pyproject.toml
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: |
-          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::the tag $GITHUB_REF_NAME does not match the version $version in pyproject.toml"
-            exit 1
-          fi
-
-      - name: Build
+      - name: The standalone binary
         shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install . pyinstaller
           pyinstaller --noconfirm --clean packaging/divide.spec
+          ./dist/divide --version
+          mkdir out
 
-      - name: The binary starts
-        shell: bash
-        run: ./dist/divide --help
-
-      - name: Package
-        id: package
+      - name: The archive
         shell: bash
         run: |
-          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          name="divide-$version-${{ matrix.target }}"
-          mkdir "$name"
-          cp README.md "$name/"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            cp dist/divide.exe "$name/"
-            7z a -tzip "$name.zip" "$name" > /dev/null
-            echo "file=$name.zip" >> "$GITHUB_OUTPUT"
+          mkdir "$NAME"
+          cp README.md "$NAME/"
+          if [ "$RUNNER_OS" = Windows ]; then
+            cp dist/divide.exe "$NAME/"
+            7z a -tzip "out/$NAME.zip" "$NAME" > /dev/null
           else
-            cp dist/divide "$name/"
-            tar -czf "$name.tar.gz" "$name"
-            echo "file=$name.tar.gz" >> "$GITHUB_OUTPUT"
+            cp dist/divide "$NAME/"
+            tar -czf "out/$NAME.tar.gz" "$NAME"
           fi
+          if [ "$RUNNER_OS" = Linux ]; then
+            cp dist/divide "out/$NAME"
+          fi
+
+      - name: The AppImage
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          machine=$(uname -m)
+          curl -fsSL -o appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$machine.AppImage"
+          chmod +x appimagetool
+          mkdir -p AppDir/usr/bin
+          cp dist/divide AppDir/usr/bin/
+          cp packaging/appimage/AppRun packaging/appimage/divide.desktop packaging/divide.svg AppDir/
+          chmod +x AppDir/AppRun
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=$machine ./appimagetool AppDir "out/$NAME.AppImage"
+          APPIMAGE_EXTRACT_AND_RUN=1 "./out/$NAME.AppImage" --version
+
+      - name: The deb, rpm, apk and Arch packages
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          machine=$([ "$ARCH" = arm64 ] && echo arm64 || echo x86_64)
+          gh release download v2.49.0 --repo goreleaser/nfpm --pattern "nfpm_2.49.0_Linux_$machine.tar.gz" --output nfpm.tar.gz
+          tar -xzf nfpm.tar.gz nfpm
+          for packager in deb rpm apk archlinux; do
+            ./nfpm package --config packaging/nfpm.yaml --packager "$packager" --target out/
+          done
+          ls out
+
+      - name: The Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
+          $msi = "out/$env:NAME.msi"
+          wix build packaging/divide.wxs -arch x64 -d Version=$env:VERSION -d Exe=dist/divide.exe -o $msi
+          Start-Process msiexec -ArgumentList '/i', (Resolve-Path $msi), '/qn' -Wait
+          & "$env:ProgramFiles\divide\divide.exe" --version
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}
-          path: ${{ steps.package.outputs.file }}
+          path: out/*
           if-no-files-found: error
 
   release:
-    needs: binaries
-    if: startsWith(github.ref, 'refs/tags/')
+    needs: [plan, build]
+    if: needs.plan.outputs.publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+
       - uses: actions/download-artifact@v4
         with:
           path: assets
           merge-multiple: true
 
-      - name: Checksums
-        working-directory: assets
-        run: sha256sum * > SHA256SUMS
+      - name: Checksums, the Homebrew formula and the Scoop manifest
+        run: |
+          (cd assets && sha256sum -- * > SHA256SUMS)
+          python3 packaging/manifests.py "$VERSION" assets/SHA256SUMS assets
+          (cd assets && sha256sum -- $(ls | grep -v '^SHA256SUMS$') > SHA256SUMS)
 
-      - name: The release, as a draft to review and publish
+      - name: The release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.plan.outputs.sha }}
+        run: |
+          prerelease=$(echo "$VERSION" | grep -q '[a-z]' && echo --prerelease || true)
+          gh release create "v$VERSION" assets/* --repo "$GITHUB_REPOSITORY" --target "$SHA" \
+            --title "divide $VERSION" --notes-file "releases/$VERSION.md" $prerelease
+
+  homebrew:
+    needs: [plan, release]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - name: The formula, to the tap
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" assets/* --repo "$GITHUB_REPOSITORY" \
-            --draft --title "divide ${GITHUB_REF_NAME#v}" --generate-notes
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "::notice::no HOMEBREW_TAP_TOKEN secret: the formula is only in the release (divide.rb)"
+            exit 0
+          fi
+          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern divide.rb
+          git clone "https://x-access-token:$TAP_TOKEN@github.com/divengine/homebrew-tap.git" tap
+          mkdir -p tap/Formula
+          cp divide.rb tap/Formula/divide.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/divide.rb
+          git commit -m "divide $VERSION"
+          git push

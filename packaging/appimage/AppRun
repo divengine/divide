@@ -1,0 +1,3 @@
+#!/bin/sh
+# The AppImage's entry: the standalone divide inside it.
+exec "$APPDIR/usr/bin/divide" "$@"

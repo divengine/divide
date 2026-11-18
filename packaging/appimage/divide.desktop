@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=divide
+Comment=Terminal IDE for the Divengine projects
+Exec=divide
+Icon=divide
+Terminal=true
+Categories=Development;IDE;

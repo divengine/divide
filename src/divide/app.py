@@ -2450,6 +2450,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--colors", choices=list(themes.DEPTHS), help=_('colour depth (default: what the terminal says it supports)'))
     parser.add_argument("--language", choices=["auto", *i18n.available()],
                         help=_("language of the interface for this run (default: Options > Language, else the system's)"))
+    parser.add_argument("--version", action="version", version=f"divide {__version__}")
     args = parser.parse_args(argv)
     root = Path.cwd()
     files: list[Path] = []

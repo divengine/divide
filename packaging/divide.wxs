@@ -1,0 +1,20 @@
+<!-- The Windows installer (WiX 5): divide.exe in Program Files\divide, on the PATH of every user.
+     wix build packaging/divide.wxs -arch x64 -d Version=0.1.0 -d Exe=dist/divide.exe -o divide.msi -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="divide" Manufacturer="Divengine" Version="$(var.Version)" Scope="perMachine"
+           UpgradeCode="79cdc4cc-3c98-4b3c-b823-90d131c10c57">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of divide is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="divide">
+        <Component Id="Program">
+          <File Id="DivideExe" Source="$(var.Exe)" Name="divide.exe" KeyPath="yes" />
+          <Environment Id="PathEntry" Name="PATH" Value="[INSTALLFOLDER]" Part="last" Action="set" System="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    <Feature Id="Main">
+      <ComponentRef Id="Program" />
+    </Feature>
+  </Package>
+</Wix>
