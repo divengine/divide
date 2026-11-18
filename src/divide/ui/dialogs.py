@@ -542,7 +542,8 @@ class InputDialog(_Dialog):
     """One line of text (a name or a path): ``value`` holds it after OK.
 
     With ``browse=(pattern, folder)`` a Browse button picks a file with the file
-    dialog and writes its absolute path (relative paths stay welcome)."""
+    dialog and writes its absolute path (relative paths stay welcome); with
+    ``browse_folders``, a folder."""
 
     DEFAULT_CSS = """
     InputDialog { width: 64; height: 9; }
@@ -559,12 +560,14 @@ class InputDialog(_Dialog):
         hint: str = "",
         select: tuple[int, int] | None = None,
         browse: tuple[str, Path] | None = None,
+        browse_folders: bool = False,
         allow_empty: bool = False,
         history: str | None = None,
     ) -> None:
         super().__init__(title=title)
         self.history = history or f"input:{title}"  # one history per kind of question
         self.browse = browse
+        self.browse_folders = browse_folders
         self.allow_empty = allow_empty
         self.input = InputLine(max_len=1024)
         self.input.data = text
@@ -591,7 +594,8 @@ class InputDialog(_Dialog):
             message.stop()
             message.prevent_default()
             pattern, folder = self.browse
-            self.run_worker(browse_into(self, self.input, self.title_text(), pattern, folder), exclusive=True)
+            self.run_worker(browse_into(self, self.input, self.title_text(), pattern, folder,
+                                        folders=self.browse_folders), exclusive=True)
 
     def title_text(self) -> str:
         return f"{self._title}: browse"

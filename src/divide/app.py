@@ -811,6 +811,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
     async def run_command(self, command: int, info: object = None) -> None:
         win = self.active_window()
         editor = self.active_editor()
+        if command in (Command.CUT, Command.COPY, Command.PASTE) and isinstance(win, ProjectWindow):
+            # Edit > Cut / Copy / Paste on the project window: its files and folders
+            self.tree_action(win.project_tree, {Command.CUT: "cut", Command.COPY: "copy", Command.PASTE: "paste"}[command])
+            return
         match command:
             case Command.QUIT:
                 for w in self.editor_windows():

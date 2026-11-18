@@ -219,3 +219,145 @@ async def test_the_filter_finds_files_in_folders_never_opened(tmp_path):
         await pilot.press("escape")
         await settle(pilot)
         assert "readme.md" in [line.node.data.path.name for line in tree._tree_lines]
+
+
+def node_of(tree, path):
+    node = tree._node_for(path)
+    assert node is not None, path
+    return node
+
+
+async def on_tree(pilot, app, path):
+    """The project window in front, its bar on ``path``."""
+    if app.project_window() is None:
+        app.toggle_project()
+        await settle(pilot)
+    app.raise_window(app.project_window())
+    tree = app.project_window().project_tree
+    tree.focus()
+    await tree.reveal(path)
+    await settle(pilot, 4)
+    assert tree.selected_path == path
+    return tree
+
+
+async def test_cut_and_paste_moves_a_file_with_its_window_and_breakpoints(tmp_path):
+    root = project(tmp_path)
+    page = root / "page.tpl"
+    app = Divide(root, [page])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        app.breakpoints[page] = {1}
+        tree = await on_tree(pilot, app, page)
+        await pilot.press("ctrl+x")
+        await settle(pilot, 4)
+        assert tree.clipboard == (page, True)
+        await pilot.press("escape")  # never mind
+        await settle(pilot, 4)
+        assert tree.clipboard is None
+        await pilot.press("shift+delete")  # Turbo Vision's cut
+        await settle(pilot, 4)
+        assert tree.clipboard == (page, True)
+
+        await on_tree(pilot, app, root / "parts")
+        await pilot.press("ctrl+v")
+        moved = root / "parts" / "page.tpl"
+        await until(pilot, lambda: tree.selected_path == moved)
+        assert moved.read_text() == "x" and not page.exists()
+        assert [w.path for w in app.editor_windows()] == [moved]
+        assert app.editor_windows()[0].title == "parts/page.tpl"
+        assert app.breakpoints == {moved: {1}}
+        assert tree.clipboard is None
+
+
+async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
+    root = project(tmp_path)
+    page = root / "page.tpl"
+    (root / "a.tpl").write_text("old")
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = await on_tree(pilot, app, page)
+        await pilot.press("ctrl+c", "ctrl+v")  # in its own folder: a copy beside it
+        await until(pilot, lambda: (root / "page copy.tpl").is_file())
+        assert page.read_text() == "x" and tree.clipboard == (page, False)  # a copy can be pasted again
+
+        await on_tree(pilot, app, root / "parts" / "a.tpl")
+        await pilot.press("ctrl+x")
+        await on_tree(pilot, app, page)
+        await pilot.press("ctrl+v")
+        await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+        assert isinstance(app.screen.dialog, MessageBox) and "a.tpl already exists" in app.screen.dialog._text
+        await pilot.press("y")
+        await until(pilot, lambda: not (root / "parts" / "a.tpl").exists())
+        assert (root / "a.tpl").read_text() == "a"
+
+
+async def test_a_folder_does_not_go_inside_itself_and_move_to(tmp_path):
+    root = project(tmp_path)
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = await on_tree(pilot, app, root / "parts")
+        await pilot.press("ctrl+x")
+        await on_tree(pilot, app, root / "parts" / "a.tpl")
+        await pilot.press("ctrl+v")
+        await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+        assert "inside itself" in app.screen.dialog._text
+        await pilot.press("enter")
+        await settle(pilot)
+        assert (root / "parts" / "a.tpl").is_file()
+
+        await on_tree(pilot, app, root / "page.tpl")
+        await pilot.press("alt+f10")
+        await settle(pilot, 4)
+        assert isinstance(app.screen, LocalMenu)
+        await pilot.press("m")  # Move to...
+        await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+        dialog = app.screen.dialog
+        assert isinstance(dialog, InputDialog) and dialog.browse_folders
+        dialog.input.data = "deep/er"  # made if missing
+        await pilot.press("enter")
+        moved = root / "deep" / "er" / "page.tpl"
+        await until(pilot, lambda: tree.selected_path == moved)
+        assert not (root / "page.tpl").exists()
+
+
+async def test_rename_with_a_path_moves_it(tmp_path):
+    root = project(tmp_path)
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = await on_tree(pilot, app, root / "parts" / "a.tpl")
+        await pilot.press("f2")  # the name without the extension is selected
+        await settle(pilot, 4)
+        await pilot.press(*"../b", "enter")
+        await until(pilot, lambda: tree.selected_path == root / "b.tpl")
+        assert not (root / "parts" / "a.tpl").exists()
+
+
+async def test_drag_a_file_onto_a_folder(tmp_path):
+    from textual import events
+
+    def mouse(kind, line, button=1):
+        return kind(tree, 8, line, 0, 0, button, False, False, False)
+
+    root = project(tmp_path)
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = await on_tree(pilot, app, root / "page.tpl")
+        page, parts = node_of(tree, root / "page.tpl"), node_of(tree, root / "parts")
+        tree.on_mouse_down(mouse(events.MouseDown, page.line))
+        tree.on_mouse_move(mouse(events.MouseMove, page.line))  # no row moved: no drag yet
+        assert tree._drag is None
+        tree.on_mouse_move(mouse(events.MouseMove, tree.root.line))  # its own folder: nowhere to go
+        assert tree._drag is page and tree._drop is None
+        tree.on_mouse_move(mouse(events.MouseMove, parts.line))
+        assert tree._drop is parts
+        tree.on_mouse_up(mouse(events.MouseUp, parts.line))
+        await until(pilot, lambda: isinstance(app.screen, DialogScreen))
+        assert "page.tpl to parts/" in app.screen.dialog._text
+        await pilot.press("y")
+        await until(pilot, lambda: (root / "parts" / "page.tpl").is_file())
+        assert not (root / "page.tpl").exists() and tree._drag is None and tree._drop is None

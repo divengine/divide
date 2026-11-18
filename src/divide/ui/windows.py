@@ -729,7 +729,11 @@ HIDDEN_NAMES = {".git", ".hg", ".svn", "__pycache__", ".venv", "node_modules", "
 
 class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
     """Project explorer: Ins new file, F7 new folder, F2 rename, Del delete,
-    Ctrl+R refresh, Alt+F10 (or a right click) the local menu."""
+    Ctrl+R refresh, Alt+F10 (or a right click) the local menu.
+
+    Moving: Ctrl+X (Shift+Del) cuts, Ctrl+C (Ctrl+Ins) copies, Ctrl+V (Shift+Ins)
+    pastes in the folder under the bar; Esc forgets what was cut. With the mouse,
+    drag a file or a folder onto a folder (the app asks before moving it)."""
 
     # Single-width glyphs: the default emoji icons are double width and not in the TV style.
     ICON_NODE = "► "  # Turbo Vision's own (CP437), like every glyph divide draws
@@ -741,6 +745,9 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         Binding("f2", "request('rename')", "Rename", show=False),
         Binding("delete", "request('delete')", "Delete", show=False),
         Binding("ctrl+r", "request('refresh')", "Refresh", show=False),
+        Binding("ctrl+x,shift+delete", "request('cut')", "Cut", show=False),
+        Binding("ctrl+c,ctrl+insert", "request('copy')", "Copy", show=False),
+        Binding("ctrl+v,shift+insert", "request('paste')", "Paste", show=False),
         Binding("alt+f10,shift+f10", "request('menu')", "Local menu", show=False),
         Binding("right", "unfold", "Unfold", show=False),
         Binding("left", "fold", "Fold", show=False),
@@ -776,11 +783,29 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             self.action = action
             self.screen_at = screen_at
 
+    class Drop(Message):
+        """A file or a folder dragged onto a folder (the app asks, then moves it)."""
+
+        def __init__(self, tree: "ProjectTree", source: Path, folder: Path) -> None:
+            super().__init__()
+            self.tree, self.source, self.folder = tree, source, folder
+
     def __init__(self, *args, icons: str = icons_mod.PLAIN, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.tv_options = OptionFlag.SELECTABLE
         self.icons = icons
         self.auto_expand = False  # folders toggle on Enter themselves; a file that unfolds opens
+        self.clipboard: tuple[Path, bool] | None = None  # (path, cut): what Ctrl+V pastes
+        self._press = None  # (node, y) of a button-1 press: a drag once the mouse moves a row
+        self._drag = None  # the node dragged
+        self._drop = None  # the folder node it would go into
+        self._swallow_click = False  # the click that ends a drag opens nothing
+
+    def set_clipboard(self, path: Path | None, cut: bool = False) -> None:
+        """What Ctrl+V pastes (None: nothing); a cut one is drawn dim."""
+        self.clipboard = (path, cut) if path is not None else None
+        self._invalidate()
+        self.refresh()
 
     def set_icons(self, mode: str) -> None:
         if mode != self.icons:
@@ -789,6 +814,16 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             self.refresh()
 
     def render_label(self, node, base_style, style):
+        text = self._label(node, base_style, style)
+        data = node.data
+        if data is not None and not isinstance(data, MemberEntry):
+            if self.clipboard is not None and self.clipboard[1] and data.path == self.clipboard[0]:
+                text.stylize(Style(dim=True))  # cut: it goes where Ctrl+V says
+            if node is self._drop:
+                text.stylize(Style(reverse=True))  # where a drag would drop it
+        return text
+
+    def _label(self, node, base_style, style):
         data = node.data
         if isinstance(data, MemberEntry) and data.member is not None:
             label = outline_mod.rich_label(data.member, themes.current())
@@ -961,15 +996,110 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
     def action_request(self, action: str) -> None:
         self.post_message(self.Request(self, action, self.cursor_screen_at() if action == "menu" else None))
 
+    def on_key(self, event: events.Key) -> None:
+        # before the filter's own (FilteredTree.on_key): Esc there empties the filter first
+        if event.key != "escape" or self.filter_text:
+            return
+        if self._drag is not None:
+            self._end_drag()
+        elif self.clipboard is not None and self.clipboard[1]:
+            self.set_clipboard(None)
+        else:
+            return
+        event.stop()
+        event.prevent_default()
+
     def on_mouse_down(self, event: events.MouseDown) -> None:
+        self._swallow_click = False
+        self._press = None
         if event.button == 3:
             event.stop()
             line = event.y + self.scroll_offset.y
             if 0 <= line < self.last_line + 1:
                 self.cursor_line = line
             self.post_message(self.Request(self, "menu", (event.screen_x, event.screen_y)))
+        elif event.button == 1:
+            node = self._node_under(event.x, event.y)
+            if node is not None and node is not self.root and node.data is not None \
+                    and not isinstance(node.data, MemberEntry):
+                self._press = (node, event.y)
+
+    # ---------------------------------------------------------- drag and drop
+    def _node_under(self, x: float, y: float):
+        if not (0 <= x < self.size.width and 0 <= y < self.size.height):
+            return None
+        line = int(y) + self.scroll_offset.y
+        return self.get_node_at_line(line) if 0 <= line <= self.last_line else None
+
+    def _folder_node(self, node):
+        """The folder node a drop on ``node`` goes into (a file's: its folder)."""
+        while node is not None and not (node is self.root or (
+                node.allow_expand and type(node.data) is DirEntry)):
+            node = node.parent
+        return node
+
+    def drop_target(self, x: float, y: float):
+        """The folder node a drag let go at (x, y) would go into, or None (outside,
+        where it already is, or inside the folder dragged)."""
+        if self._drag is None or not (0 <= x < self.size.width and 0 <= y < self.size.height):
+            return None
+        node = self._node_under(x, y)
+        folder = self._folder_node(node) if node is not None else self.root  # below the last row: the project
+        if folder is None or folder.data is None:
+            return None
+        source, into = self._drag.data.path, folder.data.path
+        if into == source.parent or into == source or source in into.parents:
+            return None
+        return folder
+
+    def _set_drop(self, node) -> None:
+        if node is not self._drop:
+            self._drop = node
+            self._invalidate()
+            self.refresh()
+
+    def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self._press is None:
+            return
+        if event.button != 1:  # let go somewhere we did not hear of
+            self._end_drag()
+            self._press = None
+            return
+        node, y0 = self._press
+        if self._drag is None:
+            if int(event.y) == int(y0):
+                return
+            self._drag = node
+            self.capture_mouse()
+        if event.y < 1:  # at the edges, the tree scrolls
+            self.scroll_relative(y=-1, animate=False, immediate=True)
+        elif event.y >= self.size.height - 1:
+            self.scroll_relative(y=1, animate=False, immediate=True)
+        self._set_drop(self.drop_target(event.x, event.y))
+
+    def on_mouse_up(self, event: events.MouseUp) -> None:
+        drag, folder = self._drag, self._drop
+        self._press = None
+        if drag is None:
+            return
+        self._end_drag()
+        self._swallow_click = True
+        event.stop()
+        if folder is not None:
+            self.post_message(self.Drop(self, drag.data.path, folder.data.path))
+
+    def _end_drag(self) -> None:
+        if self._drag is not None:
+            self._drag = None
+            self.release_mouse()
+        self._set_drop(None)
 
     async def _on_click(self, event: events.Click) -> None:
+        if self._swallow_click:  # the end of a drag
+            self._swallow_click = False
+            event.stop()
+            event.prevent_default()
+            return
         if event.button == 3:  # the right button opens the local menu (on mouse down), not the file
             event.stop()
             event.prevent_default()
@@ -1010,13 +1140,25 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         return None
 
     async def reveal(self, path: Path) -> None:
-        """Reload the folders on the way to ``path`` and put the cursor on it."""
+        """Reload the folders on the way to ``path`` and put the cursor on it.
+
+        A reload that just ended may still have its folders queued for the tree's
+        loader, which fills them again (new nodes): the node found then hangs from
+        nothing. It is looked for again once the loader is done."""
+        for attempt in range(4):
+            if await self._reveal_once(path):
+                return
+            await asyncio.sleep(0.05 * (attempt + 1))
+            while not self._load_queue.empty():
+                await asyncio.sleep(0.02)
+
+    async def _reveal_once(self, path: Path) -> bool:
         root = Path(self.path).resolve()
         path = path.resolve()
         try:
             parts = path.relative_to(root).parts
         except ValueError:
-            return
+            return True
         node = self.root
         await self.reload_node(node)
         current = root
@@ -1024,13 +1166,16 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             current = current / part
             child = next((c for c in node.children if c.data is not None and c.data.path == current), None)
             if child is None:
-                return
+                return not current.exists()  # not there (any more): nothing to show; else filled again meanwhile
             node = child
             if current != path and node.allow_expand:
                 await self.reload_node(node)
-        _ = self._tree_lines  # lines are rebuilt lazily: node.line is -1 until then
+        self._clear_line_cache()  # lines are rebuilt lazily (on idle): node.line may be stale or -1 until then
+        _ = self._tree_lines
+        if node._line < 0 and node is not self.root:
+            return False
         self.move_cursor(node, animate=False)
-
+        return True
 
 def shown_in_project(path: Path) -> bool:
     return path.name not in HIDDEN_NAMES and not path.name.endswith(".egg-info")

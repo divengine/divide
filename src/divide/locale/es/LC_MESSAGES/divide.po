@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 20:29+0000\n"
+"POT-Creation-Date: 2026-11-18 01:35+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -93,6 +93,9 @@ msgstr "(los del proyecto, aún sin confianza: Alt+F10)"
 msgid "16 colours (Windows console)"
 msgstr "16 colores (consola de Windows)"
 
+msgid "A folder cannot go inside itself."
+msgstr "Una carpeta no puede ir dentro de sí misma."
+
 msgid "About"
 msgstr "Acerca de"
 
@@ -170,6 +173,10 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #, python-brace-format
+msgid "Cannot copy {rel}: {exc}"
+msgstr "No se puede copiar {rel}: {exc}"
+
+#, python-brace-format
 msgid "Cannot create {name}: {exc}"
 msgstr "No se puede crear {name}: {exc}"
 
@@ -184,6 +191,10 @@ msgstr "No se puede crear {value}: {exc}"
 #, python-brace-format
 msgid "Cannot delete {rel}: {exc}"
 msgstr "No se puede eliminar {rel}: {exc}"
+
+#, python-brace-format
+msgid "Cannot move {rel}: {exc}"
+msgstr "No se puede mover {rel}: {exc}"
 
 #, python-brace-format
 msgid "Cannot open {name}: {exc}"
@@ -326,6 +337,12 @@ msgstr "Sufijo de fin de contenido"
 msgid "Contents"
 msgstr "Contenido"
 
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Cop~y~"
+msgstr "Cop~i~ar"
+
 #, python-brace-format
 msgid "Could not ask Div: {exc}"
 msgstr "No se pudo preguntar a Div: {exc}"
@@ -356,6 +373,9 @@ msgstr "~C~ascada"
 
 msgid "C~r~eate"
 msgstr "C~r~ear"
+
+msgid "C~u~t"
+msgstr "C~o~rtar"
 
 #, python-brace-format
 msgid "DBGp error {code}"
@@ -1007,6 +1027,13 @@ msgstr "Mínimo"
 msgid "Modifiers"
 msgstr "Modificadores"
 
+msgid "Move"
+msgstr "Mover"
+
+#, python-brace-format
+msgid "Move {rel} to {folder}?"
+msgstr "¿Mover {rel} a {folder}?"
+
 msgid "Multi-repl. begin prefix"
 msgstr "Prefijo de inicio de multi-reempl."
 
@@ -1100,6 +1127,9 @@ msgstr "No es un número de línea"
 
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr "Aún sin instalar: Alt+F10 > Instalar"
+
+msgid "Nothing cut or copied: Ctrl+X or Ctrl+C on a file or a folder first"
+msgstr "Nada cortado ni copiado: primero Ctrl+X o Ctrl+C sobre un archivo o una carpeta"
 
 msgid "Nothing found: fewer or other words"
 msgstr "No se encontró nada: prueba con menos palabras o con otras"
@@ -1310,8 +1340,8 @@ msgid "Rename"
 msgstr "Renombrar"
 
 #, python-brace-format
-msgid "Rename and Delete work on files and folders: the bar is on a part of {name}"
-msgstr "Renombrar y Eliminar actúan sobre archivos y carpetas: la barra está sobre una parte de {name}"
+msgid "Rename, Delete, Cut, Copy and Move work on files and folders: the bar is on a part of {name}"
+msgstr "Renombrar, Eliminar, Cortar, Copiar y Mover actúan sobre archivos y carpetas: la barra está sobre una parte de {name}"
 
 msgid "Render"
 msgstr "Renderizar"
@@ -1715,6 +1745,9 @@ msgstr "Actualizando {name}"
 
 msgid "Upper case"
 msgstr "Mayúsculas"
+
+msgid "Use a folder inside the project."
+msgstr "Usa una carpeta dentro del proyecto."
 
 msgid "Use a name inside the project folder."
 msgstr "Usa un nombre dentro de la carpeta del proyecto."
@@ -2137,6 +2170,9 @@ msgstr "el nombre es vendor/proyecto, en minúsculas: divengine/shop"
 msgid "the namespace is like App\\ or Acme\\Shop\\"
 msgstr "el espacio de nombres es como App\\ o Acme\\Shop\\"
 
+msgid "the project folder"
+msgstr "la carpeta del proyecto"
+
 msgid "the project's \"php\" settings are not applied until you trust them (Options > Div setup)"
 msgstr "los ajustes «php» del proyecto no se aplican hasta que confíes en ellos (Opciones > Configuración de Div)"
 
@@ -2305,6 +2341,14 @@ msgid "{key}: a $reference is not a value here"
 msgstr "{key}: una $referencia no es un valor aquí"
 
 #, python-brace-format
+msgid "{name} copied: Ctrl+V in a folder copies it there"
+msgstr "{name} copiado: Ctrl+V en una carpeta lo copia ahí"
+
+#, python-brace-format
+msgid "{name} cut: Ctrl+V in another folder moves it there (Esc: never mind)"
+msgstr "{name} cortado: Ctrl+V en otra carpeta lo mueve ahí (Esc: olvídalo)"
+
+#, python-brace-format
 msgid "{name} did not answer"
 msgstr "{name} no respondió"
 
@@ -2415,6 +2459,30 @@ msgid "{path} is not a folder"
 msgstr "{path} no es una carpeta"
 
 #, python-brace-format
+msgid "{rel} already exists. Replace it?"
+msgstr "{rel} ya existe. ¿Reemplazarlo?"
+
+#, python-brace-format
+msgid "{rel} already exists: folders are not merged."
+msgstr "{rel} ya existe: las carpetas no se fusionan."
+
+#, python-brace-format
+msgid "{rel} has unsaved changes in a window: save or close it first."
+msgstr "{rel} tiene cambios sin guardar en una ventana: guárdala o ciérrala primero."
+
+#, python-brace-format
+msgid "{rel} is no longer there."
+msgstr "{rel} ya no está."
+
+#, python-brace-format
+msgid "{rel} is not a folder."
+msgstr "{rel} no es una carpeta."
+
+#, python-brace-format
+msgid "{rel} · a folder of the project (created if missing)"
+msgstr "{rel} · una carpeta del proyecto (se crea si no existe)"
+
+#, python-brace-format
 msgid "{root} is not a folder"
 msgstr "{root} no es una carpeta"
 
@@ -2443,6 +2511,10 @@ msgstr "{value} no es un archivo."
 #, python-brace-format
 msgid "{verdict}: press any key"
 msgstr "{verdict}: pulsa una tecla"
+
+#, python-brace-format
+msgid "{where} · a path moves it too (../{name})"
+msgstr "{where} · una ruta también lo mueve (../{name})"
 
 #, python-brace-format
 msgid "{where}: {count} tags"
@@ -2715,6 +2787,9 @@ msgstr "~M~oderno oscuro"
 msgid "~M~odifiers: {\"prefix:\": \"php_function\"}"
 msgstr "~M~odificadores: {\"prefix:\": \"php_function\"}"
 
+msgid "~M~ove to..."
+msgstr "~M~over a..."
+
 msgid "~N~ame"
 msgstr "~N~ombre"
 
@@ -2909,6 +2984,9 @@ msgstr "~T~ema"
 msgid "~T~ile"
 msgstr "Mo~s~aico"
 
+msgid "~T~o folder"
+msgstr "~A~ la carpeta"
+
 msgid "~T~ools"
 msgstr "~H~erramientas"
 
@@ -3022,6 +3100,9 @@ msgstr "── servidor web {address} ──"
 
 #~ msgid "Ins add · Del remove · Enter its folder · Ctrl+R reload · Alt+F10 update, install, outdated, new composer.json"
 #~ msgstr "Ins añadir · Supr quitar · Enter su carpeta · Ctrl+R recargar · Alt+F10 actualizar, instalar, versiones nuevas, nuevo composer.json"
+
+#~ msgid "Rename and Delete work on files and folders: the bar is on a part of {name}"
+#~ msgstr "Renombrar y Eliminar actúan sobre archivos y carpetas: la barra está sobre una parte de {name}"
 
 #~ msgid "a number or PHP levels are expected, like \"E_ALL & ~E_NOTICE\""
 #~ msgstr "se espera un número o niveles de PHP, como \"E_ALL & ~E_NOTICE\""

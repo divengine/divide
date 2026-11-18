@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-17 20:29+0000\n"
+"POT-Creation-Date: 2026-11-18 01:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,6 +92,9 @@ msgstr ""
 msgid "16 colours (Windows console)"
 msgstr ""
 
+msgid "A folder cannot go inside itself."
+msgstr ""
+
 msgid "About"
 msgstr ""
 
@@ -169,6 +172,10 @@ msgid "Cancel"
 msgstr ""
 
 #, python-brace-format
+msgid "Cannot copy {rel}: {exc}"
+msgstr ""
+
+#, python-brace-format
 msgid "Cannot create {name}: {exc}"
 msgstr ""
 
@@ -182,6 +189,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Cannot delete {rel}: {exc}"
+msgstr ""
+
+#, python-brace-format
+msgid "Cannot move {rel}: {exc}"
 msgstr ""
 
 #, python-brace-format
@@ -330,6 +341,12 @@ msgstr ""
 msgid "Contents"
 msgstr ""
 
+msgid "Copy"
+msgstr ""
+
+msgid "Cop~y~"
+msgstr ""
+
 #, python-brace-format
 msgid "Could not ask Div: {exc}"
 msgstr ""
@@ -359,6 +376,9 @@ msgid "C~a~scade"
 msgstr ""
 
 msgid "C~r~eate"
+msgstr ""
+
+msgid "C~u~t"
 msgstr ""
 
 #, python-brace-format
@@ -1012,6 +1032,13 @@ msgstr ""
 msgid "Modifiers"
 msgstr ""
 
+msgid "Move"
+msgstr ""
+
+#, python-brace-format
+msgid "Move {rel} to {folder}?"
+msgstr ""
+
 msgid "Multi-repl. begin prefix"
 msgstr ""
 
@@ -1104,6 +1131,9 @@ msgid "Not a line number"
 msgstr ""
 
 msgid "Not installed yet: Alt+F10 > Install"
+msgstr ""
+
+msgid "Nothing cut or copied: Ctrl+X or Ctrl+C on a file or a folder first"
 msgstr ""
 
 msgid "Nothing found: fewer or other words"
@@ -1322,8 +1352,8 @@ msgstr ""
 
 #, python-brace-format
 msgid ""
-"Rename and Delete work on files and folders: the bar is on a part of "
-"{name}"
+"Rename, Delete, Cut, Copy and Move work on files and folders: the bar is "
+"on a part of {name}"
 msgstr ""
 
 msgid "Render"
@@ -1736,6 +1766,9 @@ msgid "Updating {name}"
 msgstr ""
 
 msgid "Upper case"
+msgstr ""
+
+msgid "Use a folder inside the project."
 msgstr ""
 
 msgid "Use a name inside the project folder."
@@ -2172,6 +2205,9 @@ msgstr ""
 msgid "the namespace is like App\\ or Acme\\Shop\\"
 msgstr ""
 
+msgid "the project folder"
+msgstr ""
+
 msgid ""
 "the project's \"php\" settings are not applied until you trust them "
 "(Options > Div setup)"
@@ -2340,6 +2376,14 @@ msgid "{key}: a $reference is not a value here"
 msgstr ""
 
 #, python-brace-format
+msgid "{name} copied: Ctrl+V in a folder copies it there"
+msgstr ""
+
+#, python-brace-format
+msgid "{name} cut: Ctrl+V in another folder moves it there (Esc: never mind)"
+msgstr ""
+
+#, python-brace-format
 msgid "{name} did not answer"
 msgstr ""
 
@@ -2450,6 +2494,30 @@ msgid "{path} is not a folder"
 msgstr ""
 
 #, python-brace-format
+msgid "{rel} already exists. Replace it?"
+msgstr ""
+
+#, python-brace-format
+msgid "{rel} already exists: folders are not merged."
+msgstr ""
+
+#, python-brace-format
+msgid "{rel} has unsaved changes in a window: save or close it first."
+msgstr ""
+
+#, python-brace-format
+msgid "{rel} is no longer there."
+msgstr ""
+
+#, python-brace-format
+msgid "{rel} is not a folder."
+msgstr ""
+
+#, python-brace-format
+msgid "{rel} · a folder of the project (created if missing)"
+msgstr ""
+
+#, python-brace-format
 msgid "{root} is not a folder"
 msgstr ""
 
@@ -2477,6 +2545,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{verdict}: press any key"
+msgstr ""
+
+#, python-brace-format
+msgid "{where} · a path moves it too (../{name})"
 msgstr ""
 
 #, python-brace-format
@@ -2750,6 +2822,9 @@ msgstr ""
 msgid "~M~odifiers: {\"prefix:\": \"php_function\"}"
 msgstr ""
 
+msgid "~M~ove to..."
+msgstr ""
+
 msgid "~N~ame"
 msgstr ""
 
@@ -2942,6 +3017,9 @@ msgid "~T~heme"
 msgstr ""
 
 msgid "~T~ile"
+msgstr ""
+
+msgid "~T~o folder"
 msgstr ""
 
 msgid "~T~ools"
