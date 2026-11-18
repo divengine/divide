@@ -94,6 +94,7 @@ async def test_a_new_issue_and_a_merge(tmp_path, gh):
         await pilot.press("insert")  # on the issues: a new issue
         await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), forgeui.NewItemDialog))
         assert app.screen.dialog.base_input is None
+        await until(pilot, lambda: app.focused is app.screen.dialog.title_input)
         await pilot.press(*"Header too", "enter")  # Enter in the title: the default button
         await until(pilot, lambda: any(c["args"][:2] == ["issue", "create"] for c in gh()))
 

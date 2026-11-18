@@ -45,6 +45,7 @@ from divide import themes
 from divide.editor.theme import OUTPUT
 from divide.run import git
 from divide.ui.dialogs import _Dialog, confirm, information, InputDialog
+from divide.ui.diffview import DiffView
 from divide.ui.filter import Filtered, FilteredTree
 from divide.ui.progress import ProgressDialog, run_with_progress
 from divide.ui.windows import OUTPUT_CSS, EditorView, HRule, IndicatorFrame, VRule, _TVWindow
@@ -122,31 +123,10 @@ def _paint(window, *boxes) -> None:
 
 
 # ------------------------------------------------------------------ the diff
-class DiffView(EditorView):
-    """A diff, read only: added lines on green, removed on red, the hunks and headers in their colours."""
-
-    def __init__(self) -> None:
-        super().__init__("", read_only=True, path=Path("git.diff"))
-
-    def show(self, text: str, conflict: bool = False) -> None:
-        """A diff; with ``conflict``, a file in conflict (git's markers, our side, theirs)."""
-        if text != self.text:
-            self.load_text(text)
-            self.move_cursor((0, 0))
-        marks = []
-        offset = 0
-        kinds = git.conflict_kinds(text) if conflict else git.diff_kinds(text)
-        for line, kind in zip(git.lines(text), kinds):
-            if kind:
-                marks.append((offset, offset + max(1, len(line)), "diff." + kind))
-            offset += len(line) + 1
-        self.set_marks(marks)
-
-
 class DiffWindow(_TVWindow):
     """A file's or a commit's diff."""
 
-    HINT = _('Ctrl+F find · Alt+F3 close')
+    HINT = _('Enter open the file there · N/P next/previous change · S side by side or unified · Alt+F3 close')
 
     def __init__(self, title: str, text: str, number: int = 0) -> None:
         super().__init__(title, number=number)
@@ -504,7 +484,7 @@ class _GitWindow(_TVWindow):
 class GitChangesWindow(_GitWindow):
     """The files that changed, in their areas | the focused one's diff."""
 
-    HINT = _('Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Alt+F10 more')
+    HINT = _('Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Tab the diff · Alt+F10 more')
     BINDINGS = [
         Binding("space", "stage", show=False),
         Binding("delete", "discard", show=False),
@@ -579,14 +559,14 @@ class GitChangesWindow(_GitWindow):
             self.change = None
             if row is not None and row.kind == "group":
                 count = len(self.status.area(row.key))
-                self.diff.show(area_title(row.key) + "\n\n" + {
+                self.diff.show_message(area_title(row.key) + "\n\n" + {
                     "conflicts": _("Files git could not merge by itself: edit them, then Space marks them solved."),
                     "staged": _("What the next commit takes (Ctrl+K commits it). Space takes a file out."),
                     "changes": _("Files changed since the last commit, not staged yet: Space stages them."),
                     "untracked": _("Files git does not follow yet: Space stages them, Del deletes them."),
                 }[row.key] + "\n\n" + ngettext("{n} file", "{n} files", count).format(n=count))
             else:
-                self.diff.show(_("Nothing changed: the working tree is the last commit.") if self.status.clean else "")
+                self.diff.show_message(_("Nothing changed: the working tree is the last commit.") if self.status.clean else "")
             return
         self.change = row.item  # type: ignore[assignment]
         self.show_diff(row.item)  # type: ignore[arg-type]
@@ -606,7 +586,10 @@ class GitChangesWindow(_GitWindow):
         except git.GitError as exc:
             text = str(exc)
         if self.change is change:
-            self.diff.show(text or _("(no differences in the text)"))
+            if text.strip():
+                self.diff.show(text)
+            else:
+                self.diff.show_message(_("(no differences in the text)"))
 
     def chosen(self, row: Row) -> None:
         self.app.git_action(self, "open")  # type: ignore[attr-defined]
@@ -917,6 +900,8 @@ class CommitDialog(_Dialog):
     """The message (its first line, the summary), amend, and what goes in. Ctrl+Enter
     commits from inside the message, where Enter starts a new line."""
 
+    BINDINGS = [Binding("ctrl+enter,ctrl+j", "commit", show=False)]
+
     DEFAULT_CSS = """
     CommitDialog { width: 78; height: 20; }
     CommitDialog EditorView { height: 1fr; }
@@ -1219,6 +1204,22 @@ class GitMixin:
             await self.run_dialog(information(_('Git'), str(exc)))  # type: ignore[attr-defined]
             return
         self._show_diff(_('Commit {oid}').format(oid=oid[:7]), text)
+
+    def on_diff_view_line_chosen(self, message: DiffView.LineChosen) -> None:
+        """Enter on a diff's line: the file, at that line."""
+        root = self.git_root
+        if root is None:
+            return
+        file = root / message.path
+        if not file.is_file():
+            self.notify(_('{file} is not there (deleted)').format(file=message.path), timeout=3)  # type: ignore[attr-defined]
+            return
+        win = self.open_file(file)  # type: ignore[attr-defined]
+        if win is not None:
+            row = min(message.line - 1, win.editor.document.line_count - 1)
+            win.editor.move_cursor((max(0, row), 0))
+            win.editor.call_after_refresh(win.editor.reveal_cursor)
+            win.editor.focus()
 
     def _show_diff(self, title: str, text: str) -> None:
         old = next((w for w in self.windows() if isinstance(w, DiffWindow) and w._title == title), None)  # type: ignore[attr-defined]

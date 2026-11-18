@@ -95,8 +95,8 @@ async def test_stage_unstage_and_commit(tmp_path):
 
         await bar_on(pilot, win, "M index.tpl")
         await until(pilot, lambda: "+<h1 class=\"t\">{$title}</h1>" in win.diff.text, message=lambda: win.diff.text)
-        assert ("diff.add" in {kind for _s, _e, kind in win.diff.marks}
-                and "diff.del" in {kind for _s, _e, kind in win.diff.marks})
+        assert {r.left.kind for r in win.diff.rows if r.kind == "line"} == {" ", "+", "-"} or \
+            {r.left.kind for r in win.diff.rows if r.kind == "line"} == {"+", "-"}
         await pilot.press("space")
         await until(pilot, lambda: rows(win)[:2] == ["Staged (the next commit)  1", "M index.tpl"], message=lambda: rows(win))
         await bar_on(pilot, win, "M index.tpl")
@@ -111,6 +111,7 @@ async def test_stage_unstage_and_commit(tmp_path):
         dialog = app.screen.dialog
         await pilot.press("ctrl+j")  # an empty message is refused
         await until(pilot, lambda: "Write a message" in str(dialog.what.render()))
+        await until(pilot, lambda: app.focused is dialog.message)
         await pilot.press(*"A card")
         await pilot.press("ctrl+j")
         await until(pilot, lambda: rows(win)[:2] == ["Changes  1", "M index.tpl"], message=lambda: rows(win))
@@ -127,6 +128,7 @@ async def test_commit_can_stage_everything_first(tmp_path):
         await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), gitui.CommitDialog))
         dialog = app.screen.dialog
         assert dialog.flags.value == 2  # nothing staged: stage every change, ticked
+        await until(pilot, lambda: app.focused is dialog.message)
         await pilot.press(*"Everything")
         await pilot.press("ctrl+j")
         await until(pilot, lambda: sh(root, "log", "-1", "--format=%s").strip() == "Everything")
@@ -325,8 +327,7 @@ async def test_a_merge_with_a_conflict_solved_and_committed(tmp_path):
         await until(pilot, lambda: "U index.tpl" in rows(changes), message=lambda: shown(app, changes))
         await bar_on(pilot, changes, "U index.tpl")
         await until(pilot, lambda: "<<<<<<< HEAD" in changes.diff.text, message=lambda: changes.diff.text)
-        kinds = {kind for _s, _e, kind in changes.diff.marks}
-        assert {"diff.meta", "diff.mod", "diff.add"} <= kinds
+        assert {"meta", "mod", "add"} <= {r.style for r in changes.diff.rows if r.kind == "conflict"}
         assert "Merging" in str(changes.state.render())
 
         (root / "index.tpl").write_text("<h1>both</h1>\n", encoding="utf-8")  # solved

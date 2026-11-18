@@ -173,6 +173,8 @@ class ForgeWindow(_GitWindow):
 class NewItemDialog(_Dialog):
     """A new pull request (title, description, into which branch, draft) or a new issue (title, description)."""
 
+    BINDINGS = [Binding("ctrl+enter,ctrl+j", "commit", show=False)]
+
     DEFAULT_CSS = """
     NewItemDialog { width: 80; height: 22; }
     NewItemDialog InputLine { width: 1fr; }

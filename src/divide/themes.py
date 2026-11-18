@@ -139,6 +139,9 @@ SYNTAX_ROLES = (
     "comment", "operator", "punct", "special", "markup", "module",
     "error", "error-bg", "warning-bg", "focus", "focus-bg", "inserted", "inserted-bg", "deleted", "deleted-bg",
     "diff-add", "diff-add-bg", "diff-del", "diff-del-bg", "diff-hunk", "diff-meta", "diff-mod", "diff-mod-bg",
+    # the diff viewer (divide.ui.diffview): a line's background, the words that changed in it
+    "diff-text", "diff-add-line", "diff-add-word", "diff-del-line", "diff-del-word", "diff-mod-line",
+    "diff-file", "diff-file-bg",
 )
 
 # The roles of the UI; every theme gives every one (tests/test_themes.py checks).
@@ -203,6 +206,9 @@ BORLAND_SYNTAX = {
     "inserted": "black", "inserted-bg": "lightgreen", "deleted": "white", "deleted-bg": "red",
     "diff-add": "white", "diff-add-bg": "green", "diff-del": "white", "diff-del-bg": "red",
     "diff-hunk": "lightcyan", "diff-meta": "yellow", "diff-mod": "white", "diff-mod-bg": "brown",
+    "diff-text": "white", "diff-add-line": "#005A00", "diff-add-word": "#00A000",
+    "diff-del-line": "#6A0000", "diff-del-word": "#B00000", "diff-mod-line": "#5A4A00",
+    "diff-file": "black", "diff-file-bg": "cyan",
 }
 
 # Campbell's blue is lighter than CGA's: its cyan, light red and light magenta
@@ -294,6 +300,9 @@ MODERN_SYNTAX = {
     "inserted": "#101216", "inserted-bg": "#A8DC8C", "deleted": _BRIGHT, "deleted-bg": "#8E2B36",
     "diff-add": "#D8F0CC", "diff-add-bg": "#1F3A24", "diff-del": "#F5C6CB", "diff-del-bg": "#4A1F26",
     "diff-hunk": "#7FD8E3", "diff-meta": "#E8C77D", "diff-mod": _BRIGHT, "diff-mod-bg": "#5A4A1F",
+    "diff-text": _TEXT, "diff-add-line": "#1C3326", "diff-add-word": "#2F6B40",
+    "diff-del-line": "#3D1E24", "diff-del-word": "#83303C", "diff-mod-line": "#3D3520",
+    "diff-file": _BRIGHT, "diff-file-bg": _RAISED,
 }
 
 

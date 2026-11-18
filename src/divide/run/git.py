@@ -479,6 +479,175 @@ def _cut(text: str) -> str:
     return "\n".join(rows[:MAX_DIFF_LINES]) + "\n" + _('... {count} more lines not shown').format(count=rest) + "\n"
 
 
+@dataclass
+class DiffLine:
+    kind: str  # " " context, "-" removed, "+" added, "\\" a note (no newline at the end)
+    text: str
+    old: int | None = None  # its number before / after
+    new: int | None = None
+
+
+@dataclass
+class Hunk:
+    header: str  # what follows the @@ ... @@: the function or section it is in
+    old_start: int
+    new_start: int
+    lines: list[DiffLine] = field(default_factory=list)
+
+
+@dataclass
+class DiffFile:
+    old_path: str
+    new_path: str
+    status: str = "modified"  # modified, added, deleted, renamed, binary, mode
+    hunks: list[Hunk] = field(default_factory=list)
+
+    @property
+    def path(self) -> str:
+        return self.new_path if self.status != "deleted" else self.old_path
+
+    @property
+    def added(self) -> int:
+        return sum(1 for h in self.hunks for line in h.lines if line.kind == "+")
+
+    @property
+    def removed(self) -> int:
+        return sum(1 for h in self.hunks for line in h.lines if line.kind == "-")
+
+
+@dataclass
+class Diff:
+    preamble: list[str]  # a commit's header, message and stat, before the files
+    files: list[DiffFile]
+
+
+def _strip_prefix(path: str) -> str:
+    path = path.strip()
+    if path.startswith('"') and path.endswith('"'):
+        path = path[1:-1]
+    return path[2:] if path[:2] in ("a/", "b/") else path
+
+
+def parse_diff(text: str) -> Diff:
+    """git's unified diff (``diff``, ``show``) as files, hunks and numbered lines."""
+    preamble: list[str] = []
+    files: list[DiffFile] = []
+    current: DiffFile | None = None
+    hunk: Hunk | None = None
+    old_left = new_left = 0
+    old_no = new_no = 0
+    for line in lines(text):
+        if hunk is not None and (old_left > 0 or new_left > 0) and line[:1] not in (" ", "+", "-", "\\", ""):
+            old_left = new_left = 0  # the counts were wrong: the hunk ended
+        if hunk is not None and (old_left > 0 or new_left > 0):
+            first = line[:1]
+            if first == "+":
+                hunk.lines.append(DiffLine("+", line[1:], None, new_no))
+                new_no += 1
+                new_left -= 1
+                continue
+            if first == "-":
+                hunk.lines.append(DiffLine("-", line[1:], old_no, None))
+                old_no += 1
+                old_left -= 1
+                continue
+            if first == "\\":
+                hunk.lines.append(DiffLine("\\", line[1:].strip()))
+                continue
+            hunk.lines.append(DiffLine(" ", line[1:], old_no, new_no))
+            old_no += 1
+            new_no += 1
+            old_left -= 1
+            new_left -= 1
+            continue
+        if line.startswith("\\") and hunk is not None:
+            hunk.lines.append(DiffLine("\\", line[1:].strip()))
+            continue
+        if line.startswith("diff --git "):
+            rest = line[len("diff --git "):]
+            half = rest.find(" b/")
+            a, b = (rest[:half], rest[half + 1:]) if half >= 0 else (rest, rest)
+            current = DiffFile(_strip_prefix(a), _strip_prefix(b))
+            files.append(current)
+            hunk = None
+            continue
+        if current is None:
+            preamble.append(line)
+            continue
+        match = HUNK.match(line)
+        if match:
+            old_no, new_no = int(match.group(1)), int(match.group(3))
+            old_left = int(match.group(2)) if match.group(2) is not None else 1
+            new_left = int(match.group(4)) if match.group(4) is not None else 1
+            hunk = Hunk(line[match.end():].strip(), old_no, new_no)
+            current.hunks.append(hunk)
+        elif line.startswith(("new file", "--- /dev/null")):
+            current.status = "added"
+        elif line.startswith(("deleted file", "+++ /dev/null")):
+            current.status = "deleted"
+        elif line.startswith("rename from "):
+            current.old_path, current.status = line[len("rename from "):], "renamed"
+        elif line.startswith("rename to "):
+            current.new_path = line[len("rename to "):]
+        elif line.startswith("Binary files") or line.startswith("GIT binary patch"):
+            current.status = "binary"
+        elif line.startswith("old mode") and current.status == "modified":
+            current.status = "mode"
+    return Diff(preamble, files)
+
+
+def changed_spans(old: str, new: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """Where two versions of a line differ, word by word: (spans in ``old``, spans in ``new``)."""
+    import difflib
+
+    def words(text: str) -> list[str]:
+        return re.findall(r"\w+|\s+|[^\w\s]", text)
+
+    a, b = words(old), words(new)
+    a_at, b_at = [0], [0]
+    for w in a:
+        a_at.append(a_at[-1] + len(w))
+    for w in b:
+        b_at.append(b_at[-1] + len(w))
+    old_spans, new_spans = [], []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        if tag == "equal":
+            continue
+        if i2 > i1:
+            old_spans.append((a_at[i1], a_at[i2]))
+        if j2 > j1:
+            new_spans.append((b_at[j1], b_at[j2]))
+    return old_spans, new_spans
+
+
+def pairs(hunk: Hunk) -> list[tuple[DiffLine | None, DiffLine | None]]:
+    """The hunk side by side: context on both sides; a run of removed lines next to the run
+    of added ones that replaced them, one with one; the rest beside nothing."""
+    out: list[tuple[DiffLine | None, DiffLine | None]] = []
+    removed: list[DiffLine] = []
+    added: list[DiffLine] = []
+
+    def flush() -> None:
+        for i in range(max(len(removed), len(added))):
+            out.append((removed[i] if i < len(removed) else None, added[i] if i < len(added) else None))
+        removed.clear()
+        added.clear()
+
+    for line in hunk.lines:
+        if line.kind == "-":
+            if added:
+                flush()
+            removed.append(line)
+        elif line.kind == "+":
+            added.append(line)
+        else:
+            flush()
+            if line.kind == " ":
+                out.append((line, line))
+    flush()
+    return out
+
+
 HUNK = re.compile(r"^@@+ -(\d+)(?:,(\d+))? .*?\+(\d+)(?:,(\d+))? @@")
 META = ("diff ", "index ", "--- ", "+++ ", "new file", "deleted file", "old mode", "new mode", "similarity ",
         "dissimilarity ", "rename ", "copy ", "Binary files", "commit ", "Author:", "AuthorDate:", "Commit:",

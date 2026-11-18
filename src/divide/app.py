@@ -813,8 +813,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         if action == "command" and parameters and parameters[0] in DEBUG_KEYS:
             return self.debug_keys_active() or (parameters[0] == "TRACE" and self.traces_template())
         if action == "command" and parameters and parameters[0] == "GOTO_INCLUDE":
-            # in the commit's message Ctrl+Enter commits (the message takes the key)
-            return not isinstance(self.focused, MessageView)
+            # in a commit's (or a pull request's) dialog Ctrl+Enter commits: the dialog takes the key
+            return not isinstance(self.focused, MessageView) and not hasattr(getattr(self.screen, "dialog", None), "action_commit")
         return True
 
     def traces_template(self) -> bool:

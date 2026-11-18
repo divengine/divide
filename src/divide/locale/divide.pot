@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:56+0000\n"
+"POT-Creation-Date: 2026-11-18 18:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -200,6 +200,9 @@ msgid "Begin prefix"
 msgstr ""
 
 msgid "Begin suffix"
+msgstr ""
+
+msgid "Binary file: not shown"
 msgstr ""
 
 #, python-brace-format
@@ -473,9 +476,6 @@ msgid "Count words"
 msgstr ""
 
 msgid "Co~m~plete"
-msgstr ""
-
-msgid "Ctrl+F find · Alt+F3 close"
 msgstr ""
 
 msgid "Ctrl+K"
@@ -857,6 +857,11 @@ msgstr ""
 msgid ""
 "Enter open in the browser · Ins new pull request (on the issues: new "
 "issue) · Alt+F10 more"
+msgstr ""
+
+msgid ""
+"Enter open the file there · N/P next/previous change · S side by side or "
+"unified · Alt+F3 close"
 msgstr ""
 
 msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
@@ -1382,6 +1387,9 @@ msgstr ""
 msgid "No branch is checked out (detached HEAD): switch to a branch first."
 msgstr ""
 
+msgid "No changes in its text"
+msgstr ""
+
 msgid "No command matches"
 msgstr ""
 
@@ -1475,6 +1483,9 @@ msgstr ""
 msgid ""
 "Only a package the project requires can be removed (not a dependency of "
 "another one)"
+msgstr ""
+
+msgid "Only its mode changed"
 msgstr ""
 
 msgid "Open a Div template (.tpl) to render it."
@@ -1712,6 +1723,9 @@ msgid ""
 "on a part of {name}"
 msgstr ""
 
+msgid "Renamed, its content unchanged"
+msgstr ""
+
 msgid "Render"
 msgstr ""
 
@@ -1869,8 +1883,8 @@ msgid "Space"
 msgstr ""
 
 msgid ""
-"Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Alt+F10 "
-"more"
+"Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Tab the "
+"diff · Alt+F10 more"
 msgstr ""
 
 msgid "Special characters"

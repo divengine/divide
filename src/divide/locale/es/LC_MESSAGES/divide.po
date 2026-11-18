@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:56+0000\n"
+"POT-Creation-Date: 2026-11-18 18:13+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -202,6 +202,9 @@ msgstr "Prefijo de inicio"
 
 msgid "Begin suffix"
 msgstr "Sufijo de inicio"
+
+msgid "Binary file: not shown"
+msgstr "Archivo binario: no se muestra"
 
 #, python-brace-format
 msgid "Blame: {file}"
@@ -470,9 +473,6 @@ msgstr "Contar palabras"
 
 msgid "Co~m~plete"
 msgstr "Co~m~pletar"
-
-msgid "Ctrl+F find · Alt+F3 close"
-msgstr "Ctrl+F buscar · Alt+F3 cerrar"
 
 msgid "Ctrl+K"
 msgstr "Ctrl+K"
@@ -850,6 +850,9 @@ msgstr "~N~úmero de línea"
 
 msgid "Enter open in the browser · Ins new pull request (on the issues: new issue) · Alt+F10 more"
 msgstr "Enter abrir en el navegador · Ins nueva pull request (en las issues: nueva issue) · Alt+F10 más"
+
+msgid "Enter open the file there · N/P next/previous change · S side by side or unified · Alt+F3 close"
+msgstr "Enter abrir el archivo ahí · N/P cambio siguiente/anterior · S lado a lado o unificado · Alt+F3 cerrar"
 
 msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
 msgstr "Enter cambiar a ella · Ins rama nueva · Supr borrar · Alt+F10 más"
@@ -1371,6 +1374,9 @@ msgstr "Sin Xdebug: sirve las páginas, pero las peticiones no se pueden depurar
 msgid "No branch is checked out (detached HEAD): switch to a branch first."
 msgstr "No hay ninguna rama activa (HEAD separado): cambia antes a una rama."
 
+msgid "No changes in its text"
+msgstr "Sin cambios en su texto"
+
 msgid "No command matches"
 msgstr "Ningún comando coincide"
 
@@ -1461,6 +1467,9 @@ msgstr "Transformaciones de un carácter: {^name}, {_name}, {%name}, {html:name}
 
 msgid "Only a package the project requires can be removed (not a dependency of another one)"
 msgstr "Solo se puede quitar un paquete que el proyecto requiere (no una dependencia de otro)"
+
+msgid "Only its mode changed"
+msgstr "Solo cambiaron sus permisos"
 
 msgid "Open a Div template (.tpl) to render it."
 msgstr "Abre una plantilla Div (.tpl) para renderizarla."
@@ -1691,6 +1700,9 @@ msgstr "Renombrar"
 msgid "Rename, Delete, Cut, Copy and Move work on files and folders: the bar is on a part of {name}"
 msgstr "Renombrar, Eliminar, Cortar, Copiar y Mover actúan sobre archivos y carpetas: la barra está sobre una parte de {name}"
 
+msgid "Renamed, its content unchanged"
+msgstr "Renombrado, con el mismo contenido"
+
 msgid "Render"
 msgstr "Renderizar"
 
@@ -1844,8 +1856,8 @@ msgstr "Fuente"
 msgid "Space"
 msgstr "Espacio"
 
-msgid "Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Alt+F10 more"
-msgstr "Espacio preparar/quitar · Enter abrir · Supr descartar · Ctrl+K commit · Alt+F10 más"
+msgid "Space stage/unstage · Enter open · Del discard · Ctrl+K commit · Tab the diff · Alt+F10 more"
+msgstr "Espacio preparar/quitar · Enter abrir · Supr descartar · Ctrl+K commit · Tab el diff · Alt+F10 más"
 
 msgid "Special characters"
 msgstr "Caracteres especiales"

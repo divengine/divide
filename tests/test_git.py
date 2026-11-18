@@ -320,3 +320,33 @@ async def test_stash_and_bring_it_back(tmp_path):
     await git.stash(root)
     await git.drop_stash(root, "stash@{0}")
     assert await git.stashes(root) == []
+
+
+def test_a_diff_as_files_hunks_and_numbered_lines():
+    text = "\n".join([
+        "commit abc", "Author: A", "", "    Message", "",
+        "diff --git a/a.tpl b/a.tpl", "index 1..2 100644", "--- a/a.tpl", "+++ b/a.tpl",
+        "@@ -10,4 +10,3 @@ <main>", " same", "-old one", "-old two", "+new one", " same", "\\ No newline at end of file",
+        "diff --git a/new.tpl b/new.tpl", "new file mode 100644", "--- /dev/null", "+++ b/new.tpl", "@@ -0,0 +1 @@", "+hello",
+        "diff --git a/x.png b/x.png", "Binary files a/x.png and b/x.png differ",
+        "diff --git a/old.tpl b/moved.tpl", "similarity index 100%", "rename from old.tpl", "rename to moved.tpl",
+    ])
+    diff = git.parse_diff(text)
+    assert diff.preamble == ["commit abc", "Author: A", "", "    Message", ""]
+    first, new, binary, moved = diff.files
+    assert (first.path, first.status, first.added, first.removed) == ("a.tpl", "modified", 1, 2)
+    hunk = first.hunks[0]
+    assert hunk.header == "<main>" and (hunk.old_start, hunk.new_start) == (10, 10)
+    assert [(l.kind, l.text, l.old, l.new) for l in hunk.lines] == [
+        (" ", "same", 10, 10), ("-", "old one", 11, None), ("-", "old two", 12, None), ("+", "new one", None, 11),
+        (" ", "same", 13, 12), ("\\", "No newline at end of file", None, None)]
+    assert git.pairs(hunk) == [(hunk.lines[0], hunk.lines[0]), (hunk.lines[1], hunk.lines[3]),
+                               (hunk.lines[2], None), (hunk.lines[4], hunk.lines[4])]
+    assert (new.status, new.added, new.hunks[0].lines[0].new) == ("added", 1, 1)
+    assert binary.status == "binary" and moved.status == "renamed" and (moved.old_path, moved.path) == ("old.tpl", "moved.tpl")
+
+
+def test_the_words_that_changed_in_a_line():
+    old_spans, new_spans = git.changed_spans('<h1>{$title}</h1>', '<h1 class="t">{$title}</h1>')
+    assert old_spans == [] and new_spans == [(3, 13)]
+    assert git.changed_spans("price: 10", "price: 12") == ([(7, 9)], [(7, 9)])
