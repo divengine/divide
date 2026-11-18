@@ -45,7 +45,9 @@ import asyncio
 from divide.run import children
 async def main():
     proc = await asyncio.create_subprocess_exec("sleep", "30", **children.options())
-    open({str(pidfile)!r}, "w").write(str(proc.pid))
+    open({str(pidfile)!r} + ".part", "w").write(str(proc.pid))
+    import os
+    os.replace({str(pidfile)!r} + ".part", {str(pidfile)!r})  # whole, never half written
     await asyncio.sleep(30)
 asyncio.run(main())
 """])

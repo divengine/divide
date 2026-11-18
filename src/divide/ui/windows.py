@@ -933,10 +933,10 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
     def move_cursor(self, node, animate: bool = False) -> None:
         # Textual's loader puts the bar back on the node it was on before it filled the
         # folder again; that node is gone then: its new one takes the bar instead
-        pair = getattr(self, "_renewed", {}).get(id(node)) if node is not None else None
-        if pair is not None and pair[0] is node:
-            if pair[1] is None:  # the bar has gone to another folder since: it stays there
-                return
+        if node is not None and self._tree_nodes.get(node.id) is not node:  # a node no longer in the tree
+            pair = getattr(self, "_renewed", {}).get(id(node))
+            if pair is None or pair[0] is not node or pair[1] is None:
+                return  # gone, or the bar has gone to another folder since: it stays where it is
             node = pair[1]
             self._clear_line_cache()
             _ = self._tree_lines

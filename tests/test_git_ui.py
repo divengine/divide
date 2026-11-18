@@ -365,3 +365,15 @@ async def test_stash_from_changes_and_back_from_branches(tmp_path):
         await pilot.press("enter")
         await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "half done\n")
         await until(pilot, lambda: not any("wip" in r for r in rows(branches)), message=lambda: rows(branches))
+
+
+async def test_a_subject_that_looks_like_markup(tmp_path):
+    root = repo(tmp_path / "site")
+    (root / "index.tpl").write_text("[$products]{$name}[/$products]\n", encoding="utf-8")
+    sh(root, "commit", "-qam", "The loop closes with [/$products] and [b]bold[/b] stays as typed")
+    app = Divide(root, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await app.git_command(gitui.CM_GIT_HISTORY)
+        win = window(app, gitui.GitHistoryWindow)
+        await until(pilot, lambda: win is not None and len(rows(win)) == 2, message=lambda: rows(win))
+        assert rows(win)[0].endswith("The loop closes with [/$products] and [b]bold[/b] stays as typed")

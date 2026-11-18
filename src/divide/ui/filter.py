@@ -202,6 +202,12 @@ class FilteredTree(_Filter):
     """Tree mixin (before Tree in the bases): what matches, what is above it, and
     what hangs from a node that matches (folds still fold, below a match)."""
 
+    def process_label(self, label) -> Text:
+        """A label as it reads: Tree takes a str for Rich markup, and a commit's subject, a
+        template's ``[/$products]`` or a JSON key would be read as markup (or fail as one)."""
+        text = Text(label) if isinstance(label, str) else label
+        return text.split()[0] if text.plain else text
+
     def filter_text_of(self, node) -> str:
         label = node.label
         return label.plain if isinstance(label, Text) else str(label)
