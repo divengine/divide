@@ -284,6 +284,7 @@ async def test_copy_paste_makes_a_copy_and_asks_before_replacing(tmp_path):
         tree = await on_tree(pilot, app, page)
         await pilot.press("ctrl+c", "ctrl+v")  # in its own folder: a copy beside it
         await until(pilot, lambda: (root / "page copy.tpl").is_file())
+        await until(pilot, lambda: tree.selected_path == root / "page copy.tpl")  # the paste has put its bar there
         assert page.read_text(encoding="utf-8") == "x" and tree.clipboard == (page, False)  # a copy can be pasted again
 
         await on_tree(pilot, app, root / "parts" / "a.tpl")
