@@ -58,7 +58,9 @@ async def test_new_file_rename_delete(tmp_path):
         await settle(pilot)
         nav = root / "parts" / "nav.tpl"
         await until(pilot, nav.is_file, message=lambda: sorted(p.name for p in (root / "parts").iterdir()))
-        await until(pilot, lambda: tree.selected_path == nav, message=lambda: tree.selected_path)  # reloaded in the background
+        shown = lambda: (tree.selected_path, [(c.label.plain, c.data.path if c.data else None)  # (what the tree has, when it fails)
+                                              for n in [tree._node_for(root / "parts")] if n for c in n.children])
+        await until(pilot, lambda: tree.selected_path == nav, message=shown)  # reloaded in the background
         assert nav.is_file() and not menu.exists()
         win = app.editor_windows()[0]
         assert win.path == nav and win.title == "parts/nav.tpl" and tree.selected_path == nav
