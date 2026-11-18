@@ -12,7 +12,7 @@ import pytest
 
 from divide.app import Divide
 from divide.run.server import ServerError, WebServer, check_address, server_messages
-from divide.ui.dialogs import FileDialog
+from divide.ui.dialogs import FileDialog, shown_path
 from divide.ui.webserver import ServerLogWindow, WebServerDialog
 
 from test_run import XDEBUG, needs_php, needs_xdebug, settle, until
@@ -150,7 +150,7 @@ async def test_debug_web_requests(tmp_path, monkeypatch):
         app.run_command(app_command("CM_WEB_SERVER"))
         assert await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), WebServerDialog))
         dialog = app.screen.dialog
-        assert dialog.root_input.data == str(tmp_path) and "Xdebug found" in dialog.hint
+        assert dialog.root_input.data == shown_path(tmp_path) and "Xdebug found" in dialog.hint  # (~: Windows keeps temp in the home)
         dialog.address_input.data = address
         dialog.root_input.data = "public"  # relative to the project
         await pilot.press("enter")

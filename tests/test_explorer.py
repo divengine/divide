@@ -14,12 +14,12 @@ async def settle(pilot, n=12):
         await pilot.pause()
 
 
-async def until(pilot, check, tries=100):
+async def until(pilot, check, tries=100, message=None):
     for _ in range(tries):
         if check():
             return
         await pilot.pause(0.05)
-    raise AssertionError("timed out")
+    raise AssertionError(f"timed out: {message()}" if message else "timed out")
 
 
 def project(tmp_path: Path) -> Path:
@@ -57,7 +57,8 @@ async def test_new_file_rename_delete(tmp_path):
         await pilot.press(*"nav", "enter")
         await settle(pilot)
         nav = root / "parts" / "nav.tpl"
-        await until(pilot, lambda: tree.selected_path == nav)  # the tree is reloaded in the background
+        await until(pilot, nav.is_file, message=lambda: sorted(p.name for p in (root / "parts").iterdir()))
+        await until(pilot, lambda: tree.selected_path == nav, message=lambda: tree.selected_path)  # reloaded in the background
         assert nav.is_file() and not menu.exists()
         win = app.editor_windows()[0]
         assert win.path == nav and win.title == "parts/nav.tpl" and tree.selected_path == nav

@@ -16,11 +16,13 @@ from divide.i18n import _
 import asyncio
 import base64
 import shutil
+import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
 
 from divide.run.script import ERROR_INI, LIMIT, ScriptMessage, php_messages
 from divide.run import children
@@ -74,6 +76,8 @@ def uri_path(uri: str | None) -> Path | None:
     parsed = urlparse(uri)
     if parsed.scheme != "file":
         return None  # eval'd code: dbgp://1
+    if sys.platform == "win32":  # file:///C:/x/a.php: the drive comes after the /
+        return Path(url2pathname(parsed.path))
     return Path(unquote(parsed.path))
 
 
@@ -281,9 +285,9 @@ class DebugSession:
 
     async def command(self, name: str, *args: str, data: str | None = None, timeout: float = REPLY_TIMEOUT) -> ET.Element:
         """Send one DBGp command and return its ``<response>``."""
-        if self._writer is None:
-            raise DebugError(_('not connected'))
         async with self._lock:
+            if self._writer is None:  # (asked here: the session may close while a command waits its turn)
+                raise DebugError(_('not connected'))
             self._tx += 1
             tx = str(self._tx)
             line = " ".join([name, "-i", tx, *args])

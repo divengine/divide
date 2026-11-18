@@ -47,6 +47,10 @@ def find(root: Path, configured: str | None = None) -> list[str] | None:
     if phar.is_file():
         return _command(phar)
     found = shutil.which("composer")
+    if found and sys.platform == "win32" and found.lower().endswith((".bat", ".cmd")):
+        phar = Path(found).with_name("composer.phar")  # Composer-Setup puts it beside composer.bat
+        if phar.is_file():
+            return _command(phar)  # php runs it: no cmd in between
     return [found] if found else None
 
 
@@ -164,11 +168,23 @@ class Result:
         return self.code == 0
 
 
+def batch_arg(arg: str) -> str:
+    """``arg`` for a .bat (composer.bat): cmd reads the line twice, once to start the
+    .bat and again where it passes on %*, and each time an unquoted ^ & | < >
+    is its own (acme/tables:^2.1 would reach composer as acme/tables:2.1). An
+    argument with spaces goes quoted, and quoted they are plain characters."""
+    if any(c.isspace() for c in arg) or '"' in arg:
+        return arg
+    return "".join("^^^" + c if c in "^&|<>" else c for c in arg)
+
+
 async def run(command: list[str], args: list[str], cwd: Path, on_line: Callable[[str], None] | None = None,
               timeout: float | None = None) -> Result:
     """``composer args`` in ``cwd``, its output (both streams) line by line to ``on_line``.
     Cancelling the task stops composer."""
     env = {**os.environ, "COMPOSER_NO_INTERACTION": "1"}
+    if sys.platform == "win32" and command[0].lower().endswith((".bat", ".cmd")):
+        args = [batch_arg(a) for a in args]
     try:
         proc = children.track(await asyncio.create_subprocess_exec(
             *command, *args, "--no-ansi", "--no-interaction", cwd=str(cwd), env=env,

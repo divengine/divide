@@ -16,6 +16,8 @@ from divide.i18n import _
 import asyncio
 import re
 import shutil
+import socket
+import sys
 from collections.abc import Callable
 from pathlib import Path
 
@@ -51,6 +53,27 @@ def check_address(address: str) -> str | None:
     if not colon or not host or not port.isdigit() or not 0 < int(port) < 65536:
         return _('The address is host:port, as in 127.0.0.1:8000 or localhost:8080.')
     return None
+
+
+def port_taken(address: str) -> bool:
+    """Something listens on ``host:port`` already. Asked before php -S starts: on Windows
+    php -S starts anyway (two servers share the port, and either one answers)."""
+    host, _colon, port = address.strip().rpartition(":")
+    try:
+        infos = socket.getaddrinfo(host.strip("[]"), int(port), type=socket.SOCK_STREAM)
+    except (OSError, ValueError):
+        return False  # php -S says what is wrong with it
+    for family, kind, proto, _name, where in infos:
+        with socket.socket(family, kind, proto) as probe:
+            if sys.platform == "win32":
+                probe.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)  # type: ignore[attr-defined]
+            else:
+                probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # a port just closed is free
+            try:
+                probe.bind(where)
+            except OSError:
+                return True
+    return False
 
 
 class WebServer:
@@ -141,6 +164,8 @@ class WebServer:
         """Start serving; ServerError with PHP's words when it cannot."""
         if (problem := check_address(self.address)) is not None:
             raise ServerError(problem)
+        if port_taken(self.address):
+            raise ServerError(_('{address}: Address already in use (another server is listening there)').format(address=self.address))
         if not self.root.is_dir():
             raise ServerError(_('{root} is not a folder').format(root=self.root))
         if self.router is not None and not self.router.is_file():

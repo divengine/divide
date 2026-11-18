@@ -144,7 +144,7 @@ def test_finding_composer(tmp_path, monkeypatch):
     assert cmp.find(tmp_path)[-1] == str(tmp_path / "composer.phar")
     chosen = tmp_path / "mine"
     chosen.write_text("", encoding="utf-8")
-    assert cmp.find(tmp_path, str(chosen)) == [str(chosen)]
+    assert cmp.find(tmp_path, str(chosen))[-1] == str(chosen)  # (on Windows: php runs it)
 
 
 async def test_run_streams_and_stops(tmp_path, fake):

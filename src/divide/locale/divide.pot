@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 01:35+0000\n"
+"POT-Creation-Date: 2026-11-18 10:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2305,6 +2305,10 @@ msgstr ""
 msgid ""
 "{about}\n"
 "{changed} of {count} tags changed · Enter to edit"
+msgstr ""
+
+#, python-brace-format
+msgid "{address}: Address already in use (another server is listening there)"
 msgstr ""
 
 #, python-brace-format
