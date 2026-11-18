@@ -1152,16 +1152,28 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
 
         A reload that just ended may still have its folders queued for the tree's
         loader, which fills them again (new nodes): the node found then hangs from
-        nothing. It is looked for again once the loader is done (for a few seconds:
-        a busy machine takes its time)."""
+        nothing. It is looked for again once the loader is done; and once it is
+        done, the bar must still be there (the loader may fill a folder again after
+        the bar was put in it). For a few seconds: a busy machine takes its time."""
         loop = asyncio.get_running_loop()
         give_up = loop.time() + 3.0
         attempt = 0
-        while not await self._reveal_once(path) and loop.time() < give_up:
-            attempt += 1
-            await asyncio.sleep(min(0.05 * attempt, 0.25))
+        target = path.resolve()
+        while True:
+            found = await self._reveal_once(path)
             while not self._load_queue.empty() and loop.time() < give_up:
                 await asyncio.sleep(0.02)
+            await asyncio.sleep(0.05)  # (the loader's last folder, after the queue emptied)
+            if found and (self.selected_path == target or not self._can_show(target)):
+                return
+            if loop.time() >= give_up:
+                return
+            attempt += 1
+            await asyncio.sleep(min(0.05 * attempt, 0.25))
+
+    def _can_show(self, path: Path) -> bool:
+        """``path`` is a file or a folder in the project (not the project itself: no bar there)."""
+        return path.exists() and Path(self.path).resolve() in path.parents
 
     async def _reveal_once(self, path: Path) -> bool:
         root = Path(self.path).resolve()

@@ -162,5 +162,9 @@ async def test_f7_traces_a_template(tmp_path, monkeypatch):
             await pilot.pause(0.05)
         window = app.active_window()
         assert isinstance(window, TraceWindow) and window.list.focused == 0
+        for _ in range(100):  # the list takes the keys once focused (a moment, on a slow machine)
+            if app.focused is window.list:
+                break
+            await pilot.pause(0.05)
         await pilot.press("f7")  # in the trace window F7 is its own: the next row
         assert app.active_window() is window and window.list.focused == 1
