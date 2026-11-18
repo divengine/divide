@@ -887,19 +887,26 @@ class GitMixin:
             self.git_status_changed(None)
             return
         try:
-            state = await git.status(root)
+            state = await git.status(root, ignored=True)
         except git.GitError:
             state = None
-        self.git_status_changed(state)
+        self.git_status_changed(state, root)
 
-    def git_status_changed(self, state: git.Status | None) -> None:
+    def git_status_changed(self, state: git.Status | None, root: Path | None = None) -> None:
+        """The repository's state: the project window's border and its marks (``root`` given:
+        the state was read with the ignored files)."""
         self.git_state = state
         project = self.project_window()  # type: ignore[attr-defined]
         if project is None:
             return
-        frame = project.query(IndicatorFrame).first() if project.is_mounted else None
-        if frame is None:
+        if state is None:
+            project.project_tree.set_git({}, set(), set())
+        elif root is not None:
+            project.project_tree.set_git(*git.marks(state, root))
+        if not project.is_mounted:  # just opened: its border once it is there
+            self.set_timer(0.2, lambda: self.git_status_changed(self.git_state, root))  # type: ignore[attr-defined]
             return
+        frame = project.query(IndicatorFrame).first()
         if state is None:
             frame.set_indicator("")
             return

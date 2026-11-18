@@ -191,6 +191,7 @@ class Status:
     ahead: int = 0
     behind: int = 0
     changes: list[Change] = field(default_factory=list)
+    ignored: list[str] = field(default_factory=list)  # what .gitignore leaves out (a folder ends in /)
 
     @property
     def detached(self) -> bool:
@@ -229,6 +230,8 @@ def parse_status(text: str) -> Status:
         kind = entry[0]
         if kind == "?":
             status.changes.append(Change("untracked", entry[2:], "?"))
+        elif kind == "!":
+            status.ignored.append(entry[2:])
         elif kind == "1":
             parts = entry.split(" ", 8)
             _add(status, parts[1], parts[8])
@@ -251,9 +254,33 @@ def _add(status: Status, xy: str, path: str, orig: str = "") -> None:
         status.changes.append(Change("changes", path, y, orig if x == "." else ""))
 
 
-async def status(root: Path) -> Status:
-    out = await capture(["--no-optional-locks", "status", "--porcelain=v2", "--branch", "-z", "--untracked-files=all"], root)
+async def status(root: Path, ignored: bool = False) -> Status:
+    """What changed; with ``ignored``, also what .gitignore leaves out (a whole ignored folder
+    is one entry, ``vendor/``)."""
+    args = ["--no-optional-locks", "status", "--porcelain=v2", "--branch", "-z", "--untracked-files=all"]
+    out = await capture([*args, *(["--ignored=matching"] if ignored else [])], root)
     return parse_status(out)
+
+
+def marks(status: Status, root: Path) -> tuple[dict[Path, str], set[Path], set[Path]]:
+    """For the project window: each changed file's letter (a conflict first, then the
+    working tree's, then the index's), the folders that hold changes, the ignored paths."""
+    files: dict[Path, str] = {}
+    rank = {"conflicts": 0, "untracked": 1, "changes": 2, "staged": 3}
+    best: dict[Path, int] = {}
+    for change in status.changes:
+        path = root / change.path
+        if rank[change.area] < best.get(path, 9):
+            best[path] = rank[change.area]
+            files[path] = change.code
+    folders: set[Path] = set()
+    for path in files:
+        for parent in path.parents:
+            if parent == root or root not in parent.parents:
+                break
+            folders.add(parent)
+    ignored = {root / entry.rstrip("/") for entry in status.ignored}
+    return files, folders, ignored
 
 
 # ------------------------------------------------------------------ history

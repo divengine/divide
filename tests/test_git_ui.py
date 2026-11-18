@@ -228,3 +228,28 @@ async def test_outside_a_repository_it_says_so(tmp_path):
         assert "not in a git repository" in app.screen.dialog._text
         await pilot.press("enter")
         assert window(app, gitui.GitChangesWindow) is None
+
+
+async def test_the_project_window_marks_what_changed(tmp_path):
+    root = repo(tmp_path / "site")
+    (root / ".gitignore").write_text("vendor/\n", encoding="utf-8")
+    (root / "vendor").mkdir()
+    (root / "parts").mkdir()
+    (root / "parts" / "nav.tpl").write_text("nav", encoding="utf-8")
+    (root / "index.tpl").write_text("changed\n", encoding="utf-8")
+    app = Divide(root, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await until(pilot, lambda: app.project_window() is not None)
+        tree = app.project_window().project_tree
+        await until(pilot, lambda: bool(tree.git_files), message=lambda: tree.git_files)
+        await until(pilot, lambda: tree._node_for(root / "index.tpl") is not None)
+
+        def label(path):
+            node = tree._node_for(path)
+            return tree.render_label(node, tree.rich_style, tree.rich_style)
+
+        assert label(root / "index.tpl").plain.endswith("index.tpl M")
+        assert label(root / "parts").plain.endswith("parts •")
+        assert label(root / ".gitignore").plain.endswith(".gitignore ?")
+        vendor = label(root / "vendor")
+        assert vendor.plain.endswith("vendor") and any(span.style.dim for span in vendor.spans if hasattr(span.style, "dim"))

@@ -801,6 +801,10 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         self._drop = None  # the folder node it would go into
         self._swallow_click = False  # the click that ends a drag opens nothing
         self._renewed: dict[int, tuple] = {}  # id(old node) -> (old, new): the last folder filled again
+        # git (divide.ui.git): a changed file's letter, the folders holding changes, what git ignores
+        self.git_files: dict[Path, str] = {}
+        self.git_folders: set[Path] = set()
+        self.git_ignored: set[Path] = set()
 
     def set_clipboard(self, path: Path | None, cut: bool = False) -> None:
         """What Ctrl+V pastes (None: nothing); a cut one is drawn dim."""
@@ -814,6 +818,13 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             self._invalidate()
             self.refresh()
 
+    def set_git(self, files: dict[Path, str], folders: set[Path], ignored: set[Path]) -> None:
+        """What git says of the files (``divide.run.git.marks``): drawn beside their names."""
+        if (files, folders, ignored) != (self.git_files, self.git_folders, self.git_ignored):
+            self.git_files, self.git_folders, self.git_ignored = files, folders, ignored
+            self._invalidate()
+            self.refresh()
+
     def render_label(self, node, base_style, style):
         text = self._label(node, base_style, style)
         data = node.data
@@ -822,7 +833,24 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
                 text.stylize(Style(dim=True))  # cut: it goes where Ctrl+V says
             if node is self._drop:
                 text.stylize(Style(reverse=True))  # where a drag would drop it
+            if self.git_files or self.git_folders or self.git_ignored:
+                self._git_mark(text, node, data.path, style)
         return text
+
+    def _git_mark(self, text: Text, node, path: Path, style: Style) -> None:
+        """M, A, ?... after a changed file's name, • after a folder that holds changes;
+        what git ignores, dimmed."""
+        from divide.ui.git import CODES
+
+        bar = style if self.cursor_node is node else Style()
+        palette = themes.current()
+        code = self.git_files.get(path)
+        if code is not None:
+            text.append(f" {code}", Style(color=palette.hex(CODES.get(code, "white")), bold=True) + bar)
+        elif path in self.git_folders:
+            text.append(" •", Style(color=palette.hex(CODES["M"]), bold=True) + bar)
+        elif path in self.git_ignored or any(p in self.git_ignored for p in path.parents):
+            text.stylize(Style(dim=True))
 
     def _label(self, node, base_style, style):
         data = node.data

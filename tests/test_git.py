@@ -217,3 +217,27 @@ async def test_push_pull_and_a_remote_branch(tmp_path):
     await git.switch(one, topic)  # no local topic yet: one that tracks it
     status = await git.status(one)
     assert status.branch == "topic" and status.upstream == "origin/topic"
+
+
+def test_marks_for_the_project_window(tmp_path):
+    root = tmp_path
+    status = git.parse_status("\0".join([
+        "1 M. N... 100644 100644 100644 a b parts/nav.tpl",
+        "1 .M N... 100644 100644 100644 a b parts/nav.tpl",  # staged and changed again: the working tree's
+        "u UU N... 100644 100644 100644 100644 a b c fight.tpl",
+        "? parts/deep/new.tpl", "! vendor/", "",
+    ]))
+    files, folders, ignored = git.marks(status, root)
+    assert files == {root / "parts/nav.tpl": "M", root / "fight.tpl": "U", root / "parts/deep/new.tpl": "?"}
+    assert folders == {root / "parts", root / "parts/deep"}
+    assert ignored == {root / "vendor"}
+
+
+async def test_status_with_the_ignored(tmp_path):
+    root = repo(tmp_path)
+    (root / ".gitignore").write_text("vendor/\n*.log\n", encoding="utf-8")
+    (root / "vendor" / "x").mkdir(parents=True)
+    (root / "vendor" / "x" / "a.php").write_text("a", encoding="utf-8")
+    (root / "debug.log").write_text("a", encoding="utf-8")
+    assert (await git.status(root)).ignored == []
+    assert sorted((await git.status(root, ignored=True)).ignored) == ["debug.log", "vendor/"]
