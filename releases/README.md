@@ -36,4 +36,5 @@ The binaries are not signed: macOS asks to allow divide the first time it runs f
 (Homebrew does not), and Windows SmartScreen asks before the first run of the `.exe` or the `.msi`.
 
 The Homebrew formula also goes to the tap, [divengine/homebrew-tap](https://github.com/divengine/homebrew-tap),
-when the repository has the `HOMEBREW_TAP_TOKEN` secret (a token that can push to the tap).
+when the repository has the `HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of an SSH key that the tap
+has as a deploy key with write access.
