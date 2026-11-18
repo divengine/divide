@@ -271,3 +271,52 @@ async def test_blame_says_who_changed_each_line(tmp_path):
     assert all(r.committed and r.time for r in rows)
     unsaved = await git.blame(root, "a.tpl", contents="one\nTWO\nthree\n")  # an editor's text
     assert unsaved[2].text == "three" and not unsaved[2].committed
+
+
+async def test_a_merge_with_a_conflict_and_its_abort(tmp_path):
+    root = repo(tmp_path)
+    commit_file(root, "a.tpl", "title\n", "first")
+    sh(root, "switch", "-q", "-c", "other")
+    commit_file(root, "a.tpl", "their title\n", "theirs")
+    sh(root, "switch", "-q", "main")
+    commit_file(root, "a.tpl", "our title\n", "ours")
+    result = await git.merge(root, "other")
+    assert not result.ok and "CONFLICT" in result.output
+    assert await git.merging(root)
+    assert "Merge branch 'other'" in await git.merge_message(root)
+    status = await git.status(root)
+    assert status.area("conflicts") == [git.Change("conflicts", "a.tpl", "U")]
+    text = (root / "a.tpl").read_text(encoding="utf-8")
+    assert git.conflict_kinds(text) == ["meta", "mod", "meta", "add", "meta"]
+    await git.abort_merge(root)
+    assert not await git.merging(root) and (await git.status(root)).clean
+
+
+async def test_a_clean_merge(tmp_path):
+    root = repo(tmp_path)
+    commit_file(root, "a.tpl", "a", "first")
+    sh(root, "switch", "-q", "-c", "other")
+    commit_file(root, "b.tpl", "b", "b")
+    sh(root, "switch", "-q", "main")
+    assert (await git.merge(root, "other")).ok
+    assert (root / "b.tpl").exists() and not await git.merging(root)
+
+
+async def test_stash_and_bring_it_back(tmp_path):
+    root = repo(tmp_path)
+    commit_file(root, "a.tpl", "a\n", "first")
+    (root / "a.tpl").write_text("changed\n", encoding="utf-8")
+    (root / "new.tpl").write_text("new\n", encoding="utf-8")
+    await git.stash(root, "half done")
+    assert (await git.status(root)).clean
+    rows = await git.stashes(root)
+    assert [(s.ref, s.message) for s in rows] == [("stash@{0}", "On main: half done")]
+    await git.unstash(root, "stash@{0}", keep=True)
+    assert (root / "new.tpl").exists() and len(await git.stashes(root)) == 1
+    sh(root, "checkout", "--", ".")
+    (root / "new.tpl").unlink()
+    await git.unstash(root, "stash@{0}")
+    assert (root / "a.tpl").read_text(encoding="utf-8") == "changed\n" and await git.stashes(root) == []
+    await git.stash(root)
+    await git.drop_stash(root, "stash@{0}")
+    assert await git.stashes(root) == []

@@ -129,6 +129,7 @@ _tok("inserted", "trace.new", bg="inserted-bg", **B)  # what a mutation wrote
 _tok("deleted", "trace.old", bg="deleted-bg", **B)  # what it took away
 _tok("diff-add", "diff.add", bg="diff-add-bg")  # a diff's lines (Git): added, removed
 _tok("diff-del", "diff.del", bg="diff-del-bg")
+_tok("diff-mod", "diff.mod", bg="diff-mod-bg")  # our side of a conflict
 _tok("diff-hunk", "diff.hunk")  # @@ -1,3 +1,4 @@
 _tok("diff-meta", "diff.meta", **B)  # diff --git, index, ---, +++, a commit's header
 del B

@@ -648,3 +648,85 @@ async def push(root: Path, status: Status, on_line=None, on_progress=None) -> Re
             remote = "origin" if "origin" in names else names[0]
             return await run(["push", "--progress", "--set-upstream", remote, status.branch], root, on_line, on_progress)
     return await run(["push", "--progress"], root, on_line, on_progress)
+
+
+# ------------------------------------------------------------------ merging
+async def merging(root: Path) -> bool:
+    """A merge stopped halfway (its conflicts to solve, then a commit)."""
+    return (await run(["rev-parse", "-q", "--verify", "MERGE_HEAD"], root)).ok
+
+
+async def merge_message(root: Path) -> str:
+    """The message git prepared for the merge's commit (its comment lines left out)."""
+    path = (await capture(["rev-parse", "--git-path", "MERGE_MSG"], root)).strip()
+    file = Path(path) if Path(path).is_absolute() else root / path
+    try:
+        text = file.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    return "\n".join(line for line in text.splitlines() if not line.startswith("#")).strip()
+
+
+async def merge(root: Path, branch: str, on_line=None) -> Result:
+    """``git merge`` of ``branch`` into the current one: a conflict leaves it halfway (exit 1)."""
+    return await run(["merge", "--no-edit", branch], root, on_line=on_line, timeout=600.0)
+
+
+async def abort_merge(root: Path) -> None:
+    await must(["merge", "--abort"], root)
+
+
+def conflict_kinds(text: str) -> list[str]:
+    """A file in conflict: git's markers (``meta``), our side (``mod``), theirs (``add``)."""
+    kinds, side = [], ""
+    for line in lines(text):
+        if line.startswith("<<<<<<<"):
+            kinds.append("meta")
+            side = "mod"
+        elif line.startswith("|||||||") and side:
+            kinds.append("meta")
+            side = "base"
+        elif line.startswith("=======") and side:
+            kinds.append("meta")
+            side = "add"
+        elif line.startswith(">>>>>>>") and side:
+            kinds.append("meta")
+            side = ""
+        else:
+            kinds.append("" if side == "base" else side)
+    return kinds
+
+
+# ------------------------------------------------------------------ stashes
+@dataclass(frozen=True)
+class Stash:
+    ref: str  # stash@{0}
+    time: int
+    message: str  # "On main: work in progress"
+
+
+def parse_stashes(text: str) -> list[Stash]:
+    out = []
+    for line in lines(text):
+        parts = line.split(SEP)
+        if len(parts) >= 3:
+            out.append(Stash(parts[0], int(parts[1] or 0), parts[2]))
+    return out
+
+
+async def stashes(root: Path) -> list[Stash]:
+    return parse_stashes(await capture(["stash", "list", f"--format=%gd{SEP}%ct{SEP}%gs"], root))
+
+
+async def stash(root: Path, message: str = "") -> None:
+    """Put the changes aside (the untracked files too) and leave the last commit's files."""
+    await must(["stash", "push", "--include-untracked", *(["--message", message] if message else [])], root)
+
+
+async def unstash(root: Path, ref: str, keep: bool = False) -> None:
+    """Bring a stash's changes back; without ``keep`` the stash goes (``pop``)."""
+    await must(["stash", "apply" if keep else "pop", ref], root)
+
+
+async def drop_stash(root: Path, ref: str) -> None:
+    await must(["stash", "drop", ref], root)

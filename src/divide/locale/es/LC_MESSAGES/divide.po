@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:45+0000\n"
+"POT-Creation-Date: 2026-11-18 17:50+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -109,6 +109,15 @@ msgstr "16 colores (consola de Windows)"
 msgid "A folder cannot go inside itself."
 msgstr "Una carpeta no puede ir dentro de sí misma."
 
+msgid "Abort the merge"
+msgstr "Cancelar la fusión"
+
+msgid "Abort the merge and go back to how the files were before it?"
+msgstr "¿Cancelar la fusión y volver a como estaban los archivos antes?"
+
+msgid "Abort the ~m~erge"
+msgstr "Ca~n~celar la fusión"
+
 msgid "About"
 msgstr "Acerca de"
 
@@ -130,6 +139,9 @@ msgstr "Funciones de agregación"
 
 msgid "An empty field: Div's default (or the user's setup)."
 msgstr "Un campo vacío: el valor por defecto de Div (o la configuración del usuario)."
+
+msgid "Apply it, ~k~eeping it"
+msgstr "Aplicarlo ~m~anteniéndolo"
 
 msgid "As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them."
 msgstr "Como en un shell: las comillas conservan los espacios. Ctrl+F9 y el depurador los pasan."
@@ -292,6 +304,13 @@ msgstr "Cambiado: previsualiza de nuevo (Enter)"
 msgid "Changes"
 msgstr "Cambios"
 
+#, python-brace-format
+msgid "Changes back from {ref}"
+msgstr "Cambios recuperados de {ref}"
+
+msgid "Changes put aside: Git > Branches > Stashes brings them back"
+msgstr "Cambios guardados aparte: Git > Ramas > Stashes los recupera"
+
 msgid "Checking"
 msgstr "Verificando"
 
@@ -332,6 +351,9 @@ msgstr "Commit  {oid}"
 #, python-brace-format
 msgid "Commit by {who}"
 msgstr "Commit de {who}"
+
+msgid "Commit the merge"
+msgstr "Commit de la fusión"
 
 #, python-brace-format
 msgid "Commit {oid}"
@@ -714,6 +736,13 @@ msgstr "Símbolo de dólar"
 msgid "Done"
 msgstr "Hecho"
 
+msgid "Drop the stash"
+msgstr "Borrar el stash"
+
+#, python-brace-format
+msgid "Drop {ref} ({message})? Its changes are lost."
+msgstr "¿Borrar {ref} ({message})? Sus cambios se pierden."
+
 msgid "D~a~ta tree"
 msgstr "Árbol de dat~o~s"
 
@@ -755,6 +784,9 @@ msgstr "Motor y rutas"
 
 msgid "Enter"
 msgstr "Enter"
+
+msgid "Enter brings its changes back (and drops it); Del drops it."
+msgstr "Enter recupera sus cambios (y lo borra); Supr lo borra."
 
 msgid "Enter edit section · Del Div's defaults · F2 save · Alt+F10 menu: user/project, JSON, trust"
 msgstr "Enter editar sección · Supr valores de Div · F2 guardar · Alt+F10 menú: usuario/proyecto, JSON, confianza"
@@ -1175,9 +1207,22 @@ msgstr "Máximo"
 msgid "Member delimiter"
 msgstr "Delimitador de miembro"
 
+msgid "Merge"
+msgstr "Fusionar"
+
 #, python-brace-format
 msgid "Merge of {parents}"
 msgstr "Fusión de {parents}"
+
+#, python-brace-format
+msgid "Merge {branch} into {current}?"
+msgstr "¿Fusionar {branch} en {current}?"
+
+msgid "Merging: no conflicts left, Ctrl+K commits the merge"
+msgstr "Fusionando: no quedan conflictos, Ctrl+K hace el commit de la fusión"
+
+msgid "Merging: solve the conflicts (Space marks one solved), then Ctrl+K"
+msgstr "Fusionando: resuelve los conflictos (Espacio marca uno resuelto) y luego Ctrl+K"
 
 msgid "Messages"
 msgstr "Mensajes"
@@ -1273,6 +1318,9 @@ msgstr "Sin composer.json: Alt+F10 > Nuevo composer.json"
 msgid "No file matches"
 msgstr "Ningún archivo coincide"
 
+msgid "No merge is halfway"
+msgstr "No hay ninguna fusión a medias"
+
 msgid "No program is being debugged"
 msgstr "No se está depurando ningún programa"
 
@@ -1315,6 +1363,9 @@ msgstr "No se encontró nada: prueba con menos palabras o con otras"
 
 msgid "Nothing is staged: stage files (Space in Git > Changes) or tick Stage every change first."
 msgstr "No hay nada preparado: prepara archivos (Espacio en Git > Cambios) o marca Preparar todos los cambios antes."
+
+msgid "Nothing to put aside: nothing changed"
+msgstr "No hay nada que guardar aparte: nada ha cambiado"
 
 msgid "Number prefix"
 msgstr "Prefijo de número"
@@ -1723,6 +1774,13 @@ msgstr "Iniciando php -S {address}..."
 msgid "Starting {name} in the debugger..."
 msgstr "Iniciando {name} en el depurador..."
 
+msgid "Stash"
+msgstr "Stash"
+
+#, python-brace-format
+msgid "Stashes  {n}"
+msgstr "Stashes  {n}"
+
 msgid "Step o~u~t"
 msgstr "~S~alir de la función"
 
@@ -1796,6 +1854,9 @@ msgstr "Suma"
 msgid "S~E~SSION"
 msgstr "S~E~SSION"
 
+msgid "S~t~ash the changes..."
+msgstr "~G~uardar los cambios aparte (stash)..."
+
 msgid "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
 msgstr "Tab siguiente enlace · Enter ir · Alt+F1 atrás · Shift+F1 índice · Esc cerrar"
 
@@ -1817,6 +1878,9 @@ msgstr "IDE de terminal para los proyectos Divengine."
 
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
 msgstr "La dirección es host:puerto, como 127.0.0.1:8000 o localhost:8080."
+
+msgid "The changes go aside, the files go back to the last commit"
+msgstr "Los cambios se guardan aparte y los archivos vuelven al último commit"
 
 msgid ""
 "The debugger needs Xdebug, the PHP extension.\n"
@@ -1874,6 +1938,9 @@ msgstr "La petición que ven las plantillas mientras las diseñas: div.get, div.
 
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr "El script se está ejecutando: Ctrl+F2 lo detiene"
+
+msgid "This is the current branch: merge another one into it"
+msgstr "Es la rama actual: fusiona otra en ella"
 
 msgid "This is the current branch: switch to another one first"
 msgstr "Es la rama actual: cambia antes a otra"
@@ -2310,6 +2377,9 @@ msgstr "git commit falló"
 msgid "git could not start: {exc}"
 msgstr "git no pudo arrancar: {exc}"
 
+msgid "git merge failed"
+msgstr "git merge falló"
+
 msgid "git was not found: install it (https://git-scm.com) and start divide again"
 msgstr "no se encontró git: instálalo (https://git-scm.com) y vuelve a abrir divide"
 
@@ -2579,6 +2649,10 @@ msgid "{branch} has no upstream to pull from: push it first (it is set then)."
 msgstr "{branch} no tiene upstream del que hacer pull: haz push antes (así se establece)."
 
 #, python-brace-format
+msgid "{branch} merged into {current}"
+msgstr "{branch} fusionada en {current}"
+
+#, python-brace-format
 msgid "{changes} in {n} parse"
 msgid_plural "{changes} in {n} parses"
 msgstr[0] "{changes} en {n} análisis"
@@ -2765,6 +2839,12 @@ msgid "{n} file changed:"
 msgid_plural "{n} files changed:"
 msgstr[0] "{n} archivo cambiado:"
 msgstr[1] "{n} archivos cambiados:"
+
+#, python-brace-format
+msgid "{n} file in conflict: solve it, Space marks it solved, then commit"
+msgid_plural "{n} files in conflict: solve them, Space marks each solved, then commit"
+msgstr[0] "{n} archivo en conflicto: resuélvelo, Espacio lo marca resuelto y luego haz commit"
+msgstr[1] "{n} archivos en conflicto: resuélvelos, Espacio marca cada uno resuelto y luego haz commit"
 
 #, python-brace-format
 msgid "{n} file staged"
@@ -2958,6 +3038,9 @@ msgstr "~L~ibros"
 msgid "~B~ranches"
 msgstr "~R~amas"
 
+msgid "~B~ring it back (and drop it)"
+msgstr "~R~ecuperarlo (y borrarlo)"
+
 msgid "~B~rowse..."
 msgstr "~E~xaminar..."
 
@@ -3054,6 +3137,9 @@ msgstr "Motor ~D~iv..."
 
 msgid "~D~ocument root"
 msgstr "Carpeta ~r~aíz"
+
+msgid "~D~rop it"
+msgstr "~B~orrarlo"
 
 msgid "~D~ump the autoloader"
 msgstr "~R~egenerar el autoloader"
@@ -3183,6 +3269,9 @@ msgstr "~B~iblioteca (un paquete para otros)"
 
 msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
 msgstr "Ciclos ~m~áximos del parser (DIV_MAX_PARSE_CYCLES)"
+
+msgid "~M~erge into the current branch"
+msgstr "Fusionar en la ~r~ama actual"
 
 msgid "~M~essage"
 msgstr "~M~ensaje"
@@ -3471,6 +3560,9 @@ msgstr "~V~igilancias"
 
 msgid "~W~eb server..."
 msgstr "Servidor ~w~eb..."
+
+msgid "~W~hat it is (optional)"
+msgstr "~Q~ué es (opcional)"
 
 msgid "~W~hole words only"
 msgstr "~P~alabras completas"

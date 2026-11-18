@@ -60,6 +60,8 @@ async def bar_on(pilot, win, text: str) -> None:
     """Put the bar on the row that reads ``text``."""
     tree = win.git_tree
     await until(pilot, lambda: text in rows(win), message=lambda: rows(win))
+    await until(pilot, lambda: tree.cursor_node is not None)  # the window has put its bar first
+    await pilot.pause(0.1)
     for line in range(tree.last_line + 1):
         node = tree.get_node_at_line(line)
         if node is not None and tree.render_label(node, tree.rich_style, tree.rich_style).plain.lstrip("►▼ ").strip() == text:
@@ -299,3 +301,65 @@ async def test_blame_and_the_commit_of_a_line(tmp_path):
         await pilot.press("enter")
         await until(pilot, lambda: window(app, gitui.DiffWindow) is not None)
         assert "+<p>more</p>" in window(app, gitui.DiffWindow).view.text
+
+
+async def test_a_merge_with_a_conflict_solved_and_committed(tmp_path):
+    root = repo(tmp_path / "site")
+    sh(root, "switch", "-q", "-c", "other")
+    (root / "index.tpl").write_text("<h1>theirs</h1>\n", encoding="utf-8")
+    sh(root, "commit", "-qam", "Theirs")
+    sh(root, "switch", "-q", "main")
+    (root / "index.tpl").write_text("<h1>ours</h1>\n", encoding="utf-8")
+    sh(root, "commit", "-qam", "Ours")
+    app = Divide(root, [])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await app.git_command(gitui.CM_GIT_BRANCHES)
+        branches = window(app, gitui.GitBranchesWindow)
+        await bar_on(pilot, branches, "other")
+        app.git_action(branches, "merge")
+        await until(pilot, lambda: getattr(app.screen, "dialog", None) is not None,
+                    message=lambda: (branches.row, [n.message for n in app._notifications]))
+        await pilot.press("y")
+        await until(pilot, lambda: window(app, gitui.GitChangesWindow) is not None)
+        changes = window(app, gitui.GitChangesWindow)
+        await until(pilot, lambda: "U index.tpl" in rows(changes), message=lambda: shown(app, changes))
+        await bar_on(pilot, changes, "U index.tpl")
+        await until(pilot, lambda: "<<<<<<< HEAD" in changes.diff.text, message=lambda: changes.diff.text)
+        kinds = {kind for _s, _e, kind in changes.diff.marks}
+        assert {"diff.meta", "diff.mod", "diff.add"} <= kinds
+        assert "Merging" in str(changes.state.render())
+
+        (root / "index.tpl").write_text("<h1>both</h1>\n", encoding="utf-8")  # solved
+        await pilot.press("space")  # marked solved
+        await until(pilot, lambda: rows(changes)[:2] == ["Staged (the next commit)  1", "M index.tpl"], message=lambda: shown(app, changes))
+        await pilot.press("ctrl+k")
+        await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), gitui.CommitDialog))
+        assert "Merge branch 'other'" in app.screen.dialog.message.text
+        await pilot.press("ctrl+j")
+        await until(pilot, lambda: sh(root, "log", "-1", "--format=%P").count(" ") == 1)  # two parents
+        assert sh(root, "status", "--porcelain") == ""
+
+
+async def test_stash_from_changes_and_back_from_branches(tmp_path):
+    root = repo(tmp_path / "site")
+    (root / "index.tpl").write_text("half done\n", encoding="utf-8")
+    app = Divide(root, [root / "index.tpl"])
+    async with app.run_test(size=(120, 40)) as pilot:
+        editor = app.editor_windows()[0]
+        await app.git_command(gitui.CM_GIT_CHANGES)
+        changes = window(app, gitui.GitChangesWindow)
+        await bar_on(pilot, changes, "M index.tpl")
+        app.git_action(changes, "stash")
+        await until(pilot, lambda: hasattr(getattr(app.screen, "dialog", None), "input"))
+        await pilot.press(*"wip", "enter")
+        await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "<h1>{$title}</h1>\n")
+        await until(pilot, lambda: editor.editor.text == "<h1>{$title}</h1>\n")  # read again
+
+        await app.git_command(gitui.CM_GIT_BRANCHES)
+        branches = window(app, gitui.GitBranchesWindow)
+        await until(pilot, lambda: any("On main: wip" in r for r in rows(branches)), message=lambda: rows(branches))
+        row = next(r for r in rows(branches) if "On main: wip" in r)
+        await bar_on(pilot, branches, row)
+        await pilot.press("enter")
+        await until(pilot, lambda: (root / "index.tpl").read_text(encoding="utf-8") == "half done\n")
+        await until(pilot, lambda: not any("wip" in r for r in rows(branches)), message=lambda: rows(branches))

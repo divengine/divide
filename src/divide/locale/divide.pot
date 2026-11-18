@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 17:45+0000\n"
+"POT-Creation-Date: 2026-11-18 17:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -108,6 +108,15 @@ msgstr ""
 msgid "A folder cannot go inside itself."
 msgstr ""
 
+msgid "Abort the merge"
+msgstr ""
+
+msgid "Abort the merge and go back to how the files were before it?"
+msgstr ""
+
+msgid "Abort the ~m~erge"
+msgstr ""
+
 msgid "About"
 msgstr ""
 
@@ -128,6 +137,9 @@ msgid "Aggregate functions"
 msgstr ""
 
 msgid "An empty field: Div's default (or the user's setup)."
+msgstr ""
+
+msgid "Apply it, ~k~eeping it"
 msgstr ""
 
 msgid "As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them."
@@ -293,6 +305,13 @@ msgstr ""
 msgid "Changes"
 msgstr ""
 
+#, python-brace-format
+msgid "Changes back from {ref}"
+msgstr ""
+
+msgid "Changes put aside: Git > Branches > Stashes brings them back"
+msgstr ""
+
 msgid "Checking"
 msgstr ""
 
@@ -332,6 +351,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "Commit by {who}"
+msgstr ""
+
+msgid "Commit the merge"
 msgstr ""
 
 #, python-brace-format
@@ -716,6 +738,13 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+msgid "Drop the stash"
+msgstr ""
+
+#, python-brace-format
+msgid "Drop {ref} ({message})? Its changes are lost."
+msgstr ""
+
 msgid "D~a~ta tree"
 msgstr ""
 
@@ -756,6 +785,9 @@ msgid "Engine and paths"
 msgstr ""
 
 msgid "Enter"
+msgstr ""
+
+msgid "Enter brings its changes back (and drops it); Del drops it."
 msgstr ""
 
 msgid ""
@@ -1184,8 +1216,21 @@ msgstr ""
 msgid "Member delimiter"
 msgstr ""
 
+msgid "Merge"
+msgstr ""
+
 #, python-brace-format
 msgid "Merge of {parents}"
+msgstr ""
+
+#, python-brace-format
+msgid "Merge {branch} into {current}?"
+msgstr ""
+
+msgid "Merging: no conflicts left, Ctrl+K commits the merge"
+msgstr ""
+
+msgid "Merging: solve the conflicts (Space marks one solved), then Ctrl+K"
 msgstr ""
 
 msgid "Messages"
@@ -1282,6 +1327,9 @@ msgstr ""
 msgid "No file matches"
 msgstr ""
 
+msgid "No merge is halfway"
+msgstr ""
+
 msgid "No program is being debugged"
 msgstr ""
 
@@ -1325,6 +1373,9 @@ msgstr ""
 msgid ""
 "Nothing is staged: stage files (Space in Git > Changes) or tick Stage "
 "every change first."
+msgstr ""
+
+msgid "Nothing to put aside: nothing changed"
 msgstr ""
 
 msgid "Number prefix"
@@ -1747,6 +1798,13 @@ msgstr ""
 msgid "Starting {name} in the debugger..."
 msgstr ""
 
+msgid "Stash"
+msgstr ""
+
+#, python-brace-format
+msgid "Stashes  {n}"
+msgstr ""
+
 msgid "Step o~u~t"
 msgstr ""
 
@@ -1820,6 +1878,9 @@ msgstr ""
 msgid "S~E~SSION"
 msgstr ""
 
+msgid "S~t~ash the changes..."
+msgstr ""
+
 msgid "Tab next link · Enter go · Alt+F1 back · Shift+F1 index · Esc close"
 msgstr ""
 
@@ -1842,6 +1903,9 @@ msgid "Terminal IDE for the Divengine projects."
 msgstr ""
 
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
+msgstr ""
+
+msgid "The changes go aside, the files go back to the last commit"
 msgstr ""
 
 msgid ""
@@ -1907,6 +1971,9 @@ msgid ""
 msgstr ""
 
 msgid "The script is running: Ctrl+F2 stops it"
+msgstr ""
+
+msgid "This is the current branch: merge another one into it"
 msgstr ""
 
 msgid "This is the current branch: switch to another one first"
@@ -2350,6 +2417,9 @@ msgstr ""
 msgid "git could not start: {exc}"
 msgstr ""
 
+msgid "git merge failed"
+msgstr ""
+
 msgid "git was not found: install it (https://git-scm.com) and start divide again"
 msgstr ""
 
@@ -2630,6 +2700,10 @@ msgid "{branch} has no upstream to pull from: push it first (it is set then)."
 msgstr ""
 
 #, python-brace-format
+msgid "{branch} merged into {current}"
+msgstr ""
+
+#, python-brace-format
 msgid "{changes} in {n} parse"
 msgid_plural "{changes} in {n} parses"
 msgstr[0] ""
@@ -2812,6 +2886,12 @@ msgstr[1] ""
 #, python-brace-format
 msgid "{n} file changed:"
 msgid_plural "{n} files changed:"
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} file in conflict: solve it, Space marks it solved, then commit"
+msgid_plural "{n} files in conflict: solve them, Space marks each solved, then commit"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -3007,6 +3087,9 @@ msgstr ""
 msgid "~B~ranches"
 msgstr ""
 
+msgid "~B~ring it back (and drop it)"
+msgstr ""
+
 msgid "~B~rowse..."
 msgstr ""
 
@@ -3102,6 +3185,9 @@ msgid "~D~iv engine..."
 msgstr ""
 
 msgid "~D~ocument root"
+msgstr ""
+
+msgid "~D~rop it"
 msgstr ""
 
 msgid "~D~ump the autoloader"
@@ -3231,6 +3317,9 @@ msgid "~L~ibrary (a package for others)"
 msgstr ""
 
 msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
+msgstr ""
+
+msgid "~M~erge into the current branch"
 msgstr ""
 
 msgid "~M~essage"
@@ -3519,6 +3608,9 @@ msgid "~W~atches"
 msgstr ""
 
 msgid "~W~eb server..."
+msgstr ""
+
+msgid "~W~hat it is (optional)"
 msgstr ""
 
 msgid "~W~hole words only"

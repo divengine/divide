@@ -74,6 +74,11 @@ CM_GIT_NEW_BRANCH = Command.USER + 177
 CM_GIT_DELETE_BRANCH = Command.USER + 178
 CM_GIT_DIFF = Command.USER + 179
 CM_GIT_COPY = Command.USER + 180
+CM_GIT_MERGE = Command.USER + 181
+CM_GIT_ABORT_MERGE = Command.USER + 182
+CM_GIT_STASH = Command.USER + 183
+CM_GIT_UNSTASH = Command.USER + 184
+CM_GIT_APPLY_STASH = Command.USER + 185
 
 # Colour slots (every palette gives each a colour that reads on its windows).
 AREA, PATH = "lightcyan", "white"
@@ -123,13 +128,15 @@ class DiffView(EditorView):
     def __init__(self) -> None:
         super().__init__("", read_only=True, path=Path("git.diff"))
 
-    def show(self, text: str) -> None:
+    def show(self, text: str, conflict: bool = False) -> None:
+        """A diff; with ``conflict``, a file in conflict (git's markers, our side, theirs)."""
         if text != self.text:
             self.load_text(text)
             self.move_cursor((0, 0))
         marks = []
         offset = 0
-        for line, kind in zip(git.lines(text), git.diff_kinds(text)):
+        kinds = git.conflict_kinds(text) if conflict else git.diff_kinds(text)
+        for line, kind in zip(git.lines(text), kinds):
             if kind:
                 marks.append((offset, offset + max(1, len(line)), "diff." + kind))
             offset += len(line) + 1
@@ -507,6 +514,7 @@ class GitChangesWindow(_GitWindow):
         super().__init__(_('Git: changes'), root, number=number)
         self.diff = DiffView()
         self.change: git.Change | None = None
+        self.merging = False
 
     def compose_content(self) -> ComposeResult:
         with Horizontal():
@@ -530,6 +538,7 @@ class GitChangesWindow(_GitWindow):
     async def reload(self) -> None:
         try:
             self.status = await git.status(self.repo)
+            self.merging = await git.merging(self.repo)
         except git.GitError as exc:
             self.state.update(f"[!] {exc}")
             return
@@ -553,6 +562,12 @@ class GitChangesWindow(_GitWindow):
             else:
                 self.focused_row(None)
         staged = len(self.status.area("staged"))
+        if self.merging:
+            conflicts = len(self.status.area("conflicts"))
+            self.show_state(_("Merging: solve the conflicts (Space marks one solved), then Ctrl+K") if conflicts
+                            else _("Merging: no conflicts left, Ctrl+K commits the merge"))
+            self.app.git_status_changed(self.status)  # type: ignore[attr-defined]
+            return
         self.show_state(ngettext("{n} file staged", "{n} files staged", staged).format(n=staged) + " · "
                         + ngettext("{n} other change", "{n} other changes", len(self.status.changes) - staged).format(
                             n=len(self.status.changes) - staged))
@@ -577,6 +592,14 @@ class GitChangesWindow(_GitWindow):
 
     @work(group="git-diff", exclusive=True)
     async def show_diff(self, change: git.Change) -> None:
+        if change.area == "conflicts":  # the file with git's markers: our side, theirs
+            try:
+                text = (self.repo / change.path).read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                text = str(exc)
+            if self.change is change:
+                self.diff.show(text, conflict=True)
+            return
         try:
             text = await git.diff_of(self.repo, change)
         except git.GitError as exc:
@@ -665,6 +688,13 @@ class GitHistoryWindow(_GitWindow):
         return f"{c.short} {c.author} {' '.join(c.refs)} {c.subject}" if c.oid else ""
 
     @property
+    def chosen_commit(self) -> git.Commit | None:
+        """The commit under the bar (read from the bar: its highlight may come later)."""
+        row = self.row
+        c = row.item if row is not None and row.kind == "commit" else None
+        return c if c is not None and c.oid else None  # type: ignore[union-attr,return-value]
+
+    @property
     def graph_width(self) -> int:
         return max((len(c.graph) for c in self.commits), default=1)
 
@@ -748,7 +778,18 @@ class GitBranchesWindow(_GitWindow):
         super().__init__(_('Git: branches'), root, number=number)
         self.info = Static("", classes="git-info", markup=False)
         self.branches: list[git.Branch] = []
-        self.branch: git.Branch | None = None
+        self.stashes: list[git.Stash] = []
+
+    @property
+    def branch(self) -> git.Branch | None:
+        """The branch under the bar (read from the bar: its highlight may come later)."""
+        row = self.row
+        return row.item if row is not None and row.kind == "branch" else None  # type: ignore[return-value]
+
+    @property
+    def stash(self) -> git.Stash | None:
+        row = self.row
+        return row.item if row is not None and row.kind == "stash" else None  # type: ignore[return-value]
 
     def compose_content(self) -> ComposeResult:
         with Horizontal():
@@ -758,8 +799,11 @@ class GitBranchesWindow(_GitWindow):
                 yield self.info
 
     def label_of(self, row: Row) -> Text:
-        b: git.Branch = row.item  # type: ignore[assignment]
         palette = themes.current()
+        if row.kind == "stash":
+            st: git.Stash = row.item  # type: ignore[assignment]
+            return Text.assemble((f"  {st.ref} ", Style(color=palette.hex(HASH))), (st.message, Style(color=palette.hex(PATH))))
+        b: git.Branch = row.item  # type: ignore[assignment]
         name = b.name.split("/", 1)[1] if b.remote else b.name
         colour = HEAD if b.current else REMOTE if b.remote else LOCAL
         out = Text.assemble(("* " if b.current else "  ", Style(color=palette.hex(HEAD), bold=True)),
@@ -770,6 +814,8 @@ class GitBranchesWindow(_GitWindow):
 
     def filter_text_of(self, node) -> str:
         row: Row | None = node.data
+        if row is not None and row.kind == "stash":
+            return f"{row.item.ref} {row.item.message}"  # type: ignore[union-attr]
         return row.item.name if row is not None and row.kind == "branch" else str(node.label)  # type: ignore[union-attr]
 
     @work(group="git-branches", exclusive=True)
@@ -777,6 +823,7 @@ class GitBranchesWindow(_GitWindow):
         try:
             self.status = await git.status(self.repo)
             self.branches = await git.branches(self.repo)
+            self.stashes = await git.stashes(self.repo)
         except git.GitError as exc:
             self.state.update(f"[!] {exc}")
             return
@@ -797,6 +844,11 @@ class GitBranchesWindow(_GitWindow):
             node = tree.root.add(f"{remote}  {len(members)}", Row("group", key), expand=key not in self._folded)
             for b in sorted(members, key=lambda b: b.name):
                 node.add_leaf(b.name, Row("branch", b.name, b))
+        if self.stashes:
+            node = tree.root.add(_("Stashes  {n}").format(n=len(self.stashes)), Row("group", "stashes"),
+                                 expand="stashes" not in self._folded)
+            for st in self.stashes:
+                node.add_leaf(st.ref, Row("stash", f"stash:{st.time}:{st.message}", st))
         if not tree.put_bar(keep):
             current = next((b for b in local if b.current), None)
             tree.put_bar(current.name if current else None) or self.focused_row(None)
@@ -805,8 +857,12 @@ class GitBranchesWindow(_GitWindow):
         self.app.git_status_changed(self.status)  # type: ignore[attr-defined]
 
     def focused_row(self, row: Row | None) -> None:
+        if row is not None and row.kind == "stash":
+            st: git.Stash = row.item  # type: ignore[assignment]
+            self.info.update("\n".join([st.ref, "─" * len(st.ref), st.message, when(st.time), "",
+                                         _("Enter brings its changes back (and drops it); Del drops it.")]))
+            return
         b = row.item if row is not None and row.kind == "branch" else None
-        self.branch = b  # type: ignore[assignment]
         if b is None:
             self.info.update(_("Enter switches to the branch under the bar; a remote one gets its local branch."))
             return
@@ -825,13 +881,14 @@ class GitBranchesWindow(_GitWindow):
         self.info.update("\n".join(lines))
 
     def chosen(self, row: Row) -> None:
-        self.app.git_action(self, "switch")  # type: ignore[attr-defined]
+        self.app.git_action(self, "unstash" if row.kind == "stash" else "switch")  # type: ignore[attr-defined]
 
     def action_new_branch(self) -> None:
         self.app.git_action(self, "new_branch")  # type: ignore[attr-defined]
 
     def action_delete_branch(self) -> None:
-        self.app.git_action(self, "delete_branch")  # type: ignore[attr-defined]
+        row = self.row
+        self.app.git_action(self, "drop_stash" if row is not None and row.kind == "stash" else "delete_branch")  # type: ignore[attr-defined]
 
 
 # ------------------------------------------------------------------ commit
@@ -867,9 +924,10 @@ class CommitDialog(_Dialog):
     CommitDialog CheckBoxes { width: 1fr; }
     """
 
-    def __init__(self, status: git.Status, last_message: str = "") -> None:
-        super().__init__(title=_('Commit'))
+    def __init__(self, status: git.Status, last_message: str = "", merging: bool = False) -> None:
+        super().__init__(title=_('Commit the merge') if merging else _('Commit'))
         self.status = status
+        self.merging = merging
         self.last_message = last_message
         self.message = MessageView()
         staged = len(status.area("staged"))
@@ -920,7 +978,7 @@ class CommitDialog(_Dialog):
         problem = ""
         if not self.text:
             problem = _("Write a message: what this commit does, in a line.")
-        elif not self.amend and not self.stage_all and not self.status.area("staged"):
+        elif not self.amend and not self.stage_all and not self.merging and not self.status.area("staged"):
             problem = _("Nothing is staged: stage files (Space in Git > Changes) or tick Stage every change first.")
         elif self.status.area("conflicts"):
             problem = _("Some files are in conflict: solve them first.")
@@ -1236,20 +1294,50 @@ class GitMixin:
                 await self._git_remote(root, "push")
             case "fetch":
                 await self._git_remote(root, "fetch")
-            case "diff" if isinstance(win, GitHistoryWindow) and win.commit is not None:
-                c = win.commit
+            case "diff" if isinstance(win, GitHistoryWindow) and win.chosen_commit is not None:
+                c = win.chosen_commit
                 text = await git.diff_of_commit(root, c.oid, win.path)
                 self._show_diff(_('Commit {oid}').format(oid=c.short), text)
-            case "copy" if isinstance(win, GitHistoryWindow) and win.commit is not None:
-                self.copy_to_clipboard(win.commit.oid)  # type: ignore[attr-defined]
-                self.notify(_('Copied: {oid}').format(oid=win.commit.oid), timeout=3)  # type: ignore[attr-defined]
+            case "copy" if isinstance(win, GitHistoryWindow) and win.chosen_commit is not None:
+                oid = win.chosen_commit.oid
+                self.copy_to_clipboard(oid)  # type: ignore[attr-defined]
+                self.notify(_('Copied: {oid}').format(oid=oid), timeout=3)  # type: ignore[attr-defined]
             case "new_branch":
                 start = ""
-                if isinstance(win, GitHistoryWindow) and win.commit is not None:
-                    start = win.commit.oid
+                if isinstance(win, GitHistoryWindow) and win.chosen_commit is not None:
+                    start = win.chosen_commit.oid
                 elif isinstance(win, GitBranchesWindow) and win.branch is not None:
                     start = win.branch.name
                 await self._git_new_branch(root, start)
+            case "merge" if isinstance(win, GitBranchesWindow) and win.branch is not None:
+                await self._git_merge(root, win.branch)
+            case "abort_merge":
+                if not await git.merging(root):
+                    self.notify(_('No merge is halfway'), timeout=3)  # type: ignore[attr-defined]
+                    return
+                if await self.run_dialog(confirm(_('Abort the merge'), _(  # type: ignore[attr-defined]
+                        'Abort the merge and go back to how the files were before it?'))) == Command.YES:
+                    await git.abort_merge(root)
+                    self._git_files_changed(None)
+            case "stash":
+                state = await git.status(root)
+                if state.clean:
+                    self.notify(_('Nothing to put aside: nothing changed'), timeout=3)  # type: ignore[attr-defined]
+                    return
+                dialog = InputDialog(_('Stash'), _('~W~hat it is (optional)'), allow_empty=True, history="git:stash",
+                                     hint=_('The changes go aside, the files go back to the last commit'))
+                if await self.run_dialog(dialog) == Command.OK:  # type: ignore[attr-defined]
+                    await git.stash(root, dialog.value or "")
+                    self._git_files_changed(None)
+                    self.notify(_('Changes put aside: Git > Branches > Stashes brings them back'), timeout=4)  # type: ignore[attr-defined]
+            case "unstash" | "apply_stash" if isinstance(win, GitBranchesWindow) and win.stash is not None:
+                await git.unstash(root, win.stash.ref, keep=action == "apply_stash")
+                self._git_files_changed(None)
+                self.notify(_('Changes back from {ref}').format(ref=win.stash.ref), timeout=3)  # type: ignore[attr-defined]
+            case "drop_stash" if isinstance(win, GitBranchesWindow) and win.stash is not None:
+                text = _('Drop {ref} ({message})? Its changes are lost.').format(ref=win.stash.ref, message=win.stash.message)
+                if await self.run_dialog(confirm(_('Drop the stash'), text)) == Command.YES:  # type: ignore[attr-defined]
+                    await git.drop_stash(root, win.stash.ref)
             case "switch" if isinstance(win, GitBranchesWindow) and win.branch is not None:
                 b = win.branch
                 if b.current:
@@ -1291,6 +1379,8 @@ class GitMixin:
                 Sep(),
                 Item(_('~C~ommit...'), CM_GIT_COMMIT, _('Ctrl+K')),
                 Item(_('~A~mend the last commit...'), CM_GIT_AMEND),
+                Item(_('S~t~ash the changes...'), CM_GIT_STASH),
+                Item(_('Abort the ~m~erge'), CM_GIT_ABORT_MERGE),
             ]
         elif isinstance(win, GitHistoryWindow):
             items = [
@@ -1298,9 +1388,16 @@ class GitMixin:
                 Item(_('~N~ew branch here...'), CM_GIT_NEW_BRANCH),
                 Item(_('~C~opy the hash'), CM_GIT_COPY),
             ]
+        elif isinstance(win, GitBranchesWindow) and win.stash is not None:
+            items = [
+                Item(_('~B~ring it back (and drop it)'), CM_GIT_UNSTASH, _('Enter')),
+                Item(_('Apply it, ~k~eeping it'), CM_GIT_APPLY_STASH),
+                Item(_('~D~rop it'), CM_GIT_DELETE_BRANCH, _('Del')),
+            ]
         else:
             items = [
                 Item(_('~S~witch to it'), CM_GIT_SWITCH, _('Enter')),
+                Item(_('~M~erge into the current branch'), CM_GIT_MERGE),
                 Item(_('~N~ew branch...'), CM_GIT_NEW_BRANCH, _('Ins')),
                 Item(_('~D~elete'), CM_GIT_DELETE_BRANCH, _('Del')),
             ]
@@ -1313,7 +1410,10 @@ class GitMixin:
             CM_GIT_STAGE: "stage", CM_GIT_OPEN: "open", CM_GIT_DISCARD: "discard", CM_GIT_STAGE_ALL: "stage_all",
             CM_GIT_UNSTAGE_ALL: "unstage_all", CM_GIT_COMMIT: "commit", CM_GIT_AMEND: "amend", CM_GIT_DIFF: "diff",
             CM_GIT_NEW_BRANCH: "new_branch", CM_GIT_COPY: "copy", CM_GIT_SWITCH: "switch",
-            CM_GIT_DELETE_BRANCH: "delete_branch", CM_GIT_PULL: "pull", CM_GIT_PUSH: "push", CM_GIT_FETCH: "fetch",
+            CM_GIT_DELETE_BRANCH: "drop_stash" if isinstance(win, GitBranchesWindow) and win.stash is not None
+            else "delete_branch", CM_GIT_PULL: "pull", CM_GIT_PUSH: "push", CM_GIT_FETCH: "fetch",
+            CM_GIT_MERGE: "merge", CM_GIT_ABORT_MERGE: "abort_merge", CM_GIT_STASH: "stash",
+            CM_GIT_UNSTASH: "unstash", CM_GIT_APPLY_STASH: "apply_stash",
         }.get(chosen, "")
 
     def _git_files_changed(self, paths: list[Path] | None) -> None:
@@ -1346,7 +1446,11 @@ class GitMixin:
     async def _git_commit(self, root: Path, amend: bool = False) -> None:
         state = await git.status(root)
         last = await git.last_message(root) if await git.has_commits(root) else ""
-        dialog = CommitDialog(state, last)
+        merging = await git.merging(root)
+        dialog = CommitDialog(state, last, merging)
+        if merging:
+            dialog.flags.value = dialog._flags = 0
+            dialog.message.load_text(await git.merge_message(root))
         if amend:
             dialog.flags.value = 1
             dialog._flags = 1
@@ -1365,6 +1469,34 @@ class GitMixin:
         else:
             self.raise_window(log)  # type: ignore[attr-defined]
             raise git.GitError(result.output.strip() or _('git commit failed'))
+
+    async def _git_merge(self, root: Path, branch: git.Branch) -> None:
+        state = await git.status(root)
+        if branch.current or (not branch.remote and branch.name == state.branch):
+            self.notify(_('This is the current branch: merge another one into it'), timeout=3)  # type: ignore[attr-defined]
+            return
+        if state.detached:
+            raise git.GitError(_('No branch is checked out (detached HEAD): switch to a branch first.'))
+        text = _('Merge {branch} into {current}?').format(branch=branch.name, current=state.branch)
+        if await self.run_dialog(confirm(_('Merge'), text)) != Command.YES:  # type: ignore[attr-defined]
+            return
+        log = self._show_git_log()
+        log.add(f"$ git merge {branch.name}")
+        result = await git.merge(root, branch.name, on_line=log.add)
+        log.add(_("[exit code {code}]").format(code=result.code))
+        self._git_files_changed(None)
+        if result.ok:
+            self.notify(_('{branch} merged into {current}').format(branch=branch.name, current=state.branch), timeout=3)  # type: ignore[attr-defined]
+            return
+        if await git.merging(root):  # conflicts: Git > Changes shows them
+            conflicts = len((await git.status(root)).area("conflicts"))
+            await self.open_git(GitChangesWindow)
+            self.notify(ngettext('{n} file in conflict: solve it, Space marks it solved, then commit',
+                                 '{n} files in conflict: solve them, Space marks each solved, then commit',
+                                 conflicts).format(n=conflicts), timeout=6)  # type: ignore[attr-defined]
+            return
+        self.raise_window(log)  # type: ignore[attr-defined]
+        raise git.GitError(result.output.strip() or _('git merge failed'))
 
     async def _git_new_branch(self, root: Path, start: str) -> None:
         hint = _('From {start}').format(start=start[:12]) if start else _('From the current commit; it becomes the current branch')
