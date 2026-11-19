@@ -3,6 +3,11 @@ name: tests
 on:
   push:
     branches: [main]
+    paths-ignore:  # what no test reads (a release changes VERSION and releases/, so it is still tested)
+      - "docs/**"
+      - "README.md"
+      - "tools/screencast.py"
+      - "tools/wiki_shots.py"
   pull_request:
   workflow_dispatch:
 
