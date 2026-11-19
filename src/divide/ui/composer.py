@@ -248,6 +248,8 @@ class ComposerWindow(_TVWindow):
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.call_after_refresh(self.paint))
 
     def paint(self) -> None:
+        if self.closing:  # (a theme change as the window closes)
+            return
         normal, _focused = _styles(self.palette_view)
         bg = Color.from_rich_color(normal.bgcolor) if normal.bgcolor else None
         fg = Color.from_rich_color(normal.color) if normal.color else None

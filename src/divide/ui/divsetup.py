@@ -301,6 +301,8 @@ class DivSetupWindow(_TVWindow):
 
     def paint(self) -> None:
         """The panels take the editor's colours, as the dialector's."""
+        if self.closing:  # (Div's check ending as the window closes)
+            return
         from divide.ui.dialector import _editor_styles
 
         normal, focused = _editor_styles(self.source.editor)

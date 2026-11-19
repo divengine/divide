@@ -167,3 +167,24 @@ async def test_a_global_saved_in_the_setup_is_completed_at_once(tmp_path):
         (tmp_path / ".div").mkdir()
         (tmp_path / ".div" / "setup.json").write_text('{"data": {"globals": {"site": "The shop"}}}', encoding="utf-8")
         assert app.completion_data_for(ed) == {"site": "The shop", "shop": "Acme"}
+
+
+async def test_divs_verdict_after_the_window_closed(tmp_path):
+    """Div's check runs in PHP, and the window may close before it answers: its verdict then
+    has no window to paint, and divide goes on."""
+    page = tmp_path / "page.tpl"
+    page.write_text("Hi", encoding="utf-8")
+    app = Divide(tmp_path, [page])
+    async with app.run_test(size=(120, 40)) as pilot:
+        await settle(pilot)
+        await app.open_div_setup()
+        await settle(pilot)
+        win = app.active_window()
+        assert isinstance(win, DivSetupWindow)
+        app._remove_window(win)
+        await until(pilot, lambda: not win.is_attached)
+        assert win.closing
+        win.show_verdict()  # what check_now does when Div answers
+        win.paint()  # what a theme change does
+        await settle(pilot)
+        assert app.is_running

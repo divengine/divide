@@ -184,6 +184,8 @@ class DialectorWindow(_TVWindow):
 
     def paint(self) -> None:
         """The panels take the editor's colours (Options > Editor theme included)."""
+        if self.closing:
+            return
         normal, _ = _editor_styles(self.preview)
         bg = Color.from_rich_color(normal.bgcolor) if normal.bgcolor else None
         fg = Color.from_rich_color(normal.color) if normal.color else None

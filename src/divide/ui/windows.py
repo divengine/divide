@@ -329,6 +329,12 @@ class _TVWindow(Window):
         found = list(self.query(".tv-window-content")) if self.is_mounted else []
         return found[0] if found else None  # type: ignore[return-value]
 
+    @property
+    def closing(self) -> bool:
+        """Being taken off (Textual marks it and all it holds before its children go) or gone:
+        work that ends then (a check with Div, a theme change) has nothing left to paint."""
+        return self._pruning or (self.is_mounted and not self.is_attached)
+
     def compose(self) -> ComposeResult:
         yield IndicatorFrame(title=self._title, flags=self._window_flags, active=True, number=self.number)
         with Container(classes="tv-window-content"):
