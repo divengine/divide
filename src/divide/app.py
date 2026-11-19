@@ -826,7 +826,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         win = self.welcome_window()
         if win is None:
             win = WelcomeWindow(number=self._free_number())
-            self._insert(win)
+            size = self.desktop.size if self.desktop is not None else None
+            win.place(size.width or 80, size.height or 24) if size is not None else self._place(win)
+            self.insert_window(win)
         else:
             win.reload()
             self.raise_window(win)

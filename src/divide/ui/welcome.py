@@ -39,6 +39,7 @@ class WelcomeWindow(_TVWindow):
     BINDINGS = [Binding("delete", "forget", show=False)]
     DEFAULT_CSS = """
     WelcomeWindow .welcome-head { height: 3; padding: 0 1; }
+    WelcomeWindow { min-width: 40; }
     WelcomeWindow .welcome-list { height: 1fr; }
     WelcomeWindow .welcome-info { height: 2; padding: 0 1; }
     """
@@ -50,9 +51,21 @@ class WelcomeWindow(_TVWindow):
         self.info = Static("", classes="welcome-info", markup=False)
         self.palette_view = EditorView("", read_only=True)  # only lends its colours
 
+    WIDTH = 76
+
+    def place(self, width: int, height: int) -> None:
+        """Centred on a desktop of ``width`` x ``height``: as wide as a path reads well, as tall as
+        its rows (the frame, the head, the filter, the rules and the info take 10)."""
+        rows = 7 + max(1, len(recent.entries("folders"))) + max(1, len(recent.entries("files")))
+        w = max(40, min(self.WIDTH, width - 4))
+        h = max(16, min(rows + 10, height - 2))
+        self.styles.width, self.styles.height = w, h
+        self.styles.offset = (max(0, (width - w) // 2), max(0, (height - h) // 2))
+
     def compose_content(self) -> ComposeResult:
         with Vertical():
             yield self.head
+            yield HRule()
             with Vertical(classes="welcome-list"):
                 yield Filtered(self.git_tree)
             yield HRule()
