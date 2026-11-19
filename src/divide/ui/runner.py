@@ -33,7 +33,7 @@ from divide.run.script import ScriptMessage, ScriptResult, command, run_script, 
 from divide.ui.dialogs import InputDialog, information
 from divide.ui.filter import Filtered, FilteredList
 from divide.ui.progress import ProgressDialog, run_with_progress
-from divide.ui.windows import MessageItem, _TVWindow
+from divide.ui.windows import MessageItem, WheelList, _TVWindow
 
 NO_XDEBUG = (
     _('The debugger needs Xdebug, the PHP extension.\n\nInstall it (Debian/Ubuntu: sudo apt install php-xdebug; elsewhere: pecl install xdebug) or give the path of xdebug.so in Options > Xdebug.')
@@ -46,7 +46,7 @@ DEBUG_HINT = _('F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 re
 # (in the Borland palettes: the colours are the palette's debug-* roles).
 
 
-class PickList(FilteredList, ListBox):
+class PickList(WheelList, FilteredList, ListBox):
     DEFAULT_CSS = """
     PickList { background: $divide-debug-bg; }
     PickList > .list-viewer--normal { color: $divide-debug-text; background: $divide-debug-bg; }

@@ -28,7 +28,7 @@ from divide.editor.search import SearchOptions
 from divide.ui.filter import Filtered, FilteredList
 from divide.ui.history import HistoryInput
 from divide.ui.shadow import install_shadows
-from divide.ui.windows import PassiveScrollBar, RuleFrame
+from divide.ui.windows import PassiveScrollBar, RuleFrame, WheelList
 
 CM_CHANGE_ALL = Command.USER + 100
 
@@ -146,7 +146,7 @@ def about_box(version: str) -> MessageBox:
     )
 
 
-class FileList(FilteredList, ListBox):
+class FileList(WheelList, FilteredList, ListBox):
     """The files of the folder, on Turbo Pascal's cyan: the chosen one white on
     green while the list has the focus, yellow when the focus is elsewhere.
     Reports the chosen entry and accepts on a double click."""

@@ -199,6 +199,27 @@ class HRule(Rule):
         return Strip([Segment("─" * self.size.width, self._line_style())])
 
 
+class WheelList:
+    """The mouse wheel on a Turbo Vision list (a ListViewer, which draws its own rows and is not one of
+    Textual's scrolling views): a notch moves the bar three rows, as the list's scroll bar moves it."""
+
+    WHEEL_ROWS = 3
+
+    def _wheel(self, event, rows: int) -> None:
+        event.stop()
+        event.prevent_default()
+        count = self.range  # type: ignore[attr-defined]
+        if count:
+            self.focus_item(max(0, min(count - 1, self.focused + rows)))  # type: ignore[attr-defined]
+            self.refresh()  # type: ignore[attr-defined]
+
+    def on_mouse_scroll_down(self, event: events.MouseScrollDown) -> None:
+        self._wheel(event, self.WHEEL_ROWS)
+
+    def on_mouse_scroll_up(self, event: events.MouseScrollUp) -> None:
+        self._wheel(event, -self.WHEEL_ROWS)
+
+
 class PassiveScrollBar(TVScrollBar):
     """textual-vision's TScrollBar (▲ ▒ ■ ▼, ◄ ►) that never takes the focus:
     a click on it scrolls its view and leaves the focus where it was."""
@@ -1375,7 +1396,7 @@ class MessageItem:
     end: int | None = None
 
 
-class MessageList(FilteredList, ListBox):
+class MessageList(WheelList, FilteredList, ListBox):
     DEFAULT_CSS = """
     MessageList { background: $panel; }
     MessageList > .list-viewer--normal { color: $text; background: $panel; }

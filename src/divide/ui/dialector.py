@@ -40,7 +40,7 @@ from divide.lang.div import dialector as dx
 from divide.lang.div.dialect import DEFAULT_TAGS, Dialect
 from divide.ui.dialogs import _Dialog, browse_into
 from divide.ui.filter import Filtered, FilteredList
-from divide.ui.windows import EditorView, EditorWindow, HRule, VRule, _TVWindow
+from divide.ui.windows import EditorView, EditorWindow, HRule, VRule, WheelList, _TVWindow
 
 CM_DEFAULTS = Command.USER + 60
 
@@ -98,7 +98,7 @@ def _editor_styles(view: EditorView) -> tuple[Style, Style]:
     return theme.base_style, theme.syntax_styles.get("dialector.focus", Style(reverse=True))
 
 
-class SectionList(FilteredList, ListBox):
+class SectionList(WheelList, FilteredList, ListBox):
     """The sections, in the editor's colours; the focused one as its tags in the preview."""
 
     DEFAULT_CSS = "SectionList { width: 1fr; height: 1fr; }"

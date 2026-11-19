@@ -43,7 +43,7 @@ from textual_vision.menus import Menu
 
 from divide.ui import history
 from divide.ui.dialogs import _Dialog
-from divide.ui.windows import HIDDEN_NAMES, PassiveScrollBar
+from divide.ui.windows import HIDDEN_NAMES, PassiveScrollBar, WheelList
 
 COMMANDS_PREFIX = ">"
 FILES_TITLE = _('Go to File')
@@ -195,7 +195,7 @@ def rank(query: str, items: list[Item], limit: int = MAX_SHOWN) -> list[Item]:
 
 
 # ------------------------------------------------------------------- dialog
-class PaletteList(ListBox):
+class PaletteList(WheelList, ListBox):
     """The matches on the dialog lists' cyan: the letters typed lit, folders and keys dimmed."""
 
     COMPONENT_CLASSES = ListBox.COMPONENT_CLASSES | {

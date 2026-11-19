@@ -44,7 +44,7 @@ from divide.lang import divjson
 from divide.run import setup as div_setup
 from divide.ui.dialogs import _Dialog, browse_into, shown_path
 from divide.ui.filter import Filtered, FilteredList
-from divide.ui.windows import EditorWindow, HRule, VRule, _TVWindow
+from divide.ui.windows import EditorWindow, HRule, VRule, WheelList, _TVWindow
 
 CM_SETUP_BROWSE = Command.USER + 120  # + the field's row
 
@@ -205,7 +205,7 @@ def rewrite_loses(text: str) -> bool:
 
 
 # ------------------------------------------------------------------ the window
-class SetupSectionList(FilteredList, ListBox):
+class SetupSectionList(WheelList, FilteredList, ListBox):
     """The sections, in the editor's colours (as the dialector's)."""
 
     DEFAULT_CSS = "SetupSectionList { width: 1fr; height: 1fr; }"

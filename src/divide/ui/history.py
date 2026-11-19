@@ -21,6 +21,8 @@ from textual_vision.group import Group
 from textual_vision.input_line import InputLine
 from textual_vision.list_box import ListBox
 
+from divide.ui.windows import WheelList
+
 from divide import config
 from divide.ui.filter import PROMPT, FilteredList
 
@@ -70,7 +72,7 @@ class HistoryArrow(Widget):
             self.parent.toggle()
 
 
-class HistoryList(FilteredList, ListBox):
+class HistoryList(WheelList, FilteredList, ListBox):
     """The earlier entries, in a small blue window under the line."""
 
     DEFAULT_CSS = """

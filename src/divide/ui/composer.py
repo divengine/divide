@@ -44,7 +44,7 @@ from divide.run import composer as cmp
 from divide.ui.dialogs import _Dialog, information, confirm
 from divide.ui.filter import Filtered, FilteredTree
 from divide.ui.progress import ProgressDialog, run_with_progress
-from divide.ui.windows import OUTPUT_CSS, EditorView, HRule, VRule, _TVWindow
+from divide.ui.windows import EditorView, HRule, OUTPUT_CSS, VRule, WheelList, _TVWindow
 
 LOG_LINES = 2000
 
@@ -455,7 +455,7 @@ class ComposerLogWindow(_TVWindow):
 
 
 # ------------------------------------------------------------------ add a package
-class ResultList(ListBox):
+class ResultList(WheelList, ListBox):
     """Packagist's answer; the bar on a package chooses it."""
 
     def __init__(self, dialog: "AddPackageDialog") -> None:
