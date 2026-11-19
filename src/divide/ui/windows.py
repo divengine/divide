@@ -366,9 +366,12 @@ class _TVWindow(Window):
         """Bind, place and show the bars (after a layout change, or the window's activation)."""
         if not self.is_mounted:
             return
+        frames = self.query(Frame)
+        if not frames:  # the window is being taken off the desktop (File > Open folder closes them all)
+            return
+        frame = frames.first()
         view = self.scroll_view()
         self._bind(view)
-        frame = self.frame
         active = bool(frame is not None and frame.active)
         right = bottom = False
         if view is not None and view.region.area:
