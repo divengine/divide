@@ -2,6 +2,8 @@
 
 ![a tour: completion, checking, rendering, the trace, the data, the outline, the Dialector](images/tour.gif)
 
+The shop's templates generate HTML because it is the easiest output to read; a generator of Python, JavaScript, configuration or any other text is written, checked, rendered and traced the same way.
+
 A five-minute tour with a tiny shop. The repository ships it ready in
 [`examples/shop`](https://github.com/divengine/divide/tree/main/examples/shop)
 (`divide examples/shop`); its layout, simplified:

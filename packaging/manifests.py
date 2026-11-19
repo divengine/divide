@@ -17,7 +17,7 @@ from pathlib import Path
 REPO = "divengine/divide"
 HOMEPAGE = f"https://github.com/{REPO}"
 LICENSE = "GPL-3.0-or-later"
-DESCRIPTION = "Terminal IDE for the Divengine projects, starting with the Div template language"
+DESCRIPTION = "Terminal environment for deterministic code generation with Divengine"
 WINGET_ID = "Divengine.Divide"
 WINGET_SCHEMA = "1.12.0"
 

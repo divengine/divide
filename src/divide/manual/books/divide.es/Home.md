@@ -1,12 +1,19 @@
 # divide
 
-**El IDE de plantillas Div que vive en tu terminal.**
+**Entorno de generación determinista de código y su orquestación.**
 
-divide es un IDE a pantalla completa, pensado para el teclado, para plantillas [Div](https://github.com/divengine/div), hecho con el espíritu de los IDE de Borland: un escritorio de ventanas superpuestas, menús desplegables, diálogos con sombra y una línea de estado que siempre te dice la tecla siguiente. Entiende Div como lo entiende Div: lee tu dialecto, verifica tus plantillas mientras escribes, autocompleta tus variables a partir de tus datos reales y renderiza con el motor Div real, junto al código.
+divide es un entorno de ingeniería en el terminal para desarrollar y operar generadores deterministas de código construidos con el ecosistema [Divengine](https://github.com/divengine). Un generador es un conjunto de plantillas y modelos de datos de [Div](https://github.com/divengine/div) que producen texto según reglas explícitas y reutilizables: código fuente en cualquier lenguaje, configuración, pruebas, definiciones de infraestructura, HTML u otras plantillas. Las mismas plantillas y los mismos datos dan siempre la misma salida.
+
+Hoy divide te da las herramientas para construir generadores: edición, verificación, renderizado, traza y depuración, todo a través del motor Div real. Orquestar generadores y que los agentes de programación con IA los usen es la dirección del producto, aún no son funciones: ver [[Hacia dónde va divide|Home#hacia-dónde-va-divide]].
+
+Está hecho con el espíritu de los IDE de Borland: un escritorio de ventanas superpuestas, menús desplegables, diálogos con sombra y una línea de estado que siempre te dice la tecla siguiente. El nombre es *div* + *ide*, y la palabra inglesa *divide*.
 
 ![divide: proyecto, plantilla y salida renderizada lado a lado](images/hero.png)
 
-## Por qué divide
+## Lo que puedes hacer hoy
+
+Los ejemplos del manual generan HTML, la salida más fácil de leer; las mismas herramientas sirven para plantillas que generan código o cualquier otro texto.
+
 
 - **Habla Div.** Cada etiqueta del lenguaje se resalta en el dialecto propio de tu plantilla (`@_DIALECT`), no en un modo HTML genérico con llaves.
 - **Errores antes de renderizar.** Bucles sin cerrar, `[/$x]` huérfanos, condiciones sin `{/?}`, JSON roto en `{= x: … =}`, includes que Div no puede resolver: se pintan en el editor y se listan en una ventana Mensajes al estilo de Turbo Pascal.
@@ -18,15 +25,26 @@ divide es un IDE a pantalla completa, pensado para el teclado, para plantillas [
 - **Ejecuta y depura PHP, a la manera de Turbo Pascal.** Ctrl+F9 ejecuta el script bajo un cuadro de progreso y lista los errores de PHP con su lugar; F7 / F8 lo recorren paso a paso con Xdebug, con puntos de ruptura, vigilancias y la pila de llamadas: ver [[Ejecutar PHP|Running PHP]] y [[Depurar PHP|Debugging PHP]]. Ejecutar > Servidor web sirve el proyecto con `php -S` y depura sus peticiones del mismo modo: ver [[Servidor web|Web Server]].
 - **Mira cómo llegó Div hasta ahí.** Depurar > Traza del render reproduce cada mutación que Div hizo a una plantilla, con las palabras de Div, con lo que cada una escribió y quitó, hasta el punto fijo: ver [[Traza del render|Render Trace]].
 - **También el resto del proyecto.** Los archivos HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, scripts de shell, `.env`, `php.ini` y CSV se abren con sus colores: ver [[Otros archivos|Other Files]].
-- **Una ventana de proyecto que hace cosas.** Crea, renombra y elimina archivos y carpetas sin salir del IDE.
+- **Div configurado como lo configura tu código.** El `.div/setup.json` del proyecto le da a Div sus rutas, dialecto, datos globales y funciones permitidas mientras trabajas: ver [[Configuración de Div|Div Setup]].
+- **Control de versiones y paquetes.** El menú Git muestra los cambios, los diffs, el historial, las ramas y el blame, y los pull requests de GitHub o Gitea: ver [[Git|Git]]. Herramientas > Paquetes Composer gestiona los paquetes PHP del proyecto: ver [[Composer|Composer]].
+- **Una ventana de proyecto que hace cosas.** Crea, renombra, mueve y elimina archivos y carpetas sin salir del IDE.
 - **Funciona dondequiera que haya un terminal**: por SSH, dentro de tmux, en el servidor donde viven las plantillas. En inglés o en español (Opciones > Idioma).
+
+## Hacia dónde va divide
+
+Esto es una dirección, **no son funciones de divide hoy**:
+
+- **Orquestación.** Generar un sistema real requiere varias etapas: salidas que alimentan etapas posteriores, representaciones intermedias, dependencias, validación entre pasos. divide pretende componer y ejecutar generadores de ese modo. Su modelo aún no está diseñado.
+- **Agentes de programación con IA.** divide pretende trabajar junto a agentes como Claude Code, Codex u OpenCode, no ser uno de ellos. En lugar de que un agente escriba grandes cantidades de código predecible, llamaría a un generador validado, mediante una interfaz CLI, API o MCP que aún está por diseñar.
+
+divide no es un IDE de propósito general, y PHP es el lenguaje en que están escritos los componentes de Divengine, no un límite de lo que generan. Un generador determinista da una salida reproducible; que esa salida sea correcta depende de sus plantillas, datos y verificaciones.
 
 ## Empieza aquí
 
 1. [[Instalación|Installation]]: Python, PHP y Div.
 2. [[Primeros pasos|Getting Started]]: un recorrido de cinco minutos.
    ¿Nuevo en Div? Su lenguaje se describe en la [documentación de Div](https://github.com/divengine/div/tree/master/docs), que también está dentro de divide: ver [[Ayuda|Help]].
-3. Después, los capítulos: [[El escritorio|The Desktop]], [[Edición de plantillas|Editing Templates]], [[Edición de PHP|Editing PHP]], [[Esquema|Outline]], [[Servidores de lenguaje|Language Servers]], [[Autocompletado|Completion]], [[Verificación de plantillas|Checking Templates]], [[Renderizado|Rendering]], [[Traza del render|Render Trace]], [[Ejecutar PHP|Running PHP]], [[Depurar PHP|Debugging PHP]], [[Servidor web|Web Server]], [[Archivos de datos|Data Files]], [[Otros archivos|Other Files]], [[Ventana de proyecto|Project Window]], [[Dialector|Dialector]], [[Traducir plantillas|Translating Templates]].
+3. Después, los capítulos: [[El escritorio|The Desktop]], [[Edición de plantillas|Editing Templates]], [[Edición de PHP|Editing PHP]], [[Esquema|Outline]], [[Buscar archivos y comandos|Finding Files and Commands]], [[Servidores de lenguaje|Language Servers]], [[Autocompletado|Completion]], [[Verificación de plantillas|Checking Templates]], [[Renderizado|Rendering]], [[Traza del render|Render Trace]], [[Ejecutar PHP|Running PHP]], [[Depurar PHP|Debugging PHP]], [[Servidor web|Web Server]], [[Archivos de datos|Data Files]], [[Otros archivos|Other Files]], [[Ventana de proyecto|Project Window]], [[Dialector|Dialector]], [[Traducir plantillas|Translating Templates]], [[Configuración de Div|Div Setup]], [[Composer|Composer]], [[Git|Git]].
 4. [[Referencia de teclado|Keyboard Reference]] y [[Solución de problemas|Troubleshooting]] cuando los necesites.
 
 El manual completo también está dentro de divide: pulsa **F1** (ver [[Ayuda|Help]]).

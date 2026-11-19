@@ -1,4 +1,4 @@
-"""divide — a terminal IDE for the Divengine projects."""
+"""divide — an environment for deterministic code generation with the Divengine ecosystem."""
 
 from pathlib import Path
 

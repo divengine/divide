@@ -24,7 +24,7 @@
   <Applications>
     <Application Id="divide" Executable="divide.exe" EntryPoint="Windows.FullTrustApplication"
                  desktop4:Subsystem="console" desktop4:SupportsMultipleInstances="true">
-      <uap:VisualElements DisplayName="divide" Description="Terminal IDE for the Divengine projects, starting with the Div template language"
+      <uap:VisualElements DisplayName="divide" Description="Terminal environment for deterministic code generation with Divengine"
                           BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png"
                           Square44x44Logo="Assets\Square44x44Logo.png" />
       <Extensions>

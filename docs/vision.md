@@ -2,80 +2,197 @@
 
 ## 1. Introduction
 
-divide is a full-screen terminal IDE in the style of the Borland IDEs (Turbo
-Pascal, Turbo C, Borland Pascal): overlapping windows, drop-down menus,
-dialogs with shadows and a status line that always shows the next key. It
-started as the IDE for [Div](https://github.com/divengine/div), the PHP
-template engine, and is built so that languages and help books are plug-ins:
-it already edits Div templates, Div JSON data and PHP, and it reads the
-manuals of divide and of Div.
+**divide: an environment for deterministic code generation and its orchestration.**
+
+divide is a terminal-based engineering environment for developing and
+operating deterministic code generators built with the
+[Divengine](https://github.com/divengine) ecosystem. Today it provides the
+tools to build such generators: editing, checking, rendering, tracing and
+debugging, all working through the real engines. Its longer-term direction is
+the orchestration of generators and their integration with AI coding agents.
+Neither of those exists yet (see section 7).
+
+The name joins *div* and *ide*, and keeps the meaning of the English word
+*divide*. It is always written in lowercase.
+
+The interface follows the Borland IDEs (Turbo Pascal, Turbo C, Borland
+Pascal): overlapping windows, drop-down menus, dialogs with shadows and a
+status line that always shows the next key. It runs in any terminal,
+including over SSH.
+
+### 1.1 What divide is not
+
+- It is not a general-purpose editor or IDE, and it does not compete with VS
+  Code, JetBrains IDEs or Neovim.
+- It is not only an editor for website templates. HTML is one possible
+  output among many.
+- It is not mainly an IDE for PHP applications. PHP is the language the
+  Divengine components are written in today, not a limit on what they
+  generate.
+- It is not an AI coding agent, and it does not replace one.
 
 ## 2. Positioning
 
-### 2.1 Problem statement
+### 2.1 Deterministic generation with Div
+
+[Div](https://github.com/divengine/div) takes a template and a data model and
+produces text. That text can be source code in any language (Python, PHP,
+JavaScript, TypeScript, React components, Odoo or Drupal modules),
+configuration, tests, infrastructure definitions or another template. The
+same template and data give the same output, by explicit and reusable rules.
+
+What makes Div suitable for generation, as its implementation and
+documentation describe it:
+
+- **Iteration to a fixed point.** Div does not process a template in a single
+  top-down pass. It parses and transforms the whole template again and again,
+  until a cycle changes nothing or a limit is reached. A template can
+  therefore produce structures that later cycles evaluate: meta-templates and
+  templates that write templates.
+- **Output as input.** The output is plain text, so it can become another
+  template, a data model (such as JSON) or part of a composed result. Div's
+  documentation names three core operations, *compile*, *transform* and
+  *compose*, that combine into multi-stage generation.
+- **Dialects.** A dialect is a JSON file that maps another tag syntax onto
+  Div's own. A template names its dialect (`@_DIALECT`), and Div translates it
+  before parsing. This keeps the generator's syntax apart from the syntax of
+  the code being generated (braces in JavaScript, `<% %>` in a target
+  language, XML that must stay valid), which matters more when the outputs
+  are themselves templates at another level.
+- **Reuse.** Includes and preprocessed includes, template inheritance,
+  locations, macros, custom modifiers, sub-parsers and hooks, global data and
+  default replacements.
+
+Deterministic output is reproducible output. It is not correct output by
+itself: a generator is correct only as far as its templates, its data and the
+checks around it are. That is why divide puts checking, tracing and testing
+next to editing.
+
+### 2.2 The problem
 
 | | |
 |---|---|
-| **The problem of** | writing Div templates with general-purpose editors |
-| **affects** | developers who use Div, and Div's maintainers |
-| **the impact of which is** | Div's constructs (lists, conditions, includes, dialects, data references) are shown as plain text; errors appear only at render time or are silently left in the output; the template's data and the engine's behaviour (a fixed-point rewrite, not a top-down pass) are invisible |
-| **a successful solution would** | understand Div the way Div does: highlight and check the template in its own dialect, complete from the real data, render and trace through the real engine, all in one place, in any terminal, including over SSH |
+| **The problem of** | engineering code generators: writing templates and data models that produce other software, in a syntax that must not collide with the code it produces |
+| **affects** | developers who build and maintain generators with Div, Div's maintainers, and teams that produce large amounts of predictable code |
+| **the impact of which is** | in general-purpose editors, Div's constructs are plain text: errors show only at render time or silently stay in the output, the data a template sees is invisible, and the engine's fixed-point rewriting cannot be followed. Repetitive code is written, or regenerated by an LLM, by hand each time |
+| **a successful solution would** | understand generators the way Div runs them: check templates in their own dialect, complete from the real data, render and trace through the real engine, and, in time, compose and run generators as reproducible steps that people and agents can call |
 
-### 2.2 Product position statement
+### 2.3 Product position statement
 
-For developers who write Div templates and PHP, often on remote machines,
-divide is a terminal IDE that speaks Div through Div itself: the engine
-renders, validates dialects, resolves includes and decodes data. Unlike
-general editors with a syntax file, it reads the template's dialect, checks
-what Div would trip over, completes from the data file and shows how Div
-mutated the template into its output.
+For developers who build code generators with the Divengine libraries, divide
+is a terminal engineering environment that works through the engines
+themselves: Div renders, validates dialects, resolves includes, decodes data
+and translates templates. Unlike a general editor with a syntax file, it
+reads each template's dialect, checks what Div would trip over, completes
+from the data, and shows how Div turned the template into its output, step by
+step.
 
-## 3. Stakeholders and users
+## 3. The Divengine ecosystem
+
+The Divengine libraries are independent PHP libraries, each usable on its
+own. divide is where they can be brought together for generation work. Only
+Div is integrated today.
+
+| Component | What it does | In divide today |
+|---|---|---|
+| [Div](https://github.com/divengine/div) | Template processing: data and templates to text, iterated to a fixed point, with dialects, includes, translation between dialects | Integrated through a PHP bridge: render, include resolution, data decoding, dialect checks and loading, render trace, translation, the Div setup of a project |
+| [Nodes](https://github.com/divengine/nodes) | File-based storage of structured data without a server: schemas, nodes and references between them, indexes for search, file locking | Not integrated. A possible store for the models that generators read |
+| [Ways](https://github.com/divengine/ways) | Control points ("ways") called from HTTP, the CLI or PHP code, with hooks, rules and data passed between them | Not integrated. A possible base for calling and guarding generation steps |
+| divide | The engineering environment for generators | Implemented: the tools in section 4. Planned: orchestration and agent access (section 7) |
+
+The "possible" roles are a direction, not a design: how divide will use Nodes
+and Ways is still to be decided. None of these libraries was made only for
+code generation, and divide does not modify them.
+
+## 4. Stakeholders and users
 
 | Stakeholder | Role | Interest |
 |---|---|---|
-| Div's author and maintainer | product owner, main user | an IDE that respects Div's semantics; Div stays the source of truth and is never modified for the IDE |
-| Div template developers | users | edit, check, render and debug templates quickly, keyboard first |
-| PHP developers | users | edit, run and debug the PHP around the templates (Xdebug, language servers, `php -S`) |
+| Div's author and maintainer | product owner, main user | an environment that respects Div's semantics; Div stays the source of truth and is never modified for divide |
+| Generator developers | users | design, write, check, render, trace and debug templates, data models and their PHP, quickly and from the keyboard |
+| Teams using generated code | consumers | reproducible outputs from generators that are versioned and reviewed like any other code |
+| AI coding agents and their users | future consumers | call validated generators instead of producing repetitive code token by token (planned, section 7) |
 | Plug-in authors | extenders | add a language or a help book without touching the core |
 
 User environment: terminals on Linux, macOS and Windows, often through SSH
 and tmux, with fonts the user does not control. That is why divide keeps to
 ASCII and CP437 glyphs and why it works with 16 colours as well as truecolour.
 
-## 4. Key needs and features
+## 5. Implemented capabilities
 
-| Need | Feature |
+Everything in this table exists in the current code. Each feature supports
+the development of generators; none of them is the end in itself.
+
+| Need of a generator developer | Feature |
 |---|---|
-| See Div's structure | dialect-aware lexer and highlighting (`@_DIALECT`), Div JSON highlighting, outline of templates and PHP files |
-| The rest of a PHP project | highlighting of HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell scripts and `.env`, INI and CSV |
-| Catch errors before rendering | static checks (unclosed blocks, orphan closers, broken JSON in definitions, unresolvable includes), Messages window, Alt+F8 / Alt+F7 |
-| Write faster | completion of variables from the data file, loop item fields, includes, Div snippets; language servers for PHP |
-| Run what will run in production | render through PHP and the real Div (unsaved edits included), Output window, data file per template, data tree editor |
-| Understand a render | render trace: Div's mutations one by one until the fixed point |
-| Own dialects | Dialector (build, validate with Div, import, export), template translation with Div's `translate()` |
-| PHP around the templates | `php -l` checks, run with arguments, Xdebug debugger (breakpoints, step, watches, call stack, evaluate), built-in web server with debugging per request |
-| Find your way | project window, Go to file, command palette, Find / Replace, Find in files, Go to included template |
-| Learn in place | help books (divide's manual, Div's documentation) inside the IDE, context help on F1, full-text search of the books with ranking |
-| Version control in place | the Git menu: what changed (in the project window, the editor's margin and Git > Changes), diffs as a code review shows them, commits, history with its graph, branches, merges and stashes, blame, pull, push; pull requests and issues of GitHub and Gitea |
-| The project's PHP setup | Tools > Composer packages (Composer runs every change); Options > Div setup: how Div is set up for the project at design time (`.div/setup.json`) |
-| Start where you left off | a folder, a file or nothing on the command line, as VS Code; the Welcome window with the recent folders and files; File > Open folder |
+| See a template's structure | dialect-aware lexer and highlighting (`@_DIALECT`), Div JSON highlighting, outline of templates and of every other language divide colours |
+| Catch errors before generating | static checks (unclosed blocks, orphan closers, broken JSON in definitions, unresolvable includes), Messages window, Alt+F8 / Alt+F7 |
+| Write templates against their data | completion of variables from the data file, loop item fields, includes, Div snippets |
+| Run the real engine | render through PHP and Div (unsaved edits included) into the Output window, a data file per template, the data as code or as a tree |
+| Understand a generation | render trace: Div's mutations one by one up to the fixed point |
+| Keep generator syntax apart from target syntax | Dialector (build, validate with Div, import, export); translation of templates between dialects with Div's `translate()` |
+| Set Div up as the project's code does | Options > Div setup (`.div/setup.json`): engine, paths, extensions, parser limits, dialect, global data, allowed PHP functions and modifiers, request data |
+| The PHP of the components | PHP highlighting and `php -l`, language servers, running scripts with arguments, the Xdebug debugger, a built-in web server with per-request debugging, Composer packages |
+| The files being generated | highlighting and outline of HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell scripts and `.env`, INI and CSV |
+| Version and review generators | the Git menu: changes, diffs as a code review shows them, commits, history, branches, merges, stashes, blame, pull and push; pull requests and issues of GitHub and Gitea |
+| Find your way | project window, Go to file, command palette, Find / Replace, Find in files, Go to included template; a folder only when given, the Welcome window with recent folders and files |
+| Learn in place | help books (divide's manual, Div's documentation) in English and Spanish, context help on F1, full-text search |
 | Comfortable for hours | colour themes (Turbo Pascal, Turbo C, Free Pascal, modern dark), drop shadows, input line histories |
 
-## 5. Constraints
+Today a generation in divide is one template, rendered with its data, its
+output shown in a window. Chaining renders, writing outputs to target files
+and running several generators together are not features of divide yet.
 
-- Div is never modified for divide. Div bugs found while building divide are reported upstream.
+## 6. Constraints
+
+- Div, Nodes and Ways are never modified for divide. Bugs found while building divide are reported upstream.
 - What Div decides (rendering, include resolution, data decoding, dialect validation, translation) is asked of Div through PHP, never reimplemented in Python.
-- Existing tools are reused before new ones are written: tree-sitter for PHP, `php -l`, Xdebug, `php -S`, language servers, git, `gh` and `tea`, Composer.
+- Existing tools are reused before new ones are written: tree-sitter, `php -l`, Xdebug, `php -S`, language servers, git, `gh` and `tea`, Composer.
 - The user manual documents divide only. It links to Div's documentation instead of copying it.
 - divide's own glyphs stay ASCII or CP437 and fixed width, with no Nerd Fonts and no wide or emoji characters.
+- Planned capabilities are described as planned. The documentation does not present a direction as a feature.
 
-## 6. Scope and quality ranges
+## 7. Direction (not implemented)
 
-In scope: a single-user desktop IDE in the terminal, one project folder at a
-time (or files on their own, with no folder), git through the system's own
-`git`. Out of scope for now: multi-root workspaces, collaborative editing, a
-plug-in marketplace.
+### 7.1 Orchestration
+
+A single generation is data + template → output. Generating a real system
+takes more: several stages, outputs that feed later stages, intermediate
+representations, dependencies between generators, validation between steps,
+and related artifacts produced together. Orchestrating that is the direction
+of divide.
+
+The orchestration model has **not been specified**. There is no execution
+graph, pipeline format, workflow language, project schema or orchestration
+API in divide today, and this document does not define one. Its levels of
+abstraction will be designed separately, and recorded here and in the
+[architecture](software-architecture.md) once decided.
+
+### 7.2 Integration with AI coding agents
+
+divide is meant to work alongside AI coding agents (Claude Code, Codex,
+OpenCode and others), not to be one. An agent should not have to write large
+amounts of predictable, repetitive code when a reusable, validated generator
+can produce it. In the intended split, the agent interprets requirements,
+builds or edits the data models, chooses generators and can help develop new
+ones; the generators carry out the known transformations reproducibly.
+
+The aim is less repetitive generation by the model, fewer tokens, less
+variation between runs, fewer errors and less time. These are goals, not
+measured results. A deterministic generator gives the same output each time;
+it does not make that output correct.
+
+The interface an agent would use (a CLI, an API or an MCP server) is
+**planned and not designed**. divide has no such interface today beyond its
+command line, which opens the IDE.
+
+## 8. Scope and quality ranges
+
+In scope now: a single-user environment in the terminal for developing
+generators, one project folder at a time (or files on their own), git through
+the system's own `git`. Planned: orchestration and an interface for agents
+(section 7). Out of scope for now: multi-root workspaces, collaborative
+editing, a plug-in marketplace.
 
 Quality ranges are detailed in the [supplementary specification](supplementary-specification.md):
 responsiveness while typing, modest memory use, and behaviour that is the

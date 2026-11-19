@@ -37,6 +37,8 @@ UI has been reviewed. Dates are commit dates.
 
 | Item | Kind | Notes |
 |---|---|---|
+| Orchestration: its abstraction model | design | The direction of the product (see the vision). Not specified: to be designed in its own phase before any code. |
+| An interface for AI coding agents (CLI, API or MCP) | design | Depends on the orchestration model. Not designed. |
 | winget, Microsoft Store, PyPI | deployment | Wired in the Release workflow and off: winget needs the `WINGET_TOKEN` secret, the Store a product in Partner Center (`MSSTORE_*`), PyPI the project's account. Turned on when the owner says so. |
 | Signed binaries | deployment | macOS and Windows ask before the first run of an unsigned binary. |
 | Folders before files in File > Open | change request | Offered, not decided. |
@@ -53,6 +55,6 @@ UI has been reviewed. Dates are commit dates.
 | Terminals differ in keys (Ctrl+Shift, Ctrl+Enter) and glyphs | high | medium | No command depends on Ctrl+Shift (Windows Terminal keeps Ctrl+Shift+P and Ctrl+Shift+F: Alt+P and Shift+F2 instead); Ctrl+J for Ctrl+Enter; ASCII/CP437 only; tested through SSH and tmux. |
 | Memory on small VMs (language servers, PHP, tests) | high | medium | On-demand processes, bounded algorithms, tests run one file at a time. |
 | Lexer drift from Div's real matching rules | low | high | `div.php` as the reference; design note [div-language.md](div-language.md); lexer tests; render and checks by Div itself. |
-| Scope creep (an IDE for everything) | medium | medium | The vision's scope; languages and books as plug-ins, so the core stays small. |
+| Scope creep (a general-purpose IDE) | medium | medium | The vision's scope: tools serve the engineering of generators; languages and books are plug-ins, so the core stays small. |
 | External programs change their output (git, `gh`, `tea`, Composer) | low | medium | Their machine formats (`--porcelain=v2`, `--json`) where they have them; parsers tested on recorded output; a failure shows the program's own words. |
 | Distribution channels depend on third parties (stores, package indexes, signing) | medium | low | Every channel is optional in the workflow; a release publishes only files that work without them. |

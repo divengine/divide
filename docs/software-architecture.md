@@ -7,6 +7,13 @@ use-case, logical, process, implementation and deployment views, plus a data
 view. It records the decisions that shape the code and the reasons for them.
 The class-level detail is in the [design model](design-model.md).
 
+divide is an environment for engineering deterministic code generators (see
+the [vision](vision.md)). This document describes what is built: the
+environment in which generators are written, checked, rendered, traced and
+debugged. The planned orchestration layer and the interface for AI coding
+agents are not designed yet, so they have no place in these views; section
+11 records what the current architecture already offers them.
+
 ## 2. Architectural goals and constraints
 
 - **Div decides, divide asks.** Anything Div decides is asked of Div through
@@ -267,3 +274,21 @@ processes, bounded searches, and an incremental lexer cache. See the
 | `gh` and `tea` for the forges | Calling GitHub's and Gitea's APIs | They are signed in as the developer already, and each speaks its forge; divide reads their JSON and needs no token of its own. |
 | A folder only when it is given | Always the current folder | As VS Code: `divide` alone in the home folder would otherwise make it the project (its file list, its language servers); the Welcome window brings back the recent ones. |
 | Standalone binaries (PyInstaller) for releases | Only `pip install` | Users get divide without Python, from Homebrew, Scoop, the MSI, Linux packages or the AppImage; one recipe builds them all on each platform's runner. |
+
+## 11. Towards orchestration (not designed)
+
+Orchestration and agent access (a CLI, an API or an MCP server) are the
+product's direction, and their abstraction model is still to be specified.
+Until it is, this document defines no execution graph, pipeline format or
+interface. What the current architecture already gives that work:
+
+- **A UI-independent core.** Rendering, tracing, dialect checks and
+  translation (`divide.run`) take plain data and return plain data, without
+  importing the UI, so they can be called from something other than the
+  IDE.
+- **One bridge to Div.** Every question to Div goes through `bridge.php` as
+  one JSON request and one JSON reply, with the project's Div setup applied.
+  A future runner can ask Div the same way the editor does.
+- **No hidden state.** The bridge is one-shot and stateless, so a render
+  depends only on its template, data, engine and setup.
+

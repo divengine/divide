@@ -1,4 +1,4 @@
-"""divide — terminal IDE for the Divengine projects.
+"""divide — environment for deterministic code generation with the Divengine ecosystem.
 
 A Turbo Vision desktop (menu bar, windows, status line) built on
 textual-vision, with first-class support for Div templates

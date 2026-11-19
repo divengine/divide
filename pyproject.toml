@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "divide"
 dynamic = ["version"]
-description = "A terminal IDE for the Divengine projects, starting with the Div template language."
+description = "A terminal environment for developing deterministic code generators with the Divengine ecosystem (Div)."
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"

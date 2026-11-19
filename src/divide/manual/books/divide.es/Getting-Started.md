@@ -2,6 +2,8 @@
 
 ![un recorrido: completado, verificación, render, la traza, los datos, el esquema, el Dialector](images/tour.gif)
 
+Las plantillas de la tienda generan HTML porque es la salida más fácil de leer; un generador de Python, JavaScript, configuración o cualquier otro texto se escribe, verifica, renderiza y traza del mismo modo.
+
 Un recorrido de cinco minutos con una tienda diminuta. El repositorio la trae lista en
 [`examples/shop`](https://github.com/divengine/divide/tree/main/examples/shop)
 (`divide examples/shop`); su estructura, simplificada:

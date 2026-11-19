@@ -1,10 +1,17 @@
 # Use-Case Model
 
+The use cases describe what divide does today: the tools for developing and
+debugging generators. The use cases of orchestration and of AI coding agents
+calling divide are not written yet, because their model has not been
+specified (see the [vision](vision.md#7-direction-not-implemented)). The
+"template" of these use cases is a generator's template, whatever it
+produces: source code, configuration, data, HTML or another template.
+
 ## 1. Actors
 
 | Actor | Kind | Description |
 |---|---|---|
-| **Developer** | primary, human | Edits, checks, renders and debugs templates and PHP from the keyboard (or the mouse). |
+| **Developer** | primary, human | Builds generators: edits, checks, renders, traces and debugs templates, their data and the PHP around them, from the keyboard (or the mouse). |
 | **Div engine** | secondary, system | The Div installation, reached through PHP and the bridge. It renders, resolves includes, decodes data, validates and loads dialects, traces and translates. |
 | **PHP** | secondary, system | The `php` binary: `php -l` checks, scripts, `php -S`, and the host of Div. |
 | **Xdebug** | secondary, system | Debugs PHP scripts and web requests over DBGp. |
@@ -103,7 +110,7 @@ This document describes behaviour and responsibilities.
 
 ### UC4 Render a template
 
-**Goal:** see the output Div produces.
+**Goal:** see the output Div produces from a template and its data.
 1. Ctrl+F9 sends the editor's text (unsaved edits included), its real path and its data file to the bridge.
 2. Div renders it. The Output window shows the result next to the code, and warnings and fatal errors go to the Messages window.
 - *Alt:* no engine is found, so divide asks for one (Options > Div engine).

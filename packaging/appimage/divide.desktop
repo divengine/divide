@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=divide
-Comment=Terminal IDE for the Divengine projects
+Comment=Terminal environment for deterministic code generation with Divengine
 Exec=divide
 Icon=divide
 Terminal=true

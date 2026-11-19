@@ -2,9 +2,15 @@
 
 | Term | Meaning |
 |---|---|
-| **Div** | The PHP template engine divide was born for (github.com/divengine/div). Templates are rewritten again and again until nothing changes. |
+| **divide** | The environment for deterministic code generation with the Divengine libraries: *div* + *ide*, and the English word *divide*. Always lowercase. |
+| **Div** | The Divengine template engine, written in PHP (github.com/divengine/div): a template and a data model become text, which can be code in any language, configuration, data or another template. Templates are rewritten again and again until nothing changes. |
+| **Generator** | Templates, data models and the PHP around them that together produce code or other text by explicit rules. What divide helps to build. |
+| **Deterministic generation** | Generation whose output depends only on its inputs (templates, data, engine, setup): the same inputs give the same output. Reproducible, which is not the same as correct. |
+| **Orchestration** | Planned: composing and running several generators and stages, with dependencies and validation between them. Not specified or implemented yet. |
+| **Nodes** | Divengine's file-based structured data storage for PHP (schemas, nodes, references, indexes). Not integrated in divide. |
+| **Ways** | Divengine's control points for PHP (HTTP, CLI or direct calls, hooks, rules). Not integrated in divide. |
 | **Template** | A Div source file (`.tpl` and other extensions Div accepts). |
-| **Dialect** | A set of `DIV_TAG_*` overrides that changes the tags of the language (for example ERB-like `<%= %>`). A template chooses one with `@_DIALECT = file`. Defaults mirror the `define()` calls of `div.php`. |
+| **Dialect** | A set of `DIV_TAG_*` overrides that changes the tags of the language (for example ERB-like `<%= %>`), so the generator's syntax does not collide with the syntax it generates. A template chooses one with `@_DIALECT = file`. Defaults mirror the `define()` calls of `div.php`. |
 | **Data file** | The JSON (Div JSON) a template is rendered with. By default it is the template's name with `.json`, and it can be chosen per template in Run > Data file. |
 | **Div JSON** | Div's own JSON, decoded by `div::jsonDecode`: it accepts variable references (`$name`), comments and single quotes. |
 | **Fixed point** | The moment Div stops: a whole cycle of the engine changes nothing. |

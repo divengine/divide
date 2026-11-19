@@ -1,17 +1,34 @@
 # divide
 
-**The Div template IDE that lives in your terminal.**
+**Deterministic code generation and orchestration environment.**
 
-divide is a full-screen, keyboard-first IDE for [Div](https://github.com/divengine/div)
-templates, in the spirit of the Borland IDEs: overlapping windows, drop-down
-menus, dialogs with shadows and a status line that always tells you the next
-key. It understands Div the way Div does: it reads your dialect, checks your
-templates as you type, completes variables from your real data, and renders
-through the real Div engine, side by side with the code.
+divide is a terminal-based engineering environment for developing and
+operating deterministic code generators built with the
+[Divengine](https://github.com/divengine) ecosystem. A generator here is a
+set of [Div](https://github.com/divengine/div) templates and data models that
+produce text by explicit, reusable rules: source code in any language
+(Python, PHP, JavaScript, TypeScript...), configuration, tests,
+infrastructure definitions, HTML, or other templates.
+
+Today divide gives you the tools to build those generators: specialised
+editing, checking, rendering, tracing and debugging, all through the real
+engines. Its direction, not implemented yet, is the orchestration of
+generators and their use by AI coding agents ([below](#where-it-is-going)).
+
+The interface is keyboard first, in the spirit of the Borland IDEs:
+overlapping windows, drop-down menus, dialogs with shadows and a status line
+that always tells you the next key. It understands Div the way Div does: it
+reads each template's dialect, checks templates as you type, completes
+variables from your real data, and renders through the real Div engine, side
+by side with the code. Its name is *div* + *ide*, and the English word
+*divide*.
 
 ![divide in under a minute: completion from the data, errors before rendering, a render with Div, the render trace, the data tree, the outline and the dialector](https://raw.githubusercontent.com/wiki/divengine/divide/images/tour.gif)
 
-## What it does
+## What it does today
+
+The examples below generate HTML because it is the easiest output to read; the same tools work for templates that generate code or any other text.
+
 
 - **Speaks Div.** Every construct of the language is highlighted, in the
   template's own dialect (`@_DIALECT`).
@@ -68,10 +85,42 @@ through the real Div engine, side by side with the code.
   (Packagist searched as you type, the version suggested), removes, updates,
   installs and finds newer versions, all run by composer itself; a project
   without `composer.json` gets one, with Div in it.
+- **Version control.** The Git menu shows what changed (in the project
+  window, the editor's margin and Git > Changes), diffs as a code review shows
+  them, commits, history, branches, merges, stashes and blame, and the pull
+  requests and issues of GitHub or Gitea.
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
   where the templates live.
+
+## Where it is going
+
+divide is not a general-purpose IDE and does not compete with VS Code,
+JetBrains IDEs or Neovim. PHP is the language the Divengine components are
+written in today, not a limit on what they generate. Two directions are
+planned, and **neither is available yet**:
+
+- **Orchestration.** Real systems take several generation stages: outputs
+  that feed later stages, intermediate representations, dependencies,
+  validation between steps, related artifacts produced together. divide is
+  meant to compose and run generators that way. The abstraction model for it
+  has not been designed; there is no pipeline format or orchestration API
+  today.
+- **AI coding agents.** divide is meant to complement tools such as Claude
+  Code, Codex or OpenCode, not to be one. An agent should not have to write
+  large amounts of predictable code that a validated generator can produce:
+  the agent interprets requirements, builds models, chooses or develops
+  generators, and the generators run the known transformations
+  reproducibly, through a CLI, API or MCP interface still to be designed.
+
+Deterministic output is reproducible, which is not the same as correct: a
+generator is only as good as its templates, data and checks. Div is the
+engine integrated today; the other Divengine libraries,
+[Nodes](https://github.com/divengine/nodes) (file-based structured data) and
+[Ways](https://github.com/divengine/ways) (control points, hooks and rules),
+are independent libraries whose role in divide is still to be decided. See
+the [vision](docs/vision.md).
 
 ## Quick start
 
