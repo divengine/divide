@@ -14,6 +14,7 @@ from rich.style import Style
 from rich.text import Text
 from textual import events, work
 from textual.app import ComposeResult
+from textual.await_complete import AwaitComplete
 from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
@@ -1249,6 +1250,20 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             stack.extend(node.children)
         return None
 
+    def reload_node(self, node) -> AwaitComplete:
+        """Textual's, unless the tree has gone (its folder closed, divide quitting) before or while
+        it reloads: a move, a paste or a rename still at work then has nothing left to show."""
+        return AwaitComplete(self._reload_if_here(node))
+
+    async def _reload_if_here(self, node) -> None:
+        if not self.is_attached:
+            return
+        try:
+            await self._reload(node)
+        except Exception:
+            if self.is_attached:  # not the tree going: a real error
+                raise
+
     async def reveal(self, path: Path) -> None:
         """Reload the folders on the way to ``path`` and put the cursor on it.
 
@@ -1263,7 +1278,7 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         target = path.resolve()
         self._reveals = turn = getattr(self, "_reveals", 0) + 1  # a later reveal takes over from this one
         while True:
-            if self._reveals != turn:
+            if self._reveals != turn or not self.is_attached:  # (the tree may go meanwhile: see reload_node)
                 return
             # the first time the folders on the way are reloaded; after that only looked
             # at: reloading them again makes the loader fill them anew, and on a slow
@@ -1272,6 +1287,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             while not self._load_queue.empty() and loop.time() < give_up:
                 await asyncio.sleep(0.02)
             await asyncio.sleep(0.05)  # (the loader's last folder, after the queue emptied)
+            if not self.is_attached:
+                return
             if self._reveals != turn:  # another reveal started meanwhile: the bar is its own now
                 return
             if found and (self.selected_path == target or not self._can_show(target)):
@@ -1295,6 +1312,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         node = self.root
         if reload:
             await self.reload_node(node)
+            if not self.is_attached:
+                return True
         current = root
         for part in parts:
             current = current / part
@@ -1309,6 +1328,8 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
             if current != path and node.allow_expand:
                 if reload:
                     await self.reload_node(node)
+                    if not self.is_attached:
+                        return True
                 elif not node.is_expanded:
                     node.expand()  # the loader fills it: looked at again next time
                     return False

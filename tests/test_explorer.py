@@ -332,6 +332,34 @@ async def test_a_paste_from_the_terminal_pastes_what_was_cut(tmp_path):
         assert not page.exists()
 
 
+async def test_the_folder_closed_while_a_paste_shows_where_it_went(tmp_path):
+    """A paste reloads the tree to put the bar on what it moved; if the tree goes meanwhile
+    (File > Close folder, divide quitting) there is nothing left to show, and divide goes on."""
+    import asyncio
+    from divide.app import CM_CLOSE_FOLDER
+    root = project(tmp_path)
+    page = root / "page.tpl"
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = await on_tree(pilot, app, page)
+        await pilot.press("ctrl+x")
+        await on_tree(pilot, app, root / "parts")
+        held, gate, reload = [], asyncio.Event(), tree._reload
+        async def held_reload(node):  # the paste's reload waits until the tree has gone
+            held.append(node)
+            await gate.wait()
+            return await reload(node)
+        tree._reload = held_reload
+        tree.post_message(events.Paste("whatever the terminal holds"))
+        await until(pilot, lambda: held and (root / "parts" / "page.tpl").is_file())
+        app.run_command(CM_CLOSE_FOLDER)
+        await until(pilot, lambda: not tree.is_attached)
+        gate.set()
+        await until(pilot, lambda: not any(w.group == "explorer" and not w.is_finished for w in app.workers))
+        assert app.is_running and app.welcome_window() is not None and app.folder is None
+
+
 async def test_a_folder_does_not_go_inside_itself_and_move_to(tmp_path):
     root = project(tmp_path)
     app = Divide(root, [])
