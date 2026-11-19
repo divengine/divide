@@ -114,7 +114,7 @@ async def outline(rec_dir: Path) -> Recorder:
     async with app.run_test(size=SIZE) as pilot:
         await settle(pilot, 10)
         rec = Recorder(app, pilot, rec_dir)
-        rec.caption(tr("divide: a Turbo Vision IDE for Div templates and PHP", "divide: un IDE Turbo Vision para plantillas Div y PHP"))
+        rec.caption(tr("An IDE for developing generators with the Divengine ecosystem.", "Un IDE para desarrollar generadores con el ecosistema Divengine."))
         await rec.snap(3.0, 10)
 
         rec.caption(tr("Ctrl+O: the outline of the template, as a tree", "Ctrl+O: el esquema de la plantilla, como un árbol"))
@@ -163,7 +163,7 @@ async def tour(rec_dir: Path) -> Recorder:
         app.raise_window(app.window_for(index))
         await settle(pilot, 10)
         rec = Recorder(app, pilot, rec_dir)
-        rec.caption(tr("divide: the IDE for Div templates and PHP, in your terminal", "divide: el IDE para plantillas Div y PHP, en tu terminal"))
+        rec.caption(tr("An IDE for developing generators with the Divengine ecosystem.", "Un IDE para desarrollar generadores con el ecosistema Divengine."))
         await rec.snap(3.0, 10)
 
         rec.caption(tr("Completion from your data: {$ offers the keys of index.json", "Completado desde tus datos: {$ ofrece las claves de index.json"))
