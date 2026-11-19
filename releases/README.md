@@ -41,7 +41,9 @@ has as a deploy key with write access.
 
 ## winget
 
-Each release also becomes a pull request to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
+**Off for now**: without the `WINGET_TOKEN` secret a release does not send anything to winget.
+
+When on, each release also becomes a pull request to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
 with its three manifests (`Divengine.Divide`: the Windows zip, installed as the portable command `divide`), when
 the repository has the `WINGET_TOKEN` secret: a classic GitHub token with the `public_repo` scope. The pull
 request comes from that token's user's fork of winget-pkgs (made the first time). Once winget's maintainers
