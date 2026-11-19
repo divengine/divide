@@ -4,11 +4,13 @@
 
 divide is a terminal-based engineering environment for developing and
 operating deterministic code generators built with the
-[Divengine](https://github.com/divengine) ecosystem. A generator here is a
-set of [Div](https://github.com/divengine/div) templates and data models that
-produce text by explicit, reusable rules: source code in any language
-(Python, PHP, JavaScript, TypeScript...), configuration, tests,
-infrastructure definitions, HTML, or other templates.
+[Divengine](https://github.com/divengine) ecosystem. A generator transforms
+input models into output artifacts through explicit, reusable generation
+rules; for example, [Div](https://github.com/divengine/div) templates and
+their data models producing source code in any language (Python, PHP,
+JavaScript, TypeScript...), configuration, tests, infrastructure
+definitions, HTML, or other templates. What a generator is as a unit of
+divide is not decided yet.
 
 Today divide gives you the tools to build those generators: specialised
 editing, checking, rendering, tracing and debugging, all through the real
@@ -75,11 +77,13 @@ The examples below generate HTML because it is the easiest output to read; the s
   the signature of the call you type, hover (Ctrl+F1), go to definition
   (Ctrl+Enter) and the server's diagnostics. divide is a generic LSP client (pygls), so
   other languages are one entry away.
-- **Div set up as your application sets it up.** `.div/setup.json` (and your
-  own `~/.div/setup.json`) tells divide the project's template folders,
-  extensions, dialect, globals, defaults, PHP functions and a simulated
-  request; every render, check and include goes through it, and
-  Options > Div setup edits it section by section, with Div's verdict.
+- **Div set up for design time.** `.div/setup.json` (and your own
+  `~/.div/setup.json`) tells divide how to set up the Div it runs while you
+  work: template folders, extensions, dialect, globals, defaults, PHP
+  functions and a simulated request. Every render, check and include in
+  divide goes through it, and Options > Div setup edits it section by
+  section, with Div's verdict. It does not configure the Div your
+  application runs in production, which keeps its own setup in its code.
 - **Composer without leaving it.** Tools > Composer packages lists what the
   project requires and what is installed, adds packages with an assistant
   (Packagist searched as you type, the version suggested), removes, updates,
@@ -114,13 +118,18 @@ planned, and **neither is available yet**:
   generators, and the generators run the known transformations
   reproducibly, through a CLI, API or MCP interface still to be designed.
 
-Deterministic output is reproducible, which is not the same as correct: a
-generator is only as good as its templates, data and checks. Div is the
-engine integrated today; the other Divengine libraries,
+The objective is reproducible generation through explicit models,
+controlled execution conditions and reusable rules. The same template and
+data give the same output only when everything else that takes effect is
+controlled too: Div can also read the time, the request, random values and
+the PHP functions it may call. And reproducible is not the same as correct:
+a generator is only as good as its rules, models and checks.
+
+**Only Div is integrated in divide.** The other Divengine libraries,
 [Nodes](https://github.com/divengine/nodes) (file-based structured data) and
 [Ways](https://github.com/divengine/ways) (control points, hooks and rules),
-are independent libraries whose role in divide is still to be decided. See
-the [vision](docs/vision.md).
+are independent PHP libraries; whether divide will use them, and for what,
+has not been decided. See the [vision](docs/vision.md).
 
 ## Quick start
 

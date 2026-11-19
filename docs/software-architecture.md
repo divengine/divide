@@ -288,7 +288,10 @@ interface. What the current architecture already gives that work:
   IDE.
 - **One bridge to Div.** Every question to Div goes through `bridge.php` as
   one JSON request and one JSON reply, with the project's Div setup applied.
-  A future runner can ask Div the same way the editor does.
-- **No hidden state.** The bridge is one-shot and stateless, so a render
-  depends only on its template, data, engine and setup.
+  Another caller could ask Div the same way the editor does.
+- **No hidden state in divide.** The bridge is one-shot and stateless, so
+  divide adds nothing between requests. What a render depends on beyond its
+  template, data, engine and setup (the time, random values, the request,
+  PHP functions) is Div's, and controlling it is part of the design still to
+  come.
 

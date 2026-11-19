@@ -57,7 +57,7 @@ before it reaches the manual.
   also assign `_` (`x, _ = ...`). After changing texts, `tools/i18n.py all`
   updates the catalogues; each translation keeps the placeholders and one
   `~hotkey~` letter unique in its menu or dialog (`tests/test_i18n.py`).
-- **Div.** Div is never modified and its behaviour is never reimplemented.
+- **Div.** Div is used through its public API and its behaviour is never reimplemented; it is not changed to suit the IDE (a change to Div is an explicit technical decision in Div's project).
   Questions go through `run/bridge.php`.
 - **Documentation.** The manual (wiki) documents divide and links to Div's
   docs. This folder documents the design.

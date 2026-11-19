@@ -2,7 +2,7 @@
 
 **Entorno de generación determinista de código y su orquestación.**
 
-divide es un entorno de ingeniería en el terminal para desarrollar y operar generadores deterministas de código construidos con el ecosistema [Divengine](https://github.com/divengine). Un generador es un conjunto de plantillas y modelos de datos de [Div](https://github.com/divengine/div) que producen texto según reglas explícitas y reutilizables: código fuente en cualquier lenguaje, configuración, pruebas, definiciones de infraestructura, HTML u otras plantillas. Las mismas plantillas y los mismos datos dan siempre la misma salida.
+divide es un entorno de ingeniería en el terminal para desarrollar y operar generadores deterministas de código construidos con el ecosistema [Divengine](https://github.com/divengine). Un generador transforma modelos de entrada en artefactos de salida mediante reglas de generación explícitas y reutilizables: por ejemplo, plantillas de [Div](https://github.com/divengine/div) con sus datos que producen código fuente en cualquier lenguaje, configuración, pruebas, definiciones de infraestructura, HTML u otras plantillas. El objetivo es una generación reproducible: modelos explícitos, condiciones de ejecución controladas y reglas reutilizables.
 
 Hoy divide te da las herramientas para construir generadores: edición, verificación, renderizado, traza y depuración, todo a través del motor Div real. Orquestar generadores y que los agentes de programación con IA los usen es la dirección del producto, aún no son funciones: ver [[Hacia dónde va divide|Home#hacia-dónde-va-divide]].
 
@@ -25,7 +25,7 @@ Los ejemplos del manual generan HTML, la salida más fácil de leer; las mismas 
 - **Ejecuta y depura PHP, a la manera de Turbo Pascal.** Ctrl+F9 ejecuta el script bajo un cuadro de progreso y lista los errores de PHP con su lugar; F7 / F8 lo recorren paso a paso con Xdebug, con puntos de ruptura, vigilancias y la pila de llamadas: ver [[Ejecutar PHP|Running PHP]] y [[Depurar PHP|Debugging PHP]]. Ejecutar > Servidor web sirve el proyecto con `php -S` y depura sus peticiones del mismo modo: ver [[Servidor web|Web Server]].
 - **Mira cómo llegó Div hasta ahí.** Depurar > Traza del render reproduce cada mutación que Div hizo a una plantilla, con las palabras de Div, con lo que cada una escribió y quitó, hasta el punto fijo: ver [[Traza del render|Render Trace]].
 - **También el resto del proyecto.** Los archivos HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, scripts de shell, `.env`, `php.ini` y CSV se abren con sus colores: ver [[Otros archivos|Other Files]].
-- **Div configurado como lo configura tu código.** El `.div/setup.json` del proyecto le da a Div sus rutas, dialecto, datos globales y funciones permitidas mientras trabajas: ver [[Configuración de Div|Div Setup]].
+- **Div configurado para el diseño.** El `.div/setup.json` del proyecto le da al Div que ejecuta divide sus carpetas, dialecto, datos globales y funciones permitidas mientras trabajas. No configura el Div que ejecuta tu aplicación en producción: ver [[Configuración de Div|Div Setup]].
 - **Control de versiones y paquetes.** El menú Git muestra los cambios, los diffs, el historial, las ramas y el blame, y los pull requests de GitHub o Gitea: ver [[Git|Git]]. Herramientas > Paquetes Composer gestiona los paquetes PHP del proyecto: ver [[Composer|Composer]].
 - **Una ventana de proyecto que hace cosas.** Crea, renombra, mueve y elimina archivos y carpetas sin salir del IDE.
 - **Funciona dondequiera que haya un terminal**: por SSH, dentro de tmux, en el servidor donde viven las plantillas. En inglés o en español (Opciones > Idioma).
@@ -37,7 +37,7 @@ Esto es una dirección, **no son funciones de divide hoy**:
 - **Orquestación.** Generar un sistema real requiere varias etapas: salidas que alimentan etapas posteriores, representaciones intermedias, dependencias, validación entre pasos. divide pretende componer y ejecutar generadores de ese modo. Su modelo aún no está diseñado.
 - **Agentes de programación con IA.** divide pretende trabajar junto a agentes como Claude Code, Codex u OpenCode, no ser uno de ellos. En lugar de que un agente escriba grandes cantidades de código predecible, llamaría a un generador validado, mediante una interfaz CLI, API o MCP que aún está por diseñar.
 
-divide no es un IDE de propósito general, y PHP es el lenguaje en que están escritos los componentes de Divengine, no un límite de lo que generan. Un generador determinista da una salida reproducible; que esa salida sea correcta depende de sus plantillas, datos y verificaciones.
+divide no es un IDE de propósito general, y PHP es el lenguaje en que están escritos los componentes de Divengine, no un límite de lo que generan. Solo Div está integrado en divide; las demás bibliotecas de Divengine, como [Nodes](https://github.com/divengine/nodes) y [Ways](https://github.com/divengine/ways), son bibliotecas PHP independientes sin un papel decidido en divide. La misma plantilla con los mismos datos da la misma salida solo cuando también se controlan las demás entradas (Div puede leer además la hora, la petición, valores aleatorios y las funciones PHP que se le permiten), y una salida reproducible no es necesariamente correcta: eso depende de las reglas, los modelos y las verificaciones del generador.
 
 ## Empieza aquí
 

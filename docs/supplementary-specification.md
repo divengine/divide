@@ -10,8 +10,12 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
   makes. Where the editor must work without PHP (highlighting, static
   checks), the lexer mirrors Div's matching rules, and `div.php` is the
   reference when it and the wiki disagree (see [div-language.md](div-language.md)).
-- **F2 Div is never modified.** divide works with any Div 6.x installation.
-  Bugs found in Div are reported upstream, not patched locally.
+- **F2 Libraries through their public APIs.** divide works with any Div 6.x
+  installation, through Div's public API, and keeps Div's responsibilities
+  apart from its own. A Divengine library is not changed merely to
+  accommodate the IDE: any change is an explicit technical decision in that
+  library's project. Bugs found in Div are reported upstream, not patched
+  locally.
 - **F3 Reuse before building.** divide uses existing tools: tree-sitter for
   PHP, `php -l`, Xdebug, `php -S`, LSP servers, git, `gh`, `tea`,
   Composer and Textual's widgets. What git or Composer change (the

@@ -215,6 +215,6 @@ This document describes behaviour and responsibilities.
 
 ### UC19 Set up Div for a project
 
-1. Options > Div setup edits `.div/setup.json` of the project (or the user's `~/.div/setup.json`) section by section: the engine, paths, file extensions, parser limits, dialect, data (globals, defaults, system variables), PHP functions and modifiers, the request's superglobals. The bridge applies it to every request, so renders, checks and completion see Div as the application sets it up.
+1. Options > Div setup edits `.div/setup.json` of the project (or the user's `~/.div/setup.json`) section by section: the engine, paths, file extensions, parser limits, dialect, data (globals, defaults, system variables), PHP functions and modifiers, the request's superglobals. The bridge applies it to every request, so renders, checks and completion see Div set up as the developer describes it. It is divide's design-time setup: the application's own runtime configuration of Div is its code's, and divide neither reads nor changes it.
 2. Beside each section, what is in effect and where it comes from (the project, the user, Div's default); Div checks the saved setup and gives its verdict.
 - *Alt:* a project's `php` section lets templates call PHP functions, so it is applied only once the developer trusts it (`~/.div/trust.json` keeps its hash; a change asks again).
