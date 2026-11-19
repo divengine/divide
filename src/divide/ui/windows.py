@@ -152,7 +152,10 @@ class Rule(Widget):
         node = self.parent
         while node is not None and not isinstance(node, Window):
             node = node.parent
-        return node.query_one(Frame) if node is not None else None
+        if node is None:
+            return None
+        frames = node.query(Frame)  # none while its window is being taken off the desktop
+        return frames.first() if frames else None
 
     def _line_style(self) -> Style:
         frame = self._frame()
