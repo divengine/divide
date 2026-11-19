@@ -38,3 +38,28 @@ The binaries are not signed: macOS asks to allow divide the first time it runs f
 The Homebrew formula also goes to the tap, [divengine/homebrew-tap](https://github.com/divengine/homebrew-tap),
 when the repository has the `HOMEBREW_TAP_DEPLOY_KEY` secret: the private half of an SSH key that the tap
 has as a deploy key with write access.
+
+## winget
+
+Each release also becomes a pull request to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
+with its three manifests (`Divengine.Divide`: the Windows zip, installed as the portable command `divide`), when
+the repository has the `WINGET_TOKEN` secret: a classic GitHub token with the `public_repo` scope. The pull
+request comes from that token's user's fork of winget-pkgs (made the first time). Once winget's maintainers
+merge it, `winget install Divengine.Divide` installs that version.
+
+`packaging/manifests.py <version> SHA256SUMS <dir> --winget <dir>` writes the manifests and
+`packaging/winget_submit.sh <version> <dir>` sends them (`--dry-run` stops before pushing).
+
+## Microsoft Store (MSIX)
+
+The Windows build also makes `divide-<version>-windows-x86_64.msix` (`packaging/msix/`): unsigned, because the
+Store signs it, so it is not a file of the release but of the run's artifacts (`msix`). Before keeping it, the
+build signs a copy with a certificate made for the occasion, installs it and runs `divide --version` through
+its alias. Pre-releases have no MSIX: the Store takes numeric versions only.
+
+The package's identity comes from Partner Center (the product's *Product identity*), in the repository's
+variables `MSSTORE_IDENTITY_NAME`, `MSSTORE_PUBLISHER` (`CN=...`) and `MSSTORE_PUBLISHER_NAME`. The first
+submission is made by hand in Partner Center with that MSIX. Then each release sends its MSIX to a new
+submission when the repository has the secrets `MSSTORE_TENANT_ID`, `MSSTORE_CLIENT_ID`,
+`MSSTORE_CLIENT_SECRET`, `MSSTORE_SELLER_ID` (a Microsoft Entra application added to Partner Center as
+Manager) and the variable `MSSTORE_PRODUCT_ID`. Without them, the release does everything else.

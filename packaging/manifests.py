@@ -1,21 +1,25 @@
-"""The Homebrew formula and the Scoop manifest of a release, from its SHA256SUMS.
+"""The Homebrew formula, the Scoop manifest and the winget manifests of a release, from its SHA256SUMS.
 
-    python packaging/manifests.py 0.1.0 assets/SHA256SUMS assets/
+    python packaging/manifests.py 0.1.0 assets/SHA256SUMS assets/ [--winget DIR]
 
-writes ``divide.rb`` (Homebrew, macOS and Linux) and ``divide.json`` (Scoop, Windows) in the folder given.
-Both download the standalone binaries the release publishes.
+writes ``divide.rb`` (Homebrew, macOS and Linux) and ``divide.json`` (Scoop, Windows) in the folder given;
+with ``--winget``, the three manifests winget-pkgs takes (version, installer, locale) in
+``DIR/manifests/d/Divengine/Divide/<version>/``, the place they have in that repository.
+All of them download the standalone binaries the release publishes.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
-import sys
 from pathlib import Path
 
 REPO = "divengine/divide"
 HOMEPAGE = f"https://github.com/{REPO}"
 LICENSE = "GPL-3.0-or-later"
 DESCRIPTION = "Terminal IDE for the Divengine projects, starting with the Div template language"
+WINGET_ID = "Divengine.Divide"
+WINGET_SCHEMA = "1.12.0"
 
 
 def archive(version: str, target: str) -> str:
@@ -91,12 +95,71 @@ def scoop(version: str, sums: dict[str, str]) -> str:
     return json.dumps(manifest, indent=4) + "\n"
 
 
-def main(argv: list[str]) -> None:
-    version, sums_file, out = argv
-    sums = read_sums(Path(sums_file).read_text(encoding="utf-8"))
-    Path(out, "divide.rb").write_text(homebrew(version, sums), encoding="utf-8")
-    Path(out, "divide.json").write_text(scoop(version, sums), encoding="utf-8")
+def winget(version: str, sums: dict[str, str]) -> dict[str, str]:
+    """winget-pkgs' three manifests, by file name: a portable divide.exe inside the Windows zip."""
+    name = archive(version, "windows-x86_64")
+
+    def manifest(kind: str, body: str) -> str:
+        schema = f"winget-manifest.{kind}.{WINGET_SCHEMA}" if kind else f"winget-manifest.version.{WINGET_SCHEMA}"
+        return (f"# yaml-language-server: $schema=https://aka.ms/{schema}.schema.json\n\n"
+                f"PackageIdentifier: {WINGET_ID}\nPackageVersion: {version}\n{body}"
+                f"ManifestType: {kind or 'version'}\nManifestVersion: {WINGET_SCHEMA}\n")
+
+    folder = name.removesuffix(".zip")
+    return {
+        f"{WINGET_ID}.yaml": manifest("", "DefaultLocale: en-US\n"),
+        f"{WINGET_ID}.installer.yaml": manifest("installer", (
+            "InstallerType: zip\n"
+            "NestedInstallerType: portable\n"
+            "NestedInstallerFiles:\n"
+            f"- RelativeFilePath: {folder}\\divide.exe\n"
+            "  PortableCommandAlias: divide\n"
+            "Commands:\n- divide\n"
+            "Installers:\n"
+            "- Architecture: x64\n"
+            f"  InstallerUrl: {download(version, name)}\n"
+            f"  InstallerSha256: {sums[name].upper()}\n")),
+        f"{WINGET_ID}.locale.en-US.yaml": manifest("defaultLocale", (
+            "PackageLocale: en-US\n"
+            "Publisher: Divengine\n"
+            "PublisherUrl: https://github.com/divengine\n"
+            f"PublisherSupportUrl: {HOMEPAGE}/issues\n"
+            "PackageName: divide\n"
+            f"PackageUrl: {HOMEPAGE}\n"
+            f"License: {LICENSE}\n"
+            f"LicenseUrl: {HOMEPAGE}/blob/main/LICENSE\n"
+            f"ShortDescription: {DESCRIPTION}\n"
+            "Moniker: divide\n"
+            "Tags:\n- div\n- ide\n- php\n- template-engine\n- terminal\n- tui\n"
+            f"ReleaseNotesUrl: {HOMEPAGE}/releases/tag/v{version}\n"
+            "Documentations:\n"
+            "- DocumentLabel: Wiki\n"
+            f"  DocumentUrl: {HOMEPAGE}/wiki\n")),
+    }
+
+
+def winget_folder(version: str) -> Path:
+    """Where winget-pkgs keeps a version's manifests."""
+    publisher, package = WINGET_ID.split(".", 1)
+    return Path("manifests", publisher[0].lower(), publisher, package, version)
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("version")
+    parser.add_argument("sums", type=Path, help="the release's SHA256SUMS")
+    parser.add_argument("out", type=Path, help="folder for divide.rb and divide.json")
+    parser.add_argument("--winget", type=Path, help="also the winget manifests, under this folder")
+    args = parser.parse_args(argv)
+    sums = read_sums(args.sums.read_text(encoding="utf-8"))
+    Path(args.out, "divide.rb").write_text(homebrew(args.version, sums), encoding="utf-8")
+    Path(args.out, "divide.json").write_text(scoop(args.version, sums), encoding="utf-8")
+    if args.winget:
+        folder = args.winget / winget_folder(args.version)
+        folder.mkdir(parents=True, exist_ok=True)
+        for name, text in winget(args.version, sums).items():
+            (folder / name).write_text(text, encoding="utf-8")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

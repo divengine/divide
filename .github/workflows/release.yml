@@ -150,6 +150,28 @@ jobs:
           & "$env:ProgramFiles\divide\divide.exe" --version
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      - name: The MSIX package (Microsoft Store)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          IDENTITY_NAME: ${{ vars.MSSTORE_IDENTITY_NAME || 'Divengine.divide' }}
+          PUBLISHER: ${{ vars.MSSTORE_PUBLISHER || 'CN=Divengine' }}
+          PUBLISHER_NAME: ${{ vars.MSSTORE_PUBLISHER_NAME || 'Divengine' }}
+        run: |
+          if ($env:VERSION -notmatch '^\d+\.\d+\.\d+$') {
+            Write-Host "::notice::$env:VERSION is a pre-release: no MSIX (the Store takes numbers only)"
+            exit 0
+          }
+          ./packaging/msix/build.ps1 -Version $env:VERSION -Exe dist/divide.exe -Out "msix/$env:NAME.msix" `
+            -IdentityName $env:IDENTITY_NAME -Publisher $env:PUBLISHER -PublisherName $env:PUBLISHER_NAME -Test
+
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: msix
+          path: msix/*
+          if-no-files-found: ignore
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}
@@ -173,6 +195,9 @@ jobs:
         with:
           path: assets
           merge-multiple: true
+
+      - name: The MSIX goes to the Store, not to the release (unsigned, Windows would not install it)
+        run: rm -f assets/*.msix
 
       - name: Checksums, the Homebrew formula and the Scoop manifest
         run: |
@@ -222,3 +247,70 @@ jobs:
             git commit -m "divide $VERSION"
             git push
           fi
+
+  winget:
+    needs: [plan, release]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+
+      - name: The winget manifests, as a pull request to winget-pkgs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if echo "$VERSION" | grep -q '[a-z]'; then
+            echo "::notice::$VERSION is a pre-release: not sent to winget"
+            exit 0
+          fi
+          if [ -z "$WINGET_TOKEN" ]; then
+            echo "::notice::no WINGET_TOKEN secret (a classic token with public_repo): not sent to winget"
+            exit 0
+          fi
+          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern SHA256SUMS --dir sums
+          python3 packaging/manifests.py "$VERSION" sums/SHA256SUMS sums --winget winget
+          GH_TOKEN="$WINGET_TOKEN" bash packaging/winget_submit.sh "$VERSION" winget
+
+  store:
+    needs: [plan, release]
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      TENANT_ID: ${{ secrets.MSSTORE_TENANT_ID }}
+      CLIENT_ID: ${{ secrets.MSSTORE_CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.MSSTORE_CLIENT_SECRET }}
+      SELLER_ID: ${{ secrets.MSSTORE_SELLER_ID }}
+      PRODUCT_ID: ${{ vars.MSSTORE_PRODUCT_ID }}
+    steps:
+      - name: Is there a Store to send it to
+        id: ready
+        shell: bash
+        run: |
+          if echo "$VERSION" | grep -q '[a-z]'; then
+            echo "::notice::$VERSION is a pre-release: not sent to the Store"
+          elif [ -z "$TENANT_ID" ] || [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ] || [ -z "$SELLER_ID" ] || [ -z "$PRODUCT_ID" ]; then
+            echo "::notice::no Partner Center credentials (MSSTORE_* secrets, MSSTORE_PRODUCT_ID variable): the MSIX stays in the run's artifacts"
+          else
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/download-artifact@v4
+        if: steps.ready.outputs.go == 'true'
+        with:
+          name: msix
+          path: msix
+
+      - uses: microsoft/microsoft-store-apppublisher@v1.1
+        if: steps.ready.outputs.go == 'true'
+
+      - name: The MSIX, to a new Store submission
+        if: steps.ready.outputs.go == 'true'
+        shell: pwsh
+        run: |
+          msstore reconfigure --tenantId $env:TENANT_ID --sellerId $env:SELLER_ID --clientId $env:CLIENT_ID --clientSecret $env:CLIENT_SECRET
+          $package = Get-ChildItem msix/*.msix | Select-Object -First 1
+          msstore publish $package.FullName -id $env:PRODUCT_ID
