@@ -2631,7 +2631,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(prog="divide", description=_('Terminal IDE for the Divengine projects.'))
+    parser = argparse.ArgumentParser(prog="divide", description=_('An IDE for developing generators with the Divengine ecosystem.'))
     parser.add_argument("paths", nargs="*",
                         help=_('a folder to open as the project (. for this one) and/or files to open; '
                                'with nothing, the Welcome window'))

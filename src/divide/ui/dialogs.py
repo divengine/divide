@@ -140,7 +140,7 @@ def confirm_save(name: str) -> MessageBox:
 def about_box(version: str) -> MessageBox:
     return MessageBox(
         _('About'),
-        _('divide {version}\n\nTerminal IDE for the Divengine projects.\nhttps://github.com/divengine').format(version=version),
+        _('divide {version}\n\nAn IDE for developing generators\nwith the Divengine ecosystem.\nhttps://github.com/divengine').format(version=version),
         [(_('O~K~'), Command.OK, "ok")],
         width=48,
     )

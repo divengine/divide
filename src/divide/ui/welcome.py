@@ -83,7 +83,7 @@ class WelcomeWindow(_TVWindow):
         palette = themes.current()
         self.head.update(Text.assemble(
             (f"divide {__version__}", Style(color=palette.hex(HASH), bold=True)), "\n",
-            (_('Terminal IDE for the Divengine projects'), Style(color=palette.hex(PATH))), "\n",
+            (_('An IDE for developing generators with the Divengine ecosystem'), Style(color=palette.hex(PATH))), "\n",
             (_('Open a folder to work on a project, or a file on its own.'), Style(color=palette.hex(WHEN)))))
         self.git_tree.repaint()
 

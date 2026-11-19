@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-19 01:52+0000\n"
+"POT-Creation-Date: 2026-11-19 15:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,6 +150,12 @@ msgid "Address"
 msgstr ""
 
 msgid "Aggregate functions"
+msgstr ""
+
+msgid "An IDE for developing generators with the Divengine ecosystem"
+msgstr ""
+
+msgid "An IDE for developing generators with the Divengine ecosystem."
 msgstr ""
 
 msgid "An empty field: Div's default (or the user's setup)."
@@ -2053,12 +2059,6 @@ msgstr ""
 msgid "Template variables"
 msgstr ""
 
-msgid "Terminal IDE for the Divengine projects"
-msgstr ""
-
-msgid "Terminal IDE for the Divengine projects."
-msgstr ""
-
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
 msgstr ""
 
@@ -2574,7 +2574,8 @@ msgstr ""
 msgid ""
 "divide {version}\n"
 "\n"
-"Terminal IDE for the Divengine projects.\n"
+"An IDE for developing generators\n"
+"with the Divengine ecosystem.\n"
 "https://github.com/divengine"
 msgstr ""
 
