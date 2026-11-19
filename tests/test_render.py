@@ -24,8 +24,8 @@ needs_div = pytest.mark.skipif(
 
 
 @pytest.fixture(autouse=True)
-def isolated_config(tmp_path, monkeypatch):
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+def isolated_config(tmp_path_factory, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path_factory.mktemp("config")))  # not in the project: divide writes there
 
 
 def make_project(tmp_path: Path) -> Path:

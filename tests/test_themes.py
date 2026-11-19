@@ -15,8 +15,8 @@ from divide.ui.windows import EditorWindow, OutputWindow
 
 
 @pytest.fixture(autouse=True)
-def isolated_config(tmp_path, monkeypatch):
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+def isolated_config(tmp_path_factory, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path_factory.mktemp("config")))  # not in the project: divide writes there
     yield
     themes.set_ansi16(False)
     themes.use(themes.DEFAULT)

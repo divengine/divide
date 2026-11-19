@@ -80,7 +80,8 @@ Ready to run, with nothing else to install ([all the options](https://github.com
 ```bash
 brew install divengine/tap/divide          # macOS and Linux
 scoop install https://github.com/divengine/divide/releases/latest/download/divide.json   # Windows
-cd ~/sites/my-project && divide            # any folder; or: divide page.tpl
+divide ~/sites/my-project                  # a folder as the project (divide . for this one)
+divide page.tpl                            # a file on its own; divide alone: the Welcome window
 ```
 
 The [latest release](https://github.com/divengine/divide/releases/latest) also has an

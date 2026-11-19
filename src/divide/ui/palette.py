@@ -366,7 +366,7 @@ class PaletteMixin:
 
     async def palette(self, *, commands: bool = False) -> None:
         root = self.root.resolve()
-        files = project_files(root)
+        files = project_files(root) if self.folder is not None else []  # type: ignore[attr-defined]  # no folder: the open files
         recent = []
         for window in reversed(self.editor_windows()):  # the one on top first
             path = window.path.resolve() if window.path is not None else None

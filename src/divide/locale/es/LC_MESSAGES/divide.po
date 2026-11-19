@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 18:13+0000\n"
+"POT-Creation-Date: 2026-11-19 01:52+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -348,6 +348,9 @@ msgstr "Carpe~t~a de las clases"
 
 msgid "Close a~l~l"
 msgstr "Cerrar ~t~odas"
+
+msgid "Clos~e~ folder"
+msgstr "C~e~rrar carpeta"
 
 msgid "Cl~a~ss namespace (PSR-4)"
 msgstr "N~a~mespace (PSR-4)"
@@ -854,6 +857,9 @@ msgstr "Enter abrir en el navegador · Ins nueva pull request (en las issues: nu
 msgid "Enter open the file there · N/P next/previous change · S side by side or unified · Alt+F3 close"
 msgstr "Enter abrir el archivo ahí · N/P cambio siguiente/anterior · S lado a lado o unificado · Alt+F3 cerrar"
 
+msgid "Enter open · Del forget a recent one · type to filter"
+msgstr "Enter abrir · Supr olvidar un reciente · escribe para filtrar"
+
 msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
 msgstr "Enter cambiar a ella · Ins rama nueva · Supr borrar · Alt+F10 más"
 
@@ -1060,6 +1066,9 @@ msgstr "Fin de HTML a texto"
 
 msgid "HTML to text width"
 msgstr "Ancho de HTML a texto"
+
+msgid "Help"
+msgstr "Ayuda"
 
 #, python-brace-format
 msgid "Help: {book} · {title}"
@@ -1389,6 +1398,18 @@ msgstr "Sin composer.json: Alt+F10 > Nuevo composer.json"
 msgid "No file matches"
 msgstr "Ningún archivo coincide"
 
+msgid "No file opened yet"
+msgstr "Aún no se ha abierto ningún archivo"
+
+msgid "No folder is open. Open one now?"
+msgstr "No hay ninguna carpeta abierta. ¿Abrir una ahora?"
+
+msgid "No folder open: File > Open folder..."
+msgstr "Sin carpeta abierta: Archivo > Abrir carpeta..."
+
+msgid "No folder opened yet"
+msgstr "Aún no se ha abierto ninguna carpeta"
+
 msgid "No forge"
 msgstr "Sin forja"
 
@@ -1492,8 +1513,23 @@ msgstr "Abrir un archivo"
 msgid "Open a file of the repository first"
 msgstr "Abre antes un archivo del repositorio"
 
+msgid "Open a file..."
+msgstr "Abrir un archivo..."
+
+msgid "Open a folder"
+msgstr "Abrir una carpeta"
+
+msgid "Open a folder to work on a project, or a file on its own."
+msgstr "Abre una carpeta para trabajar en un proyecto, o un archivo por sí solo."
+
+msgid "Open a folder..."
+msgstr "Abrir una carpeta..."
+
 msgid "Open ~c~omposer.json"
 msgstr "Abrir c~o~mposer.json"
+
+msgid "Open ~f~older..."
+msgstr "Abrir ca~r~peta..."
 
 #, python-brace-format
 msgid "Opening {target}"
@@ -1667,6 +1703,12 @@ msgstr "Pu~s~h"
 
 msgid "Raw URL encode"
 msgstr "Codificar URL (raw)"
+
+msgid "Recent files"
+msgstr "Archivos recientes"
+
+msgid "Recent folders"
+msgstr "Carpetas recientes"
 
 msgid "Refre~s~h"
 msgstr "Ac~t~ualizar"
@@ -1868,6 +1910,9 @@ msgstr "Preparar ~t~odo"
 msgid "Staged (the next commit)"
 msgstr "Preparados (el próximo commit)"
 
+msgid "Start"
+msgstr "Empezar"
+
 msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
 msgstr "Inicia primero el script en el depurador (F7, F8 o F4) y detente en una línea."
 
@@ -1977,6 +2022,9 @@ msgstr "Plantilla"
 
 msgid "Template variables"
 msgstr "Variables de plantilla"
+
+msgid "Terminal IDE for the Divengine projects"
+msgstr "IDE de terminal para los proyectos Divengine"
 
 msgid "Terminal IDE for the Divengine projects."
 msgstr "IDE de terminal para los proyectos Divengine."
@@ -2231,6 +2279,9 @@ msgstr "Servidor web {address} detenido"
 msgid "Web server: {url} ({state})"
 msgstr "Servidor web: {url} ({state})"
 
+msgid "Welcome"
+msgstr "Bienvenida"
+
 msgid "What Div adds to a template's or a data file's name (without the dot)."
 msgstr "Lo que Div añade al nombre de una plantilla o de un archivo de datos (sin el punto)."
 
@@ -2315,6 +2366,9 @@ msgstr "[detenido]"
 
 msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
 msgstr "se espera un archivo .dialect o un objeto de etiquetas DIV_TAG_"
+
+msgid "a folder to open as the project (. for this one) and/or files to open; with nothing, the Welcome window"
+msgstr "una carpeta para abrir como proyecto (. para esta) y/o archivos para abrir; sin nada, la ventana de bienvenida"
 
 msgid "a list of PHP function names is expected"
 msgstr "se espera una lista de nombres de funciones de PHP"
@@ -2453,6 +2507,9 @@ msgstr "dev"
 
 msgid "divide will speak the language chosen the next time it starts."
 msgstr "divide usará el idioma elegido la próxima vez que se inicie."
+
+msgid "divide works on one folder at a time, its project; files can be opened on their own."
+msgstr "divide trabaja con una carpeta a la vez, su proyecto; los archivos se pueden abrir por sí solos."
 
 msgid "divide writes composer.json as composer init would; composer installs it."
 msgstr "divide escribe composer.json como lo haría composer init; composer lo instala."
@@ -2623,9 +2680,6 @@ msgstr "programa reiniciado"
 
 msgid "project"
 msgstr "proyecto"
-
-msgid "project folder and/or files to open"
-msgstr "carpeta del proyecto y/o archivos que abrir"
 
 msgid "project's"
 msgstr "del proyecto"
@@ -3532,6 +3586,9 @@ msgstr "~O~bjeto"
 msgid "~O~pen"
 msgstr "~A~brir"
 
+msgid "~O~pen file..."
+msgstr "~A~brir archivo..."
+
 msgid "~O~pen in browser"
 msgstr "~A~brir en el navegador"
 
@@ -3540,9 +3597,6 @@ msgstr "Abrir en el ~n~avegador"
 
 msgid "~O~pen the file"
 msgstr "~A~brir el archivo"
-
-msgid "~O~pen..."
-msgstr "~A~brir..."
 
 msgid "~O~ptions"
 msgstr "~O~pciones"
@@ -3763,6 +3817,9 @@ msgstr "~V~igilancias"
 
 msgid "~W~eb server..."
 msgstr "Servidor ~w~eb..."
+
+msgid "~W~elcome"
+msgstr "Bien~v~enida"
 
 msgid "~W~hat it is (optional)"
 msgstr "~Q~ué es (opcional)"

@@ -18,8 +18,8 @@ from divide.ui.palette import (
 
 
 @pytest.fixture(autouse=True)
-def isolated_config(tmp_path, monkeypatch):
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+def isolated_config(tmp_path_factory, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path_factory.mktemp("config")))  # not in the project: divide writes there
 
 
 async def settle(pilot, times: int = 6) -> None:
@@ -54,7 +54,7 @@ def test_menu_items():
     app = Divide.__new__(Divide)
     found = menu_items(app.init_menu_bar())
     by_text = {i.text: i for i in found}
-    assert by_text["File > Open..."].key == "F3"
+    assert by_text["File > Open file..."].key == "F3"
     assert by_text["Help > About..."].value == (CM_ABOUT, None)
     assert not any(t.endswith(" > ") for t in by_text)
 

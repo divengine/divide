@@ -82,7 +82,8 @@ from divide.ui.dialogs import (
     shown_path,
 )
 from divide.ui.shadow import ShadowScreen
-from divide import config, themes
+from divide import config, recent, themes
+from divide.ui.welcome import WelcomeWindow
 from divide.run.render import (
     DialectVerdict,
     IncludeTarget,
@@ -152,6 +153,9 @@ DEFAULT_PALETTE = themes.DEFAULT
 CM_PROJECT = Command.USER + 1
 CM_ABOUT = Command.USER + 2
 CM_SELECT_ALL = Command.USER + 3
+CM_OPEN_FOLDER = Command.USER + 50
+CM_CLOSE_FOLDER = Command.USER + 51
+CM_WELCOME = Command.USER + 52
 CM_COLORS = Command.USER + 4  # Options > Colors
 CM_FIND = Command.USER + 5
 CM_REPLACE = Command.USER + 6
@@ -406,7 +410,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         Binding("alt+f1", "command('HELP_BACK')", "Previous topic", show=False, priority=True),
     ] + [Binding(f"alt+{n}", f"window({n})", show=False) for n in range(1, 10)]
 
-    def __init__(self, root: Path, files: list[Path], *, palette: str | None = None, colors: str | None = None) -> None:
+    def __init__(self, root: Path | None, files: list[Path], *, palette: str | None = None, colors: str | None = None) -> None:
         settings = config.load()
         palette = palette or settings.get("palette")
         palette = palette if palette in themes.THEMES else DEFAULT_PALETTE
@@ -422,7 +426,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         self._lsp_init()
         self._run_init()
         self._web_init()
-        self.root = root
+        self.folder: Path | None = root.resolve() if root is not None else None  # the open folder: the project
+        self._loose_dir: Path | None = None  # without a folder: where the last file opened is
         self.initial_files = files
         self._untitled = 0
         self.search_query = ""
@@ -456,7 +461,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 SubMenu(
                     _('~F~ile'),
                     MenuItem(_('~N~ew'), Command.NEW),
-                    MenuItem(_('~O~pen...'), Command.OPEN, "F3"),
+                    MenuItem(_('~O~pen file...'), Command.OPEN, "F3"),
+                    MenuItem(_('Open ~f~older...'), CM_OPEN_FOLDER),
+                    MenuItem(_('Clos~e~ folder'), CM_CLOSE_FOLDER),
+                    Separator(),
                     MenuItem(_('~S~ave'), Command.SAVE, "F2"),
                     MenuItem(_('Save ~a~s...'), Command.SAVE_AS),
                     MenuItem(_('Save a~l~l'), Command.SAVE_ALL),
@@ -584,6 +592,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                     MenuItem(_('~P~revious topic'), CM_HELP_BACK, "Alt+F1"),
                     MenuItem(_('~U~sing help'), CM_HELP, "F1"),
                     Separator(),
+                    MenuItem(_('~W~elcome'), CM_WELCOME),
                     MenuItem(_('~A~bout...'), CM_ABOUT),
                 ),
             ]
@@ -616,13 +625,28 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         # however divide ends (Alt+X stops them politely first): nothing it started outlives it
         children.kill_all()
 
+    @property
+    def root(self) -> Path:
+        """The open folder; without one, the folder of the file being edited (or of the last one
+        opened), else the home folder: where templates render, includes resolve, tools run."""
+        if self.folder is not None:
+            return self.folder
+        editor = self.active_editor() if self.is_mounted else None
+        if editor is not None and editor.path is not None:
+            return editor.path.parent
+        return self._loose_dir or Path.home()
+
     def on_mount(self) -> None:
         self.apply_div_setup()
+        if self.folder is not None:
+            recent.add("folders", self.folder)
         if self.initial_files:
             for f in self.initial_files:
                 self.open_file(f)
-        else:
+        elif self.folder is not None:
             self.call_after_refresh(self.toggle_project)
+        else:
+            self.call_after_refresh(self.show_welcome)
         self.call_after_refresh(self.update_status)
         self.call_after_refresh(self.start_git_watch)
 
@@ -672,8 +696,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         if win.path is None:
             win.title = win.display_name
             return
+        if self.folder is None:
+            win.title = win.path.name
+            return
         try:
-            win.title = win.path.relative_to(self.root).as_posix()
+            win.title = win.path.relative_to(self.folder).as_posix()
         except ValueError:
             win.title = str(win.path)
 
@@ -688,10 +715,15 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         except (OSError, UnicodeDecodeError) as exc:
             self.notify(_('Cannot open {name}: {exc}').format(name=path.name, exc=exc), severity="error")
             return None
+        if self.folder is None:
+            self._loose_dir = path.parent
+        if path.is_file():
+            recent.add("files", path)
         setup = self.apply_div_setup()
         win = EditorWindow(path, text, roots=self.template_roots(), number=self._free_number())
         win.editor.set_base_dialect(setup.dialect)
         self._relabel(win)
+        self._close_welcome()
         self._insert(win)
         self.call_after_refresh(self.resolve_includes_of, win.editor)
         self.call_after_refresh(self.refresh_debug_marks)
@@ -705,14 +737,18 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         if plain:
             win.editor.lang = None
         self._untitled += 1
+        self._close_welcome()
         self._insert(win)
         return win
 
     def toggle_project(self) -> None:
         """Open the project window, raise it, or close it when it is on top."""
         project = self.project_window()
+        if project is None and self.folder is None:
+            self.run_worker(self.no_folder())
+            return
         if project is None:
-            project = ProjectWindow(self.root, icons=self.icons)
+            project = ProjectWindow(self.folder, icons=self.icons)
             project.styles.offset = (0, 0)
             project.styles.width = ProjectWindow.WIDTH
             project.styles.height = "100%"
@@ -722,6 +758,98 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             self._remove_window(project)
         else:
             self.raise_window(project)
+
+    # ------------------------------------------------------------- the folder
+    async def no_folder(self) -> None:
+        """Ctrl+B without a folder: offers to open one."""
+        if await self.run_dialog(confirm(_('Project'), _('No folder is open. Open one now?'))) == Command.YES:
+            await self.choose_folder()
+
+    async def choose_folder(self) -> None:
+        editor = self.active_editor()
+        start = self.folder or (editor.path.parent if editor and editor.path else Path.home())
+        dialog = FileDialog(_('Open a folder'), start, folders=True, ok_label=_('~O~K'))
+        if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
+            await self.open_folder(dialog.chosen)
+
+    async def open_folder(self, path: Path) -> bool:
+        """``path`` becomes the project: the windows of the one before close (asking about unsaved
+        changes), its language servers, debugger and web server stop, the project window opens."""
+        path = path.expanduser().resolve()
+        if not path.is_dir():
+            self.notify(_('{path} is not a folder').format(path=shown_path(path)), severity="error")
+            return False
+        if path == self.folder:
+            if self.project_window() is None:
+                self.toggle_project()
+            else:
+                self.raise_window(self.project_window())
+            return True
+        if not await self._leave_folder():
+            return False
+        self.folder = path
+        self._loose_dir = None
+        recent.add("folders", path)
+        self.apply_div_setup()
+        self.toggle_project()
+        self.call_after_refresh(self.refresh_git_state)
+        self.call_after_refresh(self.update_status)
+        return True
+
+    async def close_folder(self) -> None:
+        """Back to no folder: every window closes (asking about unsaved changes); the Welcome window."""
+        if not await self._leave_folder():
+            return
+        self.folder = None
+        self._loose_dir = None
+        self.apply_div_setup()
+        self.show_welcome()
+        self.call_after_refresh(self.refresh_git_state)
+        self.call_after_refresh(self.update_status)
+
+    async def _leave_folder(self) -> bool:
+        for win in self.editor_windows():
+            if not await self.confirm_close(win):
+                return False
+        await self.lsp_stop_all()
+        if self.session is not None:
+            await self.session.stop()
+        await self.web_stop()
+        for win in list(self.windows()):
+            self._remove_window(win)
+        return True
+
+    def welcome_window(self) -> WelcomeWindow | None:
+        return next((w for w in self.windows() if isinstance(w, WelcomeWindow)), None)
+
+    def show_welcome(self) -> None:
+        win = self.welcome_window()
+        if win is None:
+            win = WelcomeWindow(number=self._free_number())
+            self._insert(win)
+        else:
+            win.reload()
+            self.raise_window(win)
+
+    def _close_welcome(self) -> None:
+        win = self.welcome_window()
+        if win is not None:
+            self._remove_window(win)
+
+    def welcome_chosen(self, kind: str, item: object) -> None:
+        """A row of the Welcome window: a Start action, a recent folder or file."""
+        if kind == "folder":
+            self.run_worker(self.open_folder(item))  # type: ignore[arg-type]
+        elif kind == "file":
+            self.open_file(item)  # type: ignore[arg-type]
+        elif item == "new":
+            self.new_file()
+        elif item == "file":
+            self.run_command(Command.OPEN)
+        elif item == "folder":
+            self.run_command(CM_OPEN_FOLDER)
+        elif item == "help":
+            self.run_command(CM_HELP_CONTENTS)
 
     def _remove_window(self, window: Window) -> None:
         if self.desktop is not None:
@@ -858,6 +986,12 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 self.exit()
             case Command.NEW:
                 self.new_file()
+            case _ if command == CM_OPEN_FOLDER:
+                await self.choose_folder()
+            case _ if command == CM_CLOSE_FOLDER:
+                await self.close_folder()
+            case _ if command == CM_WELCOME:
+                self.show_welcome()
             case Command.OPEN:
                 start = editor.path.parent if editor and editor.path else self.root
                 dialog = FileDialog(_('Open a file'), start)
@@ -1185,6 +1319,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
 
     async def open_div_setup(self, *, user: bool = False) -> None:
         """Options > Div setup: the project's setup file (or the user's), section by section."""
+        editor = self.active_editor()
+        if not user and self.folder is None and (editor is None or editor.path is None):
+            await self.no_folder()  # no project, no file: whose setup would it be
+            return
         file = div_setup.user_file() if user else div_setup.project_file(self.root)
         source = self.open_file(file)  # a new file: an empty buffer, F2 creates it
         if source is None:
@@ -2433,8 +2571,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             status.set_hint(HelpWindow.HINT)
             return
         win = self.active_editor()
+        if isinstance(active, WelcomeWindow):
+            status.set_hint(WelcomeWindow.HINT)
+            return
         if win is None:
-            status.set_hint(shown_path(self.root))
+            status.set_hint(shown_path(self.folder) if self.folder is not None else _('No folder open: File > Open folder...'))
             return
         ed = win.editor
         if ed.lang == "json":
@@ -2489,14 +2630,16 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="divide", description=_('Terminal IDE for the Divengine projects.'))
-    parser.add_argument("paths", nargs="*", help=_('project folder and/or files to open'))
+    parser.add_argument("paths", nargs="*",
+                        help=_('a folder to open as the project (. for this one) and/or files to open; '
+                               'with nothing, the Welcome window'))
     parser.add_argument("--palette", choices=sorted(PALETTES), help=_('colour theme (default: the one chosen in Options > Colors, else turbo-pascal)'))
     parser.add_argument("--colors", choices=list(themes.DEPTHS), help=_('colour depth (default: what the terminal says it supports)'))
     parser.add_argument("--language", choices=["auto", *i18n.available()],
                         help=_("language of the interface for this run (default: Options > Language, else the system's)"))
     parser.add_argument("--version", action="version", version=f"divide {__version__}")
     args = parser.parse_args(argv)
-    root = Path.cwd()
+    root: Path | None = None  # no folder: files on their own, or the Welcome window
     files: list[Path] = []
     for raw in args.paths:
         p = Path(raw).expanduser()
@@ -2504,8 +2647,6 @@ def main(argv: list[str] | None = None) -> None:
             root = p.resolve()
         else:
             files.append(p)
-    if files and not any(Path(a).is_dir() for a in args.paths):
-        root = files[0].resolve().parent
     Divide(root, files, palette=args.palette, colors=args.colors).run()
 
 

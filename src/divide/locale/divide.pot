@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-18 18:13+0000\n"
+"POT-Creation-Date: 2026-11-19 01:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -348,6 +348,9 @@ msgid "Classes ~f~older"
 msgstr ""
 
 msgid "Close a~l~l"
+msgstr ""
+
+msgid "Clos~e~ folder"
 msgstr ""
 
 msgid "Cl~a~ss namespace (PSR-4)"
@@ -864,6 +867,9 @@ msgid ""
 "unified · Alt+F3 close"
 msgstr ""
 
+msgid "Enter open · Del forget a recent one · type to filter"
+msgstr ""
+
 msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
 msgstr ""
 
@@ -1067,6 +1073,9 @@ msgid "HTML to text end"
 msgstr ""
 
 msgid "HTML to text width"
+msgstr ""
+
+msgid "Help"
 msgstr ""
 
 #, python-brace-format
@@ -1402,6 +1411,18 @@ msgstr ""
 msgid "No file matches"
 msgstr ""
 
+msgid "No file opened yet"
+msgstr ""
+
+msgid "No folder is open. Open one now?"
+msgstr ""
+
+msgid "No folder open: File > Open folder..."
+msgstr ""
+
+msgid "No folder opened yet"
+msgstr ""
+
 msgid "No forge"
 msgstr ""
 
@@ -1509,7 +1530,22 @@ msgstr ""
 msgid "Open a file of the repository first"
 msgstr ""
 
+msgid "Open a file..."
+msgstr ""
+
+msgid "Open a folder"
+msgstr ""
+
+msgid "Open a folder to work on a project, or a file on its own."
+msgstr ""
+
+msgid "Open a folder..."
+msgstr ""
+
 msgid "Open ~c~omposer.json"
+msgstr ""
+
+msgid "Open ~f~older..."
 msgstr ""
 
 #, python-brace-format
@@ -1687,6 +1723,12 @@ msgid "P~u~sh"
 msgstr ""
 
 msgid "Raw URL encode"
+msgstr ""
+
+msgid "Recent files"
+msgstr ""
+
+msgid "Recent folders"
 msgstr ""
 
 msgid "Refre~s~h"
@@ -1896,6 +1938,9 @@ msgstr ""
 msgid "Staged (the next commit)"
 msgstr ""
 
+msgid "Start"
+msgstr ""
+
 msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
 msgstr ""
 
@@ -2006,6 +2051,9 @@ msgid "Template"
 msgstr ""
 
 msgid "Template variables"
+msgstr ""
+
+msgid "Terminal IDE for the Divengine projects"
 msgstr ""
 
 msgid "Terminal IDE for the Divengine projects."
@@ -2275,6 +2323,9 @@ msgstr ""
 msgid "Web server: {url} ({state})"
 msgstr ""
 
+msgid "Welcome"
+msgstr ""
+
 msgid "What Div adds to a template's or a data file's name (without the dot)."
 msgstr ""
 
@@ -2364,6 +2415,11 @@ msgid "[stopped]"
 msgstr ""
 
 msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
+msgstr ""
+
+msgid ""
+"a folder to open as the project (. for this one) and/or files to open; "
+"with nothing, the Welcome window"
 msgstr ""
 
 msgid "a list of PHP function names is expected"
@@ -2504,6 +2560,11 @@ msgid "dev"
 msgstr ""
 
 msgid "divide will speak the language chosen the next time it starts."
+msgstr ""
+
+msgid ""
+"divide works on one folder at a time, its project; files can be opened on"
+" their own."
 msgstr ""
 
 msgid "divide writes composer.json as composer init would; composer installs it."
@@ -2674,9 +2735,6 @@ msgid "program reset"
 msgstr ""
 
 msgid "project"
-msgstr ""
-
-msgid "project folder and/or files to open"
 msgstr ""
 
 msgid "project's"
@@ -3593,6 +3651,9 @@ msgstr ""
 msgid "~O~pen"
 msgstr ""
 
+msgid "~O~pen file..."
+msgstr ""
+
 msgid "~O~pen in browser"
 msgstr ""
 
@@ -3600,9 +3661,6 @@ msgid "~O~pen in the browser"
 msgstr ""
 
 msgid "~O~pen the file"
-msgstr ""
-
-msgid "~O~pen..."
 msgstr ""
 
 msgid "~O~ptions"
@@ -3823,6 +3881,9 @@ msgid "~W~atches"
 msgstr ""
 
 msgid "~W~eb server..."
+msgstr ""
+
+msgid "~W~elcome"
 msgstr ""
 
 msgid "~W~hat it is (optional)"

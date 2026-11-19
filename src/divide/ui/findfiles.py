@@ -186,6 +186,9 @@ class FindInFilesMixin:
         return next((w for w in self.windows() if isinstance(w, FindResultsWindow)), None)
 
     async def find_in_files(self) -> None:
+        if self.folder is None:  # type: ignore[attr-defined]  # it looks in the project
+            await self.no_folder()  # type: ignore[attr-defined]
+            return
         editor = self.active_editor()
         query = editor.editor.selected_text if editor is not None and "\n" not in editor.editor.selected_text else ""
         dialog = FindInFilesDialog(query or self.search_query, self.search_options)
