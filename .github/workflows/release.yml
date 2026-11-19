@@ -273,7 +273,7 @@ jobs:
           fi
           gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern SHA256SUMS --dir sums
           python3 packaging/manifests.py "$VERSION" sums/SHA256SUMS sums --winget winget
-          GH_TOKEN="$WINGET_TOKEN" bash packaging/winget_submit.sh "$VERSION" winget
+          GH_TOKEN="$WINGET_TOKEN" python3 packaging/winget_submit.py "$VERSION" winget
 
   store:
     needs: [plan, release]

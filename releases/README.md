@@ -48,7 +48,7 @@ request comes from that token's user's fork of winget-pkgs (made the first time)
 merge it, `winget install Divengine.Divide` installs that version.
 
 `packaging/manifests.py <version> SHA256SUMS <dir> --winget <dir>` writes the manifests and
-`packaging/winget_submit.sh <version> <dir>` sends them (`--dry-run` stops before pushing).
+`packaging/winget_submit.py <version> <dir>` sends them, with GitHub's API: winget-pkgs is not cloned (`--dry-run` only says what it would send).
 
 ## Microsoft Store (MSIX)
 
