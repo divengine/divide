@@ -16,7 +16,7 @@ import pytest
 
 from divide.app import Divide
 from divide.run import dbgp
-from divide.run.script import php_messages, run_script, split_args
+from divide.run.script import php_messages, run_script, size_text, split_args
 from divide.ui.progress import ProgressScreen
 from divide.ui.runner import CallStackWindow, WatchesWindow
 from divide.ui.windows import MessagesWindow
@@ -180,7 +180,8 @@ async def test_esc_stops_and_parameters(tmp_path):
         assert await until(pilot, lambda: isinstance(app.screen, ProgressScreen))
         box = app.screen.dialog
         assert box.rows["Script"] == "slow.php" and box.rows["Parameters"] == 'one "two three"'
-        await pilot.pause(0.5)
+        # Esc once the script has written (php may take more than a moment to start on a busy machine)
+        assert await until(pilot, lambda: box.rows["Output"] != size_text(b""), tries=400)
         await pilot.press("escape")
         assert await until(pilot, lambda: not box.running)
         assert box.verdict == "Stopped: press any key"
