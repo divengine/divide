@@ -104,8 +104,8 @@ class TraceWindow(_TVWindow):
         here = self.view.document.get_location_from_index(min(mark[0], len(text)))
         self.view.move_cursor(here)
         self.view.reveal_cursor()
-        frame = self.query_one(IndicatorFrame) if self.is_mounted else None
-        if frame is not None:
+        frame = self.frame  # (None while the window opens or closes)
+        if isinstance(frame, IndicatorFrame):
             side = "before" if self.before and m.kind == "change" else "after"
             what = {"start": "start", "end": "fixed point", "output": "output"}.get(m.kind, f"{m.delta:+d} · {side}")
             cycle = f" · cycle {m.cycle}" if m.kind == "change" else ""

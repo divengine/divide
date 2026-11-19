@@ -360,6 +360,27 @@ async def test_the_folder_closed_while_a_paste_shows_where_it_went(tmp_path):
         assert app.is_running and app.welcome_window() is not None and app.folder is None
 
 
+async def test_a_tree_taken_off_has_no_lines_to_show(tmp_path):
+    """Its window closed, a tree has lost its styles: whatever still asks for its lines (a git
+    state, a reload, a reveal) gets none, and the bar can still be moved, to nowhere."""
+    from divide.app import CM_CLOSE_FOLDER
+    root = project(tmp_path)
+    app = Divide(root, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        await settle(pilot)
+        tree = app.project_window().project_tree
+        await until(pilot, lambda: tree.last_line > 0)
+        node = tree.root.children[0]
+        app.run_command(CM_CLOSE_FOLDER)
+        await until(pilot, lambda: not tree.is_attached)
+        tree.refresh()  # (as a git state or a label does: its styles are looked up again)
+        tree._clear_line_cache()
+        assert tree._tree_lines == [] and tree.get_node_at_line(0) is None
+        tree.move_cursor(node, animate=False)
+        await settle(pilot)
+        assert app.is_running and app.folder is None
+
+
 async def test_a_folder_does_not_go_inside_itself_and_move_to(tmp_path):
     root = project(tmp_path)
     app = Divide(root, [])

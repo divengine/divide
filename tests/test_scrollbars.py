@@ -97,3 +97,23 @@ async def test_a_list_drives_its_bar(tmp_path):
         await pilot.click(offset=(wr.right - 1, wr.bottom - 2))
         await settle(pilot, 3)
         assert window.outline_tree.scroll_offset.y > 0
+
+
+async def test_a_window_that_lost_its_frame_on_its_way_out(tmp_path):
+    """A window being closed loses its children before it goes: work still under way (a worker,
+    a timer, a repaint) asks for its frame then, finds none and goes on."""
+    path = tmp_path / "long.txt"
+    path.write_text(LONG, encoding="utf-8")
+    app = Divide(tmp_path, [path])
+    async with app.run_test(size=(80, 24)) as pilot:
+        await settle(pilot)
+        window = editor_of(app)
+        await window.frame.remove()
+        assert window.frame is None and window.content is not None
+        window.refresh_indicator()
+        window.update_scroll_bars()
+        window.title = "renamed"
+        window.editor.move_cursor((150, 0))  # the bars repaint, in the border's colours or their own
+        await settle(pilot)
+        assert app.is_running
+

@@ -316,6 +316,19 @@ class _TVWindow(Window):
     def compose_content(self) -> ComposeResult:
         yield from ()
 
+    # The frame and the content as textual_vision gives them, or None while the window opens or
+    # closes: a window being closed loses its children before it goes, and work still under way
+    # (a worker, a timer, a repaint) may ask for them then.
+    @property
+    def frame(self) -> Frame | None:
+        found = list(self.query(Frame)) if self.is_mounted else []
+        return found[0] if found else None
+
+    @property
+    def content(self) -> Container | None:
+        found = list(self.query(".tv-window-content")) if self.is_mounted else []
+        return found[0] if found else None  # type: ignore[return-value]
+
     def compose(self) -> ComposeResult:
         yield IndicatorFrame(title=self._title, flags=self._window_flags, active=True, number=self.number)
         with Container(classes="tv-window-content"):
@@ -737,9 +750,8 @@ class EditorWindow(_TVWindow):
         self.call_after_refresh(self.refresh_indicator)
 
     def refresh_indicator(self) -> None:
-        frames = list(self.query(IndicatorFrame)) if self.is_mounted else []
-        frame = frames[0] if frames else None  # (not there while the window opens or closes)
-        if frame is None:
+        frame = self.frame  # (not there while the window opens or closes)
+        if not isinstance(frame, IndicatorFrame):
             return
         row, col = self.editor.cursor_location
         frame.set_indicator(f"{'*' if self.dirty else ' '} {row + 1}:{col + 1}")

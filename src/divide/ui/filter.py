@@ -240,6 +240,11 @@ class FilteredTree(_Filter):
         return sum(matches(self.filter_text_of(n), self.filter_text) for n in nodes), len(nodes)
 
     def _build(self) -> None:
+        if self.is_mounted and not self.is_attached:  # type: ignore[attr-defined]
+            # a tree taken off (its window closed, divide quitting) has lost its styles: work
+            # still under way (a reload, a reveal) may ask for its lines; it has none to show
+            self._tree_lines_cached = []
+            return
         if not self.filter_text:
             super()._build()  # type: ignore[misc]
             return
