@@ -2,13 +2,13 @@
 
 | Term | Meaning |
 |---|---|
-| **divide** | The environment for deterministic code generation with the Divengine libraries: *div* + *ide*, and the English word *divide*. Always lowercase. |
+| **divide** | The IDE for developing generators with the Divengine ecosystem: *div* + *ide*, and the English word *divide*. Always lowercase. |
 | **Div** | The Divengine template engine, written in PHP (github.com/divengine/div): a template and a data model become text, which can be code in any language, configuration, data or another template. Templates are rewritten again and again until nothing changes. |
-| **Generator** | Provisional: anything that transforms input models into output artifacts through explicit, reusable generation rules (for example, Div templates with their data models). What divide helps to build. Its form as a unit of divide is not decided yet. |
-| **Deterministic generation** | Generation that gives the same output from the same inputs, which holds only when every effective input and execution condition is controlled (Div can also read the time, the request, random values and allowed PHP functions). divide's objective; reproducible, which is not the same as correct. |
-| **Orchestration** | Planned: composing and running several generators and stages, with dependencies and validation between them. Not specified or implemented yet. |
-| **Nodes** | Divengine's independent PHP library for file-based structured data (schemas, nodes, references, indexes). Not integrated in divide; no role in it decided. |
-| **Ways** | Divengine's independent PHP library of control points (HTTP, CLI or direct calls, hooks, rules). Not integrated in divide; no role in it decided. |
+| **Generator** | An independent software project that transforms input models into source code, configuration, templates or other artifacts through explicit, reusable rules (for example, with Div templates and their data). Developed in divide, deployed and run without it. It may implement its own orchestration, CLI, HTTP API or MCP server. Its form as a unit is not decided yet. |
+| **Deterministic generation** | Generation that gives the same output from the same inputs, which holds only when every effective input and execution condition is controlled (Div can also read the time, the request, random values and allowed PHP functions). A central use case of divide; reproducible, which is not the same as correct. |
+| **Orchestration** | Composing and running several generation stages, with dependencies and validation between them. A generator project may implement it; what divide might offer for it is not decided. |
+| **Nodes** | Divengine's independent PHP library for file-based structured data (schemas, nodes, references, indexes). Not integrated in divide; a generator may use it. Its role in generator development is not decided. |
+| **Ways** | Divengine's independent PHP library of execution control points (HTTP, CLI or direct calls, routing, hooks, rules). Not integrated in divide; a generator may use it. Its role in generator development is not decided. |
 | **Template** | A Div source file (`.tpl` and other extensions Div accepts). |
 | **Dialect** | A set of `DIV_TAG_*` overrides that changes the tags of the language (for example ERB-like `<%= %>`), so the generator's syntax does not collide with the syntax it generates. A template chooses one with `@_DIALECT = file`. Defaults mirror the `define()` calls of `div.php`. |
 | **Data file** | The JSON (Div JSON) a template is rendered with. By default it is the template's name with `.json`, and it can be chosen per template in Run > Data file. |

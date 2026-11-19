@@ -1,10 +1,10 @@
 # divide
 
-**Entorno de generación determinista de código y su orquestación.**
+**Un IDE para desarrollar generadores con el ecosistema Divengine.**
 
-divide es un entorno de ingeniería en el terminal para desarrollar y operar generadores deterministas de código construidos con el ecosistema [Divengine](https://github.com/divengine). Un generador transforma modelos de entrada en artefactos de salida mediante reglas de generación explícitas y reutilizables: por ejemplo, plantillas de [Div](https://github.com/divengine/div) con sus datos que producen código fuente en cualquier lenguaje, configuración, pruebas, definiciones de infraestructura, HTML u otras plantillas. El objetivo es una generación reproducible: modelos explícitos, condiciones de ejecución controladas y reglas reutilizables.
+divide es un entorno de desarrollo especializado para construir, probar, depurar y mantener generadores que usan las bibliotecas de [Divengine](https://github.com/divengine). Un generador es un proyecto propio que transforma modelos de entrada en código fuente, configuración, plantillas u otros artefactos mediante reglas explícitas y reutilizables, por ejemplo con plantillas de [Div](https://github.com/divengine/div) y sus datos. Lo desarrollas en divide; el generador terminado se despliega y se ejecuta sin divide.
 
-Hoy divide te da las herramientas para construir generadores: edición, verificación, renderizado, traza y depuración, todo a través del motor Div real. Orquestar generadores y que los agentes de programación con IA los usen es la dirección del producto, aún no son funciones: ver [[Hacia dónde va divide|Home#hacia-dónde-va-divide]].
+Podrías escribir el mismo software en cualquier editor. Lo que aporta divide es el conocimiento del ecosistema: edición que entiende Div en el dialecto de cada plantilla, la configuración de Div del proyecto para el diseño, render y verificación con el motor real, y la traza de cómo llegó Div a su salida. La generación determinista de código es un caso de uso central: ver [[Los generadores y lo que no está decidido|Home#los-generadores-y-lo-que-no-está-decidido]].
 
 Está hecho con el espíritu de los IDE de Borland: un escritorio de ventanas superpuestas, menús desplegables, diálogos con sombra y una línea de estado que siempre te dice la tecla siguiente. El nombre es *div* + *ide*, y la palabra inglesa *divide*.
 
@@ -30,14 +30,15 @@ Los ejemplos del manual generan HTML, la salida más fácil de leer; las mismas 
 - **Una ventana de proyecto que hace cosas.** Crea, renombra, mueve y elimina archivos y carpetas sin salir del IDE.
 - **Funciona dondequiera que haya un terminal**: por SSH, dentro de tmux, en el servidor donde viven las plantillas. En inglés o en español (Opciones > Idioma).
 
-## Hacia dónde va divide
+## Los generadores y lo que no está decidido
 
-Esto es una dirección, **no son funciones de divide hoy**:
+divide es el IDE, no el generador, ni el lugar donde los generadores se ejecutan en producción. Un proyecto generador puede usar Div, Nodes, Ways, PHP o lo que necesite, y puede implementar su propia orquestación de etapas, comandos CLI, una API HTTP o un servidor MCP; las herramientas y los agentes de programación con IA usan después el generador desplegado mediante esas interfaces. El [[servidor web|Web Server]] de divide puede ayudar mientras desarrollas un generador HTTP, pero no es una API de generadores ni una plataforma MCP.
 
-- **Orquestación.** Generar un sistema real requiere varias etapas: salidas que alimentan etapas posteriores, representaciones intermedias, dependencias, validación entre pasos. divide pretende componer y ejecutar generadores de ese modo. Su modelo aún no está diseñado.
-- **Agentes de programación con IA.** divide pretende trabajar junto a agentes como Claude Code, Codex u OpenCode, no ser uno de ellos. En lugar de que un agente escriba grandes cantidades de código predecible, llamaría a un generador validado, mediante una interfaz CLI, API o MCP que aún está por diseñar.
+**Aún no está decidido**: qué es un generador como unidad, y qué responsabilidades en torno a la orquestación y a las interfaces de los generadores corresponden a divide (herramientas para desarrollarlas, inspeccionarlas, depurarlas o probarlas) y cuáles a los proyectos generadores. **Solo Div está integrado en divide**; [Nodes](https://github.com/divengine/nodes) y [Ways](https://github.com/divengine/ways) son bibliotecas PHP independientes que un generador puede usar, y su papel en el desarrollo de generadores está por decidir.
 
-divide no es un IDE de propósito general, y PHP es el lenguaje en que están escritos los componentes de Divengine, no un límite de lo que generan. Solo Div está integrado en divide; las demás bibliotecas de Divengine, como [Nodes](https://github.com/divengine/nodes) y [Ways](https://github.com/divengine/ways), son bibliotecas PHP independientes sin un papel decidido en divide. La misma plantilla con los mismos datos da la misma salida solo cuando también se controlan las demás entradas (Div puede leer además la hora, la petición, valores aleatorios y las funciones PHP que se le permiten), y una salida reproducible no es necesariamente correcta: eso depende de las reglas, los modelos y las verificaciones del generador.
+divide pretende complementar a los agentes de programación con IA como Claude Code, Codex u OpenCode, no ser uno de ellos: un agente no debería tener que escribir grandes cantidades de código predecible que un generador validado puede producir.
+
+La generación con Div es reproducible cuando se controlan sus entradas y condiciones: la misma plantilla con los mismos datos da la misma salida solo si también se controla todo lo demás que interviene (Div puede leer además la hora, la petición, valores aleatorios y las funciones PHP que se le permiten). Y una salida reproducible no es necesariamente correcta: eso depende de las reglas, los modelos y las verificaciones del generador.
 
 ## Empieza aquí
 

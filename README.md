@@ -1,21 +1,23 @@
 # divide
 
-**Deterministic code generation and orchestration environment.**
+**An IDE for developing generators with the Divengine ecosystem.**
 
-divide is a terminal-based engineering environment for developing and
-operating deterministic code generators built with the
-[Divengine](https://github.com/divengine) ecosystem. A generator transforms
-input models into output artifacts through explicit, reusable generation
-rules; for example, [Div](https://github.com/divengine/div) templates and
-their data models producing source code in any language (Python, PHP,
-JavaScript, TypeScript...), configuration, tests, infrastructure
-definitions, HTML, or other templates. What a generator is as a unit of
-divide is not decided yet.
+divide is a specialised development environment for building, testing,
+debugging and maintaining generators that use the
+[Divengine](https://github.com/divengine) libraries. A generator is a project
+of its own that transforms input models into source code, configuration,
+templates or other artifacts through explicit, reusable rules, for example
+with [Div](https://github.com/divengine/div) templates and their data.
+divide is where you develop it; the finished generator is deployed and runs
+without divide.
 
-Today divide gives you the tools to build those generators: specialised
-editing, checking, rendering, tracing and debugging, all through the real
-engines. Its direction, not implemented yet, is the orchestration of
-generators and their use by AI coding agents ([below](#where-it-is-going)).
+You can write the same software in VS Code, a JetBrains IDE or Neovim, and
+divide does not compete with them on general programming. What it adds is
+knowledge of the ecosystem: Div-aware editing in each template's dialect,
+the project's design-time Div setup, rendering and checking through the real
+engine, and the render trace of how Div reached its output. Deterministic
+code generation is a central use case; [below](#generators-and-what-is-not-decided)
+is what that means and what is still open.
 
 The interface is keyboard first, in the spirit of the Borland IDEs:
 overlapping windows, drop-down menus, dialogs with shadows and a status line
@@ -98,38 +100,36 @@ The examples below generate HTML because it is the easiest output to read; the s
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
   where the templates live.
 
-## Where it is going
+## Generators and what is not decided
 
-divide is not a general-purpose IDE and does not compete with VS Code,
-JetBrains IDEs or Neovim. PHP is the language the Divengine components are
-written in today, not a limit on what they generate. Two directions are
-planned, and **neither is available yet**:
+divide is the IDE, not the generator, and not where generators run in
+production. A generator project may use Div, Nodes, Ways, PHP or anything
+else it needs, and may implement its own orchestration of stages, CLI
+commands, an HTTP API or an MCP server; tools and AI coding agents then use
+the deployed generator through those interfaces. divide's PHP development
+server can help while developing an HTTP generator, but it is not a
+generator API or an MCP platform.
 
-- **Orchestration.** Real systems take several generation stages: outputs
-  that feed later stages, intermediate representations, dependencies,
-  validation between steps, related artifacts produced together. divide is
-  meant to compose and run generators that way. The abstraction model for it
-  has not been designed; there is no pipeline format or orchestration API
-  today.
-- **AI coding agents.** divide is meant to complement tools such as Claude
-  Code, Codex or OpenCode, not to be one. An agent should not have to write
-  large amounts of predictable code that a validated generator can produce:
-  the agent interprets requirements, builds models, chooses or develops
-  generators, and the generators run the known transformations
-  reproducibly, through a CLI, API or MCP interface still to be designed.
+Not decided yet: what a generator is as a unit, and which responsibilities
+around orchestration and generator interfaces belong in divide (tools to
+develop, inspect, debug or test them) and which in generator projects.
 
-The objective is reproducible generation through explicit models,
-controlled execution conditions and reusable rules. The same template and
-data give the same output only when everything else that takes effect is
-controlled too: Div can also read the time, the request, random values and
-the PHP functions it may call. And reproducible is not the same as correct:
-a generator is only as good as its rules, models and checks.
+divide is meant to complement AI coding agents such as Claude Code, Codex or
+OpenCode, not to be one: an agent should not have to write large amounts of
+predictable code that a validated generator can produce.
 
-**Only Div is integrated in divide.** The other Divengine libraries,
-[Nodes](https://github.com/divengine/nodes) (file-based structured data) and
-[Ways](https://github.com/divengine/ways) (control points, hooks and rules),
-are independent PHP libraries; whether divide will use them, and for what,
-has not been decided. See the [vision](docs/vision.md).
+Generation with Div is reproducible when its inputs and execution conditions
+are controlled: the same template and data give the same output only if
+everything else that takes effect is controlled too (Div can also read the
+time, the request, random values and the PHP functions it may call). And
+reproducible is not the same as correct: a generator is only as good as its
+rules, models and checks.
+
+**Only Div is integrated in divide.** [Nodes](https://github.com/divengine/nodes)
+(file-based structured data) and [Ways](https://github.com/divengine/ways)
+(execution control points, routing, hooks and rules) are independent PHP
+libraries that a generator may use; their role in generator development is
+not decided. See the [vision](docs/vision.md).
 
 ## Quick start
 

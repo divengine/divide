@@ -1,11 +1,12 @@
 # Use-Case Model
 
-The use cases describe what divide does today: the tools for developing and
-debugging generators. The use cases of orchestration and of AI coding agents
-calling divide are not written yet, because their model has not been
-specified (see the [vision](vision.md#7-direction-not-implemented)). The
-"template" of these use cases is a generator's template, whatever it
-produces: source code, configuration, data, HTML or another template.
+The use cases describe what divide, the IDE, does today: the tools for
+developing and debugging generator projects. Running a deployed generator is
+not a use case of divide. What the IDE may offer around orchestration and
+generator interfaces is not decided (see the
+[vision](vision.md#9-open-questions-not-decided)). The "template" of these
+use cases is a generator's template, whatever it produces: source code,
+configuration, data, HTML or another template.
 
 ## 1. Actors
 

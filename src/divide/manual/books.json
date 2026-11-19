@@ -2,7 +2,7 @@
   {
     "id": "divide",
     "title": "divide",
-    "description": "This environment for code generators: the desktop, editing, checking, rendering, the trace, data files, the dialector, git.",
+    "description": "This IDE for developing generators: the desktop, editing, checking, rendering, the trace, data files, the dialector, git.",
     "source": "https://github.com/divengine/divide.wiki.git",
     "path": ".",
     "home": "Home",
@@ -25,7 +25,7 @@
     "id": "divide",
     "language": "es",
     "title": "divide",
-    "description": "Este entorno para generadores de código: el escritorio, la edición, la comprobación, el render, la traza, los archivos de datos, el dialector, git.",
+    "description": "Este IDE para desarrollar generadores: el escritorio, la edición, la comprobación, el render, la traza, los archivos de datos, el dialector, git.",
     "source": "https://github.com/divengine/help-divide-es.wiki.git"
   },
   {

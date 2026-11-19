@@ -37,8 +37,8 @@ UI has been reviewed. Dates are commit dates.
 
 | Item | Kind | Notes |
 |---|---|---|
-| Orchestration: its abstraction model | design | The direction of the product (see the vision). Not specified: to be designed in its own phase before any code. |
-| An interface for AI coding agents (CLI, API or MCP) | design | Depends on the orchestration model. Not designed. |
+| The generator abstraction model | design | What a generator is as a unit; to be specified by the product owner in its own phase before any code. |
+| IDE or generator project: who does what | design | Orchestration, CLI, HTTP API, MCP: which belong to generator projects and which tools, if any, divide offers for them. Not decided. |
 | winget, Microsoft Store, PyPI | deployment | Wired in the Release workflow and off: winget needs the `WINGET_TOKEN` secret, the Store a product in Partner Center (`MSSTORE_*`), PyPI the project's account. Turned on when the owner says so. |
 | Signed binaries | deployment | macOS and Windows ask before the first run of an unsigned binary. |
 | Folders before files in File > Open | change request | Offered, not decided. |

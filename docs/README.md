@@ -1,7 +1,7 @@
 # divide: technical documentation
 
-This folder holds the technical documentation of divide, the environment for
-deterministic code generation with the Divengine libraries, organised as the
+This folder holds the technical documentation of divide, the IDE for
+developing generators with the Divengine ecosystem, organised as the
 artifacts of the **Rational Unified Process** (RUP). The user manual lives in
 the [wiki](https://github.com/divengine/divide/wiki) and is also built into
 divide's help (F1). Div's own language reference lives with

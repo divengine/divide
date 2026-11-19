@@ -7,7 +7,7 @@ platform: linux
 section: devel
 maintainer: Divengine <https://github.com/divengine>
 description: |
-  A terminal environment for developing deterministic code generators with the Divengine ecosystem (Div).
+  An IDE for developing generators with the Divengine ecosystem, in the terminal.
 homepage: https://github.com/divengine/divide
 license: GPL-3.0-or-later
 # Running and checking templates needs PHP; editing does not.
