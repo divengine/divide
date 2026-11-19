@@ -1,6 +1,6 @@
 # Ventana de proyecto
 
-**Ctrl+B** abre el árbol del proyecto a la izquierda (y lo trae al frente, o lo cierra si ya está encima). Se abre solo cuando divide arranca sin archivos.
+**Ctrl+B** abre el árbol del proyecto a la izquierda (y lo trae al frente, o lo cierra si ya está encima). Se abre solo cuando divide arranca con una carpeta y sin archivos. Sin carpeta, Ctrl+B ofrece abrir una (**Archivo > Abrir carpeta**).
 
 ![el menú local de la ventana de proyecto](images/project-menu.png)
 

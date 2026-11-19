@@ -43,10 +43,10 @@ LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in En
 _KEYS = {
     "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
            "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y",
-           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c", "git": "alt+g"},
+           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c", "git": "alt+g", "file": "alt+f"},
     "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
            "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s",
-           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c", "git": "alt+g"},
+           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c", "git": "alt+g", "file": "alt+a"},
 }
 
 
@@ -786,6 +786,32 @@ async def spanish():
         await settle(pilot, 10)
         await pilot.press("alt+j"); await settle(pilot)
         save(app, "interface-spanish")
+
+
+@shot
+async def welcome():
+    """divide alone: the Welcome window, with folders and files opened lately; then the File menu."""
+    from divide import recent
+    with tempfile.TemporaryDirectory() as work:
+        root = shop_copy(Path(work))
+        blog = root.parent / "blog"
+        (blog / "posts").mkdir(parents=True)
+        (blog / "posts" / "hello.tpl").write_text("<h1>{$title}</h1>\n", encoding="utf-8")
+        for path in (root / "index.json", blog / "posts" / "hello.tpl", root / "components" / "card.tpl",
+                     root / "index.tpl"):
+            recent.add("files", path)
+        for path in (blog, root):
+            recent.add("folders", path)
+        app = Divide(None, [])
+        async with app.run_test(size=SIZE) as pilot:
+            await until(pilot, lambda: app.welcome_window() is not None)
+            win = app.welcome_window()
+            await until(pilot, lambda: win.git_tree.last_line > 8)
+            win.git_tree.put_bar(f"folders:{root}")
+            await settle(pilot, 10)
+            save(app, "welcome")
+            await pilot.press(key("file")); await settle(pilot)
+            save(app, "file-menu")
 
 
 # ------------------------------------------------------------------ git

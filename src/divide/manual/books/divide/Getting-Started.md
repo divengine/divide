@@ -47,7 +47,7 @@ shop/
 divide examples/shop
 ```
 
-The project window opens on the left. Move with the arrows, press **Enter** on `index.tpl`: it opens beside the tree. **F6** cycles windows, **Alt+1…9** jumps to a window by number, **F5** zooms.
+The project window opens on the left. (`divide` alone shows the Welcome window, with the folders and files you opened lately: see [[The Desktop#a-folder-a-file-or-nothing]].) Move with the arrows, press **Enter** on `index.tpl`: it opens beside the tree. **F6** cycles windows, **Alt+1…9** jumps to a window by number, **F5** zooms.
 
 ## 2. Write with completion
 

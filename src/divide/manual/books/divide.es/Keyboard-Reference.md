@@ -7,7 +7,7 @@
 | **F10** | barra de menús (abre el primer menú) |
 | **Alt+letra** | abre ese menú (Alt+A, Alt+E, Alt+B, Alt+J, Alt+D, Alt+V, Alt+H, Alt+O, Alt+Y; en inglés, las letras rojas de sus menús: ver [[El escritorio\|The Desktop#idioma]]) |
 | **F2** / **Ctrl+S** | guardar |
-| **F3** | abrir un archivo |
+| **F3** | abrir un archivo (Archivo > Abrir carpeta: una carpeta) |
 | **Alt+F3** / **Ctrl+W** | cerrar la ventana |
 | **F5** | ampliar la ventana |
 | **F6** / **Shift+F6** | ventana siguiente / anterior (también Ctrl+PgDn / Ctrl+PgUp) |
@@ -163,6 +163,16 @@ En los diálogos con una ruta, el botón **...** / **Examinar...** abre el diál
 | **Alt+F10** / **Shift+F10** | menú local: actualizar, instalar, versiones nuevas, validar, autoloader, nuevo composer.json |
 
 Ver [[Composer|Composer]].
+
+## Ventana de bienvenida
+
+| Tecla | Acción |
+|---|---|
+| **Enter** / doble clic | hacerlo: un archivo nuevo, abrir un archivo o una carpeta, la ayuda; abrir la carpeta o el archivo reciente |
+| **Supr** | quitar una carpeta o un archivo reciente de su lista |
+| escribir | filtrar las filas |
+
+Ver [[El escritorio|The Desktop#una-carpeta-un-archivo-o-nada]].
 
 ## Ventanas Git
 

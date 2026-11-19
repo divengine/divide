@@ -7,7 +7,7 @@
 | **F10** | menu bar (opens the first menu) |
 | **Alt+letter** | open that menu (Alt+F, Alt+E, Alt+S, Alt+R, Alt+D, Alt+W, Alt+T, Alt+O, Alt+H; in Spanish the red letters of its menus: see [[The Desktop#language]]) |
 | **F2** / **Ctrl+S** | save |
-| **F3** | open a file |
+| **F3** | open a file (File > Open folder: a folder) |
 | **Alt+F3** / **Ctrl+W** | close the window |
 | **F5** | zoom the window |
 | **F6** / **Shift+F6** | next / previous window (also Ctrl+PgDn / Ctrl+PgUp) |
@@ -163,6 +163,16 @@ In dialogs with a path, the **...** / **Browse...** button opens the file dialog
 | **Alt+F10** / **Shift+F10** | local menu: update, install, newer versions, validate, autoloader, new composer.json |
 
 See [[Composer]].
+
+## Welcome window
+
+| Key | Action |
+|---|---|
+| **Enter** / double click | do it: a new file, open a file or a folder, the help; open the recent folder or file |
+| **Del** | take a recent folder or file off its list |
+| typing | filter the rows |
+
+See [[The Desktop#a-folder-a-file-or-nothing]].
 
 ## Git windows
 

@@ -1,6 +1,6 @@
 # Project Window
 
-**Ctrl+B** opens the project tree on the left (and raises it, or closes it when it is already on top). It opens by itself when divide starts without files.
+**Ctrl+B** opens the project tree on the left (and raises it, or closes it when it is already on top). It opens by itself when divide starts with a folder and no files. Without a folder, Ctrl+B offers to open one (**File > Open folder**).
 
 ![the local menu of the project window](images/project-menu.png)
 

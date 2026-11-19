@@ -6,6 +6,29 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 
 ![windows tiled, zoomed and cascaded; the themes previewed on the whole desktop](images/desktop.gif)
 
+## A folder, a file, or nothing
+
+divide works on one folder at a time, the project, as an editor such as VS Code does. What it opens depends on how it starts:
+
+| Command | Opens |
+|---|---|
+| `divide ~/sites/shop` | that folder as the project, with the project window (`divide .`: the folder you are in) |
+| `divide page.tpl` | the file on its own, without a folder |
+| `divide ~/sites/shop page.tpl` | the folder, and the file in it |
+| `divide` | nothing: the Welcome window |
+
+![the Welcome window: start, the folders and files opened lately](images/welcome.png)
+
+The **Welcome window** starts with a new file, open a file (F3), open a folder and the help. Below that are the folders and files you opened lately, newest first, each with the folder it is in. **Enter** opens the one under the bar, **Del** takes it off its list, and typing filters, as in every list. It goes away when something opens; **Help > Welcome** shows it again.
+
+![the File menu: open a file or a folder, close the folder](images/file-menu.png)
+
+- **File > Open file...** (F3) opens a file, with or without a folder.
+- **File > Open folder...** makes a folder the project. The windows of the folder before close, and divide asks about unsaved changes first. Its language servers, debugger and web server stop.
+- **File > Close folder** closes every window and goes back to the Welcome window.
+
+Without a folder, **Ctrl+B**, **Find in files** and the project's [[Div setup|Div Setup]] offer to open one, and **Go to file** lists the open files. Rendering, includes and git take the folder of the file being edited.
+
 ## Menus
 
 **F10** opens the first menu, **Alt + the red letter** opens a menu directly (Alt+F File, Alt+R Run, Alt+T Tools, Alt+W Window…). Inside a menu, the arrows move, the red letter or **Enter** chooses, **Esc** closes. The mouse works too.
@@ -14,7 +37,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 
 | Menu | What is there |
 |---|---|
-| **File** | New, Open (F3), Save (F2), Save as, Save all, Exit (Alt+X) |
+| **File** | New, Open file (F3), Open folder, Close folder, Save (F2), Save as, Save all, Exit (Alt+X) |
 | **Edit** | Undo, Redo, Cut, Copy, Paste, Select all, Complete (Ctrl+Space) |
 | **Search** | Find, Replace, Search again, Find in files (Shift+F2), Go to line, Go to included template, Outline (Ctrl+O: see [[Outline]]), Go to file (Ctrl+P), Command palette (Alt+P): see [[Finding Files and Commands]], Previous / Next error |
 | **Run** | Run (Ctrl+F9: render a template, run a PHP script), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Web server, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
@@ -23,7 +46,7 @@ divide is a Turbo Vision desktop: a menu bar on top, overlapping windows in the 
 | **Tools** | Dialector, Translate a template, [[Composer packages\|Composer]] |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
 | **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, [[Div setup\|Div Setup]], Xdebug |
-| **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Search (the books by words, ranked), Previous topic (Alt+F1), Using help (F1), About: see [[Help]] |
+| **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Search (the books by words, ranked), Previous topic (Alt+F1), Using help (F1), Welcome, About: see [[Help]] |
 
 ## Windows
 
@@ -67,7 +90,7 @@ The filter is in the project window, the [[Outline]], the [[data tree|Data Files
 
 Dialogs work as in Turbo Vision: **Tab** / **Shift+Tab** go from one control to the next, **Alt + the yellow letter** jumps to a control, **Enter** presses the default button (also from an input line or a group of options), **Esc** cancels.
 
-**File > Open** (F3) and **Save as** are laid out like Turbo Pascal's: the name line at the top, the files of the folder below it on cyan with their own scroll bar, the buttons in a column at the right, and a pane at the bottom with the folder (and its wildcard) and the file under the bar, with its size and date. Type a wildcard (`*.php`) to list other files, a folder name or `..` to go there, or a full path.
+**File > Open file** (F3), **Open folder** and **Save as** are laid out like Turbo Pascal's: the name line at the top, the files of the folder below it on cyan with their own scroll bar, the buttons in a column at the right, and a pane at the bottom with the folder (and its wildcard) and the file under the bar, with its size and date. Type a wildcard (`*.php`) to list other files, a folder name or `..` to go there, or a full path. The mouse wheel moves the bar of the list, three rows a notch, as in every list of a dialog.
 
 ![File > Open](images/open-file.png)
 

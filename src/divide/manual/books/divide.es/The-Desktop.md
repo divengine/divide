@@ -6,6 +6,29 @@ divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas super
 
 ![ventanas en mosaico, ampliadas y en cascada; los temas en todo el escritorio](images/desktop.gif)
 
+## Una carpeta, un archivo o nada
+
+divide trabaja con una carpeta a la vez, el proyecto, como hace un editor como VS Code. Lo que abre depende de cómo arranca:
+
+| Comando | Abre |
+|---|---|
+| `divide ~/sitios/shop` | esa carpeta como proyecto, con la ventana de proyecto (`divide .`: la carpeta en la que estás) |
+| `divide pagina.tpl` | el archivo por sí solo, sin carpeta |
+| `divide ~/sitios/shop pagina.tpl` | la carpeta, y el archivo en ella |
+| `divide` | nada: la ventana de bienvenida |
+
+![la ventana de bienvenida: empezar, las carpetas y archivos abiertos hace poco](images/welcome.png)
+
+La **ventana de bienvenida** empieza con un archivo nuevo, abrir un archivo (F3), abrir una carpeta y la ayuda. Debajo están las carpetas y archivos que abriste hace poco, los más recientes primero, cada uno con la carpeta donde está. **Enter** abre el que está bajo la barra, **Supr** lo quita de su lista, y al escribir se filtra, como en toda lista. Se va cuando algo se abre; **Ayuda > Bienvenida** la muestra de nuevo.
+
+![el menú Archivo: abrir un archivo o una carpeta, cerrar la carpeta](images/file-menu.png)
+
+- **Archivo > Abrir archivo...** (F3) abre un archivo, con carpeta o sin ella.
+- **Archivo > Abrir carpeta...** convierte una carpeta en el proyecto. Las ventanas de la carpeta anterior se cierran, y antes divide pregunta por los cambios sin guardar. Sus servidores de lenguaje, depurador y servidor web se detienen.
+- **Archivo > Cerrar carpeta** cierra todas las ventanas y vuelve a la ventana de bienvenida.
+
+Sin carpeta, **Ctrl+B**, **Buscar en archivos** y la [[configuración de Div|Div Setup]] del proyecto ofrecen abrir una, e **Ir a archivo** lista los archivos abiertos. El render, los includes y git toman la carpeta del archivo que se edita.
+
 ## Menús
 
 **F10** abre el primer menú, **Alt + la letra roja** abre un menú directamente (Alt+A Archivo, Alt+J Ejecutar, Alt+H Herramientas, Alt+V Ventana…). Dentro de un menú, las flechas mueven, la letra roja o **Enter** eligen y **Esc** cierra. El ratón también funciona.
@@ -14,7 +37,7 @@ divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas super
 
 | Menú | Qué hay |
 |---|---|
-| **Archivo** | Nuevo, Abrir (F3), Guardar (F2), Guardar como, Guardar todo, Salir (Alt+X) |
+| **Archivo** | Nuevo, Abrir archivo (F3), Abrir carpeta, Cerrar carpeta, Guardar (F2), Guardar como, Guardar todo, Salir (Alt+X) |
 | **Editar** | Deshacer, Rehacer, Cortar, Copiar, Pegar, Seleccionar todo, Completar (Ctrl+Space) |
 | **Buscar** | Buscar, Reemplazar, Buscar de nuevo, Buscar en archivos (Shift+F2), Ir a línea, Ir a la plantilla incluida, Esquema (Ctrl+O: ver [[Esquema\|Outline]]), Ir a archivo (Ctrl+P), Paleta de comandos (Alt+P): ver [[Buscar archivos y comandos\|Finding Files and Commands]], Error anterior / Error siguiente |
 | **Ejecutar** | Ejecutar (Ctrl+F9: renderizar una plantilla, ejecutar un script PHP), Pasar por encima (F8), Trazar dentro (F7), Salir de la función, Ir al cursor (F4), Reiniciar programa (Ctrl+F2), Argumentos, Ejecutar en terminal, Servidor web, Verificar (Alt+F9), Salida, Archivo de datos, Editar datos, Árbol de datos (Ctrl+T) |
@@ -23,7 +46,7 @@ divide es un escritorio Turbo Vision: una barra de menús arriba, ventanas super
 | **Herramientas** | Dialector, Traducir una plantilla, [[Paquetes Composer\|Composer]] |
 | **Ventana** | Proyecto (Ctrl+B), Mensajes, Mosaico, Cascada, Zoom, Siguiente, Anterior, Cerrar, Cerrar todas |
 | **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, [[configuración de Div\|Div Setup]], Xdebug |
-| **Ayuda** | Contenido, Libros, Índice (Shift+F1), Buscar tema (Ctrl+F1), Buscar (en los libros por palabras, por relevancia), Tema anterior (Alt+F1), Uso de la ayuda (F1), Acerca de: ver [[Ayuda\|Help]] |
+| **Ayuda** | Contenido, Libros, Índice (Shift+F1), Buscar tema (Ctrl+F1), Buscar (en los libros por palabras, por relevancia), Tema anterior (Alt+F1), Uso de la ayuda (F1), Bienvenida, Acerca de: ver [[Ayuda\|Help]] |
 
 ## Ventanas
 
@@ -61,15 +84,15 @@ En un árbol se ve lo que coincide, las ramas que lo contienen y todo lo que cue
 
 ![escribir en la ventana del proyecto y en el esquema: solo queda lo que coincide](images/filter.gif)
 
-El filtro está en la ventana de proyecto, el [[Esquema|Outline]], el [[árbol de datos|Data Files]], los paquetes de [[Composer|Composer]], las ventanas Mensajes y Buscar en archivos, Vigilancias, Pila de llamadas, la [[Traza del render|Render Trace]], las secciones del [[Dialector|Dialector]] y de la [[configuración de Div|Div Setup]], los archivos de Archivo > Abrir y el historial de las líneas de entrada (ahí, en el marco de la lista). La paleta de comandos, Ayuda > Buscar y el asistente para añadir paquetes de Composer tienen su propia línea de búsqueda.
+El filtro está en la ventana de proyecto, el [[Esquema|Outline]], el [[árbol de datos|Data Files]], los paquetes de [[Composer|Composer]], las ventanas Mensajes y Buscar en archivos, Vigilancias, Pila de llamadas, la [[Traza del render|Render Trace]], las secciones del [[Dialector|Dialector]] y de la [[configuración de Div|Div Setup]], los archivos de Archivo > Abrir archivo y el historial de las líneas de entrada (ahí, en el marco de la lista). La paleta de comandos, Ayuda > Buscar y el asistente para añadir paquetes de Composer tienen su propia línea de búsqueda.
 
 ## Diálogos
 
 Los diálogos funcionan como en Turbo Vision: **Tab** / **Shift+Tab** van de un control al siguiente, **Alt + la letra amarilla** salta a un control, **Enter** pulsa el botón por defecto (también desde una línea de entrada o un grupo de opciones), **Esc** cancela.
 
-**Archivo > Abrir** (F3) y **Guardar como** están dispuestos como los de Turbo Pascal: la línea del nombre arriba, los archivos de la carpeta debajo sobre cian con su propia barra de desplazamiento, los botones en una columna a la derecha, y un panel abajo con la carpeta (y su comodín) y el archivo bajo la barra, con su tamaño y fecha. Escribe un comodín (`*.php`) para listar otros archivos, el nombre de una carpeta o `..` para ir allí, o una ruta completa.
+**Archivo > Abrir archivo** (F3), **Abrir carpeta** y **Guardar como** están dispuestos como los de Turbo Pascal: la línea del nombre arriba, los archivos de la carpeta debajo sobre cian con su propia barra de desplazamiento, los botones en una columna a la derecha, y un panel abajo con la carpeta (y su comodín) y el archivo bajo la barra, con su tamaño y fecha. Escribe un comodín (`*.php`) para listar otros archivos, el nombre de una carpeta o `..` para ir allí, o una ruta completa. La rueda del ratón mueve la barra de la lista, tres filas por paso, como en toda lista de un diálogo.
 
-![Archivo > Abrir](images/open-file.png)
+![Archivo > Abrir archivo](images/open-file.png)
 
 ### Historial de las líneas de entrada
 

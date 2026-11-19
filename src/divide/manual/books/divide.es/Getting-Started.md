@@ -47,7 +47,7 @@ shop/
 divide examples/shop
 ```
 
-La ventana de proyecto se abre a la izquierda. Muévete con las flechas y pulsa **Enter** sobre `index.tpl`: se abre junto al árbol. **F6** recorre las ventanas, **Alt+1…9** salta a una ventana por su número, **F5** la amplía.
+La ventana de proyecto se abre a la izquierda. (`divide` solo muestra la ventana de bienvenida, con las carpetas y archivos que abriste hace poco: ver [[El escritorio|The Desktop#una-carpeta-un-archivo-o-nada]].) Muévete con las flechas y pulsa **Enter** sobre `index.tpl`: se abre junto al árbol. **F6** recorre las ventanas, **Alt+1…9** salta a una ventana por su número, **F5** la amplía.
 
 ## 2. Escribe con autocompletado
 
