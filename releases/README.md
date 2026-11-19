@@ -52,7 +52,10 @@ merge it, `winget install Divengine.Divide` installs that version.
 
 ## Microsoft Store (MSIX)
 
-The Windows build also makes `divide-<version>-windows-x86_64.msix` (`packaging/msix/`): unsigned, because the
+**Off for now**: the MSIX is built only when the repository has the variable `MSSTORE_IDENTITY_NAME`, and sent
+only when it has `MSSTORE_PRODUCT_ID`; without them a release does not try either.
+
+When on, the Windows build also makes `divide-<version>-windows-x86_64.msix` (`packaging/msix/`): unsigned, because the
 Store signs it, so it is not a file of the release but of the run's artifacts (`msix`). Before keeping it, the
 build signs a copy with a certificate made for the occasion, installs it and runs `divide --version` through
 its alias. Pre-releases have no MSIX: the Store takes numeric versions only.

@@ -150,13 +150,14 @@ jobs:
           & "$env:ProgramFiles\divide\divide.exe" --version
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+      # Off until the product exists in Partner Center: its identity (the MSSTORE_* variables) turns it on.
       - name: The MSIX package (Microsoft Store)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && vars.MSSTORE_IDENTITY_NAME != ''
         shell: pwsh
         env:
-          IDENTITY_NAME: ${{ vars.MSSTORE_IDENTITY_NAME || 'Divengine.divide' }}
-          PUBLISHER: ${{ vars.MSSTORE_PUBLISHER || 'CN=Divengine' }}
-          PUBLISHER_NAME: ${{ vars.MSSTORE_PUBLISHER_NAME || 'Divengine' }}
+          IDENTITY_NAME: ${{ vars.MSSTORE_IDENTITY_NAME }}
+          PUBLISHER: ${{ vars.MSSTORE_PUBLISHER }}
+          PUBLISHER_NAME: ${{ vars.MSSTORE_PUBLISHER_NAME }}
         run: |
           if ($env:VERSION -notmatch '^\d+\.\d+\.\d+$') {
             Write-Host "::notice::$env:VERSION is a pre-release: no MSIX (the Store takes numbers only)"
@@ -166,7 +167,7 @@ jobs:
             -IdentityName $env:IDENTITY_NAME -Publisher $env:PUBLISHER -PublisherName $env:PUBLISHER_NAME -Test
 
       - uses: actions/upload-artifact@v4
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && vars.MSSTORE_IDENTITY_NAME != ''
         with:
           name: msix
           path: msix/*
@@ -277,6 +278,7 @@ jobs:
 
   store:
     needs: [plan, release]
+    if: vars.MSSTORE_PRODUCT_ID != ''  # off until the product is in the Store (see releases/README.md)
     runs-on: windows-latest
     env:
       VERSION: ${{ needs.plan.outputs.version }}
