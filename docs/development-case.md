@@ -73,6 +73,11 @@ before it reaches the manual.
   needs them.
 - Local files of the owner (examples in progress, scratch scripts) are never
   added to commits. Paths are listed explicitly; `git add -A` is not used.
+- A release is one commit on `main` that raises `VERSION` and adds
+  `releases/<version>.md`; the Release workflow tags it `v<version>` once its
+  tests pass. Tags are never made by hand. See [deployment.md](deployment.md#6-release).
+- Tests run on every push in CI (Linux, macOS, Windows); a change is done
+  when they pass there too.
 
 ## 5. Environment
 

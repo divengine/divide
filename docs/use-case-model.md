@@ -9,7 +9,9 @@
 | **PHP** | secondary, system | The `php` binary: `php -l` checks, scripts, `php -S`, and the host of Div. |
 | **Xdebug** | secondary, system | Debugs PHP scripts and web requests over DBGp. |
 | **Language server** | secondary, system | phpactor, intelephense...: completion, hover, definitions, diagnostics over LSP. |
-| **Git** | secondary, system | Gives the project's file list to Go to file and Find in files. |
+| **Git** | secondary, system | The system's `git`: the project's file list for Go to file and Find in files, and every change of the Git menu (status, diff, commit, log, branches, merge, stash, blame, pull, push). |
+| **Forge** | secondary, system | GitHub through `gh`, Gitea (Forgejo, Codeberg) through `tea`, signed in as the developer: pull requests and issues. |
+| **Composer** | secondary, system | Adds, removes, updates and installs the project's PHP packages; Packagist is searched for new ones. |
 | **Browser** | secondary, system | Shows the pages of the built-in web server. |
 
 ## 2. Use-case diagram
@@ -22,6 +24,8 @@ flowchart LR
     XD([Xdebug])
     LS([Language server])
     Git([Git])
+    Forge([Forge])
+    Comp([Composer])
     subgraph divide
         UC1(UC1 Open and navigate a project)
         UC2(UC2 Edit a Div template)
@@ -38,8 +42,12 @@ flowchart LR
         UC13(UC13 Find files, text and commands)
         UC14(UC14 Read the help)
         UC15(UC15 Configure divide)
+        UC16(UC16 Work with git)
+        UC17(UC17 Pull requests and issues)
+        UC18(UC18 Manage Composer packages)
+        UC19(UC19 Set up Div for a project)
     end
-    Dev --- UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8 & UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15
+    Dev --- UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8 & UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15 & UC16 & UC17 & UC18 & UC19
     UC3 --- Div
     UC4 --- Div
     UC5 --- Div
@@ -53,6 +61,10 @@ flowchart LR
     UC12 --- PHP
     UC12 --- XD
     UC13 --- Git
+    UC16 --- Git
+    UC17 --- Forge
+    UC18 --- Comp
+    UC19 --- Div
 ```
 
 ## 3. Use-case specifications
@@ -63,12 +75,15 @@ This document describes behaviour and responsibilities.
 
 ### UC1 Open and navigate a project
 
-**Goal:** work on the files of one folder.
+**Goal:** work on the files of one folder, or on a file alone.
 **Trigger:** `divide [folder] [files...]`.
-1. divide opens the desktop with the given files in editor windows, or the project window if no file is given.
-2. The developer opens files from the project window (Enter or a double click), File > Open (F3, with the name history) or Go to file (UC13).
-3. Windows are moved, resized, zoomed (F5), tiled, cascaded, cycled (F6) and closed (Alt+F3). Unsaved changes are asked about before closing or quitting.
-- *Alt:* the project window creates, renames and deletes files and folders (Ins, F7, F2, Del, local menu).
+1. A folder is opened only when it is given (`divide .`, `divide ~/site`), as VS Code does: it becomes the project, and divide opens the given files in editor windows, or the project window if no file is given. Files alone (`divide page.tpl`) open with no folder. With nothing, divide shows the **Welcome window**: start (a new file, open a file, open a folder, the help) and the recent folders and files, newest first.
+2. File > Open folder makes another folder the project: the windows of the last one close, asking about unsaved changes. File > Close folder goes back to no folder and the Welcome window (Help > Welcome shows it again).
+3. The developer opens files from the project window (Enter or a double click), File > Open (F3, with the name history) or Go to file (UC13).
+4. Windows are moved, resized, zoomed (F5), tiled, cascaded, cycled (F6) and closed (Alt+F3). Unsaved changes are asked about before closing or quitting.
+- *Alt:* the project window creates, renames, deletes, cuts, copies, pastes and moves files and folders (Ins, F7, F2, Del, Ctrl+X, Ctrl+C, Ctrl+V, a drag, local menu), and unfolds a file into its members (its outline).
+- *Alt:* with no folder, Ctrl+B, Find in files and the project's Div setup offer to open one.
+- *Alt:* Del on a recent folder or file of the Welcome window takes it off its list.
 
 ### UC2 Edit a Div template
 
@@ -168,3 +183,31 @@ This document describes behaviour and responsibilities.
 1. Options > Colors chooses the theme, previewed live, and the colour depth.
 2. Options > Language servers, Div engine and Xdebug set the external tools. Options > File type marks changes the project tree.
 3. Settings, histories and choices are kept in `config.json` (see [deployment.md](deployment.md)).
+
+### UC16 Work with git
+
+**Goal:** see, review and record the project's changes without leaving the editor.
+1. In a git repository, the project window puts git's letter after each changed file and `•` after the folders holding changes, and dims what `.gitignore` leaves out; the editor's margin marks the lines added, changed or removed since the last commit, as the developer types.
+2. Git > Changes lists the files in their areas (conflicts, staged, changes, untracked) with the focused one's diff. Space stages or unstages, Del discards, Ctrl+K commits (amend, stage everything first).
+3. Git > History shows every branch as a graph and each commit's details and diff; File history, the commits of one file; Blame, each line with the commit that last changed it.
+4. Git > Branches switches, creates, deletes and merges into the current branch, and brings back or applies the stashes. Pull, push and fetch run under the progress box with git's own words.
+- *Alt:* a merge stops on conflicts: Git > Changes shows git's markers, our side and theirs, and Space marks a file solved.
+- *Alt:* a remote needs a password or a passphrase: git cannot ask (there is no terminal for it), so it fails and says so.
+
+### UC17 Pull requests and issues
+
+1. Git > Pull requests and issues lists the open ones of the remote's repository (`origin`, else the first), with the one under the bar beside them.
+2. Ins makes a new pull request of the current branch (pushed first if needed) or a new issue; Alt+F10 checks out a pull request, merges it on the forge or copies its address; Enter opens it in the browser.
+- *Alt:* `gh` or `tea` is missing or not signed in: the window says what to install or run.
+
+### UC18 Manage Composer packages
+
+1. Tools > Composer packages lists what `composer.json` requires, the development packages, the dependencies installed with them and the platform, with the installed versions.
+2. Ins adds a package (Packagist searched as the developer types, the newest stable version suggested), Del removes one, and update and install run Composer under the progress box, its output in the Composer window.
+- *Alt:* no `composer.json`: a wizard writes one, as `composer init` would.
+
+### UC19 Set up Div for a project
+
+1. Options > Div setup edits `.div/setup.json` of the project (or the user's `~/.div/setup.json`) section by section: the engine, paths, file extensions, parser limits, dialect, data (globals, defaults, system variables), PHP functions and modifiers, the request's superglobals. The bridge applies it to every request, so renders, checks and completion see Div as the application sets it up.
+2. Beside each section, what is in effect and where it comes from (the project, the user, Div's default); Div checks the saved setup and gives its verdict.
+- *Alt:* a project's `php` section lets templates call PHP functions, so it is applied only once the developer trusts it (`~/.div/trust.json` keeps its hash; a change asks again).

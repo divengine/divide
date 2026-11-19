@@ -93,8 +93,8 @@ pipx install git+https://github.com/divengine/divide.git
 ```bash
 divide --version
 cd ~/sites/my-project
-divide              # the folder is the project
-divide page.tpl     # a file: its folder is the project
+divide .            # esta carpeta es el proyecto
+divide page.tpl     # un archivo solo, sin carpeta
 ```
 
 ## Instalar Div para tu proyecto
@@ -117,16 +117,19 @@ Si no encuentra ninguno, **Ctrl+F9** en una plantilla explica qué hacer, y las 
 ## Arrancarlo
 
 ```bash
-divide                    # the current folder as the project, project window open
-divide ~/sites/shop       # another folder as the project
-divide index.tpl card.tpl # open files (their folder becomes the project)
+divide                    # nada abierto: la ventana de bienvenida (carpetas y archivos recientes)
+divide .                  # la carpeta actual como proyecto, con la ventana del proyecto
+divide ~/sites/shop       # otra carpeta como proyecto
+divide index.tpl card.tpl # archivos solos, sin carpeta
 divide ~/sites/shop index.tpl
-divide --palette turbo-c  # start with a colour theme: turbo-pascal, turbo-c, free-pascal, modern-dark
-divide --colors truecolor # colour depth when the terminal says less than it can: auto, truecolor, 256, 16
-divide --language es      # the interface in Spanish for this run: en, es
+divide --palette turbo-c  # empezar con un tema de colores: turbo-pascal, turbo-c, free-pascal, modern-dark
+divide --colors truecolor # profundidad de color cuando el terminal dice menos de lo que puede: auto, truecolor, 256, 16
+divide --language es      # la interfaz en español para esta ejecución: en, es
 ```
 
 Las dos primeras opciones también están en **Opciones > Colores**, que las recuerda (ver [[El escritorio|The Desktop#colores]]); el idioma está en **Opciones > Idioma** (ver [[El escritorio|The Desktop#idioma]]).
+
+Una carpeta se abre solo cuando la indicas, como en VS Code; **Archivo > Abrir carpeta** abre una después (ver [[El escritorio|The Desktop#una-carpeta-un-archivo-o-nada]]).
 
 Usa un terminal de al menos 80×25; 120 columnas o más es cómodo para trabajar al lado de la salida.
 

@@ -37,6 +37,8 @@ The architecturally significant use cases (see the [use-case model](use-case-mod
 | UC11 Debug PHP / UC12 Web server | Long-lived external processes, a socket protocol (DBGp) and UI state that follows them. |
 | UC9 Edit PHP with a language server | A long-lived JSON-RPC server per language, synchronised on every edit. |
 | UC13 Find files, text and commands | Project-wide work that must stay bounded in time and memory. |
+| UC16 Work with git / UC17 Pull requests | Every change made by external programs (`git`, `gh`, `tea`) that can never ask a question, their output streamed line by line, and state (marks, margin) refreshed as files change. |
+| UC1 Open and navigate a project | The project folder is optional: everything that walks the project must work, or offer to open one, with no folder. |
 
 ## 4. Logical view
 
@@ -46,8 +48,8 @@ divide is layered. Upper layers depend on lower ones, never the reverse.
 flowchart TB
     subgraph Presentation["Presentation: divide.ui, divide.app"]
         App["Divide app<br/>(menus, keys, commands, layout)"]
-        Mixins["Feature mixins<br/>Run, Lsp, Web, Trace, Outline,<br/>Palette, FindInFiles, Colors, Explorer"]
-        Windows["Windows & dialogs<br/>editor, project, messages, output,<br/>help, jsontree, dialector, tracer"]
+        Mixins["Feature mixins<br/>Run, Lsp, Web, Trace, Outline, Palette,<br/>FindInFiles, Colors, Explorer, Language,<br/>Git, Forge, Composer"]
+        Windows["Windows & dialogs<br/>editor, project, messages, output, help,<br/>jsontree, dialector, tracer, git, diff,<br/>forge, composer, div setup, welcome"]
     end
     subgraph Editor["Editor: divide.editor"]
         DivEditor["DivEditor<br/>(TextArea + divide's highlighting)"]
@@ -60,15 +62,16 @@ flowchart TB
         Php["php (tree-sitter, php -l)"]
     end
     subgraph Services["Services"]
-        Run["divide.run: render, script,<br/>server, dbgp, trace, bridge.php"]
+        Run["divide.run: render, script, server,<br/>dbgp, trace, setup, git, forge,<br/>composer, children, bridge.php"]
+        Outline["divide.outline"]
         Lsp["divide.lsp: servers, client"]
         Manual["divide.manual: help books"]
         Themes["divide.themes"]
-        Config["divide.config"]
+        Config["divide.config, divide.recent"]
     end
     App --> Mixins --> Windows
     Windows --> DivEditor
-    Mixins --> Run & Lsp & Manual
+    Mixins --> Run & Lsp & Manual & Outline
     DivEditor --> Div & DivJson & Php & ETheme
     ETheme --> Themes
     Windows --> Themes
@@ -81,11 +84,13 @@ flowchart TB
 | `divide.ui` | Turbo Vision windows, dialogs and lists. One module per feature area, usually a window or dialog plus a mixin that adds the feature to the app. |
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
-| `divide.run` | Everything that runs PHP: render and resolve through the bridge, scripts, the web server, the DBGp debugger and the render trace. UI-independent. |
+| `divide.run` | Everything that runs an external program: render and resolve through the bridge, scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
+| `divide.outline` | The outline of every language divide colours, as trees of `Node`s (one builder per family: PHP, Div, markup, code, data). Search > Outline and the project window's file members use it. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
 | `divide.manual` | The help books: Markdown pages to help topics; `fulltext`: their search index (SQLite FTS5). |
 | `divide.themes` | Every colour divide draws, as palettes with roles. |
 | `divide.config` | The settings file. |
+| `divide.recent` | The folders and files opened lately (the config's `recent`), for the Welcome window. |
 | `divide.i18n` | The interface's language: gettext catalogues in `locale/`, `_()` and `ngettext()`. |
 
 ### 4.1 Key mechanisms
@@ -103,6 +108,18 @@ flowchart TB
   every widget. On 16-colour terminals every colour snaps to its ANSI slot.
 - **Views over a buffer.** The data tree and the dialector never own data.
   They parse the editor's text and write their edits back as text edits.
+- **An optional project.** `Divide.folder` is the folder given or opened, or
+  `None`. `Divide.root` is where relative work happens: the folder, else the
+  active file's folder. Features that need a project (the project window, Find
+  in files, the project's Div setup) check `folder` and offer File > Open
+  folder when there is none; Go to file lists no files, and git works on the
+  repository of `root`. Opening another folder closes the windows of the
+  last one and stops its language servers, debug session and web server.
+- **External programs that never ask.** git, `gh`, `tea` and Composer run
+  with their prompts off (`GIT_TERMINAL_PROMPT=0`, no terminal; on Linux and
+  macOS in a session of their own, so ssh cannot ask for a passphrase on
+  divide's screen). Their output reaches the progress box line by line, and a
+  failure is shown in their own words.
 - **Background work.** Textual workers (`@work`) run commands. Subprocesses
   use asyncio. CPU-bound project searches use `asyncio.to_thread`. Debounce
   timers (0.25-0.5 s) delay include resolution, `php -l`, LSP sync and
@@ -123,7 +140,8 @@ flowchart LR
     Server["php -S<br/>(long-lived)"]
     XD["Xdebug<br/>(inside php)"]
     LS["language server<br/>(long-lived, stdio)"]
-    Git["git ls-files"]
+    Git["git, gh, tea<br/>(per command)"]
+    Comp["composer<br/>(per command)"]
     UI --> W
     W -- "JSON on stdin/stdout" --> Bridge
     W -- stdin --> Lint
@@ -132,6 +150,8 @@ flowchart LR
     XD -- "DBGp over TCP<br/>(divide listens)" --> W
     W -- "JSON-RPC over stdio" --> LS
     T --> Git
+    W -- "stdout line by line" --> Git
+    W --> Comp
 ```
 
 - The UI thread runs Textual's event loop. Commands run as workers on the
@@ -144,8 +164,9 @@ flowchart LR
 - **Debugging**: divide listens on a free local port. Xdebug, inside the PHP
   process of the script or of `php -S`, connects back. `DebugSession` drives
   it.
-- Processes are stopped when divide exits (`QUIT` stops LSP, the debug
-  session and the web server).
+- No child outlives divide (`run.children`): on Linux the kernel ends each
+  one when divide dies (`PR_SET_PDEATHSIG`), and the ones still running are
+  killed when the app closes, however it ends.
 
 ## 6. Implementation view
 
@@ -153,23 +174,32 @@ flowchart LR
 src/divide/
   app.py               the application, commands, layout
   config.py            settings file
+  recent.py            recent folders and files
   themes.py            colour palettes and roles
   glyphs.py            the characters divide may draw
   editor/              DivEditor, search, editor themes
   lang/                languages: __init__ (table), php.py, divjson.py
     div/               lexer, dialect, diagnostics, complete, outline, dialector, preview
-  run/                 render.py, script.py, server.py, dbgp.py, trace.py, bridge.php
+  outline/             outlines: php, div, markup, code, data
+  run/                 render.py, script.py, server.py, dbgp.py, trace.py, setup.py,
+                       git.py, forge.py, composer.py, children.py, bridge.php
   lsp/                 server table, client
   manual/              help engine, books.json, books/<id>/ and books/<id>.<lang>/ (copied pages)
+  locale/              gettext catalogues (divide.pot, <lang>/LC_MESSAGES/divide.po, .mo)
   ui/                  windows, dialogs, one module per feature
 tests/                 pytest (+ pytest-asyncio), one file per area
-tools/                 install.sh, sync_book.py, wiki_shots.py
+tools/                 install.sh, sync_book.py, i18n.py, wiki_shots.py, screencast.py
+packaging/             the standalone binary (PyInstaller), Linux packages, AppImage, MSI,
+                       the Homebrew, Scoop and winget manifests, MSIX
+releases/              VERSION's notes: one per version
+.github/workflows/     tests.yml (Linux, macOS, Windows), release.yml
 docs/                  this documentation
 ```
 
 Dependencies are declared in `pyproject.toml`: textual, textual-vision
-(pinned), tree-sitter, tree-sitter-php and pygls, plus pytest and
-pytest-asyncio for development. The console entry point is `divide =
+(pinned), tree-sitter with the grammars of PHP and the other file types, and
+pygls, plus pytest, pytest-asyncio and Babel for development. The version is
+the one line of `VERSION`. The console entry point is `divide =
 divide.app:main`.
 
 ## 7. Deployment view
@@ -181,10 +211,12 @@ flowchart LR
         D["divide (Python)"]
         P["php + Div engine<br/>(+ Xdebug)"]
         L["language servers"]
-        G["git"]
-        C["~/.config/divide/config.json"]
+        G["git, gh, tea"]
+        K["composer"]
+        C["~/.config/divide/config.json<br/>~/.div/setup.json"]
     end
-    D --> P & L & G & C
+    D --> P & L & G & K & C
+    G -- HTTPS / SSH --> Remote["remotes, GitHub, Gitea"]
     Browser["Browser"] -- HTTP --> P
 ```
 
@@ -200,16 +232,18 @@ divide has no database. Its persistent data:
 
 | Data | Where | Owner |
 |---|---|---|
-| Settings: palette, colours, icons, Div engine, Xdebug, LSP choices and commands, run arguments, web server, input histories | `$XDG_CONFIG_HOME/divide/config.json` | `divide.config` and the feature that uses each key |
+| Settings: palette, colours, icons, Div engine, Xdebug, LSP choices and commands, run arguments, web server, Composer, input histories, the diff's layout, recent folders and files | `$XDG_CONFIG_HOME/divide/config.json` | `divide.config` and the feature that uses each key |
+| Div setup of a project, of the user | `<project>/.div/setup.json`, `~/.div/setup.json` (`$DIV_HOME`) | the developer, through Options > Div setup (`divide.run.setup`) |
+| Trusted PHP settings of projects | `~/.div/trust.json` (a hash per setup file) | `divide.run.setup` |
 | Language server caches | `$XDG_CACHE_HOME/...` | `divide.lsp.client` |
 | Help books | `src/divide/manual/books/<id>/` (packaged) | `tools/sync_book.py` |
 | Help search index | `src/divide/manual/search.sqlite`, `search.<lang>.sqlite` per language of the books (packaged; rebuilt in memory when stale) | `tools/sync_book.py` → `divide.manual.fulltext.build` |
-| Projects' files | the project folder | the developer; divide only reads and writes what is edited |
+| Projects' files | the project folder | the developer; divide only reads and writes what is edited. The repository and `composer.json` are changed only by git and Composer. |
 
 ## 9. Size and performance
 
-About 15,000 lines of Python in 50 modules, plus one PHP bridge, with 180
-tests in 29 files. The design targets small virtual machines: on-demand
+About 26,000 lines of Python in 74 modules, plus one PHP bridge, with about
+360 tests in 46 files, run on Linux, macOS and Windows. The design targets small virtual machines: on-demand
 processes, bounded searches, and an incremental lexer cache. See the
 [supplementary specification](supplementary-specification.md).
 
@@ -229,3 +263,7 @@ processes, bounded searches, and an incremental lexer cache. See the
 | SQLite FTS5 for the help search | A hand-written inverted index and ranking; an external search engine | FTS5 ships with Python's `sqlite3`: BM25 ranking, Porter stemming, prefix queries and snippets, with no dependency. |
 | The help index built at sync time and shipped | Built at every start; built on the first search only | The books change only when synced, so the index is built once with them. A fingerprint of the pages detects a stale index, which is then rebuilt in memory (0.1 s), so results are never out of date. |
 | Two FTS5 tables (stemmed and as written) | One stemmed table | A prefix of a stem is not a prefix of the word (*Iterations* is stored as `iter`, so `itera*` would miss it). Finished words match stems; the word being typed matches either table. |
+| The system's `git` for everything | A Python git library (dulwich, pygit2) | The developer's own settings, hooks, credentials and signing keep working, and git's merges and machine formats (`status --porcelain=v2`, `for-each-ref`) are git's own. Nothing to bundle. |
+| `gh` and `tea` for the forges | Calling GitHub's and Gitea's APIs | They are signed in as the developer already, and each speaks its forge; divide reads their JSON and needs no token of its own. |
+| A folder only when it is given | Always the current folder | As VS Code: `divide` alone in the home folder would otherwise make it the project (its file list, its language servers); the Welcome window brings back the recent ones. |
+| Standalone binaries (PyInstaller) for releases | Only `pip install` | Users get divide without Python, from Homebrew, Scoop, the MSI, Linux packages or the AppImage; one recipe builds them all on each platform's runner. |

@@ -17,9 +17,10 @@
 | Type | Tool | Scope |
 |---|---|---|
 | Unit | pytest | lexer, dialect, diagnostics, completion, outline, Div JSON, search, fuzzy matching, themes, help parsing, DBGp parsing |
-| Integration (system tools) | pytest + subprocesses | render and resolve through `bridge.php` and Div; `php -l`; scripts; `php -S`; Xdebug; LSP (a fake server and real ones) |
+| Integration (system tools) | pytest + subprocesses | render and resolve through `bridge.php` and Div; `php -l`; scripts; `php -S`; Xdebug; LSP (a fake server and real ones); git on real repositories made by the test; `gh` and `tea` as fake programs that record what they were asked; Composer |
 | UI / system | pytest-asyncio + Textual `run_test` / `Pilot` | each window, dialog and command, driven by keys and mouse |
-| Visual | `tools/wiki_shots.py` | screenshots of the manual from the running app, reviewed by eye |
+| Visual | `tools/wiki_shots.py`, `tools/screencast.py` | screenshots and GIFs of the manual from the running app, reviewed by eye |
+| Packaging | pytest | the version manifest, the Homebrew, Scoop and winget manifests, the MSIX manifest |
 
 `asyncio_mode = "auto"`. Tests that need Div read it from `DIVIDE_DIV_PHP`
 (a `vendor/autoload.php` or `div.php`), and those that need Xdebug use
@@ -57,6 +58,19 @@ skipped.
 | `test_filetypes.py` | the other file types: detection by name and extension, every grammar loads, every capture has a colour, INI and CSV tokens, each sample file coloured in the editor |
 | `test_i18n.py` | catalogues complete and current, placeholders and hotkey marks kept, translations single-width, menu and dialog hotkeys unique in each language (the dialogs in a process started in Spanish), language choice, no local `_` hiding gettext |
 | `test_app.py` | the application shell, commands, layout |
+| `test_welcome.py` | the command line (a folder only when given), the Welcome window and its recent lists, File > Open folder and Close folder, unsaved changes asked about, a file with no folder |
+| `test_wheel.py` | the mouse wheel on the Turbo Vision lists |
+| `test_alt_keys.py` | Alt+letter opens its menu in every language |
+| `test_selection.py` | a selected block drawn over the syntax colours |
+| `test_reveal.py` | a jump centres its line and scrolls sideways only as needed; the project window's bar on the revealed file |
+| `test_members.py` | the project window unfolds a file into its members |
+| `test_children.py` | no process divide starts outlives it |
+| `test_git.py`, `test_git_ui.py` | `run.git` (git's output parsed, its commands on real repositories) and the Git menu's windows: stage, commit, branches, merge, stash, discard, history, blame, pull and push |
+| `test_diffview.py` | diffs unified and side by side, line numbers, the words that changed |
+| `test_forge.py`, `test_forge_ui.py` | GitHub and Gitea through fake `gh` and `tea`; the pull requests and issues window |
+| `test_composer.py` | Tools > Composer packages and its assistants |
+| `test_setup.py`, `test_divsetup.py` | the Div setup (layers, problems, trust, what the bridge gets) and Options > Div setup |
+| `test_packaging.py` | the release's manifests |
 
 ## 4. Environment and execution
 
@@ -73,9 +87,16 @@ Some UI tests wait for screens. Under heavy memory pressure they may time out
 environmental only after it passes on a rerun with free memory.
 
 The tests isolate the configuration (`XDG_CONFIG_HOME` in a temporary
-folder), so they never touch the user's settings or histories. A project
-created in a test must not contain that configuration folder, or searches
-would find the histories.
+folder, `tmp_path_factory.mktemp("config")`), so they never touch the user's
+settings, histories or recent lists. That folder must not be inside a project
+made by the test: divide writes the recent folders at start, and searches
+would find them. Likewise the user's Div setup (`DIV_HOME`) is kept out.
+
+**Continuous integration.** `.github/workflows/tests.yml` runs the whole suite
+on every push to `main` and every pull request: Ubuntu with Python 3.11 and
+3.12, macOS and Windows with 3.12, with PHP 8.3, Composer, Xdebug and Div
+installed in the shop example. A release is built only from a commit whose
+tests passed.
 
 ## 5. Entry and exit criteria
 

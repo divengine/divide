@@ -93,8 +93,8 @@ pipx install git+https://github.com/divengine/divide.git
 ```bash
 divide --version
 cd ~/sites/my-project
-divide              # the folder is the project
-divide page.tpl     # a file: its folder is the project
+divide .            # this folder is the project
+divide page.tpl     # a file on its own, no folder
 ```
 
 ## Install Div for your project
@@ -117,9 +117,10 @@ If none is found, **Ctrl+F9** on a template explains what to do, and include che
 ## Start it
 
 ```bash
-divide                    # the current folder as the project, project window open
+divide                    # nothing opened: the Welcome window (recent folders and files)
+divide .                  # the current folder as the project, project window open
 divide ~/sites/shop       # another folder as the project
-divide index.tpl card.tpl # open files (their folder becomes the project)
+divide index.tpl card.tpl # files on their own, with no folder
 divide ~/sites/shop index.tpl
 divide --palette turbo-c  # start with a colour theme: turbo-pascal, turbo-c, free-pascal, modern-dark
 divide --colors truecolor # colour depth when the terminal says less than it can: auto, truecolor, 256, 16
@@ -127,6 +128,8 @@ divide --language es      # the interface in Spanish for this run: en, es
 ```
 
 The first two are also in **Options > Colors**, which remembers them (see [[The Desktop#colours]]); the language is in **Options > Language** (see [[The Desktop#language]]).
+
+A folder is opened only when you give it, as in VS Code; **File > Open folder** opens one later (see [[The Desktop#a-folder-a-file-or-nothing]]).
 
 Use a terminal at least 80×25; 120 columns or more is comfortable for working side by side with the output.
 

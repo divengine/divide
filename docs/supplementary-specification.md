@@ -13,8 +13,9 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
 - **F2 Div is never modified.** divide works with any Div 6.x installation.
   Bugs found in Div are reported upstream, not patched locally.
 - **F3 Reuse before building.** divide uses existing tools: tree-sitter for
-  PHP, `php -l`, Xdebug, `php -S`, LSP servers, git's file list and
-  Textual's widgets.
+  PHP, `php -l`, Xdebug, `php -S`, LSP servers, git, `gh`, `tea`,
+  Composer and Textual's widgets. What git or Composer change (the
+  repository, `composer.json`) is changed by them, never edited behind them.
 - **F4 Plug-in languages and books.** A language is one entry in
   `divide.lang`, and a help book is one entry in `manual/books.json`.
 
@@ -23,7 +24,8 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
 - **U1 Borland conventions.** Menus, keys (F2, F3, F5, F6, Alt+F3, Ctrl+F9,
   Alt+F9, Alt+F8...), dialogs, histories and colours follow Turbo
   Pascal / Turbo Vision. VS Code conventions are added only where the Borland
-  IDEs had nothing (Go to file, command palette, Find in files), with keys
+  IDEs had nothing (Go to file, command palette, Find in files, a folder
+  opened only when given and the Welcome window), with keys
   every terminal passes on: Ctrl+P, Alt+P, Shift+F2 (Borland Pascal's Grep),
   not VS Code's Ctrl+Shift+P / Ctrl+Shift+F, which Windows Terminal keeps.
 - **U2 Keyboard first, mouse too.** Everything can be done from the keyboard.
@@ -42,10 +44,14 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
   changes. Views over a buffer (data tree, dialector) edit the buffer, so
   undo and the dirty flag keep working.
 - **R2 External tools fail soft.** A missing PHP, Div, Xdebug, language
-  server or git disables the feature and says why. It never takes down the
+  server, git, `gh`, `tea` or Composer disables the feature and says why.
+  External programs never ask questions (there is no terminal to answer
+  them): what needs a password fails and says so. It never takes down the
   IDE.
 - **R3 Long jobs can be stopped.** Renders, checks and scripts run under the
   progress box, and Esc stops them.
+- **R4 No orphan processes.** No process divide starts outlives it, however
+  divide ends.
 
 ## Performance
 
@@ -79,7 +85,8 @@ The requirements that are not use cases: qualities (FURPS+) and constraints.
   terminals each colour maps to its own ANSI slot. `--colors` can force a
   depth.
 - **S3 Platforms.** Linux, macOS and Windows terminals, including over SSH
-  and tmux. Python 3.11 or newer (developed on 3.14).
+  and tmux, each tested in CI. Python 3.11 or newer (developed on 3.14), or
+  the standalone binaries of each release, which need no Python.
 - **S4 Testable without a terminal.** The UI is tested headless with
   Textual's pilot. Language logic is UI-independent and unit-tested.
 

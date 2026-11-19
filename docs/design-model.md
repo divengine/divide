@@ -10,8 +10,12 @@ the finer detail, and this document points to them.
 classDiagram
     class Application { textual-vision }
     class Divide {
+        folder: Path | None
         root: Path
         run_command(command, info)
+        open_folder(path) bool
+        close_folder()
+        show_welcome()
         open_file(path) EditorWindow
         run_dialog(dialog) Command
         goto_location(path, start, end)
@@ -27,6 +31,10 @@ classDiagram
     Divide --|> OutlineMixin
     Divide --|> PaletteMixin
     Divide --|> FindInFilesMixin
+    Divide --|> LanguageMixin
+    Divide --|> GitMixin
+    Divide --|> ForgeMixin
+    Divide --|> ComposerMixin
     Divide o-- DropMenuBar
     Divide o-- HintStatusLine
 ```
@@ -37,6 +45,14 @@ classDiagram
   layout (editors, the project window on the left, list windows at the
   bottom or on the right) and the links between editors and services:
   include resolution, checks, the Messages window and the status hint.
+- **The folder.** `folder` is the project, or `None` (files alone, or
+  nothing); `root` is the folder, else the active editor's folder, else the
+  folder of the last file opened, else the home folder. `open_folder()` asks
+  about unsaved changes, stops the last folder's language servers, debug
+  session and web server, closes its windows and opens the project window;
+  `close_folder()` does the same and shows the Welcome window. Every folder
+  and file opened goes to `divide.recent`. `main()` passes a folder only when
+  the command line names one.
 - **`DropMenuBar`** makes F10 open the first menu with the focus in it.
 - **`HintStatusLine`** adds a context hint and a spinner for background work
   (`busy(label)` context manager).
@@ -68,6 +84,16 @@ classDiagram
 | `ColorsDialog` | colors | Theme and colour depth, with a live preview. |
 | `CompletionPopup`, `InfoPopup` | completion | The completion list and signature/hover popups. They never take the focus. |
 | `ShadowScreen` | shadow | Turbo Vision drop shadows, applied by a compositor. |
+| `WelcomeWindow` | welcome | What divide shows with nothing to open: Start, the recent folders, the recent files, in a filtered tree; centred and as tall as its rows. Del forgets a recent entry. |
+| `GitChangesWindow`, `GitHistoryWindow`, `GitBranchesWindow` | git | Git > Changes, History and Branches: a `GitTree` of `Row`s beside the focused item (its diff, its details). |
+| `GitLogWindow`, `BlameWindow`, `CommitDialog` | git | git's output, Blame, the commit message. |
+| `DiffView`, `DiffWindow` | diffview, git | A diff as a code review shows it, unified or side by side, each side coloured by the editor's lexers. |
+| `ForgeWindow`, `NewItemDialog` | forge | Pull requests and issues; a new one. |
+| `ComposerWindow`, `ComposerLogWindow`, `AddPackageDialog`, `NewComposerDialog` | composer | Tools > Composer packages, Composer's output, the assistants. |
+| `DivSetupWindow`, `SetupSectionDialog` | divsetup | Options > Div setup over a setup file's buffer, as the dialector over a dialect. |
+| `Filtered`, `FilterLine`, `FilteredList`, `FilteredTree` | filter | The filter line over every list and tree, typed into from the list itself. |
+| `WheelList` | windows | The mouse wheel for the Turbo Vision lists, which draw their own rows: a notch moves the bar three rows. |
+| `HRule` | windows | A rule across a window, joined to its frame. |
 
 ## 3. Editor (`divide.editor`)
 
@@ -185,9 +211,58 @@ roles (`SYNTAX_ROLES`, fed by `TOKENS`). It produces a Textual theme with the
 `$divide-<role>` variables and the rich styles for painted widgets.
 `THEMES`: turbo-pascal, turbo-c, free-pascal, modern-dark.
 
-## 10. Key collaborations
+## 10. Git and the forges (`divide.run.git`, `divide.run.forge`)
 
-### 9.1 Render a template (UC4)
+- **`run.git`** runs the system's `git` for everything and reads its machine
+  formats: `status()` → `Status` (`Change`s by area, the branch, ahead and
+  behind), `log()` → `Commit`s with their graph (every branch, not the
+  stash), `blame()` → `BlameLine`s (unsaved text included), `diff_of()` /
+  `diff_of_commit()` and `parse_diff()` → `Diff` (`DiffFile`, `Hunk`,
+  `DiffLine`), `branches()` → `Branch`, `stashes()` → `Stash`. Changes go
+  through git: `stage`, `unstage`, `discard`, `commit()`, `switch()`,
+  `merge()`, `stash()`, `pull()`, `push()`, each a `Result` with git's lines.
+  A failure raises `GitError` with git's words.
+- **`run.forge`**: `detect(root)` finds the remote (`origin`, else the first)
+  and its `Forge` (`github` through `gh`, `gitea` through `tea`);
+  `PullRequest` and `Issue` are read from their JSON; creating, checking out
+  and merging run the programs.
+- **`ui.git.GitMixin`** holds the windows, refreshes git's state (the project
+  window's marks, the editor's margin) after each change and every few
+  seconds, reads again the editors whose files git rewrote (not those with
+  unsaved changes), and runs the long commands under the progress box.
+  **`ui.forge.ForgeMixin`** holds the forge's window.
+
+## 11. Composer and the Div setup (`divide.run.composer`, `divide.run.setup`)
+
+- **`run.composer`** finds Composer (`$DIVIDE_COMPOSER`, the configured path,
+  a `composer.phar` in the project, the `PATH`), reads the `Project`
+  (`composer.json` and `composer.lock` as `Package`s), searches Packagist
+  (`search()`, `versions()`), and runs every change with its output line by
+  line (`run()`). Only a new `composer.json` is written by divide
+  (`NewProject`).
+- **`run.setup`** reads `.div/setup.json` (walking up from the project) and
+  `~/.div/setup.json` into a `DivSetup` of `Layer`s: the project over the
+  user, `null` dropping a user's value, lists joined, objects merged, an
+  invalid entry left out as a `Problem`. `DivSetup.bridge()` is what
+  `bridge.php` applies to every request (constants before Div loads, then
+  Div's static API). A project's `php` section waits as `Untrusted` until the
+  developer trusts it (`trust()`, a hash in `~/.div/trust.json`).
+- **`ui.divsetup.DivSetupWindow`** edits the setup file's buffer, one undoable
+  edit per change, and shows what is in effect and where it comes from.
+
+## 12. Outlines (`divide.outline`)
+
+`outline(lang, text)` returns a tree of `Node`s (kind, label, place,
+children) from the builder of the language's family: `php` (tree-sitter),
+`div` (the lexer's blocks), `markup` (HTML, XML, Markdown), `code`
+(JavaScript, CSS, SQL, shell) and `data` (JSON, YAML, TOML, INI, CSV). A
+label is made of spans with the editor's token kinds, and a `Painter` colours
+them as the editor would. `ui.outline.OutlineWindow` shows them, and the
+project window unfolds a file into the same nodes.
+
+## 13. Key collaborations
+
+### 13.1 Render a template (UC4)
 
 ```mermaid
 sequenceDiagram
@@ -209,7 +284,7 @@ sequenceDiagram
     App->>Box: verdict (Success / Errors)
 ```
 
-### 9.2 Check while typing (UC3)
+### 13.2 Check while typing (UC3)
 
 ```mermaid
 sequenceDiagram
@@ -227,7 +302,7 @@ sequenceDiagram
     App->>App: refresh Messages window, status hint
 ```
 
-### 9.3 Go to file / command palette (UC13)
+### 13.3 Go to file / command palette (UC13)
 
 ```mermaid
 sequenceDiagram
@@ -250,7 +325,7 @@ sequenceDiagram
     end
 ```
 
-### 9.4 Debug a PHP script (UC11)
+### 13.4 Debug a PHP script (UC11)
 
 ```mermaid
 sequenceDiagram
@@ -266,4 +341,24 @@ sequenceDiagram
     P-->>S: break at file:line
     S-->>App: location, stack, variables
     App->>App: show line, Watches, Call stack
+```
+
+### 13.5 Start with nothing, then open a folder (UC1)
+
+```mermaid
+sequenceDiagram
+    actor Dev as Developer
+    participant M as app.main
+    participant App as Divide
+    participant R as divide.recent
+    participant W as WelcomeWindow
+    Dev->>M: divide
+    M->>App: Divide(root=None, files=[])
+    App->>R: entries("folders"), entries("files")
+    App->>W: place(desktop size), show
+    Dev->>W: Enter on a recent folder
+    W->>App: welcome_chosen("folder", path)
+    App->>App: open_folder(path): unsaved changes asked, services stopped, windows closed
+    App->>R: add("folders", path)
+    App->>App: project window, status hint
 ```

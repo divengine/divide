@@ -57,21 +57,25 @@ ASCII and CP437 glyphs and why it works with 16 colours as well as truecolour.
 | PHP around the templates | `php -l` checks, run with arguments, Xdebug debugger (breakpoints, step, watches, call stack, evaluate), built-in web server with debugging per request |
 | Find your way | project window, Go to file, command palette, Find / Replace, Find in files, Go to included template |
 | Learn in place | help books (divide's manual, Div's documentation) inside the IDE, context help on F1, full-text search of the books with ranking |
+| Version control in place | the Git menu: what changed (in the project window, the editor's margin and Git > Changes), diffs as a code review shows them, commits, history with its graph, branches, merges and stashes, blame, pull, push; pull requests and issues of GitHub and Gitea |
+| The project's PHP setup | Tools > Composer packages (Composer runs every change); Options > Div setup: how Div is set up for the project at design time (`.div/setup.json`) |
+| Start where you left off | a folder, a file or nothing on the command line, as VS Code; the Welcome window with the recent folders and files; File > Open folder |
 | Comfortable for hours | colour themes (Turbo Pascal, Turbo C, Free Pascal, modern dark), drop shadows, input line histories |
 
 ## 5. Constraints
 
 - Div is never modified for divide. Div bugs found while building divide are reported upstream.
 - What Div decides (rendering, include resolution, data decoding, dialect validation, translation) is asked of Div through PHP, never reimplemented in Python.
-- Existing tools are reused before new ones are written: tree-sitter for PHP, `php -l`, Xdebug, `php -S`, language servers, git's file list.
+- Existing tools are reused before new ones are written: tree-sitter for PHP, `php -l`, Xdebug, `php -S`, language servers, git, `gh` and `tea`, Composer.
 - The user manual documents divide only. It links to Div's documentation instead of copying it.
 - divide's own glyphs stay ASCII or CP437 and fixed width, with no Nerd Fonts and no wide or emoji characters.
 
 ## 6. Scope and quality ranges
 
 In scope: a single-user desktop IDE in the terminal, one project folder at a
-time. Out of scope for now: version-control UI, multi-root workspaces,
-collaborative editing, a plug-in marketplace.
+time (or files on their own, with no folder), git through the system's own
+`git`. Out of scope for now: multi-root workspaces, collaborative editing, a
+plug-in marketplace.
 
 Quality ranges are detailed in the [supplementary specification](supplementary-specification.md):
 responsiveness while typing, modest memory use, and behaviour that is the

@@ -15,6 +15,15 @@
 | **Engine** | The Div installation used to render: a `vendor/autoload.php` (Composer) or a `div.php`, chosen in Options > Div engine or found in the project. |
 | **Turbo Vision (TV)** | Borland's text-mode UI framework. divide recreates its look on **textual-vision**, a TV-style widget set for Textual. |
 | **Textual** | The Python TUI framework below textual-vision. |
+| **Project (folder)** | The folder divide works on, given on the command line or opened with File > Open folder. It is optional: files can be opened alone, with no folder. |
+| **Welcome window** | What divide shows with nothing to open: Start (new file, open a file, open a folder, help), the recent folders and the recent files. Help > Welcome. |
+| **Recent folders and files** | The folders and files opened lately, newest first, kept in the config's `recent`. |
+| **Div setup** | How Div is set up for a project at design time: `.div/setup.json` (the project's) over `~/.div/setup.json` (the user's). Options > Div setup. |
+| **Trust (of a setup)** | The developer's consent to a project's `php` settings, which let templates call PHP functions; kept as a hash in `~/.div/trust.json`, asked again when they change. |
+| **Area (git)** | Where a change is in Git > Changes: conflicts, staged, changes, untracked. |
+| **Forge** | The host of the repository's remote: GitHub (through `gh`) or Gitea, Forgejo, Codeberg (through `tea`). |
+| **Filter line** | `» type to filter`: the line over a list or tree that keeps only the items holding what is typed. |
+| **Release note** | `releases/<version>.md`: the text of a release on GitHub. With a new `VERSION`, it makes the Release workflow publish that version. |
 | **Desktop** | The area between the menu bar and the status line, where windows live. |
 | **Window** | A framed, movable view on the desktop (editor, project, Messages, Output, Outline, Watches...). Numbered 1-9 for Alt+n. |
 | **Dialog** | A modal window with controls (input lines, check boxes, radio buttons, lists, buttons). |
