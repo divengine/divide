@@ -13,6 +13,7 @@
 | phpactor or intelephense | PHP completion, hover, definitions | optional; Options > Language servers |
 | git | the Git menu, the project window's marks, the editor's margin; Go to file and Find in files respect `.gitignore` | optional; without it, no Git menu and a folder walk |
 | gh, tea | Git > Pull requests and issues (GitHub; Gitea, Forgejo, Codeberg) | optional; signed in with `gh auth login` / `tea login add` |
+| mcp 2.3+ (the official MCP SDK) | `divide --mcp` | optional: the `mcp` extra, `pip install -e ".[mcp]"` in a checkout; not in the standalone binaries yet |
 | Composer | Tools > Composer packages | optional; `$DIVIDE_COMPOSER`, Options, a `composer.phar` in the project or `composer` on `PATH` |
 
 ## 2. Installation
@@ -53,6 +54,16 @@ divide [folder] [files...] [--palette NAME] [--colors auto|truecolor|256|16] [--
   reports.
 - `--language`: the interface's language for this run. By default it is the
   one chosen in Options > Language, else the system's.
+
+```sh
+divide --mcp /path/to/project
+```
+
+- `--mcp`: no interface; serves divide's MCP server for the project folder
+  over stdio, for an MCP client to start (the protocol on stdout, logs on
+  stderr). It takes exactly one folder and needs the `mcp` extra. The
+  [MCP Server](https://github.com/divengine/divide/wiki/MCP-Server) page of
+  the manual has the tools, a client configuration and the trust model.
 
 ## 4. Configuration
 

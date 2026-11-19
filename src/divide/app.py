@@ -39,6 +39,7 @@ import os
 import re
 import json
 import shutil
+import sys
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -90,8 +91,6 @@ from divide.run.render import (
     RenderError,
     check_dialect,
     check_setup,
-    default_data_file,
-    find_engine,
     render,
     load_dialect,
     resolve_includes,
@@ -136,6 +135,7 @@ from divide.ui.git import (
 from divide.run.script import size_text
 from divide.run import children
 from divide.run import setup as div_setup
+from divide.run import workbench
 from divide import lsp
 from divide.lang import php
 from divide.lang.div.diagnostics import include_at, line_col
@@ -1429,15 +1429,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
     def template_roots(self) -> list[Path]:
         """Where Div looks for templates besides the template's folder: the project, and
         the setup's packages, repository and include paths."""
-        setup = self.div_setup()
-        roots = [self.root]
-        for place in (setup.constants.get("PACKAGES"), setup.constants.get("DIV_REPO"), *setup.include_paths):
-            if isinstance(place, str) and (path := Path(place)) not in roots:
-                roots.append(path)
-        return roots
+        return workbench.template_roots(self.root)
 
     def data_file_for(self, template: Path) -> Path:
-        return self.data_files.get(template) or default_data_file(template, self.div_setup().data_ext)
+        return self.data_files.get(template) or workbench.data_file(self.root, template)
 
     def template_for_data(self, data: Path) -> Path | None:
         for template, chosen in self.data_files.items():
@@ -1531,26 +1526,19 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 self.resolve_includes_of(win.editor)
 
     def _include_engine(self, template: Path) -> Path | None:
-        if not shutil.which("php"):
-            return None
-        return self.find_div_engine([template.parent, self.root])
+        return workbench.engine_for(self.root, template)
 
     def find_div_engine(self, start_dirs: list[Path]) -> Path | None:
         """Div's engine: $DIVIDE_DIV_PHP, the project's Div setup, Options > Div engine, then vendor/."""
-        return find_engine(start_dirs, config.load().get("div_engine"), div_setup.load(self.root).engine)
+        return workbench.find_div_engine(self.root, start_dirs)
 
     async def _resolve(self, ed: DivEditor, includes: list[str]) -> dict[str, IncludeTarget] | None:
         assert ed.path is not None
         engine = self._include_engine(ed.path)
         if engine is None:
             return None
-        try:
-            return await resolve_includes(
-                engine, ed.path, includes, cwd=self.root, history=self._history_for(ed.path),
-                separator=ed.dialect["DIV_TAG_PREPROCESSED_SEPARATOR"],
-            )
-        except RenderError:
-            return None
+        return await workbench.include_targets(engine, self.root, ed.path, includes, ed.dialect,
+                                               history=self._history_for(ed.path))
 
     def _history_for(self, template: Path) -> list[Path]:
         return [self.last_template] if self.last_template and self.last_template != template else []
@@ -1561,16 +1549,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         engine = self._include_engine(ed.path)
         if engine is None:
             return None
-        try:
-            loaded = await load_dialect(engine, cwd=self.root, template=ed.path, ref=ref, history=self._history_for(ed.path))
-        except RenderError:
-            return None
-        if loaded.file is None:
-            return Dialect(name=ref, error=_('Div cannot find the dialect file {ref}').format(ref=ref))
-        if loaded.tags is None:
-            return Dialect(name=ref, source=loaded.file, error=f"{loaded.problem}: {self._project_relative(loaded.file)}")
-        return Dialect.from_overrides(loaded.tags, name=loaded.file.stem, source=loaded.file,
-                                      base=self.div_setup().dialect)
+        return await workbench.dialect_from_div(engine, self.root, ed.path, ref, history=self._history_for(ed.path),
+                                                describe=self._project_relative)
 
     @work(group="includes")
     async def resolve_includes_of(self, ed: DivEditor) -> None:
@@ -2639,8 +2619,20 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--colors", choices=list(themes.DEPTHS), help=_('colour depth (default: what the terminal says it supports)'))
     parser.add_argument("--language", choices=["auto", *i18n.available()],
                         help=_("language of the interface for this run (default: Options > Language, else the system's)"))
+    parser.add_argument("--mcp", action="store_true",
+                        help=_("serve divide's MCP server for the project folder over stdio, without the interface "
+                               "(needs the mcp extra: pip install 'divide[mcp]')"))
     parser.add_argument("--version", action="version", version=f"divide {__version__}")
     args = parser.parse_args(argv)
+    if args.mcp:
+        if len(args.paths) != 1 or not Path(args.paths[0]).expanduser().is_dir():
+            parser.error(_("--mcp takes one project folder: divide --mcp /path/to/project"))
+        try:
+            from divide import mcpserver
+        except ImportError as exc:
+            print(_("divide --mcp needs the MCP SDK ({error}): pip install 'divide[mcp]'").format(error=exc), file=sys.stderr)
+            raise SystemExit(2) from None
+        raise SystemExit(mcpserver.main(args.paths[0]))
     root: Path | None = None  # no folder: files on their own, or the Welcome window
     files: list[Path] = []
     for raw in args.paths:

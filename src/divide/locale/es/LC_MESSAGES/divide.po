@@ -112,6 +112,9 @@ msgid_plural "({n} files changed and not committed stay here)."
 msgstr[0] "({n} archivo cambiado y sin commit se queda aquí)."
 msgstr[1] "({n} archivos cambiados y sin commit se quedan aquí)."
 
+msgid "--mcp takes one project folder: divide --mcp /path/to/project"
+msgstr "--mcp toma una carpeta de proyecto: divide --mcp /ruta/al/proyecto"
+
 #, python-brace-format
 msgid "... {count} more lines not shown"
 msgstr "... {count} líneas más sin mostrar"
@@ -2505,6 +2508,10 @@ msgstr "separado en {oid}"
 msgid "dev"
 msgstr "dev"
 
+#, python-brace-format
+msgid "divide --mcp needs the MCP SDK ({error}): pip install 'divide[mcp]'"
+msgstr "divide --mcp necesita el SDK de MCP ({error}): pip install 'divide[mcp]'"
+
 msgid "divide will speak the language chosen the next time it starts."
 msgstr "divide usará el idioma elegido la próxima vez que se inicie."
 
@@ -2694,6 +2701,13 @@ msgstr "remota"
 
 msgid "require"
 msgstr "require"
+
+msgid ""
+"serve divide's MCP server for the project folder over stdio, without the "
+"interface (needs the mcp extra: pip install 'divide[mcp]')"
+msgstr ""
+"sirve el servidor MCP de divide para la carpeta del proyecto por stdio, sin "
+"la interfaz (necesita el extra mcp: pip install 'divide[mcp]')"
 
 msgid "squashed into one commit"
 msgstr "aplastada en un solo commit"

@@ -18,7 +18,7 @@ from textual.geometry import Region, Spacing
 from textual.message import Message
 from textual.widgets import TextArea
 
-from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect, resolve_dialect, template_properties
+from divide.lang.div.dialect import DEFAULT_DIALECT, Dialect
 from divide.lang import divjson
 from divide.lang.divjson import DivJsonError
 from divide.lang.div.diagnostics import Diagnostic, check, include_paths
@@ -28,6 +28,7 @@ from divide.lang import php, plain, treesitter
 
 from divide import themes
 from divide.run import setup as div_setup
+from divide.run import workbench
 
 from . import theme as editor_themes
 
@@ -409,8 +410,7 @@ class DivEditor(TextArea):
         if self.forced_dialect is not None:
             self.dialect = self.forced_dialect
             return
-        prop = template_properties(text).get("DIALECT")
-        ref = prop[0].strip() if prop and prop[0].strip() else None
+        ref = workbench.dialect_ref(text)
         if ref != self._dialect_ref:
             self._dialect_ref = ref
             if ref is not None and self.is_mounted:
@@ -430,9 +430,7 @@ class DivEditor(TextArea):
         """Until Div answers (or without Div): look for the file in Python, to colour."""
         if self._guess is not None and self._guess[0] == ref:
             return self._guess[1]
-        guess = resolve_dialect(text, self.path, self.roots, self.base_dialect)
-        if guess.error is not None:  # the base; whether the file is fine is Div's to say
-            guess = Dialect(name=ref, tags=dict(self.base_dialect.tags))
+        guess = workbench.guess_dialect(ref, text, self.path, self.roots, self.base_dialect)
         self._guess = (ref, guess)
         return guess
 

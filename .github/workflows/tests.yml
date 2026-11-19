@@ -45,8 +45,8 @@ jobs:
       - name: Div for the shop example (its vendor/)
         run: composer install --no-interaction --no-progress --working-dir examples/shop
 
-      - name: divide and the tests' tools
-        run: python -m pip install -e ".[dev]"
+      - name: divide, its MCP extra and the tests' tools
+        run: python -m pip install -e ".[dev,mcp]"
 
       - name: Tests
         env:

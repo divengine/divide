@@ -71,7 +71,8 @@ flowchart TB
         Php["php (tree-sitter, php -l)"]
     end
     subgraph Services["Services"]
-        Run["divide.run: render, script, server,<br/>dbgp, trace, setup, git, forge,<br/>composer, children, bridge.php"]
+        Run["divide.run: render, workbench, script, server,<br/>dbgp, trace, setup, git, forge,<br/>composer, children, bridge.php"]
+        Mcp["divide.mcpserver<br/>(divide --mcp)"]
         Outline["divide.outline"]
         Lsp["divide.lsp: servers, client"]
         Manual["divide.manual: help books"]
@@ -85,6 +86,7 @@ flowchart TB
     ETheme --> Themes
     Windows --> Themes
     App --> Config
+    Mcp --> Run
 ```
 
 | Package | Responsibility |
@@ -93,7 +95,8 @@ flowchart TB
 | `divide.ui` | Turbo Vision windows, dialogs and lists. One module per feature area, usually a window or dialog plus a mixin that adds the feature to the app. |
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
-| `divide.run` | Everything that runs an external program: render and resolve through the bridge, scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
+| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
+| `divide.mcpserver` | divide's own MCP server (`divide --mcp PROJECT`, stdio, the optional `mcp` extra): the project's setup, a template's checks, renders and the render trace for MCP clients, through `divide.run` and without the UI. See 4.1. |
 | `divide.outline` | The outline of every language divide colours, as trees of `Node`s (one builder per family: PHP, Div, markup, code, data). Search > Outline and the project window's file members use it. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
 | `divide.manual` | The help books: Markdown pages to help topics; `fulltext`: their search index (SQLite FTS5). |
@@ -129,6 +132,17 @@ flowchart TB
   macOS in a session of their own, so ssh cannot ask for a passphrase on
   divide's screen). Their output reaches the progress box line by line, and a
   failure is shown in their own words.
+- **The MCP server.** `divide --mcp PROJECT` builds an `MCPServer` (the
+  official SDK) whose tools call the same functions the IDE calls:
+  `workbench.check_template` (the dialect Div loads, the lexer, Div's answers
+  for includes, `diagnostics.check`), `render.render`, `trace.trace_render`,
+  `render.check_setup`, `render.load_dialect` and `render.check_dialect`, so
+  a question gets the same answer in the IDE and through MCP. It never imports
+  the UI. Paths are confined to the project (symbolic links followed), PHP
+  runs under the same timeouts and is killed when a call is cancelled,
+  answers are bounded, traces are kept in memory (the last four) to be paged,
+  and the trust of a project's `php` settings is read, never given. It works
+  on files and on text passed in; it is not connected to a running divide.
 - **Background work.** Textual workers (`@work`) run commands. Subprocesses
   use asyncio. CPU-bound project searches use `asyncio.to_thread`. Debounce
   timers (0.25-0.5 s) delay include resolution, `php -l`, LSP sync and
@@ -168,6 +182,10 @@ flowchart LR
 - The **bridge** is a one-shot PHP process per request: render, resolve,
   `dialect_validate`, `dialect_load`, `trace` or `translate`. Being
   stateless, it always sees the files and the engine as they are now.
+- **`divide --mcp`** is a process of its own, without the UI: the MCP SDK's
+  stdio loop reads requests on stdin and answers on stdout (logs on stderr);
+  each tool call is a task on its loop and asks the bridge as the IDE does.
+  The client starts and ends it.
 - **Language servers** are long-lived, one per language and project,
   started when the first file of their language opens and stopped on exit.
 - **Debugging**: divide listens on a free local port. Xdebug, inside the PHP
@@ -181,7 +199,8 @@ flowchart LR
 
 ```
 src/divide/
-  app.py               the application, commands, layout
+  app.py               the application, commands, layout, the command line
+  mcpserver.py         divide's MCP server (divide --mcp)
   config.py            settings file
   recent.py            recent folders and files
   themes.py            colour palettes and roles
@@ -190,7 +209,7 @@ src/divide/
   lang/                languages: __init__ (table), php.py, divjson.py
     div/               lexer, dialect, diagnostics, complete, outline, dialector, preview
   outline/             outlines: php, div, markup, code, data
-  run/                 render.py, script.py, server.py, dbgp.py, trace.py, setup.py,
+  run/                 render.py, workbench.py, script.py, server.py, dbgp.py, trace.py, setup.py,
                        git.py, forge.py, composer.py, children.py, bridge.php
   lsp/                 server table, client
   manual/              help engine, books.json, books/<id>/ and books/<id>.<lang>/ (copied pages)
@@ -207,7 +226,9 @@ docs/                  this documentation
 
 Dependencies are declared in `pyproject.toml`: textual, textual-vision
 (pinned), tree-sitter with the grammars of PHP and the other file types, and
-pygls, plus pytest, pytest-asyncio and Babel for development. The version is
+pygls, plus pytest, pytest-asyncio and Babel for development, and the
+optional `mcp` extra (the official MCP SDK) for `divide --mcp`; the standalone
+binaries do not include it yet. The version is
 the one line of `VERSION`. The console entry point is `divide =
 divide.app:main`.
 
@@ -281,7 +302,9 @@ processes, bounded searches, and an incremental lexer cache. See the
 
 Orchestration and interfaces such as a CLI, an HTTP API or an MCP server may
 be implemented by generator projects; divide may offer tools to develop,
-inspect or test them. How responsibilities are split between the IDE and
+inspect or test them. divide's own MCP server (4.1) is the IDE's, not a
+generator's: it serves divide's design-time services and does not orchestrate
+generations. How responsibilities are split between the IDE and
 generator projects is not decided, and the abstraction model is still to be
 specified. This document defines no execution graph, pipeline format or
 interface. What the current architecture already offers, whatever is
@@ -289,11 +312,15 @@ decided:
 
 - **A UI-independent core.** Rendering, tracing, dialect checks and
   translation (`divide.run`) take plain data and return plain data, without
-  importing the UI, so tools of the IDE other than its windows could call
-  them.
+  importing the UI, so tools of the IDE other than its windows call them:
+  divide's MCP server does.
 - **One bridge to Div.** Every question to Div goes through `bridge.php` as
   one JSON request and one JSON reply, with the project's Div setup applied.
   Another caller could ask Div the same way the editor does.
+- **Toward a live session.** The MCP server works on files today. Connecting
+  it to a running divide (its open editors, unsaved buffers, the active
+  template, the IDE's diagnostics) would give the same tools another source
+  of text; the tools already take the text as an argument.
 - **No hidden state in divide.** The bridge is one-shot and stateless, so
   divide adds nothing between requests. What a render depends on beyond its
   template, data, engine and setup (the time, random values, the request,

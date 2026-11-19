@@ -182,6 +182,7 @@ Everything in this table exists in the current code.
 | Keep generator syntax apart from target syntax | Dialector (build, validate with Div, import, export); translation of templates between dialects with Div's `translate()` |
 | Set up the Div that divide runs while you design | Options > Div setup (`.div/setup.json`): engine, paths, extensions, parser limits, dialect, global data, allowed PHP functions and modifiers, simulated request data. This is divide's design-time configuration: it does not configure the Div an application or a deployed generator runs, which keeps its own setup in its own code |
 | The PHP of a generator project | PHP highlighting and `php -l`, language servers, running scripts with arguments, the Xdebug debugger, Composer packages |
+| Let an AI coding agent use divide's design-time services | `divide --mcp PROJECT`: divide's own MCP server over stdio (the optional `mcp` extra). Tools: the project's Div setup and engine, the editor's checks of a template, a render and the render trace (paged) through the real Div engine, Div's verdict on a dialect. Confined to the project, bounded, it writes nothing and takes the user's trust decisions as they are. It works on files and on text passed in, not on divide's open editors |
 | Try HTTP code while developing | a built-in PHP development server (`php -S`) with per-request debugging. It can help develop and test a generator that serves HTTP; it is not a generator API or an MCP platform |
 | The files a generator produces | highlighting and outline of HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell scripts and `.env`, INI and CSV |
 | Version and review generators | the Git menu: changes, diffs as a code review shows them, commits, history, branches, merges, stashes, blame, pull and push; pull requests and issues of GitHub and Gitea |
@@ -218,10 +219,22 @@ schema exists in divide, and this document does not define one.
 
 ### 9.2 CLI, API and MCP
 
-A generator may expose a CLI, an HTTP API or an MCP server, implemented in
-the generator project. divide may one day offer tools to develop and test
-such interfaces; it does not expose a generation API or an MCP server today,
-and whether it ever will is not decided. Its command line opens the IDE.
+Two kinds of MCP are possible, and neither replaces the other:
+
+- **A generator's.** A generator may expose a CLI, an HTTP API or an MCP
+  server, implemented in the generator project and deployed with it, without
+  divide. divide may one day offer tools to develop and test such
+  interfaces; it offers none today.
+- **divide's own.** `divide --mcp PROJECT` serves the IDE's design-time
+  services for one project over stdio (see section 7): the project's Div
+  setup, the editor's checks, renders and the render trace. It is a
+  development tool, not a generation API: it runs no generator, orchestrates
+  nothing and is not meant to be deployed. It works on the project's files
+  and on text passed to it; connecting it to a running divide (open editors,
+  unsaved buffers, the active template) is not built. Which further tools it
+  should offer is not decided.
+
+Otherwise divide's command line opens the IDE.
 
 ### 9.3 AI coding agents
 

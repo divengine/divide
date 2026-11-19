@@ -31,6 +31,7 @@
 
 * [[Keyboard Reference]]
 * [[Help]]
+* [[MCP Server]]
 * [[Troubleshooting]]
 
 **Links**
