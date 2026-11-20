@@ -32,7 +32,7 @@ The manual's examples generate HTML, the easiest output to read; the same tools 
 
 ## Generators and what is not decided
 
-divide is the IDE, not the generator, and not where generators run in production. A generator project may use Div, Nodes, Ways, PHP or anything else it needs, and may implement its own orchestration of stages, CLI commands, an HTTP API or an MCP server; tools and AI coding agents then use the deployed generator through those interfaces. divide's [[Web Server]] can help while you develop an HTTP generator, but it is not a generator API or an MCP platform.
+divide is the IDE, not the generator, and not where generators run in production. A generator project may use Div, Nodes, Ways, PHP or anything else it needs, and may implement its own orchestration of stages, CLI commands, an HTTP API or an MCP server; tools and AI coding agents then use the deployed generator through those interfaces. divide's [[Web Server]] can help while you develop an HTTP generator, but it is not a generator API or an MCP platform. divide's own [[MCP Server]] (Options > MCP server) is for developing: it lets an AI coding agent check, render and trace the project's templates through divide.
 
 **Not decided yet**: what a generator is as a unit, and which responsibilities around orchestration and generator interfaces belong in divide (tools to develop, inspect, debug or test them) and which in generator projects. **Only Div is integrated in divide**; [Nodes](https://github.com/divengine/nodes) and [Ways](https://github.com/divengine/ways) are independent PHP libraries that a generator may use, with their role in generator development still to be decided.
 

@@ -43,10 +43,10 @@ LANGUAGE = os.environ.setdefault("DIVIDE_LANGUAGE", "en")  # the manual is in En
 _KEYS = {
     "en": {"run": "alt+r", "window": "alt+w", "options": "alt+o", "tools": "alt+t", "help": "alt+h",
            "help-search": "s", "language": "g", "help-query": "include templ", "new-file": "f", "yes": "y",
-           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c", "git": "alt+g", "file": "alt+f"},
+           "div-setup": "e", "composer": "c", "marks": "f", "tile": "t", "cascade": "a", "colors": "c", "git": "alt+g", "file": "alt+f", "mcp": "m"},
     "es": {"run": "alt+j", "window": "alt+v", "options": "alt+o", "tools": "alt+h", "help": "alt+y",
            "help-search": "b", "language": "i", "help-query": "incluir plantil", "new-file": "n", "yes": "s",
-           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c", "git": "alt+g", "file": "alt+a"},
+           "div-setup": "f", "composer": "c", "marks": "m", "tile": "s", "cascade": "c", "colors": "c", "git": "alt+g", "file": "alt+a", "mcp": "p"},
 }
 
 
@@ -574,6 +574,47 @@ async def web():
         await reader.read()
         writer.close()
         await app.web_stop()
+
+@shot
+async def mcp():
+    """Options > MCP server, running, after an agent's first calls. The server listens on a free
+    port; the picture shows the default one, 8765 (another divide may be using it)."""
+    import http.client
+    import json
+    import socket
+    from divide.ui.mcp import McpServerDialog
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    app = Divide(DEMO, [DEMO / "index.tpl"])
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        await pilot.press(key("options"), key("mcp"))
+        await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), McpServerDialog), tries=200)
+        dialog = app.screen.dialog
+        dialog.port_input.data = str(port)
+        await pilot.press("enter")
+        await until(pilot, lambda: app.mcp_server is not None and app.mcp_server.running, tries=200)
+
+        def agent() -> None:  # what a coding agent asks first
+            for body in ({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+                             "protocolVersion": "2025-11-25", "capabilities": {},
+                             "clientInfo": {"name": "coding-agent", "version": "1.0"}}},
+                         {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+                         {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+                          "params": {"name": "div_check", "arguments": {"template": "index.tpl"}}}):
+                conn = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+                conn.request("POST", "/mcp", json.dumps(body), {"Content-Type": "application/json"})
+                conn.getresponse().read()
+                conn.close()
+
+        await asyncio.to_thread(agent)
+        app.mcp_server.port = 8765  # shown as the default: no request comes after this
+        dialog.port_input.data = "8765"
+        dialog.show_state()
+        await settle(pilot, 6)
+        save(app, "mcp-server")
+        await app.mcp_stop()
 
 @shot
 async def trace():

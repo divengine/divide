@@ -71,7 +71,7 @@ class McpServerDialog(_Dialog):
     """State, address and settings of divide's MCP server; Start, Stop and Copy act at once."""
 
     DEFAULT_CSS = """
-    McpServerDialog { width: 76; height: 18; }
+    McpServerDialog { width: 80; height: 17; }
     McpServerDialog .mcp-state { height: 4; color: $text; background: $surface; }
     McpServerDialog .mcp-fields { height: 2; margin-top: 1; }
     McpServerDialog .mcp-host { width: 1fr; height: 2; margin-right: 2; }

@@ -45,7 +45,7 @@ Sin carpeta, **Ctrl+B**, **Buscar en archivos** y la [[configuración de Div|Div
 | **Git** | Cambios, Historial, Ramas, Commit, Pull, Push, Fetch, Diff del archivo, Historial del archivo, Autoría (blame), Pull requests e issues: ver [[Git]] |
 | **Herramientas** | Dialector, Traducir una plantilla, [[Paquetes Composer\|Composer]] |
 | **Ventana** | Proyecto (Ctrl+B), Mensajes, Mosaico, Cascada, Zoom, Siguiente, Anterior, Cerrar, Cerrar todas |
-| **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, [[configuración de Div\|Div Setup]], Xdebug |
+| **Opciones** | Colores (el tema y la profundidad de color), Idioma (de la interfaz), símbolos simples o marcas de tipo de archivo, servidores de lenguaje, motor Div, [[configuración de Div\|Div Setup]], Xdebug, [[servidor MCP\|MCP Server]] |
 | **Ayuda** | Contenido, Libros, Índice (Shift+F1), Buscar tema (Ctrl+F1), Buscar (en los libros por palabras, por relevancia), Tema anterior (Alt+F1), Uso de la ayuda (F1), Bienvenida, Acerca de: ver [[Ayuda\|Help]] |
 
 ## Ventanas

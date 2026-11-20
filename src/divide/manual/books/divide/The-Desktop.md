@@ -45,7 +45,7 @@ Without a folder, **Ctrl+B**, **Find in files** and the project's [[Div setup|Di
 | **Git** | Changes, History, Branches, Commit, Pull, Push, Fetch, Diff of the file, File history, Blame, Pull requests and issues: see [[Git]] |
 | **Tools** | Dialector, Translate a template, [[Composer packages\|Composer]] |
 | **Window** | Project (Ctrl+B), Messages, Tile, Cascade, Zoom, Next, Previous, Close, Close all |
-| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, [[Div setup\|Div Setup]], Xdebug |
+| **Options** | Colors (the theme and the colour depth), Language (of the interface), plain symbols or file type marks, language servers, Div engine, [[Div setup\|Div Setup]], Xdebug, [[MCP server\|MCP Server]] |
 | **Help** | Contents, Books, Index (Shift+F1), Topic search (Ctrl+F1), Search (the books by words, ranked), Previous topic (Alt+F1), Using help (F1), Welcome, About: see [[Help]] |
 
 ## Windows

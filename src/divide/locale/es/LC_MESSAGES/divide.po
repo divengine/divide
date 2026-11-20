@@ -3999,7 +3999,7 @@ msgid "the server stopped on its own"
 msgstr "el servidor se detuvo solo"
 
 msgid "~C~opy client setup"
-msgstr "~C~opiar configuración del cliente"
+msgstr "~C~opiar para el cliente"
 
 msgid "~H~ost"
 msgstr "~H~ost"
