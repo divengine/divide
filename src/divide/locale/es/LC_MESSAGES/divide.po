@@ -2508,10 +2508,6 @@ msgstr "separado en {oid}"
 msgid "dev"
 msgstr "dev"
 
-#, python-brace-format
-msgid "divide --mcp needs the MCP SDK ({error}): pip install 'divide[mcp]'"
-msgstr "divide --mcp necesita el SDK de MCP ({error}): pip install 'divide[mcp]'"
-
 msgid "divide will speak the language chosen the next time it starts."
 msgstr "divide usará el idioma elegido la próxima vez que se inicie."
 
@@ -2704,10 +2700,10 @@ msgstr "require"
 
 msgid ""
 "serve divide's MCP server for the project folder over stdio, without the "
-"interface (needs the mcp extra: pip install 'divide[mcp]')"
+"interface (in divide, Options > MCP server serves it over HTTP)"
 msgstr ""
 "sirve el servidor MCP de divide para la carpeta del proyecto por stdio, sin "
-"la interfaz (necesita el extra mcp: pip install 'divide[mcp]')"
+"la interfaz (dentro de divide, Opciones > Servidor MCP lo sirve por HTTP)"
 
 msgid "squashed into one commit"
 msgstr "aplastada en un solo commit"
@@ -3912,3 +3908,107 @@ msgstr "── servidor web {address} ──"
 #~ msgid "~L~anguage of the interface"
 #~ msgstr "~I~dioma de la interfaz"
 
+#, python-brace-format
+msgid "A token is required (kept in {path})"
+msgstr "Se exige un token (guardado en {path})"
+
+msgid "Close"
+msgstr "Cerrar"
+
+#, python-brace-format
+msgid "Copied: the client setup for {url}"
+msgstr "Copiada: la configuración del cliente para {url}"
+
+#, python-brace-format
+msgid "Copied: the client setup for {url}, with the token (keep it private)"
+msgstr "Copiada: la configuración del cliente para {url}, con el token (no la compartas)"
+
+msgid "MCP server"
+msgstr "Servidor MCP"
+
+msgid "MCP server stopped"
+msgstr "Servidor MCP detenido"
+
+#, python-brace-format
+msgid "MCP server: {error}"
+msgstr "Servidor MCP: {error}"
+
+#, python-brace-format
+msgid "MCP server: {url}"
+msgstr "Servidor MCP: {url}"
+
+#, python-brace-format
+msgid "Not running: {error}"
+msgstr "No está en marcha: {error}"
+
+msgid "Only this machine can connect. Rendering runs the project's PHP: start it only on projects you trust."
+msgstr "Solo esta máquina puede conectarse. Renderizar ejecuta el PHP del proyecto: inícialo solo en proyectos en los que confías."
+
+msgid "Open a project folder first (File > Open folder): the server serves it."
+msgstr "Abre primero la carpeta de un proyecto (Archivo > Abrir carpeta): el servidor la sirve."
+
+msgid "Open a project folder first: the MCP server serves it"
+msgstr "Abre primero la carpeta de un proyecto: el servidor MCP la sirve"
+
+#, python-brace-format
+msgid "Project: {path}"
+msgstr "Proyecto: {path}"
+
+msgid "Reachable from the network: a token is required, and the traffic is not encrypted. Put a TLS reverse proxy in front, or use an SSH tunnel to 127.0.0.1."
+msgstr "Accesible desde la red: se exige un token y el tráfico no va cifrado. Pon delante un proxy inverso con TLS, o usa un túnel SSH a 127.0.0.1."
+
+#, python-brace-format
+msgid "Requests: {count} ({active} running) · clients: {clients}"
+msgstr "Peticiones: {count} ({active} en curso) · clientes: {clients}"
+
+msgid "Require a ~t~oken (always on a network address)"
+msgstr "Exigir un ~t~oken (siempre en una dirección de red)"
+
+#, python-brace-format
+msgid "Running: {url}"
+msgstr "En marcha: {url}"
+
+msgid "Start ~w~ith divide"
+msgstr "Iniciar ~j~unto con divide"
+
+msgid "St~o~p"
+msgstr "~D~etener"
+
+#, python-brace-format
+msgid "The MCP server could not start: {error}"
+msgstr "El servidor MCP no pudo iniciarse: {error}"
+
+#, python-brace-format
+msgid "The MCP server now serves {name}"
+msgstr "El servidor MCP sirve ahora {name}"
+
+#, python-brace-format
+msgid "The MCP server stopped: {error}"
+msgstr "El servidor MCP se detuvo: {error}"
+
+msgid "The port is a number from 1 to 65535 (8765 by default)."
+msgstr "El puerto es un número de 1 a 65535 (8765 por defecto)."
+
+msgid "Working..."
+msgstr "Trabajando..."
+
+msgid "none yet"
+msgstr "ninguno todavía"
+
+msgid "the server stopped on its own"
+msgstr "el servidor se detuvo solo"
+
+msgid "~C~opy client setup"
+msgstr "~C~opiar configuración del cliente"
+
+msgid "~H~ost"
+msgstr "~H~ost"
+
+msgid "~M~CP server..."
+msgstr "Servidor MC~P~..."
+
+msgid "~P~ort"
+msgstr "~P~uerto"
+
+msgid "~R~estart"
+msgstr "~R~einiciar"

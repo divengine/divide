@@ -13,7 +13,6 @@
 | phpactor or intelephense | PHP completion, hover, definitions | optional; Options > Language servers |
 | git | the Git menu, the project window's marks, the editor's margin; Go to file and Find in files respect `.gitignore` | optional; without it, no Git menu and a folder walk |
 | gh, tea | Git > Pull requests and issues (GitHub; Gitea, Forgejo, Codeberg) | optional; signed in with `gh auth login` / `tea login add` |
-| mcp 2.3+ (the official MCP SDK) | `divide --mcp` | optional: the `mcp` extra, `pip install -e ".[mcp]"` in a checkout; not in the standalone binaries yet |
 | Composer | Tools > Composer packages | optional; `$DIVIDE_COMPOSER`, Options, a `composer.phar` in the project or `composer` on `PATH` |
 
 ## 2. Installation
@@ -61,9 +60,10 @@ divide --mcp /path/to/project
 
 - `--mcp`: no interface; serves divide's MCP server for the project folder
   over stdio, for an MCP client to start (the protocol on stdout, logs on
-  stderr). It takes exactly one folder and needs the `mcp` extra. The
-  [MCP Server](https://github.com/divengine/divide/wiki/MCP-Server) page of
-  the manual has the tools, a client configuration and the trust model.
+  stderr). It takes exactly one folder. Inside divide, Options > MCP server
+  serves the same tools over HTTP (`http://127.0.0.1:8765/mcp` by default).
+  The [MCP Server](https://github.com/divengine/divide/wiki/MCP-Server) page
+  of the manual has the tools, client configurations and the trust model.
 
 ## 4. Configuration
 
@@ -81,6 +81,7 @@ hand is possible while divide is closed.
 | `lsp`, `lsp_commands` | Options > Language servers | which server per language, and custom commands |
 | `run_args` | Run > Parameters | the arguments of each script |
 | `web` | Run > Web server | address, document root, router, browser |
+| `mcp` | Options > MCP server | `host`, `port`, `autostart` (start with divide; off by default), `token` (require one on loopback too). The token is not here: `mcp-token`, beside this file, readable by the user alone |
 | `language` | Options > Language | the interface's language: `auto` (the system's), `en`, `es` (applies at the next start) |
 | `history` | every input line with `▐↓▌` | the input histories, by kind (`file`, `find`, `find-files`, `commands`...), 20 entries each |
 | `recent` | opening a folder or a file | `folders` and `files` opened lately, newest first, 12 each (the Welcome window; Del forgets one) |

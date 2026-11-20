@@ -45,13 +45,22 @@ jobs:
       - name: Div for the shop example (its vendor/)
         run: composer install --no-interaction --no-progress --working-dir examples/shop
 
-      - name: divide, its MCP extra and the tests' tools
-        run: python -m pip install -e ".[dev,mcp]"
+      - name: divide and the tests' tools (the official MCP SDK's client among them)
+        run: python -m pip install -e ".[dev]"
+
+      - uses: actions/setup-node@v4  # the TypeScript MCP SDK's client, against divide's HTTP server
+        with:
+          node-version: "22"
+
+      - name: The TypeScript MCP SDK
+        shell: bash
+        run: npm install --prefix "$RUNNER_TEMP/mcp-ts" --no-fund --no-audit @modelcontextprotocol/sdk@1.32.2
 
       - name: Tests
+        shell: bash
         env:
           DIVIDE_DIV_PHP: ${{ github.workspace }}/examples/shop/vendor/autoload.php
-        run: python -m pytest -q -p no:cacheprovider -rs
+        run: MCP_TS_SDK="$RUNNER_TEMP/mcp-ts" python -m pytest -q -p no:cacheprovider -rs
 
   release-note:
     name: A new version has its note

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-19 22:52+0000\n"
+"POT-Creation-Date: 2026-11-20 06:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,6 +122,10 @@ msgid "16 colours (Windows console)"
 msgstr ""
 
 msgid "A folder cannot go inside itself."
+msgstr ""
+
+#, python-brace-format
+msgid "A token is required (kept in {path})"
 msgstr ""
 
 msgid "Abort the merge"
@@ -356,6 +360,9 @@ msgstr ""
 msgid "Classes ~f~older"
 msgstr ""
 
+msgid "Close"
+msgstr ""
+
 msgid "Close a~l~l"
 msgstr ""
 
@@ -455,6 +462,14 @@ msgid "Content end suffix"
 msgstr ""
 
 msgid "Contents"
+msgstr ""
+
+#, python-brace-format
+msgid "Copied: the client setup for {url}"
+msgstr ""
+
+#, python-brace-format
+msgid "Copied: the client setup for {url}, with the token (keep it private)"
 msgstr ""
 
 #, python-brace-format
@@ -1273,6 +1288,20 @@ msgstr ""
 msgid "Lower case"
 msgstr ""
 
+msgid "MCP server"
+msgstr ""
+
+msgid "MCP server stopped"
+msgstr ""
+
+#, python-brace-format
+msgid "MCP server: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "MCP server: {url}"
+msgstr ""
+
 msgid "Macro begin"
 msgstr ""
 
@@ -1466,6 +1495,10 @@ msgstr ""
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr ""
 
+#, python-brace-format
+msgid "Not running: {error}"
+msgstr ""
+
 msgid "Nothing changed since the last commit"
 msgstr ""
 
@@ -1518,6 +1551,11 @@ msgstr ""
 msgid "Only its mode changed"
 msgstr ""
 
+msgid ""
+"Only this machine can connect. Rendering runs the project's PHP: start it"
+" only on projects you trust."
+msgstr ""
+
 msgid "Open a Div template (.tpl) to render it."
 msgstr ""
 
@@ -1549,6 +1587,12 @@ msgid "Open a folder to work on a project, or a file on its own."
 msgstr ""
 
 msgid "Open a folder..."
+msgstr ""
+
+msgid "Open a project folder first (File > Open folder): the server serves it."
+msgstr ""
+
+msgid "Open a project folder first: the MCP server serves it"
 msgstr ""
 
 msgid "Open ~c~omposer.json"
@@ -1678,6 +1722,10 @@ msgstr ""
 msgid "Project"
 msgstr ""
 
+#, python-brace-format
+msgid "Project: {path}"
+msgstr ""
+
 msgid "Property separator"
 msgstr ""
 
@@ -1732,6 +1780,12 @@ msgid "P~u~sh"
 msgstr ""
 
 msgid "Raw URL encode"
+msgstr ""
+
+msgid ""
+"Reachable from the network: a token is required, and the traffic is not "
+"encrypted. Put a TLS reverse proxy in front, or use an SSH tunnel to "
+"127.0.0.1."
 msgstr ""
 
 msgid "Recent files"
@@ -1808,6 +1862,13 @@ msgstr ""
 msgid "Repository"
 msgstr ""
 
+#, python-brace-format
+msgid "Requests: {count} ({active} running) · clients: {clients}"
+msgstr ""
+
+msgid "Require a ~t~oken (always on a network address)"
+msgstr ""
+
 msgid "Require ~D~iv (divengine/div)"
 msgstr ""
 
@@ -1836,6 +1897,10 @@ msgid "Run in termi~n~al"
 msgstr ""
 
 msgid "Running"
+msgstr ""
+
+#, python-brace-format
+msgid "Running: {url}"
 msgstr ""
 
 msgid "Runtime (require)"
@@ -1953,6 +2018,9 @@ msgstr ""
 msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
 msgstr ""
 
+msgid "Start ~w~ith divide"
+msgstr ""
+
 #, python-brace-format
 msgid "Starting php -S {address}..."
 msgstr ""
@@ -1984,6 +2052,9 @@ msgid "Strip begin"
 msgstr ""
 
 msgid "Strip end"
+msgstr ""
+
+msgid "St~o~p"
 msgstr ""
 
 msgid "Sub-parser begin prefix"
@@ -2062,6 +2133,18 @@ msgstr ""
 msgid "Template variables"
 msgstr ""
 
+#, python-brace-format
+msgid "The MCP server could not start: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "The MCP server now serves {name}"
+msgstr ""
+
+#, python-brace-format
+msgid "The MCP server stopped: {error}"
+msgstr ""
+
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
 msgstr ""
 
@@ -2109,6 +2192,9 @@ msgstr ""
 msgid ""
 "The open pull requests of {repo}. Ins proposes the current branch as a "
 "new one."
+msgstr ""
+
+msgid "The port is a number from 1 to 65535 (8765 by default)."
 msgstr ""
 
 msgid "The project has a composer.json already."
@@ -2359,6 +2445,9 @@ msgstr ""
 msgid "Word wrap"
 msgstr ""
 
+msgid "Working..."
+msgstr ""
+
 msgid "Write a message: what this commit does, in a line."
 msgstr ""
 
@@ -2562,10 +2651,6 @@ msgstr ""
 msgid "dev"
 msgstr ""
 
-#, python-brace-format
-msgid "divide --mcp needs the MCP SDK ({error}): pip install 'divide[mcp]'"
-msgstr ""
-
 msgid "divide will speak the language chosen the next time it starts."
 msgstr ""
 
@@ -2687,6 +2772,9 @@ msgstr ""
 msgid "none"
 msgstr ""
 
+msgid "none yet"
+msgstr ""
+
 msgid "not committed"
 msgstr ""
 
@@ -2759,7 +2847,7 @@ msgstr ""
 
 msgid ""
 "serve divide's MCP server for the project folder over stdio, without the "
-"interface (needs the mcp extra: pip install 'divide[mcp]')"
+"interface (in divide, Options > MCP server serves it over HTTP)"
 msgstr ""
 
 msgid "squashed into one commit"
@@ -2805,6 +2893,9 @@ msgid ""
 msgstr ""
 
 msgid "the root has no parent"
+msgstr ""
+
+msgid "the server stopped on its own"
 msgstr ""
 
 msgid "the setup must be a JSON object"
@@ -3400,6 +3491,9 @@ msgstr ""
 msgid "~C~opy"
 msgstr ""
 
+msgid "~C~opy client setup"
+msgstr ""
+
 msgid "~C~opy the address"
 msgstr ""
 
@@ -3557,6 +3651,9 @@ msgstr ""
 msgid "~H~istory"
 msgstr ""
 
+msgid "~H~ost"
+msgstr ""
+
 msgid "~I~mport tags..."
 msgstr ""
 
@@ -3585,6 +3682,9 @@ msgid "~L~anguage servers..."
 msgstr ""
 
 msgid "~L~ibrary (a package for others)"
+msgstr ""
+
+msgid "~M~CP server..."
 msgstr ""
 
 msgid "~M~ax parse cycles (DIV_MAX_PARSE_CYCLES)"
@@ -3707,6 +3807,9 @@ msgstr ""
 msgid "~P~ath of xdebug.so"
 msgstr ""
 
+msgid "~P~ort"
+msgstr ""
+
 msgid "~P~review"
 msgstr ""
 
@@ -3759,6 +3862,9 @@ msgid "~R~eplace..."
 msgstr ""
 
 msgid "~R~epository (DIV_REPO)"
+msgstr ""
+
+msgid "~R~estart"
 msgstr ""
 
 msgid "~R~estore Div's defaults"

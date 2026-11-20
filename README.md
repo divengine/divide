@@ -95,10 +95,11 @@ The examples below generate HTML because it is the easiest output to read; the s
   window, the editor's margin and Git > Changes), diffs as a code review shows
   them, commits, history, branches, merges, stashes and blame, and the pull
   requests and issues of GitHub or Gitea.
-- **An MCP server for agents.** `divide --mcp PROJECT` gives an AI coding
-  agent the same checks, renders and render trace through the real Div
-  engine, with the project's Div setup, over stdio. It needs the optional
-  `mcp` extra ([MCP Server](https://github.com/divengine/divide/wiki/MCP-Server)).
+- **An MCP server for agents.** Options > MCP server starts it on
+  `http://127.0.0.1:8765/mcp`: an AI coding agent gets the same checks,
+  renders and render trace through the real Div engine, with the project's
+  Div setup. `divide --mcp PROJECT` serves it over stdio too. Nothing to
+  install beyond divide ([MCP Server](https://github.com/divengine/divide/wiki/MCP-Server)).
 - **A project window that does things.** You can create, rename and delete
   files and folders without leaving the IDE.
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
@@ -114,10 +115,11 @@ the deployed generator through those interfaces. divide's PHP development
 server can help while developing an HTTP generator, but it is not a
 generator API or an MCP platform.
 
-divide has an MCP server of its own, for developing: `divide --mcp PROJECT`
-lets an AI coding agent use the IDE's design-time services on a project (the
-Div setup, the editor's checks, renders and the render trace through the real
-Div engine). It is not a generator's MCP and does not see divide's open
+divide has an MCP server of its own, for developing: Options > MCP server
+(HTTP, started and stopped in the IDE) or `divide --mcp PROJECT` (stdio) lets
+an AI coding agent use the IDE's design-time services on the open project
+(the Div setup, the editor's checks, renders and the render trace through the
+real Div engine). It is not a generator's MCP and does not see divide's open
 editors. See [MCP Server](https://github.com/divengine/divide/wiki/MCP-Server).
 
 Not decided yet: what a generator is as a unit, and which responsibilities

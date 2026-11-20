@@ -39,7 +39,6 @@ import os
 import re
 import json
 import shutil
-import sys
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -126,6 +125,7 @@ from divide.ui.palette import PaletteMixin
 from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
+from divide.ui.mcp import McpMixin
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.forge import CM_FORGE, ForgeMixin
 from divide.ui.git import (
@@ -209,6 +209,7 @@ CM_ADD_WATCH = Command.USER + 87  # Ctrl+F7
 CM_WATCHES = Command.USER + 88
 CM_CALL_STACK = Command.USER + 89  # Ctrl+F3
 CM_XDEBUG = Command.USER + 90
+CM_MCP_SERVER = Command.USER + 203
 CM_TRACE_RENDER = Command.USER + 91
 CM_OUTLINE = Command.USER + 92  # Ctrl+O
 CM_GOTO_FILE = Command.USER + 93  # Ctrl+P
@@ -354,7 +355,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -426,6 +427,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         self._lsp_init()
         self._run_init()
         self._web_init()
+        self._mcp_init()
         self.folder: Path | None = root.resolve() if root is not None else None  # the open folder: the project
         self._loose_dir: Path | None = None  # without a folder: where the last file opened is
         self.initial_files = files
@@ -579,6 +581,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                     MenuItem(_('~D~iv engine...'), CM_DIV_ENGINE),
                     MenuItem(_('Div s~e~tup...'), CM_DIV_SETUP),
                     MenuItem(_('~X~debug...'), CM_XDEBUG),
+                    MenuItem(_('~M~CP server...'), CM_MCP_SERVER),
                     Separator(),
                     MenuItem(_('Lan~g~uage...'), CM_LANGUAGE),
                 ),
@@ -623,6 +626,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
 
     def on_unmount(self) -> None:
         # however divide ends (Alt+X stops them politely first): nothing it started outlives it
+        self.mcp_stop_now()
         children.kill_all()
 
     @property
@@ -649,6 +653,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             self.call_after_refresh(self.show_welcome)
         self.call_after_refresh(self.update_status)
         self.call_after_refresh(self.start_git_watch)
+        self.call_after_refresh(self.mcp_autostart)  # only when Options > MCP server says so
 
     # ----------------------------------------------------------- windows
     def windows(self) -> list[Window]:
@@ -785,6 +790,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
             else:
                 self.raise_window(self.project_window())
             return True
+        serving = self.mcp_server is not None and self.mcp_server.running
         if not await self._leave_folder():
             return False
         self.folder = path
@@ -794,12 +800,14 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
         self.toggle_project()
         self.call_after_refresh(self.refresh_git_state)
         self.call_after_refresh(self.update_status)
+        await self.mcp_follow_folder(serving)
         return True
 
     async def close_folder(self) -> None:
         """Back to no folder: every window closes (asking about unsaved changes); the Welcome window."""
         if not await self._leave_folder():
             return
+        await self.mcp_stop()  # it serves a folder: none is open now
         self.folder = None
         self._loose_dir = None
         self.apply_div_setup()
@@ -985,6 +993,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 if self.session is not None:
                     await self.session.stop()
                 await self.web_stop()
+                await self.mcp_stop()
                 self.exit()
             case Command.NEW:
                 self.new_file()
@@ -1124,6 +1133,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, ComposerM
                 await self.web_server_command()
             case _ if command == CM_XDEBUG:
                 await self.choose_xdebug()
+            case _ if command == CM_MCP_SERVER:
+                await self.mcp_command()
             case _ if command == CM_FIND_IN_FILES:
                 await self.find_in_files()
             case _ if command in (CM_GOTO_FILE, CM_COMMANDS):
@@ -2621,18 +2632,15 @@ def main(argv: list[str] | None = None) -> None:
                         help=_("language of the interface for this run (default: Options > Language, else the system's)"))
     parser.add_argument("--mcp", action="store_true",
                         help=_("serve divide's MCP server for the project folder over stdio, without the interface "
-                               "(needs the mcp extra: pip install 'divide[mcp]')"))
+                               "(in divide, Options > MCP server serves it over HTTP)"))
     parser.add_argument("--version", action="version", version=f"divide {__version__}")
     args = parser.parse_args(argv)
     if args.mcp:
         if len(args.paths) != 1 or not Path(args.paths[0]).expanduser().is_dir():
             parser.error(_("--mcp takes one project folder: divide --mcp /path/to/project"))
-        try:
-            from divide import mcpserver
-        except ImportError as exc:
-            print(_("divide --mcp needs the MCP SDK ({error}): pip install 'divide[mcp]'").format(error=exc), file=sys.stderr)
-            raise SystemExit(2) from None
-        raise SystemExit(mcpserver.main(args.paths[0]))
+        from divide.mcpserver import stdio
+
+        raise SystemExit(stdio.main(args.paths[0]))
     root: Path | None = None  # no folder: files on their own, or the Welcome window
     files: list[Path] = []
     for raw in args.paths:

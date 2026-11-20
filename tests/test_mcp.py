@@ -1,10 +1,12 @@
-"""divide's MCP server (``divide --mcp PROJECT``), through MCP clients.
+"""divide's MCP server, through MCP clients: the tools, and stdio.
 
-Most tests talk to the server over stdio, as an agent does: the official SDK's
-client starts ``divide --mcp`` as a process. Some speak JSON-RPC by hand on the
-process's pipes (a clean stdout, cancellation), a few connect the SDK's client
-in-process to change a limit. Rendering needs php and a Div engine
+The tools are reached over HTTP, the way divide serves them (Options > MCP
+server): the server runs in this process on a free port and the official
+Python SDK's client talks to it, in the 2026-07-28 protocol unless a test
+says otherwise. stdio (``divide --mcp PROJECT``) is reached as an agent
+does, with the server as a process. Rendering needs php and a Div engine
 (DIVIDE_DIV_PHP, as in test_render); those tests are skipped without them.
+The SDK is a test dependency only: divide's server uses none.
 """
 
 import asyncio
@@ -13,6 +15,7 @@ import os
 import shutil
 import sys
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
@@ -22,8 +25,10 @@ pytest.importorskip("mcp")
 from mcp import Client  # noqa: E402
 from mcp.client.stdio import StdioServerParameters  # noqa: E402
 
-from divide import __version__, mcpserver  # noqa: E402
+from divide import __version__  # noqa: E402
 from divide.app import Divide, main  # noqa: E402
+from divide.mcpserver import tools  # noqa: E402
+from divide.mcpserver.http import HttpServer  # noqa: E402
 from divide.run import children, workbench  # noqa: E402
 from divide.run.render import ENV_ENGINE, render  # noqa: E402
 
@@ -49,6 +54,19 @@ def server_env(**changes) -> dict[str, str]:
 
 def stdio(root: Path, **env) -> Client:
     return Client(StdioServerParameters(command=sys.executable, args=["-c", START, "--mcp", str(root)], env=server_env(**env)))
+
+
+@asynccontextmanager
+async def served(root: Path, mode: str = "2026-07-28"):
+    """An SDK client on divide's HTTP server for ``root`` (a free port), the server stopped after."""
+    server = HttpServer(root, port=0)
+    server.start()
+    try:
+        async with Client(server.url, mode=mode) as client:
+            yield client
+    finally:
+        await asyncio.to_thread(server.stop)
+    assert server.state == "stopped"
 
 
 def project(tmp_path: Path) -> Path:
@@ -85,18 +103,31 @@ def snapshot(*folders: Path) -> dict:
 
 
 # ------------------------------------------------------------------ protocol
-async def test_initialization_and_the_tools(tmp_path):
-    async with stdio(project(tmp_path)) as client:
-        info = client.server_info
-        assert (info.name, info.version) == ("divide", __version__)
-        assert "never writes to the project" in client.instructions
-        tools = {t.name: t for t in (await client.list_tools()).tools}
-    assert set(tools) == {"project_info", "div_check", "div_render", "div_trace", "div_trace_page",
+@pytest.mark.parametrize("how", ["http-legacy", "http-auto", "stdio"])
+async def test_initialization_and_the_tools(tmp_path, how):
+    root = project(tmp_path)
+    if how == "stdio":
+        connection = stdio(root)
+    else:
+        server = HttpServer(root, port=0)
+        server.start()
+        connection = Client(server.url, mode=how.removeprefix("http-"))
+    try:
+        async with connection as client:
+            info = client.server_info
+            assert (info.name, info.version) == ("divide", __version__)
+            assert "never writes to the project" in client.instructions
+            listed = {t.name: t for t in (await client.list_tools()).tools}
+            assert (await client.call_tool("div_check", {"template": "page.tpl"})).is_error is False
+    finally:
+        if how != "stdio":
+            await asyncio.to_thread(server.stop)
+    assert set(listed) == {"project_info", "div_check", "div_render", "div_trace", "div_trace_page",
                           "div_trace_mutation", "div_check_dialect"}
-    render_schema = tools["div_render"].input_schema
+    render_schema = listed["div_render"].input_schema
     assert render_schema["required"] == ["template"]
     assert {"data_file", "source", "data", "use_data_file", "max_output_chars", "timeout_seconds"} <= set(render_schema["properties"])
-    assert all(t.annotations.read_only_hint and not t.annotations.open_world_hint for t in tools.values())
+    assert all(t.annotations.read_only_hint and not t.annotations.open_world_hint for t in listed.values())
 
 
 def rpc_lines(proc_out: bytes) -> list[dict]:
@@ -150,7 +181,7 @@ async def test_stdout_carries_only_the_protocol(tmp_path):
 @needs_div
 async def test_render_is_the_ides_render(tmp_path):
     root = project(tmp_path)
-    async with stdio(root) as client:
+    async with served(root) as client:
         got = content(await call(client, "div_render", template="page.tpl"))
     assert got["status"] == "ok" and got["output"] == "Hi Rafa!|<1><2>"
     assert (got["template"], got["data_file"], got["data"], got["source"]) == ("page.tpl", "page.json", "file", "file")
@@ -173,7 +204,7 @@ async def test_render_is_the_ides_render(tmp_path):
 @needs_div
 async def test_render_takes_source_and_data_unsaved(tmp_path):
     root = project(tmp_path)
-    async with stdio(root) as client:
+    async with served(root) as client:
         got = content(await call(client, "div_render", template="page.tpl", source="X{% parts/greet %}", data='{name: "Ana"}'))
         assert (got["output"], got["source"], got["data"], got["data_file"]) == ("XHi Ana!", "argument", "argument", None)
         new = content(await call(client, "div_render", template="drafts.tpl", source="{$name}", data_file="page.json"))
@@ -187,7 +218,7 @@ async def test_render_takes_source_and_data_unsaved(tmp_path):
 async def test_render_reports_div_messages_and_fatal(tmp_path):
     root = project(tmp_path)
     (root / "bad.json").write_text('{"name": ', encoding="utf-8")
-    async with stdio(root) as client:
+    async with served(root) as client:
         got = content(await call(client, "div_render", template="page.tpl", data_file="bad.json"))
     assert got["status"] == "warnings"
     assert any(m["level"] == "DATA" for m in got["messages"])
@@ -197,7 +228,7 @@ async def test_render_reports_div_messages_and_fatal(tmp_path):
 async def test_check_is_the_editors(tmp_path):
     root = project(tmp_path)
     (root / "broken.tpl").write_text("{% parts/greet %}\n{% nowhere %}\n[$items]{$value}\n", encoding="utf-8")
-    async with stdio(root) as client:
+    async with served(root) as client:
         got = content(await call(client, "div_check", template="broken.tpl"))
         fine = content(await call(client, "div_check", template="broken.tpl", source="{% parts/greet %}"))
     assert got["div_consulted"] and got["includes"] == {"nowhere": None, "parts/greet": "parts/greet.tpl"}
@@ -220,7 +251,7 @@ async def test_check_is_the_editors(tmp_path):
 @needs_div
 async def test_trace_pages_and_mutations(tmp_path):
     root = project(tmp_path)
-    async with stdio(root) as client:
+    async with served(root) as client:
         got = content(await call(client, "div_trace", template="page.tpl", limit=2))
         assert got["output"] == "Hi Rafa!|<1><2>" and got["status"] == "ok"
         summary = got["summary"]
@@ -245,7 +276,7 @@ async def test_project_info_and_dialects(tmp_path):
     (root / "bad.dialect").write_text('{"DIV_TAG_REPLACEMENT_PREFIX": "", "DIV_TAG_REPLACEMENT_SUFFIX": ""}', encoding="utf-8")
     (root / ".div" / "setup.json").write_text(
         '{"dialect": "erb.dialect",\n "parser": {"max_cycles": "many"},\n "request": {"cookie": {"token": "s3cret"}}}', encoding="utf-8")
-    async with stdio(root) as client:
+    async with served(root) as client:
         info = content(await call(client, "project_info"))
         mine = content(await call(client, "div_check_dialect"))
         bad = content(await call(client, "div_check_dialect", dialect_file="bad.dialect"))
@@ -270,7 +301,7 @@ async def test_untrusted_php_settings_stay_left_out(tmp_path):
     (root / "up.tpl").write_text("{up:name}", encoding="utf-8")
     (root / "up.json").write_text('{"name": "rafa"}', encoding="utf-8")
     home = Path(os.environ["DIV_HOME"])
-    async with stdio(root) as client:
+    async with served(root) as client:
         info = content(await call(client, "project_info"))
         got = content(await call(client, "div_render", template="up.tpl"))
     assert info["untrusted_php"]["modifiers"] == {"up:": "strtoupper"} and "Options > Div setup" in info["untrusted_php"]["how"]
@@ -289,7 +320,7 @@ async def test_paths_stay_in_the_project(tmp_path):
         (root / "away").symlink_to(tmp_path, target_is_directory=True)
     except OSError:  # Windows without the right to make links
         links = False
-    async with stdio(root) as client:
+    async with served(root) as client:
         for name, args in [("div_check", {"template": "../secret.tpl"}), ("div_check", {"template": str(outside)}),
                            ("div_render", {"template": "../secret.tpl"}),
                            ("div_render", {"template": "page.tpl", "data_file": "../secret.tpl"}),
@@ -309,7 +340,7 @@ async def test_nothing_is_written(tmp_path):
     (root / "page.php").write_text("<?php echo 1;", encoding="utf-8")
     watched = (root, Path(os.environ["DIV_HOME"]), Path(os.environ["XDG_CONFIG_HOME"]))
     before = snapshot(*watched)
-    async with stdio(root) as client:
+    async with served(root) as client:
         content(await call(client, "project_info"))
         content(await call(client, "div_check", template="page.tpl"))
         content(await call(client, "div_render", template="page.tpl"))
@@ -321,11 +352,12 @@ async def test_nothing_is_written(tmp_path):
 
 
 # ------------------------------------------------------------------ no PHP, no Div
-async def test_without_php(tmp_path):
+async def test_without_php(tmp_path, monkeypatch):
     root = project(tmp_path)
     empty = tmp_path / "bin"
     empty.mkdir()
-    async with stdio(root, PATH=str(empty)) as client:
+    monkeypatch.setenv("PATH", str(empty))
+    async with served(root) as client:
         info = content(await call(client, "project_info"))
         assert info["php"] == {"found": False, "version": None} and info["div"]["checked"] is False
         assert "php not found" in error(await call(client, "div_render", template="page.tpl"))
@@ -335,9 +367,10 @@ async def test_without_php(tmp_path):
 
 
 @pytest.mark.skipif(not shutil.which("php"), reason="needs php")
-async def test_without_div(tmp_path):
+async def test_without_div(tmp_path, monkeypatch):
     root = project(tmp_path)
-    async with stdio(root, **{ENV_ENGINE: None}) as client:
+    monkeypatch.delenv(ENV_ENGINE, raising=False)
+    async with served(root) as client:
         info = content(await call(client, "project_info"))
         assert info["engine"] is None and info["div"]["reason"] == "Div was not found"
         message = error(await call(client, "div_render", template="page.tpl"))
@@ -350,15 +383,15 @@ async def test_bounded_outputs_and_arguments(tmp_path, monkeypatch):
     root = project(tmp_path)
     (root / "big.tpl").write_text("[$items]{$value}-[/$items]", encoding="utf-8")
     (root / "big.json").write_text(json.dumps({"items": list(range(3000))}), encoding="utf-8")
-    async with Client(mcpserver.build(root)) as client:  # in-process: a limit can be changed
+    async with served(root) as client:  # the server runs in this process: a limit can be changed
         got = content(await call(client, "div_render", template="big.tpl", max_output_chars=10))
         assert got["output_truncated"] and len(got["output"]) == 10 and got["output_chars"] > 10_000
         trace = content(await call(client, "div_trace", template="big.tpl", limit=3, max_output_chars=5))
         assert len(trace["mutations"]) == 3 and trace["next_offset"] == 3 and trace["output_truncated"]
-        assert all(len(m.get("inserted", {}).get("text", "")) <= mcpserver.EXCERPT for m in trace["mutations"])
+        assert all(len(m.get("inserted", {}).get("text", "")) <= tools.EXCERPT for m in trace["mutations"])
         one = content(await call(client, "div_trace_mutation", trace_id=trace["trace_id"], index=trace["summary"]["mutations"] - 1, max_chars=7))
         assert len(one["after"]) <= 7 and one["after_truncated"]
-        monkeypatch.setattr(mcpserver, "MAX_INPUT", 100)
+        monkeypatch.setattr(tools, "MAX_INPUT", 100)
         assert "more than 100" in error(await call(client, "div_render", template="page.tpl", source="x" * 101))
         assert "between 1" in error(await call(client, "div_render", template="page.tpl", max_output_chars=0))
         assert "between 1" in error(await call(client, "div_render", template="page.tpl", timeout_seconds=1000))
@@ -377,7 +410,7 @@ def slow_project(tmp_path: Path) -> Path:
 @needs_div
 async def test_a_render_that_takes_too_long_is_stopped(tmp_path):
     root = slow_project(tmp_path)
-    async with stdio(root) as client:
+    async with served(root) as client:
         started = time.monotonic()
         message = error(await call(client, "div_render", template="slow.tpl", timeout_seconds=1))
         assert "longer than 1s" in message and time.monotonic() - started < 6
@@ -423,7 +456,7 @@ async def test_a_cancelled_call_stops_php(tmp_path):
 
 
 # ------------------------------------------------------------------ the command line
-def test_the_command_line(tmp_path, capsys, monkeypatch):
+def test_the_command_line(tmp_path, capsys):
     root = project(tmp_path)
     for argv in (["--mcp"], ["--mcp", str(root / "page.tpl")], ["--mcp", str(root), str(root / "parts")]):
         with pytest.raises(SystemExit) as stop:
@@ -436,10 +469,3 @@ def test_the_command_line(tmp_path, capsys, monkeypatch):
     with pytest.raises(SystemExit):
         main(["--version"])
     assert capsys.readouterr().out.strip() == f"divide {__version__}"
-    import divide
-
-    monkeypatch.delattr(divide, "mcpserver")  # the mcp extra not installed
-    monkeypatch.setitem(sys.modules, "divide.mcpserver", None)
-    with pytest.raises(SystemExit) as stop:
-        main(["--mcp", str(root)])
-    assert stop.value.code == 2 and "pip install 'divide[mcp]'" in capsys.readouterr().err

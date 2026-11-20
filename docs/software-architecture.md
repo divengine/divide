@@ -72,7 +72,7 @@ flowchart TB
     end
     subgraph Services["Services"]
         Run["divide.run: render, workbench, script, server,<br/>dbgp, trace, setup, git, forge,<br/>composer, children, bridge.php"]
-        Mcp["divide.mcpserver<br/>(divide --mcp)"]
+        Mcp["divide.mcpserver: tools, protocol,<br/>http (Options > MCP server), stdio (divide --mcp)"]
         Outline["divide.outline"]
         Lsp["divide.lsp: servers, client"]
         Manual["divide.manual: help books"]
@@ -87,6 +87,7 @@ flowchart TB
     Windows --> Themes
     App --> Config
     Mcp --> Run
+    Mixins --> Mcp
 ```
 
 | Package | Responsibility |
@@ -96,7 +97,7 @@ flowchart TB
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
 | `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
-| `divide.mcpserver` | divide's own MCP server (`divide --mcp PROJECT`, stdio, the optional `mcp` extra): the project's setup, a template's checks, renders and the render trace for MCP clients, through `divide.run` and without the UI. See 4.1. |
+| `divide.mcpserver` | divide's own MCP server, standard library only: `tools` (the seven tools, on `divide.run`), `protocol` (MCP's JSON-RPC in both eras), `http` (Streamable HTTP on `/mcp`, run by the IDE: Options > MCP server, `divide.ui.mcp`) and `stdio` (`divide --mcp PROJECT`). The project's setup, a template's checks, renders and the render trace for MCP clients, without the UI. See 4.1. |
 | `divide.outline` | The outline of every language divide colours, as trees of `Node`s (one builder per family: PHP, Div, markup, code, data). Search > Outline and the project window's file members use it. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
 | `divide.manual` | The help books: Markdown pages to help topics; `fulltext`: their search index (SQLite FTS5). |
@@ -132,17 +133,30 @@ flowchart TB
   macOS in a session of their own, so ssh cannot ask for a passphrase on
   divide's screen). Their output reaches the progress box line by line, and a
   failure is shown in their own words.
-- **The MCP server.** `divide --mcp PROJECT` builds an `MCPServer` (the
-  official SDK) whose tools call the same functions the IDE calls:
-  `workbench.check_template` (the dialect Div loads, the lexer, Div's answers
-  for includes, `diagnostics.check`), `render.render`, `trace.trace_render`,
-  `render.check_setup`, `render.load_dialect` and `render.check_dialect`, so
-  a question gets the same answer in the IDE and through MCP. It never imports
-  the UI. Paths are confined to the project (symbolic links followed), PHP
-  runs under the same timeouts and is killed when a call is cancelled,
-  answers are bounded, traces are kept in memory (the last four) to be paged,
-  and the trust of a project's `php` settings is read, never given. It works
-  on files and on text passed in; it is not connected to a running divide.
+- **The MCP server.** Three layers, standard library only (no MCP SDK, no
+  web framework). `mcpserver.tools`: each tool calls the same functions the
+  IDE calls: `workbench.check_template` (the dialect Div loads, the lexer,
+  Div's answers for includes, `diagnostics.check`), `render.render`,
+  `trace.trace_render`, `render.check_setup`, `render.load_dialect` and
+  `render.check_dialect`, so a question gets the same answer in the IDE and
+  through MCP; arguments are checked against each tool's JSON Schema.
+  `mcpserver.protocol`: MCP's JSON-RPC in both eras, 2026-07-28 (stateless:
+  the version in every request's `_meta`, `server/discover`, `resultType`)
+  and 2024-11-05 to 2025-11-25 (`initialize`); no sessions, so a server
+  restarted from the IDE keeps its clients. Transports: `mcpserver.http`
+  (one `POST /mcp`, one JSON answer per request, no SSE; GET and DELETE get
+  405) and `mcpserver.stdio` (one message per line). Neither imports the UI;
+  `divide.ui.mcp` (Options > MCP server) starts and stops the HTTP one.
+  Paths are confined to the project (symbolic links followed), PHP runs under
+  the same timeouts and is killed when a call is cancelled (on HTTP: the
+  client closes the connection; on stdio: `notifications/cancelled`), answers
+  are bounded, traces are kept in memory (the last four) to be paged, and the
+  trust of a project's `php` settings is read, never given. Over HTTP: bound
+  to 127.0.0.1 by default, Host and Origin checked (no DNS rebinding, no CORS),
+  a bearer token required off loopback (`mcp-token` beside `config.json`,
+  0600), bodies of up to 16 MiB, 32 connections, 4 tool calls at once, 300 s
+  at most per request. It works on files and on text passed in; it does not
+  see the open editors.
 - **Background work.** Textual workers (`@work`) run commands. Subprocesses
   use asyncio. CPU-bound project searches use `asyncio.to_thread`. Debounce
   timers (0.25-0.5 s) delay include resolution, `php -l`, LSP sync and
@@ -182,9 +196,21 @@ flowchart LR
 - The **bridge** is a one-shot PHP process per request: render, resolve,
   `dialect_validate`, `dialect_load`, `trace` or `translate`. Being
   stateless, it always sees the files and the engine as they are now.
-- **`divide --mcp`** is a process of its own, without the UI: the MCP SDK's
-  stdio loop reads requests on stdin and answers on stdout (logs on stderr);
-  each tool call is a task on its loop and asks the bridge as the IDE does.
+- **The MCP server over HTTP** runs inside divide, in threads of its own
+  (`mcpserver.http.HttpServer`): the listener (`ThreadingHTTPServer`, a
+  short-lived thread per connection) and one asyncio loop where every tool
+  call runs and asks the bridge as the IDE does. A connection's thread hands
+  its request to that loop and waits, watching whether the client closes the
+  connection (then the call is cancelled and PHP killed). Textual's loop only
+  starts and stops it, through `asyncio.to_thread`; Alt+X, File > Close
+  folder and divide's end stop it (calls cancelled, connections closed,
+  threads joined), and another folder restarts it there. Threads rather than a
+  process: about 1 MB instead of about 29 MB, nothing to orphan (the threads
+  end with divide on every system), and the tool calls are waits on PHP, not
+  Python work that would hold the UI.
+- **`divide --mcp`** is a process of its own, without the UI: a thread reads
+  stdin line by line, each request is a task on the process's loop and asks
+  the bridge as the IDE does, answers go to stdout (anything else to stderr).
   The client starts and ends it.
 - **Language servers** are long-lived, one per language and project,
   started when the first file of their language opens and stopped on exit.
@@ -200,7 +226,7 @@ flowchart LR
 ```
 src/divide/
   app.py               the application, commands, layout, the command line
-  mcpserver.py         divide's MCP server (divide --mcp)
+  mcpserver/           divide's MCP server: tools, protocol, http, stdio
   config.py            settings file
   recent.py            recent folders and files
   themes.py            colour palettes and roles
@@ -226,9 +252,10 @@ docs/                  this documentation
 
 Dependencies are declared in `pyproject.toml`: textual, textual-vision
 (pinned), tree-sitter with the grammars of PHP and the other file types, and
-pygls, plus pytest, pytest-asyncio and Babel for development, and the
-optional `mcp` extra (the official MCP SDK) for `divide --mcp`; the standalone
-binaries do not include it yet. The version is
+pygls, plus pytest, pytest-asyncio, Babel and the official MCP SDK (its
+clients test divide's MCP server) for development. The MCP server itself
+needs nothing beyond the standard library, so the standalone binaries have it.
+The version is
 the one line of `VERSION`. The console entry point is `divide =
 divide.app:main`.
 
@@ -317,10 +344,11 @@ decided:
 - **One bridge to Div.** Every question to Div goes through `bridge.php` as
   one JSON request and one JSON reply, with the project's Div setup applied.
   Another caller could ask Div the same way the editor does.
-- **Toward a live session.** The MCP server works on files today. Connecting
-  it to a running divide (its open editors, unsaved buffers, the active
-  template, the IDE's diagnostics) would give the same tools another source
-  of text; the tools already take the text as an argument.
+- **Toward a live session.** The HTTP server already runs inside divide,
+  but its tools work on files and on text passed in. Giving them the open
+  editors, unsaved buffers, the active template and the IDE's diagnostics
+  would give the same tools another source of text; the tools already take
+  the text as an argument.
 - **No hidden state in divide.** The bridge is one-shot and stateless, so
   divide adds nothing between requests. What a render depends on beyond its
   template, data, engine and setup (the time, random values, the request,
