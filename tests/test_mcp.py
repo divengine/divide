@@ -455,6 +455,22 @@ async def test_a_cancelled_call_stops_php(tmp_path):
     assert children.running() == []
 
 
+@needs_div
+async def test_requests_sent_before_stdin_closes_are_answered(tmp_path):
+    proc = await raw_server(project(tmp_path))
+    for message in ({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+                        "protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "pipe", "version": "0"}}},
+                    {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+                     "params": {"name": "div_render", "arguments": {"template": "page.tpl"}}}):
+        await send(proc, message)
+    proc.stdin.close()  # a script piping its requests: stdin ends at once
+    out, err = await asyncio.wait_for(proc.communicate(), 30)
+    answers = {m["id"]: m for m in rpc_lines(out)}
+    assert answers[1]["result"]["serverInfo"]["name"] == "divide", err
+    assert answers[2]["result"]["structuredContent"]["output"] == "Hi Rafa!|<1><2>"
+    assert proc.returncode == 0
+
+
 # ------------------------------------------------------------------ the command line
 def test_the_command_line(tmp_path, capsys):
     root = project(tmp_path)

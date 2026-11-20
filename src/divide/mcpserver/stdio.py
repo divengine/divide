@@ -5,7 +5,8 @@ on stdout, anything else on stderr. Standard library only. stdout is kept
 for the protocol: what writes to file descriptor 1 (a print, a library, a
 process that inherits it) goes to stderr while the server runs. A request
 cancelled with ``notifications/cancelled`` stops (PHP with it) and is not
-answered. The server ends when stdin closes.
+answered. When stdin closes, the requests already read are answered,
+then the server ends.
 """
 
 from __future__ import annotations
@@ -84,8 +85,7 @@ async def serve(root: Path, source: BinaryIO, out: BinaryIO) -> None:
         task = asyncio.create_task(answer(message))
         running.add(task)
         task.add_done_callback(running.discard)
-    for task in list(running):  # the client left: what it asked no longer matters
-        task.cancel()
+    # stdin closed: what was asked is still answered (each call is bounded by its timeout), then the end
     await asyncio.gather(*running, return_exceptions=True)
 
 
