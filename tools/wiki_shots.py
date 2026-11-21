@@ -671,6 +671,57 @@ async def flow():
             save(app, "run-flow-error")
 
 @shot
+async def flowmodel():
+    """Ctrl+T on a Runner Flow of examples/runner (composer install there), in a copy of it: the Flow
+    window on approval.ask (its attributes and where they lead), the Step dialog, then a Flow with a
+    missing target and a missing function in the tree and in Messages (Alt+F9)."""
+    import tempfile as _tempfile
+    from divide.ui.flow import save_flow_settings
+    from divide.ui.flowmodel import FlowWindow, StepDialog
+    example = ROOT / "examples" / "runner"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        print("skipped flowmodel: composer install in examples/runner")
+        return
+    with _tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "runner"
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", ".div"))
+        flow = root / "flows" / "order.yml"
+        save_flow_settings(flow.resolve(), {"context": "order.json", "root": "functions", "save": ""})
+        app = Divide(root, [flow])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            await pilot.press("ctrl+t")
+            await until(pilot, lambda: isinstance(app.active_window(), FlowWindow), tries=200)
+            window = app.active_window()
+            await until(pilot, lambda: "compiles" in str(window.verdict.render()), tries=200)
+            window.select(("step", "approval", "ask"))
+            await settle(pilot, 6)
+            save(app, "flow-window")
+            await pilot.press("enter")
+            await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), StepDialog), tries=200)
+            await settle(pilot, 6)
+            save(app, "flow-step")
+            await pilot.press("escape")
+        broken = flow.read_text().replace("call: approval.ask", "call: approval.confirm").replace(
+            "activity: format_receipt", "activity: format_reciept")
+        flow.write_text(broken)
+        app = Divide(root, [flow])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            await pilot.press("ctrl+t")
+            await until(pilot, lambda: isinstance(app.active_window(), FlowWindow), tries=200)
+            window = app.active_window()
+            await until(pilot, lambda: "error(s)" in str(window.verdict.render()), tries=200)
+            await pilot.press("alt+f9")
+            await until(pilot, lambda: app.messages_window() is not None, tries=200)
+            await settle(pilot, 4)
+            await pilot.press("escape")  # the Check box
+            app.raise_window(window)
+            window.select(("step", "review", "approve"))
+            await settle(pilot, 6)
+            save(app, "flow-problems")
+
+@shot
 async def trace():
     """Debug > Render trace on the shop: the row where Div decides the condition."""
     from divide.ui.tracer import TraceWindow

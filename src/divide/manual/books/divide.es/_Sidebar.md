@@ -17,6 +17,7 @@
 * [[Traza del render|Render Trace]]
 * [[Ejecutar PHP|Running PHP]]
 * [[Ejecutar Flows|Running Flows]]
+* [[Estructura del Flow|Flow Structure]]
 * [[Depurar PHP|Debugging PHP]]
 * [[Servidor web|Web Server]]
 * [[Archivos de datos|Data Files]]

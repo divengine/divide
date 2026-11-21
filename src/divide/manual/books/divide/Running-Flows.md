@@ -84,7 +84,7 @@ divide keeps a paused run safe:
 ## Limits
 
 - Flows are trusted PHP code: activities and conditions run with your rights. Runner is not a sandbox, and neither is divide.
-- divide runs a Flow from start to its end or pause: it does not step through Blocks and Steps, show the Flow as a diagram or edit it visually.
+- divide runs a Flow from start to its end or pause: it does not step through Blocks and Steps. Its Blocks and Steps are shown and edited in the [[Flow window|Flow Structure]] (Ctrl+T), as a tree, not a diagram.
 - YAML Flows only: a Flow written in PHP is a PHP script, and Ctrl+F9 runs it as one.
 - One run at a time, and no scheduler, queue or job history: a run's report stays in the Output window until the next run.
 - The context goes through JSON, as Runner's command line saves it: an empty object `{}` comes back as `[]`.

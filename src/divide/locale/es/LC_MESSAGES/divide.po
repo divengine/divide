@@ -4268,3 +4268,300 @@ msgstr "La última ejecución terminó {state}: Ejecutar pregunta antes de reemp
 #, python-brace-format
 msgid "{name} holds a finished run, in a file you chose."
 msgstr "{name} guarda una ejecución terminada, en un archivo que elegiste tú."
+
+msgid "  [YAML errors]"
+msgstr "  [errores de YAML]"
+
+#, python-brace-format
+msgid "  line {n}"
+msgstr "  línea {n}"
+
+#, python-brace-format
+msgid "'{ref}' needs a dot: block.step"
+msgstr "'{ref}' necesita un punto: block.step"
+
+msgid "(read-only)"
+msgstr "(solo lectura)"
+
+#, python-brace-format
+msgid "-> Block {block} (no Steps)"
+msgstr "-> Block {block} (sin Steps)"
+
+#, python-brace-format
+msgid "-> Block {block}, Step {step} (line {n})"
+msgstr "-> Block {block}, Step {step} (línea {n})"
+
+msgid "A Module needs an activity or a condition"
+msgstr "Un Module necesita una actividad o una condición"
+
+msgid "A Step id here is letters, digits, _ and -, starting with a letter or digit"
+msgstr "Aquí el id de un Step lleva letras, dígitos, _ y -, y empieza por una letra o un dígito"
+
+msgid "A Step needs something to do: an activity, a call, a jump, a pause..."
+msgstr "Un Step necesita algo que hacer: una actividad, un call, un jump, una pausa..."
+
+msgid "An empty line removes the attribute. Only what you change is written."
+msgstr "Una línea vacía quita el atributo. Solo se escribe lo que cambias."
+
+msgid "Asking Runner..."
+msgstr "Preguntando a Runner..."
+
+msgid "Block "
+msgstr "Block "
+
+#, python-brace-format
+msgid "Block '{block}' already has a Step '{step}'"
+msgstr "El Block '{block}' ya tiene un Step '{step}'"
+
+#, python-brace-format
+msgid "Block '{block}' has its steps written another way: add it in the code (Ctrl+T)"
+msgstr "El Block '{block}' tiene sus steps escritos de otra forma: añádelo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "Block '{block}' has no steps mapping to add to: add it in the code (Ctrl+T)"
+msgstr "El Block '{block}' no tiene un mapping de steps donde añadirlo: añádelo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "Block '{block}' is not in this Flow"
+msgstr "El Block '{block}' no está en este Flow"
+
+msgid "Choose the Block (or the Step) to add the Step to."
+msgstr "Elige el Block (o el Step) donde añadir el Step."
+
+#, python-brace-format
+msgid "Con~t~ext: set these values, a mapping {key: value, ...}"
+msgstr "Con~t~exto: pone estos valores, un mapping {key: value, ...}"
+
+msgid "C~o~ndition (a function: the Step runs only when it returns true)"
+msgstr "C~o~ndición (una función: el Step se ejecuta solo si devuelve true)"
+
+msgid "Delete Step"
+msgstr "Borrar Step"
+
+#, python-brace-format
+msgid "Delete {name}?"
+msgstr "¿Borrar {name}?"
+
+msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code · Alt+F9 check · ^F9 run"
+msgstr "Intro editar · Ins añadir · Supr borrar · ^Intro ir · ^T código · Alt+F9 verificar · ^F9 ejecutar"
+
+#, python-brace-format
+msgid "Fix the YAML in the code first (Ctrl+T):\n{error}"
+msgstr "Corrige primero el YAML en el código (Ctrl+T):\n{error}"
+
+msgid "Flow "
+msgstr "Flow "
+
+#, python-brace-format
+msgid "New Step in {block}"
+msgstr "Nuevo Step en {block}"
+
+msgid "No problems found."
+msgstr "Sin problemas."
+
+msgid "Only the lookups: no Runner to compile the Flow."
+msgstr "Solo las búsquedas: no hay Runner que compile el Flow."
+
+msgid "Open a Runner Flow first: a YAML file whose root has blocks"
+msgstr "Abre primero un Flow de Runner: un archivo YAML cuya raíz tiene blocks"
+
+#, python-brace-format
+msgid "Read-only: {why}"
+msgstr "Solo lectura: {why}"
+
+#, python-brace-format
+msgid "Runner could not be asked: {why}"
+msgstr "No se pudo preguntar a Runner: {why}"
+
+#, python-brace-format
+msgid "Runner did not answer in {s}s"
+msgstr "Runner no respondió en {s}s"
+
+msgid "Runner gave no answer"
+msgstr "Runner no dio respuesta"
+
+msgid "Runner is not installed"
+msgstr "Runner no está instalado"
+
+#, python-brace-format
+msgid "Runner {version}: the Flow compiles."
+msgstr "Runner {version}: el Flow compila."
+
+#, python-brace-format
+msgid "Runner {version}: {error}"
+msgstr "Runner {version}: {error}"
+
+msgid "Several YAML documents: a Flow is one"
+msgstr "Varios documentos YAML: un Flow es uno"
+
+msgid "Something else is written on its line: edit it in the code (Ctrl+T)"
+msgstr "Hay algo más escrito en su línea: edítalo en el código (Ctrl+T)"
+
+msgid "Step "
+msgstr "Step "
+
+#, python-brace-format
+msgid "Step '{step}' is not in Block '{block}'"
+msgstr "El Step '{step}' no está en el Block '{block}'"
+
+#, python-brace-format
+msgid "Step {name}"
+msgstr "Step {name}"
+
+msgid "Step ~i~d (letters, digits, _ and -)"
+msgstr "~I~d del Step (letras, dígitos, _ y -)"
+
+msgid "The YAML has errors: fix them in the code first (Ctrl+T)"
+msgstr "El YAML tiene errores: corrígelos primero en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "The context is not YAML: write a mapping, {a: 1, b: x}"
+msgstr "El contexto no es YAML: escribe un mapping, {a: 1, b: x}"
+
+#, python-brace-format
+msgid "The context must be a mapping: {a: 1, b: x}"
+msgstr "El contexto tiene que ser un mapping: {a: 1, b: x}"
+
+#, python-brace-format
+msgid "The edit was undone: {problem}"
+msgstr "Se deshizo la edición: {problem}"
+
+msgid "This Step has no call, jump, activity or condition to go to"
+msgstr "Este Step no tiene call, jump, actividad ni condición adonde ir"
+
+msgid "Two changes overlap: edit it in the code (Ctrl+T)"
+msgstr "Dos cambios se solapan: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "Written {where}, indented as its siblings."
+msgstr "Se escribe {where}, con la sangría de sus hermanos."
+
+#, python-brace-format
+msgid "YAML: {what} (line {line})"
+msgstr "YAML: {what} (línea {line})"
+
+msgid "a tag"
+msgstr "una etiqueta"
+
+#, python-brace-format
+msgid "after {step}"
+msgstr "después de {step}"
+
+msgid "an alias"
+msgstr "un alias"
+
+msgid "an anchor"
+msgstr "un ancla"
+
+#, python-brace-format
+msgid "at the end of {block}"
+msgstr "al final de {block}"
+
+msgid "blocks"
+msgstr "Blocks"
+
+msgid "entered"
+msgstr "entra de"
+
+msgid "first Block: the Flow starts here"
+msgstr "primer Block: el Flow empieza aquí"
+
+msgid "from no Step"
+msgstr "ningún Step"
+
+#, python-brace-format
+msgid "it has {what}: edit it in the code (Ctrl+T)"
+msgstr "tiene {what}: edítalo en el código (Ctrl+T)"
+
+msgid "it is not a mapping: edit it in the code (Ctrl+T)"
+msgstr "no es un mapping: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "it is written in flow style ({...}): edit it in the code (Ctrl+T)"
+msgstr "está escrito en estilo flow ({...}): edítalo en el código (Ctrl+T)"
+
+msgid "starts at"
+msgstr "empieza en"
+
+msgid "steps"
+msgstr "Steps"
+
+msgid "this cannot be read as YAML"
+msgstr "esto no se puede leer como YAML"
+
+msgid "this is missing"
+msgstr "falta esto"
+
+#, python-brace-format
+msgid "{callers} lead(s) to it."
+msgstr "{callers} lleva(n) a él."
+
+#, python-brace-format
+msgid "{key} changed without being asked"
+msgstr "{key} cambió sin pedirlo"
+
+#, python-brace-format
+msgid "{key} has {what}: edit it in the code (Ctrl+T)"
+msgstr "{key} tiene {what}: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{key} is a block scalar (| or >): edit it in the code (Ctrl+T)"
+msgstr "{key} es un escalar de bloque (| o >): edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{key} is written in a way divide does not edit: edit it in the code (Ctrl+T)"
+msgstr "{key} está escrito de una forma que divide no edita: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{key} reads back differently"
+msgstr "{key} se lee distinto"
+
+#, python-brace-format
+msgid "{key} {module}:{name}: no file {tried}"
+msgstr "{key} {module}:{name}: no existe {tried}"
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried}"
+msgstr "{key} {name}: no existe {tried}"
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried}, and PHP has no function {name}"
+msgstr "{key} {name}: no existe {tried}, y PHP no tiene una función {name}"
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried}; Runner will try it as a PHP callable"
+msgstr "{key} {name}: no existe {tried}; Runner lo probará como un callable de PHP"
+
+#, python-brace-format
+msgid "{name} is not found after the edit"
+msgstr "{name} no aparece después de la edición"
+
+#, python-brace-format
+msgid "{name} is still there"
+msgstr "{name} sigue ahí"
+
+#, python-brace-format
+msgid "{step} cannot be edited here: edit it in the code (Ctrl+T)"
+msgstr "{step} no se puede editar aquí: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{step} cannot be edited here: {why}"
+msgstr "{step} no se puede editar aquí: {why}"
+
+msgid "~A~ctivity (a function that does the work)"
+msgstr "~A~ctividad (una función que hace el trabajo)"
+
+msgid "~C~all block.step (and come back)"
+msgstr "~C~all block.step (y volver)"
+
+msgid "~F~low structure"
+msgstr "Estructura del ~F~low"
+
+msgid "~J~ump block.step (and go on from there)"
+msgstr "~J~ump block.step (y seguir desde allí)"
+
+msgid "~M~odule (folder of the activity and condition; optional)"
+msgstr "~M~odule (carpeta de la actividad y la condición; opcional)"
+
+msgid "~P~ause the Flow after this Step"
+msgstr "~P~ausar el Flow después de este Step"

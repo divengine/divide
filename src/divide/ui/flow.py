@@ -34,7 +34,7 @@ from textual_vision.label import Label
 
 from divide import config
 from divide.run.flow import (FlowRun, Runner, Saved, check_context_file, check_context_text, default_checkpoint, find_runner,
-                             is_flow, is_managed, prepare_checkpoint, read_saved, run_flow)
+                             is_managed, prepare_checkpoint, read_saved, run_flow)
 from divide.run.script import ScriptError, ScriptMessage, size_text
 from divide.ui.dialogs import _Dialog, browse_into, confirm, information
 from divide.ui.progress import ProgressDialog, run_with_progress
@@ -252,12 +252,11 @@ class FlowMixin:
         """Ctrl+F9 runs a Flow: the active editor is a YAML Flow (and no PHP script is being debugged)."""
         if self.debugging:  # type: ignore[attr-defined]
             return False
-        win = self.active_editor()  # type: ignore[attr-defined]
-        return win is not None and win.editor.lang == "yaml" and is_flow(win.path or Path("untitled.yml"), win.editor.text)
+        return self.flow_source() is not None  # type: ignore[attr-defined]
 
     async def flow_command(self) -> None:
-        """Ctrl+F9 (or Run > Parameters) on a Flow: the Run Flow dialog, then the run."""
-        win = self.active_editor()  # type: ignore[attr-defined]
+        """Ctrl+F9 (or Run > Parameters) on a Flow (its code or its Flow window): the Run Flow dialog, then the run."""
+        win = self.flow_source()  # type: ignore[attr-defined]
         if win.path is None:
             await self.run_dialog(information(_('Run Flow'), _('Save the Flow first (F2): Runner runs files.')))  # type: ignore[attr-defined]
             return

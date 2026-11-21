@@ -20,7 +20,7 @@
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |
 | **Alt+F8** / **Alt+F7** | next / previous error |
-| **Ctrl+T** | data tree ⇄ code |
+| **Ctrl+T** | data tree ⇄ code; on a Runner Flow, the [[Flow window\|Flow Structure]] ⇄ code |
 | **F1** | help on the active window |
 | **Shift+F1** / **Ctrl+F1** / **Alt+F1** | help index / topic search: the topic of the word under the cursor, else Help > Search with it (in PHP with a language server: what the symbol is) / previous topic |
 | **Alt+X** / **Ctrl+Q** | exit |

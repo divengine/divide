@@ -100,6 +100,10 @@ The examples below generate HTML because it is the easiest output to read; the s
   it ended in (done, paused, error), Runner's log and the resulting context.
   A paused run is saved and resumed from its context
   ([Running Flows](https://github.com/divengine/divide/wiki/Running-Flows)).
+  Ctrl+T shows its Blocks and Steps as a tree you edit with the keyboard: only
+  what you change is written in the YAML, Runner's own compiler checks it, and
+  missing targets and function files are marked
+  ([Flow Structure](https://github.com/divengine/divide/wiki/Flow-Structure)).
 - **An MCP server for agents.** Options > MCP server starts it on
   `http://127.0.0.1:8765/mcp`: an AI coding agent gets the same checks,
   renders and render trace through the real Div engine, with the project's

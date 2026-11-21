@@ -20,7 +20,7 @@
 | **Alt+F5** | ventana Salida |
 | **Alt+F9** | verificar: cuadro de progreso y después la ventana Mensajes |
 | **Alt+F8** / **Alt+F7** | error siguiente / anterior |
-| **Ctrl+T** | árbol de datos ⇄ código |
+| **Ctrl+T** | árbol de datos ⇄ código; en un Flow de Runner, la [[ventana Flow\|Flow Structure]] ⇄ código |
 | **F1** | ayuda sobre la ventana activa |
 | **Shift+F1** / **Ctrl+F1** / **Alt+F1** | índice de la ayuda / buscar tema: el tema de la palabra bajo el cursor, si no Ayuda > Buscar con ella (en PHP con un servidor de lenguaje: qué es el símbolo) / tema anterior |
 | **Alt+X** / **Ctrl+Q** | salir |

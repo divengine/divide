@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-21 11:58+0000\n"
+"POT-Creation-Date: 2026-11-21 18:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,13 @@ msgstr ""
 
 #, python-brace-format
 msgid "  ... and {changes} more"
+msgstr ""
+
+msgid "  [YAML errors]"
+msgstr ""
+
+#, python-brace-format
+msgid "  line {n}"
 msgstr ""
 
 msgid " (draft)"
@@ -70,6 +77,10 @@ msgstr ""
 msgid "#{n} merged: Git > Pull brings it here"
 msgstr ""
 
+#, python-brace-format
+msgid "'{ref}' needs a dot: block.step"
+msgstr ""
+
 msgid "(Ins adds a watch; variables show while the debugger is paused)"
 msgstr ""
 
@@ -112,6 +123,9 @@ msgstr ""
 msgid "(nothing to list)"
 msgstr ""
 
+msgid "(read-only)"
+msgstr ""
+
 msgid "(the project's, not trusted yet: Alt+F10)"
 msgstr ""
 
@@ -129,10 +143,29 @@ msgid "--mcp takes one project folder: divide --mcp /path/to/project"
 msgstr ""
 
 #, python-brace-format
+msgid "-> Block {block} (no Steps)"
+msgstr ""
+
+#, python-brace-format
+msgid "-> Block {block}, Step {step} (line {n})"
+msgstr ""
+
+#, python-brace-format
 msgid "... {count} more lines not shown"
 msgstr ""
 
 msgid "16 colours (Windows console)"
+msgstr ""
+
+msgid "A Module needs an activity or a condition"
+msgstr ""
+
+msgid ""
+"A Step id here is letters, digits, _ and -, starting with a letter or "
+"digit"
+msgstr ""
+
+msgid "A Step needs something to do: an activity, a call, a jump, a pause..."
 msgstr ""
 
 msgid "A folder cannot go inside itself."
@@ -182,6 +215,9 @@ msgstr ""
 msgid "An empty field: Div's default (or the user's setup)."
 msgstr ""
 
+msgid "An empty line removes the attribute. Only what you change is written."
+msgstr ""
+
 msgid "Apply it, ~k~eeping it"
 msgstr ""
 
@@ -193,6 +229,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "Asking Packagist for the versions of {name}..."
+msgstr ""
+
+msgid "Asking Runner..."
 msgstr ""
 
 #, python-brace-format
@@ -234,6 +273,29 @@ msgstr ""
 
 #, python-brace-format
 msgid "Blame: {file}"
+msgstr ""
+
+msgid "Block "
+msgstr ""
+
+#, python-brace-format
+msgid "Block '{block}' already has a Step '{step}'"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Block '{block}' has its steps written another way: add it in the code "
+"(Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Block '{block}' has no steps mapping to add to: add it in the code "
+"(Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "Block '{block}' is not in this Flow"
 msgstr ""
 
 msgid "Blocks"
@@ -371,6 +433,9 @@ msgstr ""
 msgid "Choose a package (vendor/package)"
 msgstr ""
 
+msgid "Choose the Block (or the Step) to add the Step to."
+msgstr ""
+
 msgid "Classes ~f~older"
 msgstr ""
 
@@ -489,6 +554,10 @@ msgid "Context saved to {path}"
 msgstr ""
 
 #, python-brace-format
+msgid "Con~t~ext: set these values, a mapping {key: value, ...}"
+msgstr ""
+
+#, python-brace-format
 msgid "Copied: the client setup for {url}"
 msgstr ""
 
@@ -556,6 +625,9 @@ msgstr ""
 msgid "C~o~mmit..."
 msgstr ""
 
+msgid "C~o~ndition (a function: the Step runs only when it returns true)"
+msgstr ""
+
 msgid "C~r~eate"
 msgstr ""
 
@@ -620,6 +692,9 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+msgid "Delete Step"
+msgstr ""
+
 msgid "Delete branch"
 msgstr ""
 
@@ -633,6 +708,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Delete {file}? It is not in git: it cannot be brought back."
+msgstr ""
+
+#, python-brace-format
+msgid "Delete {name}?"
 msgstr ""
 
 #, python-brace-format
@@ -885,6 +964,11 @@ msgstr ""
 msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
 msgstr ""
 
+msgid ""
+"Enter edit · Ins add · Del del · ^Enter go to · ^T code · Alt+F9 check · "
+"^F9 run"
+msgstr ""
+
 msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
 msgstr ""
 
@@ -1037,6 +1121,12 @@ msgstr ""
 
 #, python-brace-format
 msgid ""
+"Fix the YAML in the code first (Ctrl+T):\n"
+"{error}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
 "Fix the dialect file first:\n"
 "{error}"
 msgstr ""
@@ -1054,6 +1144,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Flow"
+msgstr ""
+
+msgid "Flow "
 msgstr ""
 
 #, python-brace-format
@@ -1422,6 +1515,10 @@ msgstr ""
 msgid "Nested folders are fine (a/b/c)"
 msgstr ""
 
+#, python-brace-format
+msgid "New Step in {block}"
+msgstr ""
+
 msgid "New branch"
 msgstr ""
 
@@ -1509,6 +1606,9 @@ msgid "No forge"
 msgstr ""
 
 msgid "No merge is halfway"
+msgstr ""
+
+msgid "No problems found."
 msgstr ""
 
 msgid "No program is being debugged"
@@ -1615,6 +1715,9 @@ msgstr ""
 msgid "Only its mode changed"
 msgstr ""
 
+msgid "Only the lookups: no Runner to compile the Flow."
+msgstr ""
+
 msgid ""
 "Only this machine can connect. Rendering runs the project's PHP: start it"
 " only on projects you trust."
@@ -1633,6 +1736,9 @@ msgid "Open a PHP script (.php) first."
 msgstr ""
 
 msgid "Open a PHP script (.php) to run it."
+msgstr ""
+
+msgid "Open a Runner Flow first: a YAML file whose root has blocks"
 msgstr ""
 
 msgid "Open a file"
@@ -1869,6 +1975,10 @@ msgid ""
 "127.0.0.1."
 msgstr ""
 
+#, python-brace-format
+msgid "Read-only: {why}"
+msgstr ""
+
 msgid "Recent files"
 msgstr ""
 
@@ -1991,6 +2101,20 @@ msgid "Run in termi~n~al"
 msgstr ""
 
 #, python-brace-format
+msgid "Runner could not be asked: {why}"
+msgstr ""
+
+#, python-brace-format
+msgid "Runner did not answer in {s}s"
+msgstr ""
+
+msgid "Runner gave no answer"
+msgstr ""
+
+msgid "Runner is not installed"
+msgstr ""
+
+#, python-brace-format
 msgid ""
 "Runner is not installed in this project: composer require "
 "divengine/runner (divide runs {bootstrap})"
@@ -2000,6 +2124,14 @@ msgstr ""
 msgid ""
 "Runner {version} is installed; divide needs 0.2.0 or newer, the first "
 "with its command line: composer require divengine/runner:^0.2"
+msgstr ""
+
+#, python-brace-format
+msgid "Runner {version}: the Flow compiles."
+msgstr ""
+
+#, python-brace-format
+msgid "Runner {version}: {error}"
 msgstr ""
 
 msgid "Running"
@@ -2103,6 +2235,9 @@ msgstr ""
 msgid "Serving {url} · the next request stops"
 msgstr ""
 
+msgid "Several YAML documents: a Flow is one"
+msgstr ""
+
 #, python-brace-format
 msgid "Several modifiers on one variable: {$name|^|_|}"
 msgstr ""
@@ -2114,6 +2249,9 @@ msgid "Simulated request"
 msgstr ""
 
 msgid "Some files are in conflict: solve them first."
+msgstr ""
+
+msgid "Something else is written on its line: edit it in the code (Ctrl+T)"
 msgstr ""
 
 msgid "Source"
@@ -2167,7 +2305,21 @@ msgstr ""
 msgid "State: {state}"
 msgstr ""
 
+msgid "Step "
+msgstr ""
+
+#, python-brace-format
+msgid "Step '{step}' is not in Block '{block}'"
+msgstr ""
+
 msgid "Step o~u~t"
+msgstr ""
+
+#, python-brace-format
+msgid "Step {name}"
+msgstr ""
+
+msgid "Step ~i~d (letters, digits, _ and -)"
 msgstr ""
 
 msgid "Stepping"
@@ -2280,6 +2432,9 @@ msgstr ""
 msgid "The MCP server stopped: {error}"
 msgstr ""
 
+msgid "The YAML has errors: fix them in the code first (Ctrl+T)"
+msgstr ""
+
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
 msgstr ""
 
@@ -2290,7 +2445,15 @@ msgstr ""
 msgid "The context is not JSON: {error}"
 msgstr ""
 
+#, python-brace-format
+msgid "The context is not YAML: write a mapping, {a: 1, b: x}"
+msgstr ""
+
 msgid "The context must be a JSON object"
+msgstr ""
+
+#, python-brace-format
+msgid "The context must be a mapping: {a: 1, b: x}"
 msgstr ""
 
 msgid "The context was not saved: give a file in Save context to resume this run."
@@ -2314,6 +2477,10 @@ msgid ""
 msgstr ""
 
 msgid "The documentation inside divide, one book each."
+msgstr ""
+
+#, python-brace-format
+msgid "The edit was undone: {problem}"
 msgstr ""
 
 msgid "The file there is not a context saved by Runner."
@@ -2402,6 +2569,9 @@ msgstr ""
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr ""
 
+msgid "This Step has no call, jump, activity or condition to go to"
+msgstr ""
+
 msgid "This is the current branch: merge another one into it"
 msgstr ""
 
@@ -2475,6 +2645,9 @@ msgid "Turbo ~C~"
 msgstr ""
 
 msgid "Turbo ~P~ascal"
+msgstr ""
+
+msgid "Two changes overlap: edit it in the code (Ctrl+T)"
 msgstr ""
 
 msgid "Type"
@@ -2621,6 +2794,10 @@ msgstr ""
 msgid "Writing the autoloader"
 msgstr ""
 
+#, python-brace-format
+msgid "Written {where}, indented as its siblings."
+msgstr ""
+
 msgid "Xdebug"
 msgstr ""
 
@@ -2639,6 +2816,10 @@ msgid "Xdebug found: requests stop at the breakpoints"
 msgstr ""
 
 msgid "Xdebug sent no init packet"
+msgstr ""
+
+#, python-brace-format
+msgid "YAML: {what} (line {line})"
 msgstr ""
 
 msgid "Your choice (the template's own @_DIALECT is ignored)"
@@ -2705,10 +2886,23 @@ msgstr ""
 msgid "a reference looks like name or person.name"
 msgstr ""
 
+msgid "a tag"
+msgstr ""
+
 msgid "a whole number is expected"
 msgstr ""
 
 msgid "a whole number of at least 1 is expected"
+msgstr ""
+
+#, python-brace-format
+msgid "after {step}"
+msgstr ""
+
+msgid "an alias"
+msgstr ""
+
+msgid "an anchor"
 msgstr ""
 
 msgid "an extension is expected, like \"tpl\""
@@ -2731,7 +2925,14 @@ msgid "at line {target} of {name}"
 msgstr ""
 
 #, python-brace-format
+msgid "at the end of {block}"
+msgstr ""
+
+#, python-brace-format
 msgid "bad escape \\{nxt}"
+msgstr ""
+
+msgid "blocks"
 msgstr ""
 
 msgid "break the loop"
@@ -2851,6 +3052,9 @@ msgstr ""
 msgid "empty document"
 msgstr ""
 
+msgid "entered"
+msgstr ""
+
 msgid "error"
 msgstr ""
 
@@ -2862,11 +3066,17 @@ msgstr ""
 msgid "expected ':' after the key {key!r}"
 msgstr ""
 
+msgid "first Block: the Flow starts here"
+msgstr ""
+
 #, python-brace-format
 msgid "found by itself: {path}"
 msgstr ""
 
 msgid "friendly tag"
+msgstr ""
+
+msgid "from no Step"
 msgstr ""
 
 msgid "git blame failed"
@@ -2906,6 +3116,17 @@ msgid "is not a JSON object"
 msgstr ""
 
 msgid "it did not start"
+msgstr ""
+
+#, python-brace-format
+msgid "it has {what}: edit it in the code (Ctrl+T)"
+msgstr ""
+
+msgid "it is not a mapping: edit it in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "it is written in flow style ({...}): edit it in the code (Ctrl+T)"
 msgstr ""
 
 #, python-brace-format
@@ -3061,7 +3282,13 @@ msgstr ""
 msgid "squashed into one commit"
 msgstr ""
 
+msgid "starts at"
+msgstr ""
+
 msgid "starts the project with Div in it."
+msgstr ""
+
+msgid "steps"
 msgstr ""
 
 msgid "stopped"
@@ -3110,6 +3337,12 @@ msgid "the server stopped on its own"
 msgstr ""
 
 msgid "the setup must be a JSON object"
+msgstr ""
+
+msgid "this cannot be read as YAML"
+msgstr ""
+
+msgid "this is missing"
 msgstr ""
 
 msgid "too long: cut"
@@ -3233,6 +3466,10 @@ msgid "{branch} merged into {current}"
 msgstr ""
 
 #, python-brace-format
+msgid "{callers} lead(s) to it."
+msgstr ""
+
+#, python-brace-format
 msgid "{changes} in {n} parse"
 msgid_plural "{changes} in {n} parses"
 msgstr[0] ""
@@ -3319,6 +3556,44 @@ msgid "{ignore_b} is never closed with {ignore_e}"
 msgstr ""
 
 #, python-brace-format
+msgid "{key} changed without being asked"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} has {what}: edit it in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} is a block scalar (| or >): edit it in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{key} is written in a way divide does not edit: edit it in the code "
+"(Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} reads back differently"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} {module}:{name}: no file {tried}"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried}"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried}, and PHP has no function {name}"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried}; Runner will try it as a PHP callable"
+msgstr ""
+
+#, python-brace-format
 msgid "{key}: a $reference is not a value here"
 msgstr ""
 
@@ -3369,11 +3644,19 @@ msgid "{name} is not a context of a finished run."
 msgstr ""
 
 #, python-brace-format
+msgid "{name} is not found after the edit"
+msgstr ""
+
+#, python-brace-format
 msgid "{name} is not installed (vendor/{name})"
 msgstr ""
 
 #, python-brace-format
 msgid "{name} is ready"
+msgstr ""
+
+#, python-brace-format
+msgid "{name} is still there"
 msgstr ""
 
 #, python-brace-format
@@ -3585,6 +3868,14 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, python-brace-format
+msgid "{step} cannot be edited here: edit it in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{step} cannot be edited here: {why}"
+msgstr ""
+
+#, python-brace-format
 msgid "{target} already exists."
 msgstr ""
 
@@ -3621,6 +3912,9 @@ msgid "~Alt+X~ Exit"
 msgstr ""
 
 msgid "~A~bout..."
+msgstr ""
+
+msgid "~A~ctivity (a function that does the work)"
 msgstr ""
 
 msgid "~A~dd"
@@ -3685,6 +3979,9 @@ msgid "~B~rowse..."
 msgstr ""
 
 msgid "~C~OOKIE"
+msgstr ""
+
+msgid "~C~all block.step (and come back)"
 msgstr ""
 
 msgid "~C~all stack"
@@ -3856,6 +4153,9 @@ msgstr ""
 msgid "~F~ind..."
 msgstr ""
 
+msgid "~F~low structure"
+msgstr ""
+
 msgid "~F~olders"
 msgstr ""
 
@@ -3916,6 +4216,9 @@ msgstr ""
 msgid "~I~nto branch"
 msgstr ""
 
+msgid "~J~ump block.step (and go on from there)"
+msgstr ""
+
 msgid "~K~ey"
 msgstr ""
 
@@ -3951,6 +4254,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "~M~odifiers: {\"prefix:\": \"php_function\"}"
+msgstr ""
+
+msgid "~M~odule (folder of the activity and condition; optional)"
 msgstr ""
 
 msgid "~M~ove to..."
@@ -4049,6 +4355,9 @@ msgid "~P~aste"
 msgstr ""
 
 msgid "~P~ath of xdebug.so"
+msgstr ""
+
+msgid "~P~ause the Flow after this Step"
 msgstr ""
 
 msgid "~P~ort"

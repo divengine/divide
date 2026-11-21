@@ -17,6 +17,7 @@
 * [[Render Trace]]
 * [[Running PHP]]
 * [[Running Flows]]
+* [[Flow Structure]]
 * [[Debugging PHP]]
 * [[Web Server]]
 * [[Data Files]]

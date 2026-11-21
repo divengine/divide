@@ -40,7 +40,7 @@ Without a folder, **Ctrl+B**, **Find in files** and the project's [[Div setup|Di
 | **File** | New, Open file (F3), Open folder, Close folder, Save (F2), Save as, Save all, Exit (Alt+X) |
 | **Edit** | Undo, Redo, Cut, Copy, Paste, Select all, Complete (Ctrl+Space) |
 | **Search** | Find, Replace, Search again, Find in files (Shift+F2), Go to line, Go to included template, Outline (Ctrl+O: see [[Outline]]), Go to file (Ctrl+P), Command palette (Alt+P): see [[Finding Files and Commands]], Previous / Next error |
-| **Run** | Run (Ctrl+F9: render a template, run a PHP script or a [[Runner Flow\|Running Flows]]), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Web server, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T) |
+| **Run** | Run (Ctrl+F9: render a template, run a PHP script or a [[Runner Flow\|Running Flows]]), Step over (F8), Trace into (F7), Step out, Go to cursor (F4), Program reset (Ctrl+F2), Parameters, Run in terminal, Web server, Check (Alt+F9), Output, Data file, Edit data, Data tree (Ctrl+T), Flow structure (Ctrl+T on a Runner Flow: [[Flow Structure]]) |
 | **Debug** | Evaluate (Ctrl+F4), Watches, Call stack (Ctrl+F3), Add watch (Ctrl+F7), Toggle breakpoint (Ctrl+F8): see [[Debugging PHP]]; Render trace: see [[Render Trace]] |
 | **Git** | Changes, History, Branches, Commit, Pull, Push, Fetch, Diff of the file, File history, Blame, Pull requests and issues: see [[Git]] |
 | **Tools** | Dialector, Translate a template, [[Composer packages\|Composer]] |

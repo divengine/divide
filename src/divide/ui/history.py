@@ -129,10 +129,11 @@ class HistoryInput(Group):
     HistoryInput > InputLine { width: 1fr; }
     """
 
-    def __init__(self, line: InputLine, history_id: str, **kwargs) -> None:
+    def __init__(self, line: InputLine, history_id: str, offer=None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.line = line
         self.history_id = history_id
+        self.offer = offer  # a callable giving what to offer instead of the history (values the files declare)
         self.popup: HistoryList | None = None
         self.tv_options = OptionFlag.SELECTABLE  # Tab stops here (at its line), as at any input line
 
@@ -147,13 +148,14 @@ class HistoryInput(Group):
             self.open()
 
     def remember(self) -> None:
-        add(self.history_id, self.line.data)
+        if self.offer is None:
+            add(self.history_id, self.line.data)
 
     def toggle(self) -> None:
         self.close() if self.popup is not None else self.open()
 
     def open(self) -> None:
-        items = entries(self.history_id)
+        items = self.offer() if self.offer is not None else entries(self.history_id)
         if self.popup is not None or not items:
             return
         region = self.region

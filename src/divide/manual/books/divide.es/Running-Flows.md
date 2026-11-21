@@ -84,7 +84,7 @@ divide protege una ejecución pausada:
 ## Límites
 
 - Los Flows son código PHP de confianza: las actividades y condiciones se ejecutan con tus permisos. Runner no es una caja de arena, y divide tampoco.
-- divide ejecuta un Flow de principio a fin o hasta su pausa: no avanza Block a Block ni Step a Step, no muestra el Flow como diagrama ni lo edita visualmente.
+- divide ejecuta un Flow de principio a fin o hasta su pausa: no avanza Block a Block ni Step a Step. Sus Blocks y Steps se muestran y se editan en la [[ventana Flow|Flow Structure]] (Ctrl+T), como un árbol, no como un diagrama.
 - Solo Flows en YAML: un Flow escrito en PHP es un script PHP, y Ctrl+F9 lo ejecuta como tal.
 - Una ejecución a la vez, sin planificador, cola ni historial de trabajos: el informe de una ejecución queda en la ventana Salida hasta la siguiente.
 - El contexto pasa por JSON, como lo guarda la línea de comandos de Runner: un objeto vacío `{}` vuelve como `[]`.

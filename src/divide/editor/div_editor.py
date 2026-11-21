@@ -176,7 +176,7 @@ class DivEditor(TextArea):
 
     def on_mount(self) -> None:
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.apply_palette())
-        if self.lang == "php":
+        if self.lang == "php" or self.is_flow:
             self.post_message(self.CheckRequested(self))
 
     def reveal_cursor(self) -> None:
@@ -209,9 +209,17 @@ class DivEditor(TextArea):
 
     @property
     def checked(self) -> bool:
-        """Its errors are listed in the Messages window (Div, PHP)."""
+        """Its errors are listed in the Messages window (Div, PHP, a Runner Flow)."""
         info = languages.language(self.lang)
-        return bool(info and info.checked) or div_setup.is_setup_file(self.path)
+        return bool(info and info.checked) or div_setup.is_setup_file(self.path) or self.is_flow
+
+    @property
+    def is_flow(self) -> bool:
+        """A Runner Flow: YAML whose root has ``blocks`` (checked by Runner, see divide.ui.flowmodel)."""
+        if self.lang != "yaml":
+            return False
+        from divide.run.flow import is_flow
+        return is_flow(self.path or Path("untitled.yml"), self.text)
 
     def set_lint(self, diagnostics: list[Diagnostic]) -> None:
         """The errors a checker outside the editor found (PHP's ``php -l``)."""
@@ -311,6 +319,12 @@ class DivEditor(TextArea):
             tokens = plain.csv_tokens(text, plain.csv_separator(text, tsv))
         elif self.tree_sitter:
             super()._build_highlight_map()  # tree-sitter's colours (HTML, YAML...)
+            if self.lang == "yaml" and (self.diagnostics or self.is_flow):
+                if self._text_cache != self.text:
+                    self._text_cache = self.text
+                    if self.is_mounted:
+                        self.post_message(self.CheckRequested(self))  # Runner checks a Flow (or its marks go)
+                self._overlay([_Mark(d.start, d.end, "diag." + d.severity) for d in self.diagnostics])
             return
         else:
             tokens = []  # plain text: only the marks (a diff's lines)
