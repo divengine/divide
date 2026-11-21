@@ -56,7 +56,7 @@ The marks are plain ASCII on purpose: every terminal, font and platform draws th
 | **F7** | new folder; nested paths like `assets/css` are fine |
 | **F2** | rename; the name without its extension comes selected. A path moves it too: `../name`, `parts/name`. Open windows follow the file. |
 | **Del** | delete, after confirming. Folders go with everything in them (divide tells you how many items). |
-| **Ctrl+R** | refresh from disk |
+| **Ctrl+R** | refresh from disk (changes made outside divide show by themselves; see below) |
 | **Ctrl+X**, **Ctrl+C**, **Ctrl+V** | cut, copy, paste (see Moving files and folders, below) |
 | **Alt+F10**, **Shift+F10**, right click | the local menu with all of the above |
 
@@ -68,8 +68,20 @@ Good to know:
 - Windows of deleted files close, except those with unsaved changes: your work stays open and can be saved again.
 - A data file chosen with Run > Data file stays with its template when either is renamed.
 - Names and paths that would leave the project are refused.
-- Files created outside divide appear with Ctrl+R; files created with Save as appear by themselves.
 - After any of these operations, includes are checked again (see [[Checking Templates]]).
+
+## Changes made outside divide
+
+Files and folders created, deleted, renamed or moved by other programs show in the project window by themselves, usually within half a second. That covers git, Composer, a generator, a shell, or another editor. A file moved from one open folder to another leaves the first and appears in the second.
+
+- **What is watched**: the project's folder and the folders you have open in the tree, each one on its own, not their subfolders. A closed folder is read when you open it, so it always shows what it holds then.
+- **Your place stays**: the bar stays on the same file, open folders stay open, the view does not scroll, and a filter you typed stays.
+- **Nothing is polled**: divide uses the system's own notifications (inotify on Linux, FSEvents on macOS, directory-change notifications on Windows). Nothing happens while nothing changes. A burst of changes, such as a checkout or a `composer install`, is gathered and each affected folder is read once.
+- **Open editors are not touched**: a file changed outside divide does not reload its editor window, so unsaved changes are never overwritten.
+- **Limits**:
+  - At most 64 folders are watched at a time. With more open, divide says so, and the rest refresh with **Ctrl+R**.
+  - If the system refuses to watch a folder, divide says so once, and **Ctrl+R** refreshes. That happens when the inotify limits are reached on Linux (`fs.inotify.max_user_watches`, `max_user_instances`), or on a filesystem without notifications, such as many network shares, SSHFS, some Docker volumes and WSL's view of Windows drives.
+  - Over SSH nothing changes: divide watches the machine it runs on.
 
 ## Moving files and folders
 

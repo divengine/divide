@@ -13,6 +13,9 @@ for package in ("divide", "textual", "textual_vision"):
     datas += d
     binaries += b
     hiddenimports += h
+# watchdog picks its native observer (inotify, FSEvents, Windows' ReadDirectoryChangesW) when it runs.
+hiddenimports += collect_submodules("watchdog")
+binaries += collect_all("watchdog")[1]
 # Rich finds Pygments' lexers and styles by name.
 hiddenimports += collect_submodules("pygments")
 for grammar in ("tree_sitter_php", "tree_sitter_html", "tree_sitter_css", "tree_sitter_javascript",

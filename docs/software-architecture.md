@@ -96,7 +96,7 @@ flowchart TB
 | `divide.ui` | Turbo Vision windows, dialogs and lists. One module per feature area, usually a window or dialog plus a mixin that adds the feature to the app. |
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
-| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), Runner Flows (`flow`: find Runner, run its bootstrap, read a saved context; `flowmodel`: a Flow's structure from its YAML, in-place edits, Runner's check), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
+| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), Runner Flows (`flow`: find Runner, run its bootstrap, read a saved context; `flowmodel`: a Flow's structure from its YAML, in-place edits, Runner's check), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), the folders watched for outside changes (`fswatch`), and the guard that no child outlives divide (`children`). UI-independent. |
 | `divide.mcpserver` | divide's own MCP server, standard library only: `tools` (the seven tools, on `divide.run`), `protocol` (MCP's JSON-RPC in both eras), `http` (Streamable HTTP on `/mcp`, run by the IDE: Options > MCP server, `divide.ui.mcp`) and `stdio` (`divide --mcp PROJECT`). The project's setup, a template's checks, renders and the render trace for MCP clients, without the UI. See 4.1. |
 | `divide.outline` | The outline of every language divide colours, as trees of `Node`s (one builder per family: PHP, Div, markup, code, data). Search > Outline and the project window's file members use it. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
@@ -153,6 +153,22 @@ flowchart TB
   `ui.flow` (Ctrl+F9 on a YAML Flow, the Run Flow dialog) reuses the progress
   box, the Output and Messages windows and the config file; the run and its
   report are apart from the dialog, for a Flow workspace to come.
+- **Outside changes in the project window.** `run.fswatch.FolderWatcher` watches a
+  set of folders with watchdog's native observer (inotify, FSEvents,
+  ReadDirectoryChangesW), each one alone, never recursively, at most 64 (watchdog
+  runs a thread per watch). Created, deleted and moved entries mark their
+  folder (a move, both); a burst is gathered for 0.3 s and handed over once, as
+  a set without repeats and with its generation; past 128 folders a batch says
+  "everything watched". `ui.windows.ProjectTree` owns one watcher for as long as
+  it is mounted (the project window: closing it, switching or closing the
+  folder, quitting stop it): the watched set is the root and the open folders,
+  updated when folders open, close or are read again. Batches come from
+  watchdog's threads through `call_from_thread`; a stale generation is dropped;
+  each affected open folder is listed (in a worker thread) and read again with
+  Textual's `reload_node` only when what it holds differs from what is shown,
+  an ancestor covering its descendants; the scroll position and the bar stay.
+  A folder the system refuses to watch is said once; Ctrl+R stays. Editor
+  buffers are never reloaded. `tools/bench_watch.py` measures it.
 - **The Flow window.** The YAML is the only model. `run.flowmodel` reads the
   code editor's buffer with tree-sitter-yaml (divide's highlighter) into
   Blocks and Steps that remember where each key and value is written, and

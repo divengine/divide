@@ -4588,3 +4588,11 @@ msgstr "Este cambio quitaría un comentario escrito ahí: hazlo en el código (C
 
 msgid "a comment would be lost"
 msgstr "se perdería un comentario"
+
+#, python-brace-format
+msgid "Not watched for outside changes: {name} ({why}). Ctrl+R refreshes."
+msgstr "Sin vigilar los cambios hechos fuera: {name} ({why}). Ctrl+R actualiza."
+
+#, python-brace-format
+msgid "more than {n} folders open"
+msgstr "más de {n} carpetas abiertas"

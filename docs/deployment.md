@@ -5,7 +5,7 @@
 | Component | Needed for | Notes |
 |---|---|---|
 | Python 3.11+ | divide from a checkout | developed on 3.14; the standalone binaries bring their own |
-| textual 8.2, textual-vision 0.0.1, tree-sitter, tree-sitter-php, pygls 2 | divide itself | installed by pip from `pyproject.toml` |
+| textual 8.2, textual-vision 0.0.1, tree-sitter, tree-sitter-php, pygls 2, watchdog 6+ | divide itself | installed by pip from `pyproject.toml`; watchdog brings the system's file notifications (the project window follows outside changes); the standalone binaries include it |
 | A terminal with 16+ colours | display | truecolour preferred; any font with CP437 box characters |
 | PHP 8 CLI | render, checks of PHP, scripts, web server | `php` on `PATH` |
 | Div 6.x | render, include resolution, dialects, trace, translate | a Composer `vendor/autoload.php` in the project, or a `div.php`; Options > Div engine |
@@ -111,6 +111,7 @@ Environment variables:
 | `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG` | the system's language, used when nothing else chooses |
 | `DIV_HOME` | the user's Div folder (`setup.json`, `trust.json`), by default `~/.div` |
 | `DIVIDE_COMPOSER` | the Composer to run, over everything else |
+| `DIVIDE_NO_WATCH` | the project window does not watch for outside changes (Ctrl+R refreshes it) |
 | `DIVIDE_DIV_PHP` | tests and screenshots: the Div engine to use |
 | `DIVIDE_SHOT_XDEBUG`, `DIVIDE_SHOT_LSP`, `DIVIDE_SHOT_GH`, `DIVIDE_SHOT_KEEP_SVG` | screenshots and screencasts only (`tools/wiki_shots.py`, `tools/screencast.py`) |
 

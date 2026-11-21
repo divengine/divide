@@ -6,6 +6,7 @@ from divide.i18n import _
 
 import asyncio
 import os
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -867,6 +868,124 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         self.git_files: dict[Path, str] = {}
         self.git_folders: set[Path] = set()
         self.git_ignored: set[Path] = set()
+        # changes made outside divide (divide.run.fswatch): the open folders are watched
+        self.watcher = None
+        self.watch_problem: str | None = None  # why a folder is not watched (said once)
+        self._watch_update_due = False
+
+    # ---------------------------------------------------------- outside changes
+    def on_mount(self) -> None:
+        from divide.run.fswatch import FolderWatcher
+
+        if os.environ.get("DIVIDE_NO_WATCH"):
+            return
+        self.watcher = FolderWatcher(self._changed_elsewhere, self._watch_refused)
+        self.watch_update()
+
+    def on_unmount(self) -> None:
+        self.stop_watching()
+
+    def stop_watching(self) -> None:
+        watcher, self.watcher = self.watcher, None
+        if watcher is not None:
+            watcher.stop()
+
+    def watched_folders(self) -> list[Path]:
+        """The project's folder and each folder shown open, shallow ones first (they come first under
+        the limit): what is watched, each alone. Closed folders are read when they open."""
+        out = [Path(self.path)]
+        queue = list(self.root.children)
+        while queue:
+            node = queue.pop(0)
+            if type(node.data) is DirEntry and node.allow_expand and node.is_expanded and node.data.loaded:
+                out.append(node.data.path)
+                queue.extend(node.children)
+        return out
+
+    def watch_update(self) -> None:
+        """The watched folders follow the open ones (after the tree changed: once per refresh)."""
+        if self.watcher is None or self._watch_update_due:
+            return
+        self._watch_update_due = True
+
+        def update() -> None:
+            self._watch_update_due = False
+            if self.watcher is not None and self.is_attached:
+                self.watcher.set_folders(self.watched_folders())
+
+        self.call_after_refresh(update)
+
+    def _changed_elsewhere(self, batch) -> None:  # watchdog's or the timer's thread: nothing of the UI here
+        try:
+            self.app.call_from_thread(self._apply_changes, batch)
+        except RuntimeError:  # the app has stopped
+            pass
+
+    def _watch_refused(self, folder: Path, why: str) -> None:  # watchdog's or the caller's thread
+        def say() -> None:
+            self.watch_problem = f"{folder}: {why}"
+            if self.is_attached:
+                self.app.notify(_("Not watched for outside changes: {name} ({why}). Ctrl+R refreshes.").format(
+                    name=folder.name or str(folder), why=why), severity="warning", timeout=6)
+        try:
+            if threading.current_thread() is threading.main_thread():
+                say()
+            else:
+                self.app.call_from_thread(say)
+        except RuntimeError:
+            pass
+
+    def _apply_changes(self, batch) -> None:
+        """The UI thread: the folders that changed outside divide, read again (only those, and only
+        when what they hold is not what is shown)."""
+        watcher = self.watcher
+        if watcher is None or not watcher.is_current(batch) or not self.is_attached:
+            return  # a stale batch: another project, folders changed since, the window closed
+        self.run_worker(self._refresh_folders(batch.folders), group="project-watch")
+
+    async def _refresh_folders(self, folders) -> None:
+        root = Path(self.path)
+        kept: list[Path] = []
+        for folder in sorted(folders, key=lambda p: len(p.parts)):
+            if not any(k == folder or k in folder.parents for k in kept):
+                kept.append(folder)  # an ancestor read again reads its open folders too
+        for folder in kept:
+            if not self.is_attached or self.watcher is None:
+                return
+            node = self.root if folder == root else self._node_for(folder)
+            if node is None or (node is not self.root and not (node.is_expanded and type(node.data) is DirEntry)):
+                continue
+            if not await asyncio.to_thread(self._listing_differs, node, folder):
+                continue
+            y = self.scroll_offset.y
+            await self.reload_node(node)
+            if self.is_attached:
+                self._keep_scroll(y)
+        self.watch_update()
+
+    def _listing_differs(self, node, folder: Path) -> bool:
+        """What ``folder`` holds now is not what its node shows (a worker thread: reads the disk only)."""
+        try:
+            entries = self.filter_paths(list(folder.iterdir()))
+        except OSError:
+            return True  # gone, or unreadable: its parent's turn shows that
+        now = {(p.name, self._safe_is_dir(p)) for p in entries}
+        shown = {(c.data.path.name, bool(c.allow_expand) and type(c.data) is DirEntry) for c in list(node.children) if c.data is not None}
+        return now != shown
+
+    def _keep_scroll(self, y: float) -> None:
+        """No jump: the rows stay where they were (once the tree has its new size), unless the bar
+        would leave the view."""
+        def back() -> None:
+            if not self.is_attached:
+                return
+            cursor = self.cursor_line
+            height = self.scrollable_content_region.height or self.size.height
+            if cursor < 0 or y <= cursor < y + height:
+                self.scroll_to(y=y, animate=False, immediate=True)
+
+        back()
+        self.call_after_refresh(back)
 
     def set_clipboard(self, path: Path | None, cut: bool = False) -> None:
         """What Ctrl+V pastes (None: nothing); a cut one is drawn dim."""
@@ -971,6 +1090,7 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
                 again = child
         self._renewed = renewed
         node.expand()
+        self.watch_update()
         if again is not None:
             self._clear_line_cache()
             _ = self._tree_lines
@@ -1032,8 +1152,15 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         if node is not None and isinstance(node.data, FileEntry) and node.is_expanded:
             self.fill_members(node)
 
+    def on_tree_node_collapsed(self, event) -> None:
+        self.watch_update()
+
     async def _on_tree_node_expanded(self, event) -> None:
         data = event.node.data
+        if (type(data) is DirEntry and data.loaded and self.watcher is not None
+                and data.path not in self.watcher.folders):  # closed while things changed in it: read again if so
+            self.run_worker(self._refresh_folders([data.path]), group="project-watch")
+        self.watch_update()
         if isinstance(data, (FileEntry, MemberEntry)):
             event.stop()
             event.prevent_default()  # not DirectoryTree's: it would open the file

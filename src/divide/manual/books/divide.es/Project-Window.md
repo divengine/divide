@@ -56,7 +56,7 @@ Las marcas son ASCII simple a propósito: todos los terminales, fuentes y plataf
 | **F7** | carpeta nueva; se admiten rutas anidadas como `assets/css` |
 | **F2** | renombrar; el nombre sin su extensión aparece seleccionado. Una ruta también lo mueve: `../nombre`, `parts/nombre`. Las ventanas abiertas siguen al archivo. |
 | **Supr** | eliminar, tras confirmar. Las carpetas se van con todo lo que contienen (divide te dice cuántos elementos). |
-| **Ctrl+R** | actualizar desde el disco |
+| **Ctrl+R** | actualizar desde el disco (los cambios hechos fuera de divide se ven solos; ver abajo) |
 | **Ctrl+X**, **Ctrl+C**, **Ctrl+V** | cortar, copiar, pegar (ver Mover archivos y carpetas, abajo) |
 | **Alt+F10**, **Shift+F10**, clic derecho | el menú local con todo lo anterior |
 
@@ -68,8 +68,20 @@ Conviene saber:
 - Las ventanas de archivos eliminados se cierran, salvo las que tienen cambios sin guardar: tu trabajo sigue abierto y puede guardarse de nuevo.
 - Un archivo de datos elegido con Ejecutar > Archivo de datos sigue con su plantilla cuando se renombra cualquiera de los dos.
 - Se rechazan los nombres y rutas que saldrían del proyecto.
-- Los archivos creados fuera de divide aparecen con Ctrl+R; los creados con Guardar como aparecen solos.
 - Después de cualquiera de estas operaciones, los includes se verifican de nuevo (ver [[Verificación de plantillas|Checking Templates]]).
+
+## Cambios hechos fuera de divide
+
+Los archivos y carpetas que otros programas crean, borran, renombran o mueven aparecen solos en la ventana de proyecto, normalmente en menos de medio segundo. Eso incluye git, Composer, un generador, una terminal u otro editor. Un archivo movido de una carpeta abierta a otra sale de la primera y aparece en la segunda.
+
+- **Qué se vigila**: la carpeta del proyecto y las carpetas que tienes abiertas en el árbol, cada una por sí sola, sin sus subcarpetas. Una carpeta cerrada se lee al abrirla, así que siempre muestra lo que tiene en ese momento.
+- **No pierdes tu sitio**: la barra sigue en el mismo archivo, las carpetas abiertas siguen abiertas, la vista no se desplaza y el filtro que escribiste se mantiene.
+- **No se sondea nada**: divide usa las notificaciones del propio sistema (inotify en Linux, FSEvents en macOS, las notificaciones de cambios de carpeta en Windows). Mientras no cambia nada, no pasa nada. Una ráfaga de cambios, como un checkout o un `composer install`, se agrupa, y cada carpeta afectada se lee una vez.
+- **Los editores abiertos no se tocan**: un archivo cambiado fuera de divide no recarga su ventana de edición, así que nunca se pisan cambios sin guardar.
+- **Límites**:
+  - Se vigilan como mucho 64 carpetas a la vez. Con más abiertas, divide lo dice, y el resto se actualiza con **Ctrl+R**.
+  - Si el sistema se niega a vigilar una carpeta, divide lo dice una vez, y **Ctrl+R** actualiza. Pasa al llegar a los límites de inotify en Linux (`fs.inotify.max_user_watches`, `max_user_instances`), o en un sistema de archivos sin notificaciones, como muchas unidades de red, SSHFS, algunos volúmenes de Docker o la vista que WSL tiene de las unidades de Windows.
+  - Por SSH no cambia nada: divide vigila la máquina en la que se ejecuta.
 
 ## Mover archivos y carpetas
 

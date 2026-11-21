@@ -110,7 +110,9 @@ The examples below generate HTML because it is the easiest output to read; the s
   Div setup. `divide --mcp PROJECT` serves it over stdio too. Nothing to
   install beyond divide ([MCP Server](https://github.com/divengine/divide/wiki/MCP-Server)).
 - **A project window that does things.** You can create, rename and delete
-  files and folders without leaving the IDE.
+  files and folders without leaving the IDE, and what git, Composer or a
+  shell changes outside it shows by itself (the system's own file
+  notifications, nothing polled).
 - **Works in any terminal.** It runs over SSH, inside tmux, and on the server
   where the templates live.
 

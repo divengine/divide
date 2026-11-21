@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-21 19:05+0000\n"
+"POT-Creation-Date: 2026-11-21 19:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1654,6 +1654,10 @@ msgstr ""
 msgid "Not saved: a paused run cannot be resumed."
 msgstr ""
 
+#, python-brace-format
+msgid "Not watched for outside changes: {name} ({why}). Ctrl+R refreshes."
+msgstr ""
+
 msgid "Nothing changed since the last commit"
 msgstr ""
 
@@ -3182,6 +3186,10 @@ msgid "loop {opened} is never closed with {loop_e}{key}{loop_es}"
 msgstr ""
 
 msgid "merge commit"
+msgstr ""
+
+#, python-brace-format
+msgid "more than {n} folders open"
 msgstr ""
 
 msgid "no data"
