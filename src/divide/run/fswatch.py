@@ -22,7 +22,8 @@ the batch says *everything watched* instead of growing.
 
 ``on_change`` and ``on_error`` run on watchdog's or the timer's threads:
 the caller moves them to its own thread (Textual: ``call_from_thread``) and
-never touches widgets from them. A folder the system refuses to watch (a
+never touches widgets from them. Setting the same folders again changes
+nothing: batches already gathered for them stay current. A folder the system refuses to watch (a
 limit, permissions, a network filesystem) is reported once through
 ``on_error`` and left out; nothing polls instead.
 """
@@ -96,9 +97,7 @@ class FolderWatcher:
                 wanted.append(folder)
         over = wanted[self.max_watched:]
         wanted = wanted[:self.max_watched]
-        with self._lock:
-            self.generation += 1
-            self._pending &= set(wanted)
+        before = set(self._watches)
         for folder in list(self._watches):
             if folder not in wanted:
                 self._unschedule(folder)
@@ -106,6 +105,10 @@ class FolderWatcher:
         for folder in wanted:
             if folder not in self._watches and folder not in self._refused:
                 self._schedule(folder)
+        with self._lock:
+            self._pending &= set(self._watches)
+            if set(self._watches) != before:  # only a real change makes batches already gathered stale
+                self.generation += 1
         if over and self.on_error is not None and over[0] not in self._refused:
             self._refused.add(over[0])
             self.on_error(over[0], _("more than {n} folders open").format(n=self.max_watched))

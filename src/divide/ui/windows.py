@@ -787,6 +787,31 @@ MEMBERS_MAX_BYTES = 2_000_000  # a bigger file unfolds into nothing (open it: Se
 
 
 # Folders that are never worth browsing in the project window.
+def shown_entries(node) -> frozenset[tuple[str, bool]]:
+    """What a folder's node shows, as (name, is a folder) pairs: read on the UI thread, a snapshot."""
+    return frozenset((c.data.path.name, bool(c.allow_expand) and type(c.data) is DirEntry)
+                     for c in list(node.children) if c.data is not None)
+
+
+def disk_entries(folder: Path) -> frozenset[tuple[str, bool]] | None:
+    """What ``folder`` holds as the project window would show it (None: gone or unreadable). Disk only,
+    nothing of the UI: it runs in a worker thread."""
+    try:
+        entries = list(folder.iterdir())
+    except OSError:
+        return None
+    out = set()
+    for path in entries:
+        if not shown_in_project(path):
+            continue
+        try:
+            folder_ = path.is_dir()
+        except OSError:
+            folder_ = False
+        out.add((path.name, folder_))
+    return frozenset(out)
+
+
 HIDDEN_NAMES = {".git", ".hg", ".svn", "__pycache__", ".venv", "node_modules", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".idea"}
 
 
@@ -952,26 +977,27 @@ class ProjectTree(FilteredTree, DirectoryTree, TVViewMixin):
         for folder in kept:
             if not self.is_attached or self.watcher is None:
                 return
-            node = self.root if folder == root else self._node_for(folder)
-            if node is None or (node is not self.root and not (node.is_expanded and type(node.data) is DirEntry)):
+            node = self._open_node(folder, root)
+            if node is None:
                 continue
-            if not await asyncio.to_thread(self._listing_differs, node, folder):
-                continue
+            on_disk = await asyncio.to_thread(disk_entries, folder)  # the disk, read off the UI thread
+            node = self._open_node(folder, root)  # the tree as it is now: it may have changed meanwhile
+            if node is None or (on_disk is not None and on_disk == shown_entries(node)):
+                continue  # gone or closed since, or already showing what the folder holds
             y = self.scroll_offset.y
             await self.reload_node(node)
             if self.is_attached:
                 self._keep_scroll(y)
         self.watch_update()
 
-    def _listing_differs(self, node, folder: Path) -> bool:
-        """What ``folder`` holds now is not what its node shows (a worker thread: reads the disk only)."""
-        try:
-            entries = self.filter_paths(list(folder.iterdir()))
-        except OSError:
-            return True  # gone, or unreadable: its parent's turn shows that
-        now = {(p.name, self._safe_is_dir(p)) for p in entries}
-        shown = {(c.data.path.name, bool(c.allow_expand) and type(c.data) is DirEntry) for c in list(node.children) if c.data is not None}
-        return now != shown
+    def _open_node(self, folder: Path, root: Path):
+        """The node of ``folder`` if it is in the tree and open (the UI thread), else None."""
+        if not self.is_attached:
+            return None
+        node = self.root if folder == root else self._node_for(folder)
+        if node is None or (node is not self.root and not (node.is_expanded and type(node.data) is DirEntry)):
+            return None
+        return node
 
     def _keep_scroll(self, y: float) -> None:
         """No jump: the rows stay where they were (once the tree has its new size), unless the bar

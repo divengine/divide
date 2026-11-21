@@ -371,3 +371,108 @@ async def test_a_filter_survives_outside_changes(tree):
         (tree / "other.txt").write_text("")
         await until(pilot, lambda: "other.txt" in names(t.root), "not shown under the filter")
         assert t.filter_text == "txt"
+
+
+# ------------------------------------------------------------------ review: generations and threads
+def test_setting_the_same_folders_keeps_a_gathered_batch_current(tree, watching):
+    watcher, seen = watching([tree, tree / "a"], delay=1.0)
+    generation = watcher.generation
+    (tree / "a" / "pending.txt").write_text("")
+    time.sleep(0.3)  # the batch is being gathered...
+    watcher.set_folders([tree, tree / "a"])  # ...and the tree asks for the same folders again
+    watcher.set_folders([tree / "a", tree])  # (in another order: the same set)
+    assert watcher.generation == generation
+    assert seen.wait_for(lambda: seen.batches)
+    assert watcher.is_current(seen.batches[-1])  # delivered, and not thrown away as stale
+    watcher.set_folders([tree])  # a real change...
+    assert watcher.generation == generation + 1 and not watcher.is_current(seen.batches[-1])  # ...makes it stale
+    watcher.stop()
+    assert not watcher.is_current(Batch(watcher.generation, frozenset({tree})))
+
+
+def test_a_refused_folder_asked_again_changes_nothing(tree, watching):
+    class Refusing:
+        daemon = True
+
+        def start(self): pass
+
+        def schedule(self, handler, path, recursive=False):
+            if path.endswith("b"):
+                raise OSError(28, "limit")
+            return object()
+
+        def unschedule(self, watch): pass
+
+        def unschedule_all(self): pass
+
+        def stop(self): pass
+
+        def join(self, timeout=None): pass
+
+    watcher, seen = watching([tree / "a", tree / "b"], observer_factory=Refusing)
+    generation = watcher.generation
+    watcher.set_folders([tree / "a", tree / "b"])
+    assert watcher.generation == generation
+
+
+def test_the_worker_reads_the_disk_and_the_tree_is_read_on_its_thread(tree):
+    from divide.ui import windows
+    (tree / ".git").mkdir()  # left out, as the project window leaves it out
+    assert windows.disk_entries(tree) == frozenset({("a", True), ("b", True)})
+    assert windows.disk_entries(tree / "gone") is None
+    # the comparison takes what the tree shows as a snapshot, never the tree's nodes, into the thread
+    import inspect
+    assert list(inspect.signature(windows.disk_entries).parameters) == ["folder"]
+
+
+async def test_a_folder_closed_or_reloaded_while_it_is_read(tree, monkeypatch):
+    from divide.app import Divide
+    from divide.ui import windows
+
+    gate = threading.Event()
+    reading = threading.Event()
+    real = windows.disk_entries
+
+    def slow(folder):  # the disk is slow: the tree changes while it is read
+        reading.set()
+        gate.wait(5)
+        return real(folder)
+
+    app = Divide(tree, [])
+    async with app.run_test(size=(100, 30)) as pilot:
+        t = await project(pilot, app)
+        await opened(pilot, t, tree / "a")
+        monkeypatch.setattr(windows, "disk_entries", slow)
+        reloads = []
+        original = t.reload_node
+        monkeypatch.setattr(t, "reload_node", lambda node: (reloads.append(node.data.path), original(node))[1])
+
+        # 1. the folder closes while its listing is read: nothing is reloaded, nothing fails
+        (tree / "a" / "one.txt").write_text("")
+        await until(pilot, reading.is_set, "the listing was not read")
+        t._node_for(tree / "a").collapse()
+        gate.set()
+        await pilot.pause(0.5)
+        assert tree / "a" not in reloads
+
+        # 2. the folder is reloaded (Ctrl+R) while its listing is read: shown once, no duplicates
+        reading.clear(); gate.clear()
+        await opened(pilot, t, tree / "a")
+        (tree / "a" / "two.txt").write_text("")
+        await until(pilot, reading.is_set, "the listing was not read")
+        await t.reload_node(t._node_for(tree / "a"))  # the tree changes under the worker
+        gate.set()
+        await until(pilot, lambda: "two.txt" in names(t._node_for(tree / "a")), "the new file is not shown")
+        await pilot.pause(0.5)
+        shown = names(t._node_for(tree / "a"))
+        assert shown.count("two.txt") == 1 and shown.count("one.txt") == 1
+
+        # 3. the folder disappears while its listing is read
+        reading.clear(); gate.clear()
+        (tree / "a" / "three.txt").write_text("")
+        await until(pilot, reading.is_set, "the listing was not read")
+        shutil.rmtree(tree / "a")
+        await t.reload_node(t.root)
+        gate.set()
+        await until(pilot, lambda: "a" not in names(t.root), "the deleted folder is still shown")
+        await pilot.pause(0.5)
