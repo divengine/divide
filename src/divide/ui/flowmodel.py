@@ -23,6 +23,7 @@ from __future__ import annotations
 from divide.i18n import _
 
 import json
+import textwrap
 from pathlib import Path
 
 from rich.text import Text
@@ -241,10 +242,10 @@ class FlowTree(FilteredTree, Tree[Key], TVViewMixin):
 class FlowWindow(_TVWindow):
     """Tree of a Flow's Blocks and Steps | what the selected one is, with Runner's verdict below."""
 
-    HINT = _('Enter edit · Ins add · Del del · ^Enter go to · ^T code · Alt+F9 check · ^F9 run')
+    HINT = _('Enter edit · Ins add · Del del · ^Enter go to · ^T code')
     DEFAULT_CSS = """
     FlowWindow .flow-left { width: 1fr; height: 1fr; }
-    FlowWindow .flow-right { width: 44; height: 1fr; }
+    FlowWindow .flow-right { width: 48; height: 1fr; }
     FlowWindow .flow-inspector { width: 1fr; height: auto; padding: 0 1; background: $window-content-background; color: $foreground; }
     FlowWindow VerticalScroll { background: $window-content-background; scrollbar-size: 1 1; }
     FlowWindow .flow-verdict { height: 3; padding: 0 1; background: $window-content-background; color: $foreground; }
@@ -381,12 +382,27 @@ class FlowWindow(_TVWindow):
         text = Text()
         key_style, dim = _style("json.key"), _style("div.comment")
 
+        width = max(20, (self.inspector.size.width or 42) - 2)  # its padding
+
+        def wrapped(value: str, first: int, indent: int) -> str:
+            """``value`` broken to the panel's width, its later lines under its first word."""
+            return textwrap.fill(value, width=width, initial_indent=" " * first, subsequent_indent=" " * indent,
+                                 break_on_hyphens=False, break_long_words=False)
+
         def row(name: str, value: str, style=None) -> None:
             text.append(f"{name:<10} ", style=dim)
-            text.append(value + "\n", style=style)
+            text.append(wrapped(value, 11, 11)[11:] + "\n", style=style)
+
+        def styled(lines: str, style) -> None:
+            """Each line's indentation plain, its words in ``style`` (a red mark only under the words)."""
+            for line in lines.split("\n"):
+                words = line.lstrip(" ")
+                text.append(line[:len(line) - len(words)])
+                text.append(words, style=style)
+                text.append("\n")
 
         def note(value: str, style=None) -> None:
-            text.append(" " * 11 + value + "\n", style=style if style is not None else dim)
+            styled(wrapped(value, 11, 13), style if style is not None else dim)
 
         if isinstance(item, fm.Step):
             text.append(_('Step '), style=dim)
@@ -441,7 +457,7 @@ class FlowWindow(_TVWindow):
             text.append("\n")
             for p in problems[:30]:
                 style = _style("diag.error") if p.severity == "error" else _style("diag.warning")
-                text.append(f"! {_line_of(doc.text, p.start)}: {p.message}\n", style=style)
+                styled(wrapped(f"! {_line_of(doc.text, p.start)}: {p.message}", 0, 2), style)
         self.inspector.update(text)
 
     def show_verdict(self, verdict: str, bad: bool) -> None:
@@ -555,6 +571,12 @@ class FlowWindow(_TVWindow):
                    if s.attrs.get(k) is not None and s.attrs[k].kind == "scalar"
                    and fm.resolve_target(self.doc, s.block, str(s.attrs[k].value))[1] is step]
         warn = (" " + _('{callers} lead(s) to it.').format(callers=", ".join(callers))) if callers else ""
+        try:
+            notes = fm.comments_in(self.doc, *fm.step_lines(self.doc, step))
+        except fm.EditError:
+            notes = 0
+        if notes:  # said before, never lost silently
+            warn += " " + _('The {count} comment(s) written in it go with it.').format(count=notes)
         if await self.app.run_dialog(confirm(_('Delete Step'), _('Delete {name}?').format(name=step.name) + warn)) != Command.YES:  # type: ignore[attr-defined]
             return
         try:

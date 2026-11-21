@@ -66,6 +66,7 @@ class Attr:
     kind: str  # scalar, mapping, flow, block_scalar, empty, other
     value: object = None  # a scalar's text (decoded), else None
     why: str | None = None  # why it cannot be edited in place
+    pairs: list["Attr"] = field(default_factory=list)  # a block mapping's own pairs (a context's keys)
 
     def text(self) -> str:
         """The value as the dialog shows it."""
@@ -131,6 +132,7 @@ class FlowDoc:
     blocks: list[Block] = field(default_factory=list)
     problems: list[Problem] = field(default_factory=list)  # what the YAML itself has wrong
     blocks_key: tuple[int, int] | None = None
+    comments: list[tuple[int, int]] = field(default_factory=list)  # every comment, where it is written
 
     @property
     def editable(self) -> bool:
@@ -249,6 +251,7 @@ def parse(text: str) -> FlowDoc:
     doc = FlowDoc(text)
     tree = _parser().parse(src.data)
     root = tree.root_node
+    doc.comments = [src.span(n) for n in _comments(root)]
     for node in _errors(root):
         start, end = src.span(node)
         what = _('this is missing') if node.is_missing else _('this cannot be read as YAML')
@@ -281,6 +284,21 @@ def parse(text: str) -> FlowDoc:
                     if block is not None:
                         doc.blocks.append(block)
     return doc
+
+
+def _comments(root):
+    out, stack = [], [root]
+    while stack:
+        n = stack.pop()
+        if n.type == "comment":
+            out.append(n)
+        stack.extend(n.children)
+    return sorted(out, key=lambda n: n.start_byte)
+
+
+def comments_in(doc: FlowDoc, start: int, end: int) -> int:
+    """How many comments are written inside ``start:end``."""
+    return sum(1 for a, b in doc.comments if start <= a and b <= end)
 
 
 def _errors(root):
@@ -383,8 +401,10 @@ def _attr(src: _Source, pair) -> Attr | None:
     if inner.type == "block_scalar":
         return Attr(key, start, end, key_start, key_end, value_start, value_end, raw, "block_scalar",
                     why=_('{key} is a block scalar (| or >): edit it in the code (Ctrl+T)').format(key=key))
-    if inner.type == "block_mapping":  # its first line as indented as the others
-        return Attr(key, start, end, key_start, key_end, value_start, value_end, " " * _column(src.text, value_start) + raw, "mapping")
+    if inner.type == "block_mapping":  # its first line as indented as the others; its own pairs, to edit one by one
+        pairs = [a for a in (_attr(src, p) for p in _pairs(inner)) if a is not None]
+        return Attr(key, start, end, key_start, key_end, value_start, value_end, " " * _column(src.text, value_start) + raw,
+                    "mapping", pairs=pairs)
     if inner.type == "flow_mapping":
         return Attr(key, start, end, key_start, key_end, value_start, value_end, raw, "flow")
     return Attr(key, start, end, key_start, key_end, value_start, value_end, raw, "other",
@@ -551,28 +571,6 @@ def _whole_lines(text: str, start: int, end: int) -> tuple[int, int]:
     return first, _line_after(text, end)
 
 
-def _context_lines(raw: str, indent: int) -> str | None:
-    """A flow mapping of plain pairs (``{a: 1, b: x}``) as block lines at ``indent``; None when it is not one."""
-    src = _Source("x: " + raw.strip() + "\n")
-    tree = _parser().parse(src.data)
-    if tree.root_node.has_error:
-        return None
-    top = _unwrap(next((c for c in tree.root_node.named_children if c.type == "document"), None))
-    if top is None or top.type != "block_mapping":
-        return None
-    value = _unwrap(_pairs(top)[0].child_by_field_name("value")) if _pairs(top) else None
-    if value is None or value.type != "flow_mapping":
-        return None
-    lines = []
-    for pair in _pairs(value):
-        key, val = pair.child_by_field_name("key"), pair.child_by_field_name("value")
-        inner = _unwrap(val)
-        if key is None or val is None or inner is None or inner.type in ("flow_mapping", "flow_sequence"):
-            return None
-        lines.append(" " * indent + src.raw(key).strip() + ": " + src.raw(val).strip() + "\n")
-    return "".join(lines) if lines else None
-
-
 def check_context(raw: str) -> str | None:
     """Why ``raw`` is not a mapping Runner's ``context`` takes, or None."""
     src = _Source("x: " + raw.strip() + "\n")
@@ -601,8 +599,12 @@ def _unchanged(attr: Attr | None, key: str, value) -> bool:
         return False
     if key == "pause":
         return attr.kind == "scalar" and str(attr.value).lower() == ("true" if value else "false")
-    if key == "context":
-        return " ".join(attr.text().split()) == " ".join(str(value).split())
+    if key == "context":  # the same keys and values, in any order (the order written stays)
+        mine, theirs = _flow_pairs(attr.text()), _flow_pairs(str(value))
+        if mine is None or theirs is None:
+            return " ".join(attr.text().split()) == " ".join(str(value).split())
+        return ({k: " ".join(v.split()) for k, v in mine} == {k: " ".join(v.split()) for k, v in theirs}
+                and len(mine) == len(theirs))
     return attr.kind == "scalar" and str(attr.value) == str(value).strip()
 
 
@@ -661,14 +663,8 @@ def edit_step(doc: FlowDoc, step: Step, values: dict) -> Change | None:
         if value is None:
             start, end = _whole_lines(text, attr.start, attr.end)
             changes.append(Change(start, end, ""))
-        elif attr.kind == "mapping":  # a block mapping stays in block style
-            first = text.find("\n", attr.key_end) + 1
-            indent = _column(text, attr.value_start) if text[_line_start(text, attr.value_start):attr.value_start].strip() == "" else (step.attr_column or 0) + 2
-            lines = _context_lines(value, indent)
-            if lines is None:
-                changes.append(Change(attr.key_end + 1, _line_after(text, attr.end) - 1, " " + str(value).strip()))
-            else:
-                changes.append(Change(first, _line_after(text, attr.end), lines))
+        elif attr.kind == "mapping":  # a block mapping: key by key, its comments and order kept
+            changes.extend(_edit_block_mapping(text, attr, str(value)))
         elif attr.kind == "empty":
             changes.append(Change(attr.key_end + 1, attr.key_end + 1, " " + _value_text(key, value)))
         else:
@@ -677,7 +673,78 @@ def edit_step(doc: FlowDoc, step: Step, values: dict) -> Change | None:
         changes.append(_insert_attrs(text, step, added))
     if not changes:
         return None
+    _keep_comments(doc, changes)
     return _merge(text, changes)
+
+
+def _keep_comments(doc: FlowDoc, changes: list[Change]) -> None:
+    """No change replaces or removes a comment: such an edit is refused, never made silently."""
+    for change in changes:
+        if change.end > change.start and comments_in(doc, change.start, change.end):
+            raise EditError(_('This change would remove a comment written there: make it in the code (Ctrl+T)'))
+
+
+def _edit_block_mapping(text: str, attr: Attr, value: str) -> list[Change]:
+    """A block-style mapping (a context) changed in place, key by key: a changed value replaces only
+    its characters (a comment after it stays), a new key is one more line, a key left out loses its
+    lines, the order stays as written. What cannot be changed that way is refused."""
+    wanted = _flow_pairs(value)
+    if wanted is None:
+        raise EditError(_('The context is not a mapping of key: value: edit it in the code (Ctrl+T)'))
+    if not wanted:
+        raise EditError(_('An empty context: empty the line to remove the attribute instead'))
+    old = {p.key: p for p in attr.pairs}
+    if len(old) != len(attr.pairs):
+        raise EditError(_('The context repeats a key: edit it in the code (Ctrl+T)'))
+    changes: list[Change] = []
+    added: list[str] = []
+    for key, raw in wanted:
+        pair = old.get(key)
+        if pair is None:
+            added.append(f"{key}: {raw}")
+            continue
+        if " ".join(pair.raw.split()) == " ".join(raw.split()):
+            continue
+        if pair.kind not in ("scalar", "flow", "empty") or pair.why is not None:
+            raise EditError(_("The context's {key} is written in a way divide does not edit: edit it in the code (Ctrl+T)").format(key=key))
+        if pair.kind == "empty":
+            changes.append(Change(pair.key_end + 1, pair.key_end + 1, " " + raw))
+        else:
+            changes.append(Change(pair.value_start, pair.value_end, raw))
+    keys = {k for k, _v in wanted}
+    for pair in attr.pairs:
+        if pair.key not in keys:
+            start, end = _whole_lines(text, pair.start, pair.end)
+            changes.append(Change(start, end, ""))
+    if added:
+        indent = _column(text, attr.pairs[0].key_start) if attr.pairs else _column(text, attr.key_start) + 2
+        last = max(attr.pairs, key=lambda p: p.end) if attr.pairs else None
+        at = _line_after(text, last.end if last is not None else attr.key_end)
+        prefix = "" if at == 0 or text[at - 1] == "\n" else "\n"
+        changes.append(Change(at, at, prefix + "".join(" " * indent + line + "\n" for line in added)))
+    return changes
+
+
+def _flow_pairs(raw: str) -> list[tuple[str, str]] | None:
+    """``{a: 1, b: x}`` as its pairs, keys and values as written (None: not a flow mapping)."""
+    src = _Source("x: " + raw.strip() + "\n")
+    tree = _parser().parse(src.data)
+    if tree.root_node.has_error:
+        return None
+    top = _unwrap(next((c for c in tree.root_node.named_children if c.type == "document"), None))
+    if top is None or top.type != "block_mapping" or not _pairs(top):
+        return None
+    value = _unwrap(_pairs(top)[0].child_by_field_name("value"))
+    if value is None or value.type != "flow_mapping":
+        return None
+    out = []
+    for pair in _pairs(value):
+        named = _key(src, pair)
+        val = pair.child_by_field_name("value")
+        if named is None:
+            return None
+        out.append((named[0], src.raw(val).strip() if val is not None else ""))
+    return out
 
 
 def _insert_attrs(text: str, step: Step, lines: list[str]) -> Change:
@@ -736,8 +803,13 @@ def add_step(doc: FlowDoc, block: Block, after: Step | None, step_id: str, value
 def delete_step(doc: FlowDoc, step: Step) -> Change:
     if not doc.editable:
         raise EditError(_('The YAML has errors: fix them in the code first (Ctrl+T)'))
-    start, end = _whole_lines(doc.text, step.key_start, max(step.end, step.key_end))
+    start, end = step_lines(doc, step)
     return Change(start, end, "")
+
+
+def step_lines(doc: FlowDoc, step: Step) -> tuple[int, int]:
+    """The lines a Step is written on (what deleting it removes, comments on them included)."""
+    return _whole_lines(doc.text, step.key_start, max(step.end, step.key_end))
 
 
 def apply(text: str, change: Change) -> str:
@@ -753,12 +825,15 @@ def verify(before: FlowDoc, after_text: str, block_id: str, step_id: str | None,
     if step_id is None:
         return None
     step = after.step(block_id, step_id)
+    old = before.step(block_id, step_id)
+    lost = comments_in(before, *step_lines(before, old)) if values is None and old is not None else 0
+    if len(after.comments) != len(before.comments) - lost:
+        return _('a comment would be lost')
     if values is None:
         return _('{name} is still there').format(name=f"{block_id}.{step_id}") if step is not None else None
     if step is None:
         return _('{name} is not found after the edit').format(name=f"{block_id}.{step_id}")
     values = normalize(values)
-    old = before.step(block_id, step_id)
     for key in ATTRS:
         attr = step.attrs.get(key)
         if key in values:
@@ -852,7 +927,7 @@ def diagnose(doc: FlowDoc, functions: Functions | None, cwd: Path, result: Check
                 continue  # Runner's schema says why
             if functions.find(name, module, cwd) is not None:
                 continue
-            tried = ", ".join(_shown(p, cwd) for p in functions.candidates(name, module, cwd))
+            tried = _shown(functions.candidates(name, module, cwd)[0], cwd)  # where it should be (the root's)
             if module:
                 out.append(Diagnostic(attr.value_start, attr.value_end, "error",
                                       _('{key} {module}:{name}: no file {tried}').format(key=key, module=module, name=name, tried=tried)))
@@ -860,10 +935,10 @@ def diagnose(doc: FlowDoc, functions: Functions | None, cwd: Path, result: Check
                 continue
             elif result is not None and result.ok is not None and "::" not in name and "\\" not in name:
                 out.append(Diagnostic(attr.value_start, attr.value_end, "error",
-                                      _('{key} {name}: no file {tried}, and PHP has no function {name}').format(key=key, name=name, tried=tried)))
+                                      _('{key} {name}: no file {tried}, no PHP function').format(key=key, name=name, tried=tried)))
             else:
                 out.append(Diagnostic(attr.value_start, attr.value_end, "warning",
-                                      _('{key} {name}: no file {tried}; Runner will try it as a PHP callable').format(key=key, name=name, tried=tried)))
+                                      _('{key} {name}: no file {tried}; Runner tries a PHP callable').format(key=key, name=name, tried=tried)))
     if result is not None and result.ok is False and result.error:
         out.extend(_runner_diagnostics(doc, result.error, out))
     out.sort(key=lambda d: (d.start, d.end))

@@ -128,17 +128,79 @@ def test_adding_an_attribute_is_one_line_with_the_siblings_indentation():
 
 
 def test_removing_an_attribute_removes_only_its_lines():
-    after = edited(COMMENTED, "review", "check", {"context": ""})
-    assert changed_lines(COMMENTED, after) == ["-                context:", "-                    reviewed: true    # set after the activity",
-                                               "-                    by: \"ana\""]
-    assert "activity: mark_reviewed" in after
+    after = edited(COMMENTED, "main", "review", {"call": ""})
+    assert changed_lines(COMMENTED, after) == ["-                call: 'review.check'"]
+    assert "            review:   # goes to review\n" in after  # the Step's own comment stays
 
 
-def test_a_block_context_stays_in_block_style():
-    after = edited(COMMENTED, "review", "check", {"context": "{reviewed: false, by: \"ana\", at: today}"})
+def refused(text: str, block: str, step: str, values: dict) -> str:
+    """The edit is refused with a message: nothing is planned, so nothing changes."""
+    doc = fm.parse(text)
+    with pytest.raises(fm.EditError) as raised:
+        fm.edit_step(doc, doc.step(block, step), values)
+    return str(raised.value)
+
+
+def test_removing_what_carries_a_comment_is_refused():
+    for block, step, values in (("main", "total", {"activity": ""}),  # activity: compute_total   # sums the items
+                                ("review", "check", {"context": ""}),  # its keys have comments
+                                ("review", "check", {"context": '{by: "ana"}'})):  # reviewed's line has one
+        message = refused(COMMENTED, block, step, values)
+        assert "comment" in message and "Ctrl+T" in message
+
+
+# ------------------------------------------------------------------ a block-style context, key by key
+def test_a_changed_context_value_keeps_its_comment():
+    after = edited(COMMENTED, "review", "check", {"context": '{reviewed: false, by: "ana"}'})
+    assert changed_lines(COMMENTED, after) == ["-                    reviewed: true    # set after the activity",
+                                               "+                    reviewed: false    # set after the activity"]
+
+
+def test_a_new_context_key_is_one_line_and_the_order_stays():
+    after = edited(COMMENTED, "review", "check", {"context": '{at: today, by: "bob", reviewed: true}'})
+    assert changed_lines(COMMENTED, after) == ['-                    by: "ana"', '+                    by: "bob"',
+                                               "+                    at: today"]
+
+
+def test_a_context_key_without_a_comment_can_go_and_own_line_comments_stay():
+    text = COMMENTED.replace('                    by: "ana"\n', '                    # who reviewed it\n                    by: "ana"\n')
+    after = edited(text, "review", "check", {"context": "{reviewed: true}"})
+    assert changed_lines(text, after) == ['-                    by: "ana"']
+    assert "                    # who reviewed it\n" in after
+
+
+def test_what_the_context_edit_cannot_do_in_place_is_refused():
+    nested = COMMENTED.replace('                    by: "ana"\n', '                    by:\n                        name: ana\n')
+    assert "Ctrl+T" in refused(nested, "review", "check", {"context": "{reviewed: true, by: bob}"})
+    assert refused(COMMENTED, "review", "check", {"context": "{}"})  # empty: remove the attribute instead
+    assert refused(COMMENTED, "review", "check", {"context": "[1, 2]"})
+
+
+def test_unrelated_yaml_stays_byte_for_byte():
+    values = {"context": '{reviewed: false, by: "ana", at: today}', "activity": "mark_checked"}
+    after = edited(COMMENTED, "review", "check", values)
+    step = fm.parse(COMMENTED).step("review", "check")
+    assert after[:step.key_start] == COMMENTED[:step.key_start]  # everything before the Step
+    assert after.endswith(COMMENTED[step.end:])  # everything after it
+    assert fm.parse(after).comments.__len__() == len(fm.parse(COMMENTED).comments)
     assert changed_lines(COMMENTED, after) == [
-        "-                    reviewed: true    # set after the activity", "+                    reviewed: false", "+                    at: today"]
-    assert edited(COMMENTED, "main", "total", {"context": "{x: 1}"}).count("context: {x: 1}") == 1
+        "-                activity: mark_reviewed", "+                activity: mark_checked",
+        "-                    reviewed: true    # set after the activity", "+                    reviewed: false    # set after the activity",
+        "+                    at: today"]
+
+
+def test_verify_catches_a_lost_comment():
+    doc = fm.parse(COMMENTED)
+    lost = COMMENTED.replace("   # sums the items", "")
+    assert fm.verify(doc, lost, "main", "total", {"activity": "compute_total"}) == "a comment would be lost"
+
+
+def test_deleting_a_step_counts_the_comments_that_go_with_it():
+    doc = fm.parse(COMMENTED)
+    assert fm.comments_in(doc, *fm.step_lines(doc, doc.step("review", "check"))) == 1
+    assert fm.comments_in(doc, *fm.step_lines(doc, doc.step("main", "receipt"))) == 0
+    after = fm.apply(COMMENTED, fm.delete_step(doc, doc.step("main", "review")))
+    assert fm.verify(doc, after, "main", "review", None) is None  # its own comment goes, as the dialog says
 
 
 def test_one_dialog_is_one_replacement():
@@ -463,3 +525,42 @@ async def test_plain_yaml_keeps_ctrl_t_for_nothing_and_php_is_untouched(tmp_path
         await pilot.pause(0.3)
         assert not isinstance(app.active_window(), FlowWindow)
         assert not app.window_for(tmp_path / "config.yml").editor.checked
+
+
+async def test_the_step_dialog_keeps_comments_or_says_why_not(tmp_path):
+    from divide.app import Divide
+    from divide.ui.dialogs import MessageBox
+    from divide.ui.flowmodel import FlowWindow, StepDialog
+
+    flow = tmp_path / "order.yml"
+    flow.write_text(COMMENTED)
+    app = Divide(tmp_path, [flow])
+    async with app.run_test(size=(120, 36)) as pilot:
+        await pilot.pause(0.3)
+        await pilot.press("ctrl+t")
+        await wait(pilot, lambda: isinstance(app.active_window(), FlowWindow), "no Flow window")
+        window = app.active_window()
+        code = app.window_for(flow)
+        window.select(("step", "review", "check"))
+        await wait(pilot, lambda: getattr(window.selected(), "name", "") == "review.check", "not on review.check")
+        await pilot.press("enter")
+        await wait(pilot, lambda: dialog_of(app, StepDialog), "no Step dialog")
+        dialog = dialog_of(app, StepDialog)
+        assert dialog.inputs["context"].data == '{reviewed: true, by: "ana"}'
+        dialog.inputs["context"].data = '{reviewed: false, by: "ana"}'
+        await pilot.press("alt+k")
+        await wait(pilot, lambda: "reviewed: false    # set after the activity" in code.editor.text, "the comment was not kept")
+        assert changed_lines(COMMENTED, code.editor.text) == ["-                    reviewed: true    # set after the activity",
+                                                              "+                    reviewed: false    # set after the activity"]
+        kept = code.editor.text
+
+        await pilot.press("enter")  # now drop reviewed, whose line has a comment: refused, said
+        await wait(pilot, lambda: dialog_of(app, StepDialog), "no Step dialog")
+        dialog_of(app, StepDialog).inputs["context"].data = '{by: "ana"}'
+        await pilot.press("alt+k")
+        await wait(pilot, lambda: dialog_of(app, MessageBox), "the refusal was not said")
+        assert "comment" in dialog_of(app, MessageBox)._text and "Ctrl+T" in dialog_of(app, MessageBox)._text
+        await pilot.press("enter")
+        await pilot.pause(0.2)
+        assert code.editor.text == kept
+    assert flow.read_text() == COMMENTED  # never saved: the file is as it was

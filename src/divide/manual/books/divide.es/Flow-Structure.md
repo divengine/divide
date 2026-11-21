@@ -69,7 +69,17 @@ divide cambia el texto YAML en su sitio. Nunca vuelve a escribir el archivo desd
 - **Un valor cambiado** reemplaza solo el valor. Un comentario detrás, en la misma línea, se queda: `activity: compute_total   # sums` pasa a ser `activity: compute_sum   # sums`.
 - **Un atributo nuevo** es una línea nueva después del último del Step, con la sangría de los demás.
 - **Un atributo quitado** quita solo sus líneas. Los comentarios en líneas propias se quedan.
-- **Un contexto escrito como bloque** (una clave por línea) sigue siendo un bloque.
+- **Un contexto escrito como bloque** (una clave por línea) se cambia clave a clave:
+  - un valor cambiado reemplaza solo ese valor, y el comentario detrás se queda;
+  - una clave nueva es una línea más;
+  - una clave que quitas pierde su línea;
+  - las claves siguen en el orden en que están escritas.
+- **Una edición nunca quita comentarios.** Un cambio que quitaría uno se rechaza con un mensaje, y no se cambia nada. Ese cambio lo haces en el código (Ctrl+T). Por ejemplo:
+  - quitar `activity: compute_total   # sums`;
+  - quitar una clave del contexto cuya línea tiene un comentario;
+  - cambiar un valor del contexto que es a su vez un mapping.
+
+  **Supr** sobre un Step dice cuántos comentarios tiene escritos antes de borrarlos con el Step.
 - **Todo lo demás** queda exactamente como lo escribiste: comentarios, orden de las claves, líneas en blanco, comillas, sangría y claves que divide no conoce.
 - **Comillas:** un valor se escribe sin comillas cuando YAML lo lee igual. Si no, va entre comillas dobles: `true`, `12`, `a: b`, `x #y`, `Class::run`.
 

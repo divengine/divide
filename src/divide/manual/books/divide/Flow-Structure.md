@@ -64,7 +64,17 @@ divide changes the YAML text in place. It never writes the file again from a mod
 - **A changed value** replaces only the value. A comment after it on the same line stays: `activity: compute_total   # sums` becomes `activity: compute_sum   # sums`.
 - **A new attribute** is one new line after the Step's last one, indented like the others.
 - **A removed attribute** removes only its lines. Comments on lines of their own stay.
-- **A context written as a block** (one key per line) stays a block.
+- **A context written as a block** (one key per line) is changed key by key:
+  - a changed value replaces only that value, and a comment after it stays;
+  - a new key is one more line;
+  - a key you leave out loses its line;
+  - the keys stay in the order they are written.
+- **Comments are never removed by an edit.** A change that would remove one is refused with a message, and nothing is changed. You make such a change in the code (Ctrl+T). Examples:
+  - removing `activity: compute_total   # sums`;
+  - leaving out a context key whose line has a comment;
+  - changing a context value that is itself a mapping.
+
+  **Del** on a Step says how many comments are written in it before deleting them with the Step.
 - **Everything else** stays exactly as you wrote it: comments, the order of the keys, blank lines, quotes, indentation, and keys divide does not know.
 - **Quotes:** a value is written plain when YAML reads it back as the same text. Otherwise it is double-quoted: `true`, `12`, `a: b`, `x #y`, `Class::run`.
 

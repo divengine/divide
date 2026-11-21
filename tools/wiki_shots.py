@@ -718,7 +718,10 @@ async def flowmodel():
             await pilot.press("escape")  # the Check box
             app.raise_window(window)
             window.select(("step", "review", "approve"))
+            window.flow_tree.focus()
             await settle(pilot, 6)
+            app.update_status()  # the Flow window's keys, not the Check box's folder
+            await settle(pilot, 4)
             save(app, "flow-problems")
 
 @shot

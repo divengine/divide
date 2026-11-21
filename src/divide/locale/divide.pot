@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-21 18:36+0000\n"
+"POT-Creation-Date: 2026-11-21 19:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -210,6 +210,9 @@ msgid "An IDE for developing generators with the Divengine ecosystem"
 msgstr ""
 
 msgid "An IDE for developing generators with the Divengine ecosystem."
+msgstr ""
+
+msgid "An empty context: empty the line to remove the attribute instead"
 msgstr ""
 
 msgid "An empty field: Div's default (or the user's setup)."
@@ -964,9 +967,7 @@ msgstr ""
 msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
 msgstr ""
 
-msgid ""
-"Enter edit · Ins add · Del del · ^Enter go to · ^T code · Alt+F9 check · "
-"^F9 run"
+msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code"
 msgstr ""
 
 msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
@@ -2449,6 +2450,9 @@ msgstr ""
 msgid "The context is not YAML: write a mapping, {a: 1, b: x}"
 msgstr ""
 
+msgid "The context is not a mapping of key: value: edit it in the code (Ctrl+T)"
+msgstr ""
+
 msgid "The context must be a JSON object"
 msgstr ""
 
@@ -2456,7 +2460,16 @@ msgstr ""
 msgid "The context must be a mapping: {a: 1, b: x}"
 msgstr ""
 
+msgid "The context repeats a key: edit it in the code (Ctrl+T)"
+msgstr ""
+
 msgid "The context was not saved: give a file in Save context to resume this run."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The context's {key} is written in a way divide does not edit: edit it in "
+"the code (Ctrl+T)"
 msgstr ""
 
 msgid ""
@@ -2569,7 +2582,16 @@ msgstr ""
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr ""
 
+#, python-brace-format
+msgid "The {count} comment(s) written in it go with it."
+msgstr ""
+
 msgid "This Step has no call, jump, activity or condition to go to"
+msgstr ""
+
+msgid ""
+"This change would remove a comment written there: make it in the code "
+"(Ctrl+T)"
 msgstr ""
 
 msgid "This is the current branch: merge another one into it"
@@ -2852,6 +2874,9 @@ msgid "[stopped]"
 msgstr ""
 
 msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
+msgstr ""
+
+msgid "a comment would be lost"
 msgstr ""
 
 msgid ""
@@ -3586,11 +3611,11 @@ msgid "{key} {name}: no file {tried}"
 msgstr ""
 
 #, python-brace-format
-msgid "{key} {name}: no file {tried}, and PHP has no function {name}"
+msgid "{key} {name}: no file {tried}, no PHP function"
 msgstr ""
 
 #, python-brace-format
-msgid "{key} {name}: no file {tried}; Runner will try it as a PHP callable"
+msgid "{key} {name}: no file {tried}; Runner tries a PHP callable"
 msgstr ""
 
 #, python-brace-format

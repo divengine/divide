@@ -159,8 +159,10 @@ flowchart TB
   plans edits as one replacement of the smallest span: a changed value
   replaces its characters, a new attribute is one line with its siblings'
   indentation, a removed attribute or Step its own lines; comments, key order
-  and formatting elsewhere stay byte for byte, and each plan is verified by
-  parsing the result again (undone if it reads back otherwise). A Step in flow
+  and formatting elsewhere stay byte for byte; a block-style context is
+  changed key by key; a plan that would remove a comment is refused (the code
+  is where to make it), and each plan is verified by parsing the result again
+  (undone if it reads back otherwise, a lost comment included). A Step in flow
   style, anchors, aliases, tags, block scalars and invalid YAML are shown, not
   edited. Validation is Runner's: `run/flowcheck.php` loads only Runner's
   source file and calls `runner::generateFlowCodeFromYaml()` (its parser,

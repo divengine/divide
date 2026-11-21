@@ -4342,8 +4342,8 @@ msgstr "Borrar Step"
 msgid "Delete {name}?"
 msgstr "¿Borrar {name}?"
 
-msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code · Alt+F9 check · ^F9 run"
-msgstr "Intro editar · Ins añadir · Supr borrar · ^Intro ir · ^T código · Alt+F9 verificar · ^F9 ejecutar"
+msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code"
+msgstr "Intro editar · Ins añadir · Supr borrar · ^Intro ir · ^T código"
 
 #, python-brace-format
 msgid "Fix the YAML in the code first (Ctrl+T):\n{error}"
@@ -4525,12 +4525,12 @@ msgid "{key} {name}: no file {tried}"
 msgstr "{key} {name}: no existe {tried}"
 
 #, python-brace-format
-msgid "{key} {name}: no file {tried}, and PHP has no function {name}"
-msgstr "{key} {name}: no existe {tried}, y PHP no tiene una función {name}"
+msgid "{key} {name}: no file {tried}, no PHP function"
+msgstr "{key} {name}: no existe {tried}, ni una función de PHP"
 
 #, python-brace-format
-msgid "{key} {name}: no file {tried}; Runner will try it as a PHP callable"
-msgstr "{key} {name}: no existe {tried}; Runner lo probará como un callable de PHP"
+msgid "{key} {name}: no file {tried}; Runner tries a PHP callable"
+msgstr "{key} {name}: no existe {tried}; Runner prueba un callable de PHP"
 
 #, python-brace-format
 msgid "{name} is not found after the edit"
@@ -4565,3 +4565,26 @@ msgstr "~M~odule (carpeta de la actividad y la condición; opcional)"
 
 msgid "~P~ause the Flow after this Step"
 msgstr "~P~ausar el Flow después de este Step"
+
+msgid "An empty context: empty the line to remove the attribute instead"
+msgstr "Un contexto vacío: deja la línea vacía para quitar el atributo"
+
+msgid "The context is not a mapping of key: value: edit it in the code (Ctrl+T)"
+msgstr "El contexto no es un mapping de clave: valor: edítalo en el código (Ctrl+T)"
+
+msgid "The context repeats a key: edit it in the code (Ctrl+T)"
+msgstr "El contexto repite una clave: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "The context's {key} is written in a way divide does not edit: edit it in the code (Ctrl+T)"
+msgstr "El {key} del contexto está escrito de una forma que divide no edita: edítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "The {count} comment(s) written in it go with it."
+msgstr "Los {count} comentario(s) escritos en él se van con él."
+
+msgid "This change would remove a comment written there: make it in the code (Ctrl+T)"
+msgstr "Este cambio quitaría un comentario escrito ahí: hazlo en el código (Ctrl+T)"
+
+msgid "a comment would be lost"
+msgstr "se perdería un comentario"
