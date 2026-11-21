@@ -133,6 +133,16 @@ Al recorrer los temas con las flechas, todo el escritorio se pinta en cada uno (
 
 ![Colores de Turbo C y el menú Ventana](images/palette-turbo-c.png)
 
+![Fósforo blanco: el editor con un punto de ruptura (■), la línea que va a ejecutarse (►) y los cambios de Git (+ - ~) en su margen](images/theme-phosphor-white.png)
+
+![Fósforo verde: el editor con un punto de ruptura (■), la línea que va a ejecutarse (►) y los cambios de Git (+ - ~) en su margen](images/theme-phosphor-green.png)
+
+![Fósforo verde sobre negro: el editor con un punto de ruptura (■), la línea que va a ejecutarse (►) y los cambios de Git (+ - ~) en su margen](images/theme-phosphor-green-black.png)
+
+![Fósforo ámbar: el editor con un punto de ruptura (■), la línea que va a ejecutarse (►) y los cambios de Git (+ - ~) en su margen](images/theme-phosphor-amber.png)
+
+![Fósforo ámbar sobre negro: el editor con un punto de ruptura (■), la línea que va a ejecutarse (►) y los cambios de Git (+ - ~) en su margen](images/theme-phosphor-amber-black.png)
+
 ### Profundidad de color
 
 divide envía sus colores según el terminal dice que puede mostrarlos: color real cuando lo anuncia (`COLORTERM=truecolor`, Windows Terminal, iTerm2, la mayoría de los terminales de Linux), la paleta de 256 colores si no (`TERM=xterm-256color`), y los 16 colores ANSI en un terminal básico. En 16 colores cada color pasa al que representa en su tema (un verde claro sigue siendo verde claro). El sistema operativo no interviene, solo lo que dice el terminal.

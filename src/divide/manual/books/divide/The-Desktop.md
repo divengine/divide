@@ -133,6 +133,16 @@ Moving through the themes with the arrows paints the whole desktop in each one (
 
 ![Turbo C colours and the Window menu](images/palette-turbo-c.png)
 
+![Phosphor White: the editor with a breakpoint (■), the line about to run (►) and Git's changes (+ - ~) in its margin](images/theme-phosphor-white.png)
+
+![Phosphor Green: the editor with a breakpoint (■), the line about to run (►) and Git's changes (+ - ~) in its margin](images/theme-phosphor-green.png)
+
+![Phosphor Green Black: the editor with a breakpoint (■), the line about to run (►) and Git's changes (+ - ~) in its margin](images/theme-phosphor-green-black.png)
+
+![Phosphor Amber: the editor with a breakpoint (■), the line about to run (►) and Git's changes (+ - ~) in its margin](images/theme-phosphor-amber.png)
+
+![Phosphor Amber Black: the editor with a breakpoint (■), the line about to run (►) and Git's changes (+ - ~) in its margin](images/theme-phosphor-amber-black.png)
+
 ### Colour depth
 
 divide sends its colours as the terminal says it can show them: true colour when it announces it (`COLORTERM=truecolor`, Windows Terminal, iTerm2, most Linux terminals), the 256-colour palette otherwise (`TERM=xterm-256color`), and the 16 ANSI colours on a basic terminal. In 16 colours each colour goes to the one it stands for in its theme (a light green stays light green). The operating system plays no part, only what the terminal says.
