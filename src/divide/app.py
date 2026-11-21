@@ -364,6 +364,11 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
     MenuBox .menubox--hotkey { color: $menu-hotkey; }
+    /* the item under the bar: the menus' own text, but on a monochrome theme dark on the bright bar */
+    MenuBar .menubar--item-active, MenuBox .menubox--item-active { color: $divide-menu-active; }
+    MenuBar .menubar--hotkey, MenuBox .menubox--hotkey, Button .button--hotkey, Button .button--hotkey-focused {
+        text-style: $divide-hotkey-style;  /* none, but underlined on a monochrome theme */
+    }
     /* Turbo Vision's desktop: 0x71, the ░ pattern blue on light gray (textual-vision draws it on blue) */
     Background { background: $divide-desktop; color: $divide-desktop-pattern; }
     """

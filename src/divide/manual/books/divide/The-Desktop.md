@@ -110,6 +110,18 @@ Input lines remember what you accepted in them, as in Turbo Pascal: the `▐↓�
 | **Turbo C** | the same, with Turbo C 2.01's white-on-black menu hotkeys |
 | **Free Pascal** | Turbo Vision's layout in Windows Terminal's Campbell colours, as Free Pascal's IDE looks on Windows today |
 | **Modern dark** | deep grays, light text and a blue accent, high contrast |
+| **Phosphor White** | a monochrome screen: white and grays on black |
+| **Phosphor Green**, **Phosphor Green Black** | green phosphor, on a dark green screen or on black |
+| **Phosphor Amber**, **Phosphor Amber Black** | amber phosphor, on a dark amber screen or on black |
+
+The five phosphor themes are one hue each, in levels of light, as on a monochrome monitor. They do not rely on hue, so in them divide tells things apart in other ways:
+- **Reverse video**, a bright bar with dark text: the selection, the line about to run, an error, a menu item or list entry under the bar.
+- **Light**: an error's bar is brighter than a breakpoint's or a warning's; a removed line in a diff is darker than an added one.
+- **Attributes**: warnings are underlined; what a mutation took away and a removed diff line are struck through; comments are in italics; the hotkey letters of menus and buttons are underlined.
+- **Marks in the editor's margin**: `►` the line about to run, `■` a breakpoint, and `+`, `-`, `~` the lines Git sees added, removed above and changed.
+- **Text**: Messages always says `Error` or `Warning`; diffs keep their `+` and `-`; the project window keeps Git's `M`, `A`, `?` and `•`.
+
+**The black variants** keep the screen pure black (`#000000`) and the same light levels for everything on it. **With 16 colours**, a phosphor theme uses only black and its hue's two ANSI colours (white: the grays), so it never turns multicoloured; how those look is up to the terminal's palette.
 
 Moving through the themes with the arrows paints the whole desktop in each one (the dialog and its sample of a template too). **OK** keeps the theme, also for the next start; **Cancel** goes back to the one you had. `divide --palette modern-dark` starts with a theme without changing the one chosen. The pictures in this manual use the Free Pascal theme.
 

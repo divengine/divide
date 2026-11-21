@@ -209,7 +209,16 @@ is the codemod that marked the texts, kept for new modules.
 `Palette` holds the ANSI slots, the UI roles (`UI_ROLES`) and the syntax
 roles (`SYNTAX_ROLES`, fed by `TOKENS`). It produces a Textual theme with the
 `$divide-<role>` variables and the rich styles for painted widgets.
-`THEMES`: turbo-pascal, turbo-c, free-pascal, modern-dark.
+`THEMES`: turbo-pascal, turbo-c, free-pascal, modern-dark, and five monochrome
+ones built from a `Phosphor` (light levels of one hue): phosphor-white,
+phosphor-green(-black), phosphor-amber(-black). A monochrome palette says the
+few ANSI slots it may become with 16 colours (`ansi16_slots`: `slot16_of`
+picks among them by light, so it never turns multicoloured), the attributes
+that replace hue for some token kinds (`token_attrs`: warnings underlined,
+deletions struck, comments italic), `marks` (the editor's margin draws
+`►`, `■`, `+`, `-`, `~`), the menu text under the bar (`menu_active`) and the
+hotkeys' style (`hotkey_style`, underlined); the other themes keep their
+defaults, so they draw exactly as before.
 
 ## 10. Git and the forges (`divide.run.git`, `divide.run.forge`)
 

@@ -110,6 +110,18 @@ Las líneas de entrada recuerdan lo que aceptaste en ellas, como en Turbo Pascal
 | **Turbo C** | lo mismo, con las teclas rápidas de menú blanco sobre negro de Turbo C 2.01 |
 | **Free Pascal** | la disposición de Turbo Vision con los colores Campbell de Windows Terminal, como se ve hoy el IDE de Free Pascal en Windows |
 | **Moderno oscuro** | grises profundos, texto claro y un acento azul, alto contraste |
+| **Fósforo blanco** | una pantalla monocroma: blanco y grises sobre negro |
+| **Fósforo verde**, **Fósforo verde sobre negro** | fósforo verde, sobre una pantalla verde oscura o sobre negro |
+| **Fósforo ámbar**, **Fósforo ámbar sobre negro** | fósforo ámbar, sobre una pantalla ámbar oscura o sobre negro |
+
+Los cinco temas de fósforo tienen un solo tono cada uno, en niveles de luz, como un monitor monocromo. No se apoyan en el color, así que en ellos divide distingue las cosas de otras maneras:
+- **Vídeo inverso**, una barra brillante con texto oscuro: la selección, la línea que va a ejecutarse, un error, el elemento de menú o de lista bajo la barra.
+- **Luz**: la barra de un error es más brillante que la de un punto de ruptura o la de un aviso; una línea quitada en un diff es más oscura que una añadida.
+- **Atributos**: los avisos van subrayados; lo que quitó una mutación y una línea quitada de un diff van tachados; los comentarios en cursiva; las letras rápidas de menús y botones subrayadas.
+- **Marcas en el margen del editor**: `►` la línea que va a ejecutarse, `■` un punto de ruptura, y `+`, `-`, `~` las líneas que Git ve añadidas, quitadas encima y cambiadas.
+- **Texto**: Mensajes siempre dice `Error` o `Aviso`; los diffs conservan sus `+` y `-`; la ventana de proyecto conserva las `M`, `A`, `?` y `•` de Git.
+
+**Las variantes sobre negro** mantienen la pantalla negra pura (`#000000`) y los mismos niveles de luz para todo lo demás. **Con 16 colores**, un tema de fósforo usa solo el negro y los dos colores ANSI de su tono (el blanco: los grises), así que nunca se vuelve multicolor; cómo se ven depende de la paleta del terminal.
 
 Al recorrer los temas con las flechas, todo el escritorio se pinta en cada uno (también el diálogo y su muestra de una plantilla). **OK** conserva el tema, también para el próximo inicio; **Cancelar** vuelve al que tenías. `divide --palette modern-dark` arranca con un tema sin cambiar el elegido. Las imágenes de este manual usan el tema Free Pascal.
 

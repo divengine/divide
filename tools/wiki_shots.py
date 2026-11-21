@@ -963,6 +963,85 @@ async def welcome():
             save(app, "file-menu")
 
 
+@shot
+async def phosphor():
+    """The five phosphor themes (Options > Colors), each on the shop as a repository: the editor with Git's
+    marks in its margin, a breakpoint and the execution line, beside the project window; the checkout with
+    its errors in Messages; a diff; a Runner Flow with problems (when examples/runner has its vendor/).
+    Each also with 16 colours (as the terminal's ANSI colours) and at 80x24. Not in the manual by default:
+    a review set (``phosphor``)."""
+    from divide import themes
+    from divide.ui import git as gitui
+    names = [n for n, p in themes.THEMES.items() if p.monochrome]
+    runner = ROOT / "examples" / "runner"
+    with tempfile.TemporaryDirectory() as work:
+        root = git_shop(Path(work) / "shop")
+        flows = None
+        if (runner / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+            flows = Path(work) / "runner"
+            shutil.copytree(runner, flows, ignore=shutil.ignore_patterns("*.context.json", ".div"))
+            (flows / "flows" / "order.yml").write_text((flows / "flows" / "order.yml").read_text()
+                .replace("call: approval.ask", "call: approval.confirm").replace("activity: format_receipt", "activity: format_reciept"))
+            from divide.ui.flow import save_flow_settings
+            save_flow_settings((flows / "flows" / "order.yml").resolve(), {"context": "order.json", "root": "functions", "save": ""})
+        for name in names:
+            for depth, size, suffix in (("truecolor", SIZE, ""), ("16", SIZE, "-16"), ("truecolor", (80, 24), "-80x24")):
+                app = Divide(root, [], palette=name, colors=depth)
+                async with app.run_test(size=size) as pilot:
+                    await settle(pilot, 10)
+                    if app.project_window() is None:
+                        app.toggle_project(); await settle(pilot)
+                    app.open_file(root / "index.tpl"); await settle(pilot, 10)
+                    tree = app.project_window().project_tree
+                    await tree.reveal(root / "layout" / "footer.tpl")
+                    ed = app.window_for(root / "index.tpl").editor
+                    await until(pilot, lambda: tree.git_files and ed.change_rows, tries=200)
+                    ed.set_debug_marks({3}, 6)  # a breakpoint and the line about to run, as when debugging
+                    app.raise_window(app.window_for(root / "index.tpl")); ed.move_cursor((9, 4)); await settle(pilot, 10)
+                    save(app, f"theme-{name}{suffix}")
+                    if suffix:
+                        continue
+                    app.open_file(root / "checkout.tpl"); await settle(pilot, 10)
+                    await pilot.press("alt+f9")
+                    await close_box(pilot, app)
+                    await settle(pilot, 10)
+                    save(app, f"theme-{name}-errors")
+                    for w in list(app.windows()):
+                        app._remove_window(w)
+                    await settle(pilot)
+                    await app.git_command(gitui.CM_GIT_CHANGES)
+                    win = _git_window(app, gitui.GitChangesWindow)
+                    await _git_bar_on(pilot, win.git_tree, _on_change("index.tpl"))
+                    await until(pilot, lambda: win.diff.rows_text(), tries=200)
+                    win.diff.side_by_side = True; win.diff._build(); await settle(pilot, 10)
+                    save(app, f"theme-{name}-diff")
+            if flows is not None:
+                from divide.ui.flowmodel import FlowWindow
+                flow = flows / "flows" / "order.yml"
+                app = Divide(flows, [flow], palette=name)
+                async with app.run_test(size=SIZE) as pilot:
+                    await settle(pilot, 10)
+                    app.raise_window(app.window_for(flow))
+                    await pilot.press("ctrl+t")
+                    await until(pilot, lambda: isinstance(app.active_window(), FlowWindow), tries=200)
+                    window = app.active_window()
+                    await until(pilot, lambda: "error(s)" in str(window.verdict.render()), tries=200)
+                    await pilot.press("alt+f9")
+                    await until(pilot, lambda: app.messages_window() is not None, tries=200)
+                    await settle(pilot, 4)
+                    await pilot.press("escape")
+                    app.raise_window(window)
+                    window.select(("step", "review", "approve")); window.flow_tree.focus()
+                    await settle(pilot, 6); app.update_status(); await settle(pilot, 4)
+                    save(app, f"theme-{name}-flow")
+                    await pilot.press(key("run")); await settle(pilot)
+                    save(app, f"theme-{name}-menu")
+                    await pilot.press("escape"); await settle(pilot)
+                    app.run_worker(app.choose_colors()); await settle(pilot, 10)
+                    save(app, f"theme-{name}-colors")
+                    await pilot.press("escape"); await settle(pilot)
+
+
 # ------------------------------------------------------------------ git
 def _git(root: Path, *args: str, day: int = 0) -> str:
     """git in the copy, as Ana Div, at a fixed time (the same history, the same pictures)."""

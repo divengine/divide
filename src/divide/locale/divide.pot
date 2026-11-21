@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-21 19:51+0000\n"
+"POT-Creation-Date: 2026-11-21 20:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -171,6 +171,9 @@ msgstr ""
 msgid "A folder cannot go inside itself."
 msgstr ""
 
+msgid "A monochrome screen: white and grays on black, nothing told by hue."
+msgstr ""
+
 #, python-brace-format
 msgid "A token is required (kept in {path})"
 msgstr ""
@@ -204,6 +207,9 @@ msgid "Address"
 msgstr ""
 
 msgid "Aggregate functions"
+msgstr ""
+
+msgid "Amber phosphor on dark amber glass, nothing told by hue."
 msgstr ""
 
 msgid "An IDE for developing generators with the Divengine ecosystem"
@@ -1222,6 +1228,9 @@ msgstr ""
 msgid "Go to ~i~ncluded template"
 msgstr ""
 
+msgid "Green phosphor on dark green glass, nothing told by hue."
+msgstr ""
+
 msgid "HTML entities"
 msgstr ""
 
@@ -1873,6 +1882,21 @@ msgstr ""
 
 #, python-brace-format
 msgid "Paused at {where}{calls}: Resume continues there."
+msgstr ""
+
+msgid "Phosphor Amber B~l~ack"
+msgstr ""
+
+msgid "Phosphor Ambe~r~"
+msgstr ""
+
+msgid "Phosphor Green ~B~lack"
+msgstr ""
+
+msgid "Phosphor ~G~reen"
+msgstr ""
+
+msgid "Phosphor ~W~hite"
 msgstr ""
 
 msgid "Plain ~s~ymbols"
@@ -2581,6 +2605,12 @@ msgstr ""
 msgid ""
 "The request templates see while you design them: div.get, div.post, "
 "div.server, div.session."
+msgstr ""
+
+msgid "The same amber phosphor on a black screen."
+msgstr ""
+
+msgid "The same green phosphor on a black screen."
 msgstr ""
 
 msgid "The script is running: Ctrl+F2 stops it"

@@ -122,7 +122,7 @@ divide .                  # la carpeta actual como proyecto, con la ventana del 
 divide ~/sites/shop       # otra carpeta como proyecto
 divide index.tpl card.tpl # archivos solos, sin carpeta
 divide ~/sites/shop index.tpl
-divide --palette turbo-c  # empezar con un tema de colores: turbo-pascal, turbo-c, free-pascal, modern-dark
+divide --palette turbo-c  # empezar con un tema de colores: turbo-pascal, turbo-c, free-pascal, modern-dark, phosphor-white, phosphor-green, phosphor-green-black, phosphor-amber, phosphor-amber-black
 divide --colors truecolor # profundidad de color cuando el terminal dice menos de lo que puede: auto, truecolor, 256, 16
 divide --language es      # la interfaz en español para esta ejecución: en, es
 ```

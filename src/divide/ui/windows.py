@@ -491,18 +491,32 @@ class EditorView(DivEditor, TVViewMixin):
             row, section = self.wrapped_document._offset_to_line_info[y + self.scroll_offset.y]
         except (IndexError, TypeError, ValueError):
             return strip
+        palette = themes.current()
         change = self.change_rows.get(row) if section == 0 and self.show_line_numbers else None
         if change is not None and self.gutter_width:
             gutter = self.gutter_width
-            mark = themes.current().style(f"diff-{change}", f"diff-{change}-bg")
+            mark = palette.style(f"diff-{change}", f"diff-{change}-bg")
             number = strip.crop(0, gutter - 1)
             number = Strip(list(Segment.apply_style(list(number), post_style=mark)), number.cell_length)
             strip = Strip.join([number, strip.crop(gutter - 1, strip.cell_length)])
         if row == self.execution_row:
-            style = themes.current().style("execution", "execution-bg")
+            style = palette.style("execution", "execution-bg")
         elif row in self.breakpoint_rows:
-            style = themes.current().style("breakpoint", "breakpoint-bg")
+            style = palette.style("breakpoint", "breakpoint-bg")
         else:
+            style = None
+        if palette.marks and section == 0 and self.gutter_width:
+            # hue told these apart: a mark in the margin's last cell tells them on a monochrome theme
+            glyph = ("►" if row == self.execution_row else "■" if row in self.breakpoint_rows
+                     else MARGIN_MARKS.get(change) if change is not None else None)
+            if glyph is not None:
+                gutter = self.gutter_width
+                cell = palette.style("editor-gutter" if style is None else "execution" if row == self.execution_row else "breakpoint",
+                                     None if style is None else "execution-bg" if row == self.execution_row else "breakpoint-bg",
+                                     bold=True)
+                strip = Strip.join([strip.crop(0, gutter - 1), Strip([Segment(glyph, cell)], 1),
+                                    strip.crop(gutter, strip.cell_length)])
+        if style is None:
             return strip
         gutter = self.gutter_width
         code = strip.crop(gutter, strip.cell_length)
@@ -811,6 +825,7 @@ def disk_entries(folder: Path) -> frozenset[tuple[str, bool]] | None:
         out.add((path.name, folder_))
     return frozenset(out)
 
+MARGIN_MARKS = {"add": "+", "del": "-", "mod": "~"}  # a line Git sees changed, on a monochrome theme
 
 HIDDEN_NAMES = {".git", ".hg", ".svn", "__pycache__", ".venv", "node_modules", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".idea"}
 

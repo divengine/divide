@@ -4596,3 +4596,32 @@ msgstr "Sin vigilar los cambios hechos fuera: {name} ({why}). Ctrl+R actualiza."
 #, python-brace-format
 msgid "more than {n} folders open"
 msgstr "más de {n} carpetas abiertas"
+msgid "A monochrome screen: white and grays on black, nothing told by hue."
+msgstr "Una pantalla monocroma: blanco y grises sobre negro, nada dicho solo con el color."
+
+msgid "Amber phosphor on dark amber glass, nothing told by hue."
+msgstr "Fósforo ámbar sobre cristal ámbar oscuro, nada dicho solo con el color."
+
+msgid "Green phosphor on dark green glass, nothing told by hue."
+msgstr "Fósforo verde sobre cristal verde oscuro, nada dicho solo con el color."
+
+msgid "Phosphor Amber B~l~ack"
+msgstr "Fósforo ámbar sobre ne~g~ro"
+
+msgid "Phosphor Ambe~r~"
+msgstr "Fósf~o~ro ámbar"
+
+msgid "Phosphor Green ~B~lack"
+msgstr "Fósforo verde sobre ~n~egro"
+
+msgid "Phosphor ~G~reen"
+msgstr "Fósforo ~v~erde"
+
+msgid "Phosphor ~W~hite"
+msgstr "Fósforo ~b~lanco"
+
+msgid "The same amber phosphor on a black screen."
+msgstr "El mismo fósforo ámbar sobre una pantalla negra."
+
+msgid "The same green phosphor on a black screen."
+msgstr "El mismo fósforo verde sobre una pantalla negra."

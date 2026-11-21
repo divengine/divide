@@ -56,7 +56,7 @@ class ColorsDialog(_Dialog):
     """The themes (each one previewed as it is chosen) and the colour depth."""
 
     DEFAULT_CSS = """
-    ColorsDialog { width: 70; height: 24; }
+    ColorsDialog { width: 70; height: 25; max-height: 100%; }  /* room for the buttons' shadow */
     ColorsDialog Cluster { width: 1fr; margin-bottom: 1; }
     ColorsDialog .colors-about { color: $text-muted; background: $surface; height: 2; margin-bottom: 1; }  /* two lines: the longer languages */
     ColorsDialog .colors-sample { width: 1fr; height: 4; margin-bottom: 1; scrollbar-size: 0 0; }
@@ -68,7 +68,7 @@ class ColorsDialog(_Dialog):
         self.names = list(themes.THEMES)
         self.original = current if current in self.names else themes.DEFAULT
         self.choice = self.original
-        self.themes = PickButtons([p.label for p in themes.THEMES.values()])
+        self.themes = PickButtons([p.label for p in themes.THEMES.values()], columns=2)
         self.themes.value = 1 << self.names.index(self.original)
         self.themes.sel = self.names.index(self.original)
         self.depths = list(themes.DEPTHS)

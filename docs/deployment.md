@@ -49,7 +49,8 @@ divide [folder] [files...] [--palette NAME] [--colors auto|truecolor|256|16] [--
   several); the others are files.
 - `--version`: divide's version.
 - `--palette`: one of the themes (`turbo-pascal`, `turbo-c`, `free-pascal`,
-  `modern-dark`). The default is the one chosen in Options > Colors.
+  `modern-dark`, `phosphor-white`, `phosphor-green`, `phosphor-green-black`,
+  `phosphor-amber`, `phosphor-amber-black`). The default is the one chosen in Options > Colors.
 - `--colors`: forces the colour depth. By default it is what the terminal
   reports.
 - `--language`: the interface's language for this run. By default it is the

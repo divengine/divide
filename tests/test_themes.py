@@ -189,7 +189,11 @@ ANSI_INDEX = dict(zip(themes.SLOTS, (0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 1
 PAIRS = [("editor-text", "editor-bg"), ("help-text", "help-bg"), ("debug-text", "debug-bg"), ("output-text", "output-bg")]
 
 
-@pytest.mark.parametrize("palette", themes.THEMES.values(), ids=list(themes.THEMES))
+COLOURED = [p for p in themes.THEMES.values() if not p.monochrome]
+MONOCHROME = [p for p in themes.THEMES.values() if p.monochrome]
+
+
+@pytest.mark.parametrize("palette", COLOURED, ids=[p.name for p in COLOURED])
 def test_16_colours_keep_the_slots(palette):
     themes.set_ansi16(True)
     for slot, rgb in palette.ansi.items():
@@ -256,3 +260,136 @@ def test_colour_depth_can_be_forced(tmp_path):
     assert app.console.color_system == "standard" and themes.ansi16()
     app = Divide(tmp_path, [], colors="truecolor")
     assert app.console.color_system == "truecolor" and not themes.ansi16()
+
+
+# ------------------------------------------------------------------ the phosphor themes
+def number16(palette, value: str) -> int:
+    return Color.parse(palette.hex(value)).downgrade(ColorSystem.STANDARD).number
+
+
+def every_colour(palette) -> list[str]:
+    """Every colour the theme draws: its slots, roles, token styles and textual-vision's chrome."""
+    theme = palette.textual_theme()
+    out = [palette.ansi[s] for s in themes.SLOTS] + [palette.colour(r) for r in (*themes.UI_ROLES, *themes.SYNTAX_ROLES)]
+    out += [getattr(theme, f.name) for f in dataclasses.fields(theme)
+            if isinstance(getattr(theme, f.name), str) and getattr(theme, f.name).startswith("#")]
+    out += [v for v in theme.variables.values() if isinstance(v, str) and v.startswith("#") and len(v) == 7]
+    for style in palette.token_styles().values():
+        out += [c.name for c in (style.color, style.bgcolor) if c is not None]
+    return out
+
+
+def hue_of(value: str) -> float | None:
+    import colorsys
+    r, g, b = (int(value[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    return None if s < 0.08 or l < 0.02 else h * 360
+
+
+@pytest.mark.parametrize("palette", MONOCHROME, ids=[p.name for p in MONOCHROME])
+def test_a_phosphor_theme_is_one_hue_everywhere(palette):
+    hues = {round(h) for h in (hue_of(v) for v in every_colour(palette)) if h is not None}
+    if palette.name == "phosphor-white":
+        assert hues == set()  # grays only
+    else:
+        assert max(hues) - min(hues) <= 12, hues  # green or amber, nothing else
+
+
+@pytest.mark.parametrize("palette", MONOCHROME, ids=[p.name for p in MONOCHROME])
+def test_16_colours_stay_in_the_hue(palette):
+    """With 16 colours a monochrome theme uses only black and its hue's slots (white: the grays),
+    and keeps text apart from its background."""
+    themes.set_ansi16(True)
+    allowed = {ANSI_INDEX[s] for s in palette.ansi16_slots}
+    assert {number16(palette, v) for v in every_colour(palette)} <= allowed
+    for fg, bg in PAIRS + [("editor-selection", "editor-selection-bg"), ("execution", "execution-bg"),
+                           ("breakpoint", "breakpoint-bg"), ("list-focused", "list-focused-bg"),
+                           ("error", "error-bg"), ("focus", "focus-bg"), ("history-focused", "history-focused-bg")]:
+        a, b = (Color.parse(palette.colour(r)).downgrade(ColorSystem.STANDARD).number for r in (fg, bg))
+        assert a != b, fg
+    themes.set_ansi16(False)
+    for fg, bg in PAIRS:  # the 256-colour cube keeps them apart too
+        a, b = (Color.parse(palette.colour(r)).downgrade(ColorSystem.EIGHT_BIT).number for r in (fg, bg))
+        assert a != b, fg
+
+
+@pytest.mark.parametrize("palette", MONOCHROME, ids=[p.name for p in MONOCHROME])
+def test_a_phosphor_theme_is_legible_without_hue(palette):
+    theme = palette.textual_theme()
+    v = theme.variables
+    assert contrast(v["text"], theme.surface) >= 4.5  # menus, dialogs
+    assert contrast(v["divide-menu-active"], theme.accent) >= 4.5  # the menu item under the bar: reverse
+    assert contrast(theme.surface, theme.accent) >= 4.5  # a list's chosen item: reverse
+    assert contrast(v["menu-hotkey"], theme.surface) >= 4.5
+    assert contrast(v["input-fg"], v["input-bg"]) >= 4.5
+    assert contrast(v["button-face-fg"], v["button-face-bg"]) >= 4.5
+    assert contrast(v["button-focused-fg"], v["button-focused-bg"]) >= 4.5
+    assert contrast(v["button-disabled-fg"], v["button-disabled-bg"]) < contrast(v["button-face-fg"], v["button-face-bg"])
+    for fg, bg in (("editor-selection", "editor-selection-bg"), ("execution", "execution-bg"),
+                   ("breakpoint", "breakpoint-bg"), ("debug-selected", "debug-selected-bg"),
+                   ("help-selected", "help-selected-bg"), ("diff-text", "diff-add-line"), ("diff-text", "diff-del-line"),
+                   ("diff-text", "diff-mod-line"), ("diff-text", "diff-add-word"), ("diff-file", "diff-file-bg")):
+        assert contrast(palette.colour(fg), palette.colour(bg)) >= 4.5, fg
+    # states told apart by light, not hue: an error's bar is brighter than a warning's
+    assert luminance(palette.colour("error-bg")) > luminance(palette.colour("warning-bg"))
+    assert luminance(palette.colour("execution-bg")) > luminance(palette.colour("breakpoint-bg"))
+    assert luminance(palette.colour("diff-add-line")) != luminance(palette.colour("diff-del-line"))
+
+
+@pytest.mark.parametrize("palette", MONOCHROME, ids=[p.name for p in MONOCHROME])
+def test_a_phosphor_theme_tells_states_apart_by_attributes(palette):
+    styles = palette.token_styles()
+    error, warning = styles["diag.error"], styles["diag.warning"]
+    assert (error.bgcolor, error.bold, error.underline) != (warning.bgcolor, warning.bold, warning.underline)
+    assert warning.underline and error.bold
+    assert styles["trace.old"].strike and not styles["trace.new"].strike  # taken away / written
+    assert styles["diff.del"].strike and not styles["diff.add"].strike
+    assert styles["div.comment"].italic and styles["php.comment"].italic
+    assert palette.marks  # breakpoints, the execution line and Git's changes get a mark in the margin
+
+
+@pytest.mark.parametrize("pair", [("phosphor-green", "phosphor-green-black"), ("phosphor-amber", "phosphor-amber-black")])
+def test_a_tinted_theme_and_its_black_one_differ_only_in_the_dark(pair):
+    tinted, black = (themes.get(n) for n in pair)
+    assert black.colour("editor-bg") == "#000000" and black.colour("desktop") == "#000000"
+    assert tinted.colour("editor-bg") != "#000000" and hue_of(tinted.colour("editor-bg")) is not None
+    dark = {themes.PHOSPHORS[pair[0]].bg, themes.PHOSPHORS[pair[0]].panel, themes.PHOSPHORS[pair[0]].raised}
+    for role in (*themes.UI_ROLES, *themes.SYNTAX_ROLES):
+        a, b = tinted.colour(role), black.colour(role)
+        assert a == b or a in dark, role  # the same light for text and states; only the surfaces change
+    assert tinted.token_attrs == black.token_attrs and tinted.ansi16_slots == black.ansi16_slots
+
+
+def test_the_existing_themes_did_not_change():
+    for name in ("turbo-pascal", "turbo-c", "free-pascal", "modern-dark"):
+        palette = themes.get(name)
+        assert not palette.monochrome and not palette.marks and not palette.token_attrs
+        assert palette.textual_theme().variables["divide-menu-active"] == palette.chrome.variables["text"]
+        assert palette.textual_theme().variables["divide-hotkey-style"] == "none"
+        assert palette.syntax["warning"] == palette.syntax["error"]  # a warning's text as before
+
+
+async def test_the_phosphor_themes_from_the_command_line_and_options(tmp_path):
+    for name in [p.name for p in MONOCHROME]:
+        app = Divide(tmp_path, [], palette=name)
+        async with app.run_test(size=(100, 30)) as pilot:
+            await settle(pilot)
+            assert app.theme == name and themes.current().name == name
+
+
+@pytest.mark.parametrize("name,marked", [("phosphor-green-black", True), ("turbo-pascal", False), ("modern-dark", False)])
+async def test_the_margin_marks_what_hue_marked(tmp_path, name, marked):
+    """On a monochrome theme the editor's margin says ► (the line about to run), ■ (a breakpoint) and
+    +, -, ~ (Git's changes); the other themes draw their margin as before, without marks."""
+    path = tmp_path / "page.tpl"
+    path.write_text("".join(f"line {i}\n" for i in range(8)), encoding="utf-8")
+    app = Divide(tmp_path, [path], palette=name)
+    async with app.run_test(size=(80, 20)) as pilot:
+        await settle(pilot)
+        ed = app.window_for(path).editor
+        ed.set_debug_marks({1}, 2)
+        ed.set_change_marks({4: "add", 5: "del", 6: "mod"})
+        await settle(pilot)
+        cell = [ed.render_line(row).text[ed.gutter_width - 1] for row in range(8)]
+        expected = [" ", "■", "►", " ", "+", "-", "~", " "] if marked else [" "] * 8
+        assert cell == expected
