@@ -4260,3 +4260,11 @@ msgstr "── registro ──"
 
 msgid "── stderr ──"
 msgstr "── stderr ──"
+
+#, python-brace-format
+msgid "The last run ended {state}: Run asks before replacing a file of yours."
+msgstr "La última ejecución terminó {state}: Ejecutar pregunta antes de reemplazar un archivo tuyo."
+
+#, python-brace-format
+msgid "{name} holds a finished run, in a file you chose."
+msgstr "{name} guarda una ejecución terminada, en un archivo que elegiste tú."

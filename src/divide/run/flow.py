@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from divide.i18n import _
 
+import hashlib
 import json
 import os
 import re
@@ -114,6 +115,41 @@ def _shown(path: Path, root: Path) -> str:
 
 
 # ---------------------------------------------------------------- saved contexts
+CHECKPOINTS = Path(".div") / "runner"  # the contexts divide saves for the user's Flows, in the project
+_IGNORE = "# divide's Runner checkpoints: generated contexts, not versioned\n*\n"
+
+
+def default_checkpoint(flow: Path, project: Path) -> Path:
+    """Where divide saves a Flow's context unless the user says otherwise: under ``.div/runner/``,
+    one file per Flow (``flows/order.yml`` -> ``.div/runner/flows/order.yml.context.json``; a Flow
+    outside the project gets a folder named after a hash of its own)."""
+    try:
+        rel = flow.relative_to(project)
+    except ValueError:
+        rel = Path("outside") / hashlib.sha1(str(flow.parent).encode("utf-8")).hexdigest()[:12] / flow.name
+    return project / CHECKPOINTS / rel.parent / (rel.name + ".context.json")
+
+
+def is_managed(path: Path, project: Path) -> bool:
+    """``path`` is one of divide's checkpoints (under the project's ``.div/runner/``)."""
+    try:
+        path.resolve().relative_to((project / CHECKPOINTS).resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def prepare_checkpoint(path: Path, project: Path) -> None:
+    """The folder of a checkpoint divide manages, made if missing (Runner wants it), with a
+    ``.gitignore`` that keeps the generated contexts out of Git."""
+    if not is_managed(path, project):
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    ignore = project / CHECKPOINTS / ".gitignore"
+    if not ignore.exists():
+        ignore.write_text(_IGNORE, encoding="utf-8")
+
+
 @dataclass(frozen=True)
 class Saved:
     """What a context file holds, for the IDE to say and to decide whether a resume is possible."""

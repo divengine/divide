@@ -95,6 +95,12 @@ the user's `~/.div/setup.json` (`$DIV_HOME` moves that folder), with the
 trusted `php` settings of projects in `~/.div/trust.json`. Options > Div setup
 edits them.
 
+The contexts of Runner Flows that divide saves by default are in the project
+too, one per Flow under `.div/runner/` (`flows/order.yml` ->
+`.div/runner/flows/order.yml.context.json`); divide writes a `.gitignore`
+there, so these checkpoints stay out of Git. The Run Flow dialog takes any
+other file.
+
 Environment variables:
 
 | Variable | Use |

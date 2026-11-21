@@ -144,8 +144,11 @@ flowchart TB
   and Runner's diagnostics. `read_saved` reads a context file's
   `_runner_state` and `_flow_state` only to tell the user and to decide
   whether Resume is possible: Resume passes the file back as both `--context`
-  and `--save-context`, as Runner's own resume does. divide never restarts a
-  paused run or replaces its file without asking, and since Runner writes the
+  and `--save-context`, as Runner's own resume does. The file is by default
+  one per Flow under the project's `.div/runner/` (`default_checkpoint`,
+  kept out of Git by a `.gitignore` there); any other is the user's choice.
+  divide never restarts a paused run without asking, nor replaces a file the
+  user chose, and since Runner writes the
   context only at the end (atomically), a stopped run leaves it as it was.
   `ui.flow` (Ctrl+F9 on a YAML Flow, the Run Flow dialog) reuses the progress
   box, the Output and Messages windows and the config file; the run and its

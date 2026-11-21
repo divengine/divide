@@ -3,7 +3,8 @@
 ``FlowMixin`` is part of the app. On a YAML Flow (a ``blocks`` root), Ctrl+F9
 opens the Run Flow dialog: the initial context (a JSON file, or JSON typed
 there), the function root (``--root``) and the file the context is saved to
-(``--save-context``), remembered per Flow. **Run** starts the Flow, **Resume**
+(``--save-context``, by default one per Flow under the project's ``.div/runner/``,
+kept out of Git), remembered per Flow. **Run** starts the Flow, **Resume**
 continues the paused run saved in that file. The run goes on in a progress
 box (Esc stops PHP); the Output window shows how it ended (done, paused,
 error, not saved, stopped), Runner's log, the resulting context and what
@@ -32,8 +33,8 @@ from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 
 from divide import config
-from divide.run.flow import (FlowRun, Runner, Saved, check_context_file, check_context_text, find_runner, is_flow,
-                             read_saved, run_flow)
+from divide.run.flow import (FlowRun, Runner, Saved, check_context_file, check_context_text, default_checkpoint, find_runner,
+                             is_flow, is_managed, prepare_checkpoint, read_saved, run_flow)
 from divide.run.script import ScriptError, ScriptMessage, size_text
 from divide.ui.dialogs import _Dialog, browse_into, confirm, information
 from divide.ui.progress import ProgressDialog, run_with_progress
@@ -71,15 +72,15 @@ def save_flow_settings(flow: Path, values: dict) -> None:
 
 
 def default_save(flow: Path, project: Path) -> str:
-    """``flows/order.yml`` -> ``flows/order.context.json`` (relative to the project)."""
-    target = flow.with_name(flow.stem + ".context.json")
+    """``flows/order.yml`` -> ``.div/runner/flows/order.yml.context.json`` (relative to the project)."""
+    target = default_checkpoint(flow, project)
     try:
         return target.relative_to(project).as_posix()
     except ValueError:
         return str(target)
 
 
-def saved_text(saved: Saved | None) -> str:
+def saved_text(saved: Saved | None, managed: bool = True) -> str:
     """The context file's state, as the dialog says it."""
     if saved is None:
         return _('Not saved: a paused run cannot be resumed.')
@@ -91,8 +92,10 @@ def saved_text(saved: Saved | None) -> str:
         where = f"{saved.block}.{saved.step}" if saved.block and saved.step else (saved.block or "?")
         calls = _(' (inside {n} call(s))').format(n=saved.calls) if saved.calls else ""
         return _('Paused at {where}{calls}: Resume continues there.').format(where=where, calls=calls)
-    if saved.state in ("done", "error"):
+    if saved.state in ("done", "error") and managed:
         return _('The last run ended {state}: Run replaces it when it ends.').format(state=saved.state)
+    if saved.state in ("done", "error"):
+        return _('The last run ended {state}: Run asks before replacing a file of yours.').format(state=saved.state)
     return _('The file there is not a context saved by Runner.')
 
 
@@ -162,7 +165,7 @@ class FlowDialog(_Dialog):
 
     def show_saved(self) -> None:
         saved = self.saved()
-        self.saved_line.update(_('Saved context: ') + saved_text(saved))
+        self.saved_line.update(_('Saved context: ') + saved_text(saved, saved is None or is_managed(saved.path, self.project)))
         resumable = saved is not None and saved.resumable
         self.resume_button.disabled = not resumable
         self.resume_button.is_default = resumable
@@ -192,7 +195,9 @@ class FlowDialog(_Dialog):
         if line is self.root_input:
             ok = await browse_into(self, line, _('Function root'), "*", self.project, folders=True)
         elif line is self.save_input:
-            ok = await browse_into(self, line, _('Save context to'), "*.json", self.flow.parent)
+            target = self.path_of(line.data)
+            start = target.parent if target is not None and target.parent.is_dir() else self.project
+            ok = await browse_into(self, line, _('Save context to'), "*.json", start)
         else:
             ok = await browse_into(self, line, _('Initial context'), "*.json", self.project)
         if ok:
@@ -212,7 +217,7 @@ class FlowDialog(_Dialog):
                 problem = check_context_file(path) if path is not None else None
         if problem is None and root is not None and not root.is_dir():
             problem = _('The function root is not a folder: {path}').format(path=self._rel(root))
-        if problem is None and save is not None and not save.parent.is_dir():
+        if problem is None and save is not None and not save.parent.is_dir() and not is_managed(save, self.project):
             problem = _('No such folder for the saved context: {path}').format(path=self._rel(save.parent))
         if problem is None and choice == "resume":
             saved = read_saved(save) if save is not None else None
@@ -274,8 +279,10 @@ class FlowMixin:
         save = dialog.path_of(dialog.values["save"])
         if dialog.choice == "run" and save is not None:
             saved = read_saved(save)
-            if saved.exists and (saved.resumable or saved.problem is not None or saved.state not in ("done", "error")):
+            finished = saved.problem is None and saved.state in ("done", "error")
+            if saved.exists and not (finished and is_managed(save, project)):
                 why = (_('{name} holds a paused run (Resume continues it).') if saved.resumable
+                       else _('{name} holds a finished run, in a file you chose.') if finished
                        else _('{name} is not a context of a finished run.')).format(name=save.name)
                 answer = await self.run_dialog(confirm(_('Run Flow'), why + " " + _(  # type: ignore[attr-defined]
                     'Start the Flow over? The file is replaced when the new run ends.')))
@@ -307,6 +314,8 @@ class FlowMixin:
                 rows.append((_('Saved to'), run.saved_to.name))
             return word, ok, rows
 
+        if save is not None:
+            prepare_checkpoint(save, project)
         job = run_flow(runner, flow, cwd=project, context=context, context_text=typed, functions=functions,
                        save_to=save, resumed=resume, on_data=progress)
         try:

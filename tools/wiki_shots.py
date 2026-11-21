@@ -618,9 +618,10 @@ async def mcp():
 
 @shot
 async def flow():
-    """Run > Run on a Runner Flow of examples/runner (composer install there): the Run Flow dialog
-    with a paused run saved, then the paused run's report. A copy of the example is run: the
-    context files go there."""
+    """Run > Run on the Runner Flows of examples/runner (composer install there), in a copy of it
+    (the checkpoints go to its .div/runner/): the Run Flow dialog before the first run, the paused
+    run's report, the dialog with that paused run saved; then, in a new window layout, a run that
+    fails (invoice.yml without its function root) in Output and Messages."""
     import tempfile as _tempfile
     from divide.ui.flow import FlowDialog
     example = ROOT / "examples" / "runner"
@@ -629,7 +630,7 @@ async def flow():
         return
     with _tempfile.TemporaryDirectory() as work:
         root = Path(work) / "runner"
-        shutil.copytree(example, root)
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", ".div"))
         flow = root / "flows" / "order.yml"
         app = Divide(root, [flow])
         async with app.run_test(size=SIZE) as pilot:
@@ -639,6 +640,9 @@ async def flow():
             dialog = app.screen.dialog
             dialog.context_input.data = "order.json"
             dialog.root_input.data = "functions"
+            dialog.root_input.focus()
+            await settle(pilot, 6)
+            save(app, "run-flow-new")
             await pilot.press("enter")
             await until(pilot, lambda: app.output_window() is not None and "approval.ask" in app.output_window().view.text, tries=400)
             await settle(pilot, 4)
@@ -652,6 +656,19 @@ async def flow():
             await settle(pilot, 6)
             save(app, "run-flow-dialog")
             await pilot.press("escape")
+        invoice = root / "flows" / "invoice.yml"
+        app = Divide(root, [invoice])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            await pilot.press("ctrl+f9")
+            await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FlowDialog), tries=200)
+            await pilot.press("enter")  # no function root: billing:total is not found
+            await until(pilot, lambda: app.messages_window() is not None and app.output_window() is not None
+                        and "State: error" in app.output_window().view.text, tries=400)
+            await settle(pilot, 4)
+            await pilot.press("escape")  # the progress box
+            await settle(pilot, 6)
+            save(app, "run-flow-error")
 
 @shot
 async def trace():

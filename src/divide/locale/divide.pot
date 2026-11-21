@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-21 01:10+0000\n"
+"POT-Creation-Date: 2026-11-21 11:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2334,6 +2334,10 @@ msgid "The key is empty"
 msgstr ""
 
 #, python-brace-format
+msgid "The last run ended {state}: Run asks before replacing a file of yours."
+msgstr ""
+
+#, python-brace-format
 msgid "The last run ended {state}: Run replaces it when it ends."
 msgstr ""
 
@@ -3350,6 +3354,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{name} has no Div tags."
+msgstr ""
+
+#, python-brace-format
+msgid "{name} holds a finished run, in a file you chose."
 msgstr ""
 
 #, python-brace-format

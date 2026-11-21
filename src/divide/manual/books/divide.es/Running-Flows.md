@@ -25,7 +25,7 @@ Un Flow es un archivo YAML (`.yml`, `.yaml`) cuya raíz tiene `blocks`. En uno, 
 
 - **Contexto inicial**: el contexto con el que empieza el Flow (el `--context` de Runner): un archivo JSON, o un objeto JSON escrito en el campo (`{"name": "Ana"}`). Vacío: un contexto vacío. Tiene que ser un objeto JSON; divide lo comprueba antes de ejecutar.
 - **Raíz de funciones**: la carpeta de los archivos de actividades y condiciones (el `--root` de Runner). Vacío: la carpeta del proyecto. Los módulos son carpetas dentro (`<raíz>/billing/total.php` para `module: billing`), o los `_modules` del contexto.
-- **Guardar el contexto en**: el archivo donde Runner escribe el contexto resultante (`--save-context`), por defecto `<flow>.context.json` junto al Flow. Vacío: no se guarda nada, y una ejecución pausada no podrá reanudarse.
+- **Guardar el contexto en**: el archivo donde Runner escribe el contexto resultante (`--save-context`), por defecto un archivo por Flow en la carpeta `.div/runner/` del proyecto (`flows/order.yml` se guarda en `.div/runner/flows/order.yml.context.json`). divide crea esa carpeta, con un `.gitignore` que deja los checkpoints fuera de Git. Cualquier otro archivo lo eliges tú. Vacío: no se guarda nada, y una ejecución pausada no podrá reanudarse.
 - Debajo, lo que guarda ahora ese archivo: nada todavía, una ejecución pausada (dónde se detuvo) o el final de la última ejecución.
 - **Ejecutar** inicia el Flow. **Reanudar** continúa la ejecución pausada guardada en el archivo; es el botón por defecto (Intro) cuando hay una. **Examinar...** elige un archivo o carpeta para el campo en el que estabas.
 
@@ -65,7 +65,7 @@ La **ventana Mensajes** lista los diagnósticos de Runner (`runner: ...`) y los 
 La posición de una ejecución pausada está en el contexto guardado: `_flow_state` (el Block y el Step donde se detuvo) y `_flow_stack` (los marcos de retorno de los calls dentro de los que estaba). **Reanudar** ejecuta de nuevo el Flow, en un proceso PHP nuevo, con ese archivo como contexto y el mismo archivo para guardar, como hace la reanudación del propio Runner:
 
 ```bash
-php vendor/divengine/runner/bin/run.php flows/order.yml --context flows/order.context.json --save-context flows/order.context.json
+php vendor/divengine/runner/bin/run.php flows/order.yml --context .div/runner/flows/order.yml.context.json --save-context .div/runner/flows/order.yml.context.json
 ```
 
 La ejecución continúa después del Step que pausó y vuelve por cada call pendiente; los Steps que ya se ejecutaron no se repiten. El campo Contexto inicial no se usa al reanudar.
@@ -73,7 +73,7 @@ La ejecución continúa después del Step que pausó y vuelve por cada call pend
 divide protege una ejecución pausada:
 
 - **Reanudar necesita una ejecución pausada.** Cuando el archivo falta, guarda una ejecución terminada o no es un contexto de Runner, Reanudar está desactivado y dice por qué. divide nunca empieza el Flow de nuevo en su lugar.
-- **Empezar de nuevo pregunta.** **Ejecutar** cuando el archivo guarda una ejecución pausada (o un archivo que no es el contexto de una ejecución terminada) pregunta antes; el archivo solo se reemplaza cuando termina la nueva ejecución.
+- **Empezar de nuevo pregunta.** **Ejecutar** cuando el archivo guarda una ejecución pausada pregunta antes, y también sobre un archivo que elegiste tú (fuera de `.div/runner/`) y que ya existe. Una ejecución terminada o fallida en el checkpoint propio de divide se reemplaza sin preguntar. En cualquier caso, el archivo solo se reemplaza cuando termina la nueva ejecución.
 - **Una ejecución detenida no cambia nada.** Runner escribe el contexto solo cuando la ejecución termina, reemplazando el archivo de una vez; una ejecución que detienes con Esc deja el contexto guardado como estaba, así que la ejecución pausada todavía puede reanudarse.
 - **Un contexto que no puede guardarse se dice**, y el archivo conserva el último bueno.
 

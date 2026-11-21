@@ -25,7 +25,7 @@ A Flow is a YAML file (`.yml`, `.yaml`) whose root has `blocks`. In one, **Ctrl+
 
 - **Initial context**: the context the Flow starts with (Runner's `--context`): a JSON file, or a JSON object typed in the field (`{"name": "Ana"}`). Empty: an empty context. It must be a JSON object; divide checks it before running.
 - **Function root**: the folder of the activity and condition files (Runner's `--root`). Empty: the project's folder. Modules are folders in it (`<root>/billing/total.php` for `module: billing`), or the `_modules` of the context.
-- **Save context to**: the file Runner writes the resulting context to (`--save-context`), by default `<flow>.context.json` beside the Flow. Empty: nothing is saved, and a paused run cannot be resumed.
+- **Save context to**: the file Runner writes the resulting context to (`--save-context`), by default one file per Flow in the project's `.div/runner/` folder (`flows/order.yml` saves to `.div/runner/flows/order.yml.context.json`). divide makes that folder, with a `.gitignore` that keeps the checkpoints out of Git. Any other file is yours to choose. Empty: nothing is saved, and a paused run cannot be resumed.
 - Below, what that file holds now: nothing yet, a paused run (where it stopped), or the end of the last run.
 - **Run** starts the Flow. **Resume** continues the paused run saved in the file; it is the default button (Enter) when there is one. **Browse...** chooses a file or folder for the field you were in.
 
@@ -65,7 +65,7 @@ The **Messages window** lists Runner's diagnostics (`runner: ...`) and PHP's war
 A paused run's position is in the saved context: `_flow_state` (the Block and Step where it stopped) and `_flow_stack` (the return frames of the calls it was inside). **Resume** runs the Flow again, in a new PHP process, with that file as its context and the same file to save to, as Runner's own resume does:
 
 ```bash
-php vendor/divengine/runner/bin/run.php flows/order.yml --context flows/order.context.json --save-context flows/order.context.json
+php vendor/divengine/runner/bin/run.php flows/order.yml --context .div/runner/flows/order.yml.context.json --save-context .div/runner/flows/order.yml.context.json
 ```
 
 The run continues after the Step that paused and returns through every pending call; Steps that already ran are not run again. The Initial context field is not used on a resume.
@@ -73,7 +73,7 @@ The run continues after the Step that paused and returns through every pending c
 divide keeps a paused run safe:
 
 - **Resume needs a paused run.** When the file is missing, holds a finished run or is not a context of Runner's, Resume is off and says why. divide never starts the Flow over instead.
-- **Starting over asks.** **Run** while the file holds a paused run (or a file that is not a finished run's context) asks first; the file is replaced only when the new run ends.
+- **Starting over asks.** **Run** while the file holds a paused run asks first, and so does Run on a file you chose (outside `.div/runner/`) that already exists. A finished or failed run in divide's own checkpoint is replaced without asking. Either way, the file is replaced only when the new run ends.
 - **A stopped run changes nothing.** Runner writes the context only when the run ends, replacing the file at once; a run you stop with Esc leaves the saved context as it was, so the paused run can still be resumed.
 - **A context that cannot be saved is said**, and the file keeps the last good one.
 

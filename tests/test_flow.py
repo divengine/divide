@@ -30,7 +30,7 @@ needs_runner = pytest.mark.skipif(not (shutil.which("php") and BOOTSTRAP.is_file
 @pytest.fixture
 def project(tmp_path) -> Path:
     root = tmp_path / "runner"
-    shutil.copytree(EXAMPLE, root, ignore=shutil.ignore_patterns("*.context.json", "*.state.json"))
+    shutil.copytree(EXAMPLE, root, ignore=shutil.ignore_patterns("*.context.json", "*.state.json", ".div"))
     return root
 
 
@@ -240,6 +240,23 @@ async def wait(pilot, condition, what: str, tries: int = 200) -> None:
     pytest.fail(what)
 
 
+def test_checkpoints_are_one_per_flow_under_div_runner(tmp_path):
+    from divide.run.flow import default_checkpoint, is_managed, prepare_checkpoint
+
+    project = tmp_path / "p"
+    yml, yaml = default_checkpoint(project / "flows/order.yml", project), default_checkpoint(project / "flows/order.yaml", project)
+    assert yml == project / ".div/runner/flows/order.yml.context.json" and yml != yaml
+    assert default_checkpoint(project / "order.yml", project) != yml
+    a, b = default_checkpoint(tmp_path / "a/x.yml", project), default_checkpoint(tmp_path / "b/x.yml", project)
+    assert a != b and is_managed(a, project) and is_managed(yml, project)
+    assert not is_managed(project / "flows/order.context.json", project)
+    prepare_checkpoint(yml, project)
+    assert yml.parent.is_dir() and (project / ".div/runner/.gitignore").read_text(encoding="utf-8").endswith("*\n")
+    other = project / "mine/state.json"
+    prepare_checkpoint(other, project)
+    assert not other.parent.exists()  # the user's own folders are theirs
+
+
 def dialog_of(app, kind):
     return getattr(app.screen, "dialog", None) if isinstance(getattr(app.screen, "dialog", None), kind) else None
 
@@ -258,16 +275,17 @@ async def test_run_pause_resume_in_the_ide(project):
         await pilot.press("ctrl+f9")  # on a Flow: the Run Flow dialog
         await wait(pilot, lambda: dialog_of(app, FlowDialog), "no Run Flow dialog")
         dialog = dialog_of(app, FlowDialog)
-        assert dialog.save_input.data == "flows/order.context.json" and dialog.resume_button.disabled
+        assert dialog.save_input.data == ".div/runner/flows/order.yml.context.json" and dialog.resume_button.disabled
         dialog.context_input.data = "order.json"
         dialog.root_input.data = "functions"
         await pilot.press("enter")  # Run
         output = lambda: app.output_window().view.text if app.output_window() else ""  # noqa: E731
         await wait(pilot, lambda: "State: paused at approval.ask" in output(), "the run did not pause")
-        assert "Context saved to flows/order.context.json" in output() and '"trail"' in output()
-        saved = project / "flows/order.context.json"
+        assert "Context saved to .div/runner/flows/order.yml.context.json" in output() and '"trail"' in output()
+        saved = project / ".div/runner/flows/order.yml.context.json"
         assert read_saved(saved).resumable
-        assert config.load()["flows"][str(flow)] == {"context": "order.json", "root": "functions", "save": "flows/order.context.json"}
+        assert (project / ".div/runner/.gitignore").read_text(encoding="utf-8").splitlines()[-1] == "*"  # out of Git
+        assert config.load()["flows"][str(flow)] == {"context": "order.json", "root": "functions", "save": ".div/runner/flows/order.yml.context.json"}
         await pilot.press("escape")
         app.raise_window(app.window_for(flow))
         await pilot.pause(0.2)
@@ -291,11 +309,22 @@ async def test_run_pause_resume_in_the_ide(project):
         report = output()
         assert '"total",\n    "check",\n    "record",\n    "receipt"' in report and "Total: 25.00 (approved)" in report
         await pilot.press("escape")
+        app.raise_window(app.window_for(flow))
+        await pilot.pause(0.2)
+
+        await pilot.press("ctrl+f9")  # a finished run in divide's checkpoint: Run replaces it, unasked
+        await wait(pilot, lambda: dialog_of(app, FlowDialog), "no Run Flow dialog")
+        assert "Run replaces it" in str(dialog_of(app, FlowDialog).saved_line.render())
+        await pilot.press("alt+r")
+        await wait(pilot, lambda: "State: paused at approval.ask" in output() or dialog_of(app, MessageBox), "the run did not start")
+        assert dialog_of(app, MessageBox) is None and read_saved(saved).resumable
+        await pilot.press("escape")
 
 
 @needs_runner
 async def test_resume_needs_a_paused_context(project):
     from divide.app import Divide
+    from divide.ui.dialogs import MessageBox
     from divide.ui.flow import FlowDialog
 
     flow = project / "flows/order.yml"
@@ -307,11 +336,17 @@ async def test_resume_needs_a_paused_context(project):
         dialog = dialog_of(app, FlowDialog)
         assert dialog.resume_button.disabled and "Nothing saved yet" in str(dialog.saved_line.render())
         assert not dialog._check("resume")  # a missing context is not a reason to start over
+        assert not (project / ".div").exists()  # nothing made before a run
         write(project, "flows/order.context.json", '{"_runner_state": "done", "_flow_state": []}')
+        dialog.save_input.data = "flows/order.context.json"  # a file the user chose, finished
         dialog.show_saved()
-        assert dialog.resume_button.disabled and "ended done" in str(dialog.saved_line.render())
-        await pilot.press("escape")
-    assert not (project / "order.context.json").exists()
+        assert dialog.resume_button.disabled and "asks before replacing a file of yours" in str(dialog.saved_line.render())
+        await pilot.press("alt+r")
+        await wait(pilot, lambda: dialog_of(app, MessageBox), "replacing a file of the user's was not asked")
+        await pilot.press("n")
+        await pilot.pause(0.3)
+    assert (project / "flows/order.context.json").read_text(encoding="utf-8") == '{"_runner_state": "done", "_flow_state": []}'
+    assert not (project / ".div").exists()
 
 
 @needs_runner
@@ -321,7 +356,8 @@ async def test_esc_stops_a_run_in_the_ide(project):
     from divide.ui.progress import ProgressScreen
 
     flow = slow_project(project)
-    state = project / "flows/slow.context.json"
+    state = project / ".div/runner/flows/slow.yml.context.json"
+    state.parent.mkdir(parents=True)
     assert (await run_flow(runner_of(project), flow, cwd=project, functions=project / "functions", save_to=state)).state == "paused"
     checkpoint = state.read_bytes()
     app = Divide(project, [flow])
@@ -335,7 +371,7 @@ async def test_esc_stops_a_run_in_the_ide(project):
         await pilot.press("escape")  # stop PHP
         await wait(pilot, lambda: app.output_window() is not None and "State: stopped" in app.output_window().view.text,
                    "the run was not stopped")
-        assert "slow.context.json is as it was" in app.output_window().view.text
+        assert "slow.yml.context.json is as it was" in app.output_window().view.text
     assert state.read_bytes() == checkpoint and children.running() == []
 
 
