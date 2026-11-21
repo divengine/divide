@@ -21,7 +21,7 @@ El directorio `examples/runner` del repositorio es un proyecto listo para probar
 
 Un Flow es un archivo YAML (`.yml`, `.yaml`) cuya raíz tiene `blocks`. En uno, **Ctrl+F9** (Ejecutar > Ejecutar) abre **Ejecutar Flow**; en un script PHP la misma tecla sigue ejecutando el script, y en una plantilla la renderiza. **Ejecutar > Argumentos...** abre el mismo diálogo. Un Flow modificado se guarda antes.
 
-![El diálogo Ejecutar Flow, con una ejecución pausada guardada: Intro la reanuda](images/run-flow-dialog.png)
+![El diálogo Ejecutar Flow antes de la primera ejecución: el contexto se guarda en .div/runner/, todavía no hay nada guardado y Reanudar está desactivado](images/run-flow-new.png)
 
 - **Contexto inicial**: el contexto con el que empieza el Flow (el `--context` de Runner): un archivo JSON, o un objeto JSON escrito en el campo (`{"name": "Ana"}`). Vacío: un contexto vacío. Tiene que ser un objeto JSON; divide lo comprueba antes de ejecutar.
 - **Raíz de funciones**: la carpeta de los archivos de actividades y condiciones (el `--root` de Runner). Vacío: la carpeta del proyecto. Los módulos son carpetas dentro (`<raíz>/billing/total.php` para `module: billing`), o los `_modules` del contexto.
@@ -60,6 +60,8 @@ La **ventana Salida** muestra el informe:
 
 La **ventana Mensajes** lista los diagnósticos de Runner (`runner: ...`) y los avisos y errores de PHP, con su lugar cuando PHP lo da.
 
+![Un Flow ejecutado sin su raíz de funciones: el error en Salida, el diagnóstico de Runner en Mensajes](images/run-flow-error.png)
+
 ## Pausar y reanudar
 
 La posición de una ejecución pausada está en el contexto guardado: `_flow_state` (el Block y el Step donde se detuvo) y `_flow_stack` (los marcos de retorno de los calls dentro de los que estaba). **Reanudar** ejecuta de nuevo el Flow, en un proceso PHP nuevo, con ese archivo como contexto y el mismo archivo para guardar, como hace la reanudación del propio Runner:
@@ -69,6 +71,8 @@ php vendor/divengine/runner/bin/run.php flows/order.yml --context .div/runner/fl
 ```
 
 La ejecución continúa después del Step que pausó y vuelve por cada call pendiente; los Steps que ya se ejecutaron no se repiten. El campo Contexto inicial no se usa al reanudar.
+
+![El diálogo Ejecutar Flow con una ejecución pausada guardada: Intro la reanuda](images/run-flow-dialog.png)
 
 divide protege una ejecución pausada:
 

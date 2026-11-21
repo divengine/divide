@@ -21,7 +21,7 @@ The repository's `examples/runner` is a project ready to try: `composer install`
 
 A Flow is a YAML file (`.yml`, `.yaml`) whose root has `blocks`. In one, **Ctrl+F9** (Run > Run) opens **Run Flow**; in a PHP script the same key still runs the script, and in a template it renders it. **Run > Parameters...** opens the same dialog. A modified Flow is saved first.
 
-![The Run Flow dialog, with a paused run saved: Enter resumes it](images/run-flow-dialog.png)
+![The Run Flow dialog before the first run: the context saves to .div/runner/, nothing is saved yet, so Resume is off](images/run-flow-new.png)
 
 - **Initial context**: the context the Flow starts with (Runner's `--context`): a JSON file, or a JSON object typed in the field (`{"name": "Ana"}`). Empty: an empty context. It must be a JSON object; divide checks it before running.
 - **Function root**: the folder of the activity and condition files (Runner's `--root`). Empty: the project's folder. Modules are folders in it (`<root>/billing/total.php` for `module: billing`), or the `_modules` of the context.
@@ -60,6 +60,8 @@ The **Output window** shows the report:
 
 The **Messages window** lists Runner's diagnostics (`runner: ...`) and PHP's warnings and errors, with their place when PHP gives one.
 
+![A Flow run without its function root: the error in Output, Runner's diagnostic in Messages](images/run-flow-error.png)
+
 ## Pause and resume
 
 A paused run's position is in the saved context: `_flow_state` (the Block and Step where it stopped) and `_flow_stack` (the return frames of the calls it was inside). **Resume** runs the Flow again, in a new PHP process, with that file as its context and the same file to save to, as Runner's own resume does:
@@ -69,6 +71,8 @@ php vendor/divengine/runner/bin/run.php flows/order.yml --context .div/runner/fl
 ```
 
 The run continues after the Step that paused and returns through every pending call; Steps that already ran are not run again. The Initial context field is not used on a resume.
+
+![The Run Flow dialog with a paused run saved: Enter resumes it](images/run-flow-dialog.png)
 
 divide keeps a paused run safe:
 
