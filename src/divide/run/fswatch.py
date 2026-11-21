@@ -8,7 +8,12 @@ something changed.
 
 An entry created, deleted, renamed or moved in a watched folder makes that
 folder *affected*; a move affects both folders, the one it left and the one
-it went to. Events are coalesced: the first starts a short wait (``delay``),
+it went to; on macOS, a watched folder reported as modified is affected
+itself (FSEvents may say only that; elsewhere it also comes for a file
+written in it). A file's contents changing is not a change of
+its folder. The caller compares what it shows with the folder before
+reading it again, so a spurious report (FSEvents may call a modified file
+created) costs one listing of that folder, not a refresh. Events are coalesced: the first starts a short wait (``delay``),
 those that arrive meanwhile join it, and then the affected folders are
 handed over once, without repeats, with the generation they belong to (a
 later :meth:`set_folders` or :meth:`stop` makes earlier ones stale). A storm
@@ -27,6 +32,7 @@ from __future__ import annotations
 from divide.i18n import _
 
 import os
+import sys
 import threading
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -35,6 +41,9 @@ from pathlib import Path
 DELAY = 0.3  # seconds a burst is gathered for
 MAX_WATCHED = 64  # folders watched at most (watchdog runs a thread per watch)
 MAX_PENDING = 128  # affected folders kept before a batch becomes "everything"
+# FSEvents may report only "this folder changed" for an entry created or removed in it; elsewhere a
+# folder's "modified" also comes when one of its files is written, which is not a change of the tree
+MODIFIED_FOLDERS = sys.platform == "darwin"
 
 
 @dataclass(frozen=True)
@@ -136,9 +145,14 @@ class FolderWatcher:
 
     # ------------------------------------------------------------- events
     def _event(self, kind: str, src: str, dest: str | None, is_dir: bool) -> None:
-        if self.stopped or kind not in ("created", "deleted", "moved"):
-            return  # contents changing (modified), opened, closed: nothing the tree shows
-        touched = {os.path.dirname(src)} | ({os.path.dirname(dest)} if dest else set())
+        if self.stopped:
+            return
+        if kind == "modified" and is_dir and MODIFIED_FOLDERS:
+            touched = {src}  # a folder's own entries changed (macOS's FSEvents often says only that)
+        elif kind in ("created", "deleted", "moved"):
+            touched = {os.path.dirname(src)} | ({os.path.dirname(dest)} if dest else set())
+        else:
+            return  # a file's contents changing, opened, closed: nothing the tree shows
         with self._lock:
             self.events += 1
             watched = {self._folder_of(t) for t in touched} & set(self._watches)

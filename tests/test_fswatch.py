@@ -8,6 +8,7 @@ ReadDirectoryChangesW): nothing is polled, and nothing is faked except where a r
 import asyncio
 import os
 import shutil
+import sys
 import threading
 import time
 from pathlib import Path
@@ -94,9 +95,14 @@ def test_folders_are_watched_alone_not_recursively(tree, watching):
     (tree / "a" / "deep" / "inside.txt").write_text("i")  # two levels down: not watched
     (tree / "a" / "z.txt").write_text("z")  # one level down: a's own entry, not the root's
     time.sleep(1.0)
-    assert seen.batches == []
+    if sys.platform == "darwin":  # FSEvents may call the root's own entry "a" changed: still only the root
+        assert seen.folders() <= {tree}
+    else:
+        assert seen.batches == []
+    seen.batches.clear()
     (tree / "c").mkdir()
-    assert seen.wait_for(lambda: seen.folders() == {tree})
+    assert seen.wait_for(lambda: tree in seen.folders())
+    assert seen.folders() <= {tree}  # never a folder that is not watched
 
 
 def test_contents_changing_is_not_a_change_of_the_folder(tree, watching):
@@ -104,7 +110,10 @@ def test_contents_changing_is_not_a_change_of_the_folder(tree, watching):
     with open(tree / "a" / "x.txt", "a") as f:
         f.write("more")
     time.sleep(1.0)
-    assert seen.batches == []
+    if sys.platform == "darwin":  # FSEvents may report a recently created file as created again
+        assert seen.folders() <= {tree / "a"}  # at most its own folder: one listing, compared, no refresh
+    else:
+        assert seen.batches == []
 
 
 def test_a_burst_is_one_batch_without_repeats(tree, watching):
@@ -238,7 +247,7 @@ async def test_outside_changes_appear_and_moves_show_on_both_sides(tree):
     app = Divide(tree, [])
     async with app.run_test(size=(100, 30)) as pilot:
         t = await project(pilot, app)
-        assert t.watcher.folders == {tree}
+        await until(pilot, lambda: t.watcher.folders == {tree}, "the project's folder is not watched")
         await opened(pilot, t, tree / "a")
         await opened(pilot, t, tree / "b")
         (tree / "made.txt").write_text("")
