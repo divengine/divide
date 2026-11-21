@@ -139,13 +139,15 @@ the template into its output, step by step.
 ## 5. The Divengine ecosystem
 
 The Divengine libraries are independent PHP packages, each usable on its own.
-**Only Div is integrated directly with divide.**
+**Div is integrated directly with divide; Runner is run through its own command
+line.**
 
 | Component | What it does | In divide today |
 |---|---|---|
 | [Div](https://github.com/divengine/div) | Template processing and transformations: data and templates to text, iterated to a fixed point, with dialects, includes, translation between dialects | Integrated through a PHP bridge: render, include resolution, data decoding, dialect checks and loading, render trace, translation, the Div setup of a project |
 | [Nodes](https://github.com/divengine/nodes) | File-based structured data management without a server: schemas, nodes and references between them, indexes for search, file locking | Not integrated |
 | [Ways](https://github.com/divengine/ways) | Execution control points ("ways") called from HTTP, the CLI or PHP code: routing, hooks and rules | Not integrated |
+| [Runner](https://github.com/divengine/runner) | The Sequential Flow Model (SFM): Flows of Blocks and Steps (`call`, `jump`, `pause`), YAML Flows compiled to PHP, a shared context that pauses and resumes | Runs, pauses and resumes a project's YAML Flows through Runner's command line (`vendor/divengine/runner/bin/run.php`, 0.2.0 or newer); no Flow modeling or step debugging |
 
 Nodes and Ways are being considered for future generator-development use
 cases; their roles are not decided. A generator project may use them for its
@@ -183,6 +185,7 @@ Everything in this table exists in the current code.
 | Set up the Div that divide runs while you design | Options > Div setup (`.div/setup.json`): engine, paths, extensions, parser limits, dialect, global data, allowed PHP functions and modifiers, simulated request data. This is divide's design-time configuration: it does not configure the Div an application or a deployed generator runs, which keeps its own setup in its own code |
 | The PHP of a generator project | PHP highlighting and `php -l`, language servers, running scripts with arguments, the Xdebug debugger, Composer packages |
 | Let an AI coding agent use divide's design-time services | divide's own MCP server: over HTTP (`http://127.0.0.1:8765/mcp`), started, stopped and configured in Options > MCP server, or over stdio (`divide --mcp PROJECT`); standard library only. Tools: the project's Div setup and engine, the editor's checks of a template, a render and the render trace (paged) through the real Div engine, Div's verdict on a dialect. Confined to the project, bounded, it writes nothing and takes the user's trust decisions as they are. It works on files and on text passed in, not on divide's open editors |
+| Run the SFM Flows of a generator | Ctrl+F9 on a Runner Flow (YAML): an initial context, the function root and the saved context per Flow; Runner's own command line runs it; done, paused, error, stopped; Resume continues a paused run from the saved context (`_flow_state`, `_flow_stack`), never restarting it nor replacing it silently; the report (state, Runner's log, the context, stderr) in Output and Messages |
 | Try HTTP code while developing | a built-in PHP development server (`php -S`) with per-request debugging. It can help develop and test a generator that serves HTTP; it is not a generator API or an MCP platform |
 | The files a generator produces | highlighting and outline of HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell scripts and `.env`, INI and CSV |
 | Version and review generators | the Git menu: changes, diffs as a code review shows them, commits, history, branches, merges, stashes, blame, pull and push; pull requests and issues of GitHub and Gitea |

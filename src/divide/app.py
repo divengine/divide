@@ -126,6 +126,7 @@ from divide.ui.language import LanguageMixin
 from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.ui.mcp import McpMixin
+from divide.ui.flow import FlowMixin
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.forge import CM_FORGE, ForgeMixin
 from divide.ui.git import (
@@ -355,7 +356,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -428,6 +429,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, McpMixin,
         self._run_init()
         self._web_init()
         self._mcp_init()
+        self._flow_init()
         self.folder: Path | None = root.resolve() if root is not None else None  # the open folder: the project
         self._loose_dir: Path | None = None  # without a folder: where the last file opened is
         self.initial_files = files
@@ -1107,6 +1109,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, McpMixin,
             case _ if command == CM_RENDER:
                 if self.wants_run():
                     await self.run_script_command()
+                elif self.wants_flow():
+                    await self.flow_command()
                 else:
                     await self.render_template(progress=True)
             case _ if command == CM_TRACE and not self.wants_run():
@@ -1126,7 +1130,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, WebMixin, McpMixin,
             case _ if command == CM_CALL_STACK:
                 self.show_call_stack()
             case _ if command == CM_RUN_ARGS:
-                await self.run_parameters()
+                if self.wants_flow():
+                    await self.flow_command()
+                else:
+                    await self.run_parameters()
             case _ if command == CM_RUN_TERMINAL:
                 await self.run_in_terminal()
             case _ if command == CM_WEB_SERVER:

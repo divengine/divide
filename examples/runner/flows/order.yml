@@ -1,0 +1,29 @@
+id: order
+description: An order through review and approval (main -> review -> approval), paused for approval
+blocks:
+  main:
+    steps:
+      total:
+        activity: compute_total
+      review:
+        call: review.check
+      receipt:
+        activity: format_receipt
+  review:
+    steps:
+      check:
+        activity: mark_reviewed
+      approve:
+        call: approval.ask
+      after:
+        context:
+          review_done: true
+  approval:
+    steps:
+      ask:
+        condition: needs_approval
+        context:
+          approved: true
+        pause: true
+      record:
+        activity: record_approval

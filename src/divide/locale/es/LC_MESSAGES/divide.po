@@ -4012,3 +4012,251 @@ msgstr "~P~uerto"
 
 msgid "~R~estart"
 msgstr "~R~einiciar"
+
+#, python-brace-format
+msgid " (inside {n} call(s))"
+msgstr " (dentro de {n} call(s))"
+
+msgid " · Ctrl+F9, Resume continues it"
+msgstr " · Ctrl+F9, Reanudar lo continúa"
+
+msgid "(not saved)"
+msgstr "(no se guarda)"
+
+#, python-brace-format
+msgid ", {name} is as it was"
+msgstr ", {name} sigue como estaba"
+
+msgid "Context"
+msgstr "Contexto"
+
+msgid "Context not saved"
+msgstr "Contexto no guardado"
+
+#, python-brace-format
+msgid "Context saved to {path}"
+msgstr "Contexto guardado en {path}"
+
+msgid "Ctrl+F9, Resume: continues the Flow from the saved context."
+msgstr "Ctrl+F9, Reanudar: continúa el Flow desde el contexto guardado."
+
+#, python-brace-format
+msgid "Error: {error}"
+msgstr "Error: {error}"
+
+msgid "Flow"
+msgstr "Flow"
+
+#, python-brace-format
+msgid "Flow {flow} · Runner {version}"
+msgstr "Flow {flow} · Runner {version}"
+
+msgid "Function root"
+msgstr "Raíz de funciones"
+
+msgid "Initial context"
+msgstr "Contexto inicial"
+
+#, python-brace-format
+msgid "No such folder for the saved context: {path}"
+msgstr "No existe la carpeta del contexto guardado: {path}"
+
+msgid "Not run"
+msgstr "No se ejecutó"
+
+msgid "Not saved: a paused run cannot be resumed."
+msgstr "No se guarda: una ejecución pausada no podrá reanudarse."
+
+msgid "Nothing saved yet: Run saves the context there."
+msgstr "Nada guardado todavía: Ejecutar guarda allí el contexto."
+
+msgid "Nothing to resume: "
+msgstr "Nada que reanudar: "
+
+#, python-brace-format
+msgid "Nothing was saved{kept}."
+msgstr "No se guardó nada{kept}."
+
+msgid "PHP ended"
+msgstr "PHP terminó"
+
+#, python-brace-format
+msgid "PHP ended (exit code {code})"
+msgstr "PHP terminó (código de salida {code})"
+
+msgid "Paused"
+msgstr "Pausado"
+
+#, python-brace-format
+msgid "Paused at {where}{calls}: Resume continues there."
+msgstr "Pausado en {where}{calls}: Reanudar continúa allí."
+
+msgid "Printed"
+msgstr "Impreso"
+
+#, python-brace-format
+msgid "Result: {result}"
+msgstr "Resultado: {result}"
+
+msgid "Resuming Flow"
+msgstr "Reanudando el Flow"
+
+msgid "Res~u~me"
+msgstr "~R~eanudar"
+
+msgid "Run Flow"
+msgstr "Ejecutar Flow"
+
+#, python-brace-format
+msgid "Runner is not installed in this project: composer require divengine/runner (divide runs {bootstrap})"
+msgstr "Runner no está instalado en este proyecto: composer require divengine/runner (divide ejecuta {bootstrap})"
+
+#, python-brace-format
+msgid "Runner {version} is installed; divide needs 0.2.0 or newer, the first with its command line: composer require divengine/runner:^0.2"
+msgstr "Está instalado Runner {version}; divide necesita la 0.2.0 o posterior, la primera con su línea de comandos: composer require divengine/runner:^0.2"
+
+msgid "Running Flow"
+msgstr "Ejecutando el Flow"
+
+msgid "Save context to"
+msgstr "Guardar el contexto en"
+
+msgid "Save the Flow first (F2): Runner runs files."
+msgstr "Guarda primero el Flow (F2): Runner ejecuta archivos."
+
+msgid "Save to"
+msgstr "Guardar en"
+
+msgid "Saved context: "
+msgstr "Contexto guardado: "
+
+msgid "Saved to"
+msgstr "Guardado en"
+
+msgid "Start the Flow over? The file is replaced when the new run ends."
+msgstr "¿Empezar el Flow de nuevo? El archivo se reemplaza cuando termine la nueva ejecución."
+
+#, python-brace-format
+msgid "State: {state}"
+msgstr "Estado: {state}"
+
+#, python-brace-format
+msgid "Stopped by you: PHP was killed; nothing was saved{kept}."
+msgstr "Detenido por ti: PHP se terminó; no se guardó nada{kept}."
+
+#, python-brace-format
+msgid "The context is not JSON: {error}"
+msgstr "El contexto no es JSON: {error}"
+
+msgid "The context must be a JSON object"
+msgstr "El contexto tiene que ser un objeto JSON"
+
+msgid "The context was not saved: give a file in Save context to resume this run."
+msgstr "El contexto no se guardó: indica un archivo en Guardar el contexto para poder reanudar."
+
+msgid "The file there is not a context saved by Runner."
+msgstr "El archivo que hay allí no es un contexto guardado por Runner."
+
+#, python-brace-format
+msgid "The file there {problem}: Resume cannot use it."
+msgstr "El archivo que hay allí {problem}: Reanudar no puede usarlo."
+
+#, python-brace-format
+msgid "The function root is not a folder: {path}"
+msgstr "La raíz de funciones no es una carpeta: {path}"
+
+#, python-brace-format
+msgid "The last run ended {state}: Run replaces it when it ends."
+msgstr "La última ejecución terminó {state}: Ejecutar lo reemplaza al terminar."
+
+#, python-brace-format
+msgid "cannot be read: {error}"
+msgstr "no se puede leer: {error}"
+
+msgid "done"
+msgstr "done"
+
+msgid "error"
+msgstr "error"
+
+#, python-brace-format
+msgid "is not JSON: {error}"
+msgstr "no es JSON: {error}"
+
+msgid "is not a JSON object"
+msgstr "no es un objeto JSON"
+
+#, python-brace-format
+msgid "no such file: {path}"
+msgstr "no existe el archivo: {path}"
+
+msgid "not run (invocation error)"
+msgstr "no se ejecutó (error de invocación)"
+
+#, python-brace-format
+msgid "paused at {where}{inside}"
+msgstr "pausado en {where}{inside}"
+
+msgid "php was not found in the PATH: Runner is PHP."
+msgstr "php no está en el PATH: Runner es PHP."
+
+msgid "ran, but the context was not saved"
+msgstr "se ejecutó, pero el contexto no se guardó"
+
+msgid "resumed, "
+msgstr "reanudado, "
+
+#, python-brace-format
+msgid "saved, {name}"
+msgstr "guardado, {name}"
+
+msgid "says paused but has no _flow_state to resume from"
+msgstr "dice paused pero no tiene _flow_state desde donde reanudar"
+
+msgid "stopped"
+msgstr "detenido"
+
+msgid "typed"
+msgstr "escrito aquí"
+
+#, python-brace-format
+msgid "{name} holds a paused run (Resume continues it)."
+msgstr "{name} guarda una ejecución pausada (Reanudar la continúa)."
+
+#, python-brace-format
+msgid "{name} is not a context of a finished run."
+msgstr "{name} no es el contexto de una ejecución terminada."
+
+#, python-brace-format
+msgid "{path} cannot be read: {error}"
+msgstr "{path} no se puede leer: {error}"
+
+#, python-brace-format
+msgid "{path} is not JSON: {error}"
+msgstr "{path} no es JSON: {error}"
+
+#, python-brace-format
+msgid "{path} is not a JSON object"
+msgstr "{path} no es un objeto JSON"
+
+msgid "~F~unction root, --root (optional; relative to the project)"
+msgstr "Raíz de ~f~unciones, --root (opcional; relativa al proyecto)"
+
+msgid "~I~nitial context: a JSON file, or a JSON object typed here (optional)"
+msgstr "Contexto ~i~nicial: archivo JSON u objeto JSON escrito aquí (opcional)"
+
+msgid "~S~ave context to, --save-context (empty: not saved)"
+msgstr "~G~uardar el contexto en, --save-context (vacío: no se guarda)"
+
+#, python-brace-format
+msgid "── Flow {name}: {state} ──"
+msgstr "── Flow {name}: {state} ──"
+
+msgid "── context ──"
+msgstr "── contexto ──"
+
+msgid "── log ──"
+msgstr "── registro ──"
+
+msgid "── stderr ──"
+msgstr "── stderr ──"

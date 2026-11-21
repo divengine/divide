@@ -1,6 +1,6 @@
 # Ejecutar PHP
 
-En un script PHP, **Ctrl+F9** (Ejecutar > Ejecutar) lo ejecuta con `php`, como lo harías en una shell, y muestra lo que imprimió. En una plantilla, la misma tecla la renderiza (ver [[Renderizado|Rendering]]).
+En un script PHP, **Ctrl+F9** (Ejecutar > Ejecutar) lo ejecuta con `php`, como lo harías en una shell, y muestra lo que imprimió. En una plantilla, la misma tecla la renderiza (ver [[Renderizado|Rendering]]), y en un Flow de Runner ejecuta el Flow (ver [[Ejecutar Flows|Running Flows]]).
 
 ![Ctrl+F9 en index.php: el cuadro con el veredicto y la salida detrás](images/run-php.png)
 

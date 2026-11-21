@@ -1,0 +1,10 @@
+id: hello
+description: The smallest Flow - one Block, two Steps
+blocks:
+  main:
+    steps:
+      greet:
+        activity: greet
+      done:
+        context:
+          greeted: true

@@ -16,7 +16,7 @@
 | **Ctrl+P** | go to file (a `>` first: the commands), see [[Finding Files and Commands]] |
 | **Alt+P** | command palette |
 | **Shift+F2** | find in files |
-| **Ctrl+F9** | run: render the template, run the PHP script (in the debugger: go on; with the [[Web Server]] running: open the page in the browser) |
+| **Ctrl+F9** | run: render the template, run the PHP script, run a [[Runner Flow\|Running Flows]] (in the debugger: go on; with the [[Web Server]] running: open the page in the browser) |
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |
 | **Alt+F8** / **Alt+F7** | next / previous error |

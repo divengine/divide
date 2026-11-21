@@ -45,6 +45,9 @@ jobs:
       - name: Div for the shop example (its vendor/)
         run: composer install --no-interaction --no-progress --working-dir examples/shop
 
+      - name: Runner for the Flows example (its vendor/, divengine/runner from Packagist)
+        run: composer install --no-interaction --no-progress --working-dir examples/runner
+
       - name: divide and the tests' tools (the official MCP SDK's client among them)
         run: python -m pip install -e ".[dev]"
 

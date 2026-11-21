@@ -286,7 +286,7 @@ class RunMixin:
         items = []
         if self.run_messages and (path is None or path == self.last_script):
             items += self.run_messages
-        return items + self.web_items()
+        return items + self.flow_items(path) + self.web_items()  # type: ignore[attr-defined]
 
     async def run_parameters(self) -> None:
         """Run > Parameters: the script's ``$argv`` (remembered per script)."""
