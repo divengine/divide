@@ -617,6 +617,43 @@ async def mcp():
         await app.mcp_stop()
 
 @shot
+async def flow():
+    """Run > Run on a Runner Flow of examples/runner (composer install there): the Run Flow dialog
+    with a paused run saved, then the paused run's report. A copy of the example is run: the
+    context files go there."""
+    import tempfile as _tempfile
+    from divide.ui.flow import FlowDialog
+    example = ROOT / "examples" / "runner"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        print("skipped flow: composer install in examples/runner")
+        return
+    with _tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "runner"
+        shutil.copytree(example, root)
+        flow = root / "flows" / "order.yml"
+        app = Divide(root, [flow])
+        async with app.run_test(size=SIZE) as pilot:
+            await settle(pilot, 10)
+            await pilot.press("ctrl+f9")
+            await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FlowDialog), tries=200)
+            dialog = app.screen.dialog
+            dialog.context_input.data = "order.json"
+            dialog.root_input.data = "functions"
+            await pilot.press("enter")
+            await until(pilot, lambda: app.output_window() is not None and "approval.ask" in app.output_window().view.text, tries=400)
+            await settle(pilot, 4)
+            await pilot.press("escape")  # the progress box
+            await settle(pilot, 4)
+            save(app, "run-flow")
+            app.raise_window(app.window_for(flow))
+            await settle(pilot)
+            await pilot.press("ctrl+f9")
+            await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FlowDialog), tries=200)
+            await settle(pilot, 6)
+            save(app, "run-flow-dialog")
+            await pilot.press("escape")
+
+@shot
 async def trace():
     """Debug > Render trace on the shop: the row where Div decides the condition."""
     from divide.ui.tracer import TraceWindow

@@ -1,0 +1,7 @@
+{
+    "items": [
+        {"price": 10, "qty": 2},
+        {"price": 5, "qty": 1}
+    ],
+    "approver": "Ana"
+}

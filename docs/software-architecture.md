@@ -96,7 +96,7 @@ flowchart TB
 | `divide.ui` | Turbo Vision windows, dialogs and lists. One module per feature area, usually a window or dialog plus a mixin that adds the feature to the app. |
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
-| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
+| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), Runner Flows (`flow`: find Runner, run its bootstrap, read a saved context), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), and the guard that no child outlives divide (`children`). UI-independent. |
 | `divide.mcpserver` | divide's own MCP server, standard library only: `tools` (the seven tools, on `divide.run`), `protocol` (MCP's JSON-RPC in both eras), `http` (Streamable HTTP on `/mcp`, run by the IDE: Options > MCP server, `divide.ui.mcp`) and `stdio` (`divide --mcp PROJECT`). The project's setup, a template's checks, renders and the render trace for MCP clients, without the UI. See 4.1. |
 | `divide.outline` | The outline of every language divide colours, as trees of `Node`s (one builder per family: PHP, Div, markup, code, data). Search > Outline and the project window's file members use it. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
@@ -133,6 +133,23 @@ flowchart TB
   macOS in a session of their own, so ssh cannot ask for a passphrase on
   divide's screen). Their output reaches the progress box line by line, and a
   failure is shown in their own words.
+- **Runner Flows.** divide does not run SFM Flows itself: `run.flow` starts
+  Runner's official bootstrap of the project's Composer installation (`php
+  vendor/divengine/runner/bin/run.php FLOW --json [--context] [--root]
+  [--save-context]`) through `run.script.run_script`, the same child process
+  as a PHP script (tracked, killed on Esc and when divide ends), in the
+  project's folder. The exit code is the state (0 done, 3 paused, 1 error, 2
+  invocation or persistence error; anything else: PHP died; killed:
+  cancelled); stdout is the resulting context (JSON), stderr the Flow's output
+  and Runner's diagnostics. `read_saved` reads a context file's
+  `_runner_state` and `_flow_state` only to tell the user and to decide
+  whether Resume is possible: Resume passes the file back as both `--context`
+  and `--save-context`, as Runner's own resume does. divide never restarts a
+  paused run or replaces its file without asking, and since Runner writes the
+  context only at the end (atomically), a stopped run leaves it as it was.
+  `ui.flow` (Ctrl+F9 on a YAML Flow, the Run Flow dialog) reuses the progress
+  box, the Output and Messages windows and the config file; the run and its
+  report are apart from the dialog, for a Flow workspace to come.
 - **The MCP server.** Three layers, standard library only (no MCP SDK, no
   web framework). `mcpserver.tools`: each tool calls the same functions the
   IDE calls: `workbench.check_template` (the dialect Div loads, the lexer,

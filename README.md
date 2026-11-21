@@ -95,6 +95,11 @@ The examples below generate HTML because it is the easiest output to read; the s
   window, the editor's margin and Git > Changes), diffs as a code review shows
   them, commits, history, branches, merges, stashes and blame, and the pull
   requests and issues of GitHub or Gitea.
+- **Runner Flows.** Ctrl+F9 on a [Runner](https://github.com/divengine/runner)
+  Flow runs it with Runner's own command line: an initial context, the state
+  it ended in (done, paused, error), Runner's log and the resulting context.
+  A paused run is saved and resumed from its context
+  ([Running Flows](https://github.com/divengine/divide/wiki/Running-Flows)).
 - **An MCP server for agents.** Options > MCP server starts it on
   `http://127.0.0.1:8765/mcp`: an AI coding agent gets the same checks,
   renders and render trace through the real Div engine, with the project's
@@ -137,7 +142,8 @@ time, the request, random values and the PHP functions it may call). And
 reproducible is not the same as correct: a generator is only as good as its
 rules, models and checks.
 
-**Only Div is integrated in divide.** [Nodes](https://github.com/divengine/nodes)
+**Div is integrated in divide**, and [Runner](https://github.com/divengine/runner)'s Flows run
+through Runner's own command line. [Nodes](https://github.com/divengine/nodes)
 (file-based structured data) and [Ways](https://github.com/divengine/ways)
 (execution control points, routing, hooks and rules) are independent PHP
 libraries that a generator may use; their role in generator development is

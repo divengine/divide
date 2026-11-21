@@ -291,8 +291,11 @@ def test_connections_are_bounded(server, monkeypatch):
         for s in idle:
             s.close()
     for _ in range(50):
-        if post(server, legacy("tools/list"))[0] == 200:
-            break
+        try:
+            if post(server, legacy("tools/list"))[0] == 200:
+                break
+        except OSError:  # a 503 while a slot frees: the server closes before the request is all sent
+            pass
         time.sleep(0.1)
     else:
         pytest.fail("the server did not take connections again")

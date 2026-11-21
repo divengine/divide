@@ -1,0 +1,13 @@
+id: invoice
+description: Module-qualified functions - the same name in two Modules
+blocks:
+  main:
+    steps:
+      lines:
+        module: billing
+        activity: total
+      shipping:
+        module: shipping
+        activity: total
+      sum:
+        activity: invoice_sum

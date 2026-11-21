@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-20 06:15+0000\n"
+"POT-Creation-Date: 2026-11-21 01:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,6 +27,10 @@ msgstr ""
 msgid " (draft)"
 msgstr ""
 
+#, python-brace-format
+msgid " (inside {n} call(s))"
+msgstr ""
+
 msgid " (no Xdebug: not debugged)"
 msgstr ""
 
@@ -38,6 +42,9 @@ msgid " ({count} names that are not Div tags are left out)"
 msgstr ""
 
 msgid " on the same line"
+msgstr ""
+
+msgid " · Ctrl+F9, Resume continues it"
 msgstr ""
 
 msgid " · no upstream"
@@ -93,6 +100,9 @@ msgstr ""
 msgid "(not running)"
 msgstr ""
 
+msgid "(not saved)"
+msgstr ""
+
 msgid "(not set)"
 msgstr ""
 
@@ -110,6 +120,10 @@ msgid "({n} file changed and not committed stays here)."
 msgid_plural "({n} files changed and not committed stay here)."
 msgstr[0] ""
 msgstr[1] ""
+
+#, python-brace-format
+msgid ", {name} is as it was"
+msgstr ""
 
 msgid "--mcp takes one project folder: divide --mcp /path/to/project"
 msgstr ""
@@ -464,6 +478,16 @@ msgstr ""
 msgid "Contents"
 msgstr ""
 
+msgid "Context"
+msgstr ""
+
+msgid "Context not saved"
+msgstr ""
+
+#, python-brace-format
+msgid "Context saved to {path}"
+msgstr ""
+
 #, python-brace-format
 msgid "Copied: the client setup for {url}"
 msgstr ""
@@ -503,6 +527,9 @@ msgid "Count words"
 msgstr ""
 
 msgid "Co~m~plete"
+msgstr ""
+
+msgid "Ctrl+F9, Resume: continues the Flow from the saved context."
 msgstr ""
 
 msgid "Ctrl+K"
@@ -911,6 +938,10 @@ msgstr ""
 msgid "Error: "
 msgstr ""
 
+#, python-brace-format
+msgid "Error: {error}"
+msgstr ""
+
 msgid "Errors"
 msgstr ""
 
@@ -1022,6 +1053,13 @@ msgid_plural "Fixed point: nothing changes after {n} cycles"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Flow"
+msgstr ""
+
+#, python-brace-format
+msgid "Flow {flow} · Runner {version}"
+msgstr ""
+
 msgid "Format (sprintf)"
 msgstr ""
 
@@ -1051,6 +1089,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "From {start}"
+msgstr ""
+
+msgid "Function root"
 msgstr ""
 
 msgid "Function separator"
@@ -1154,6 +1195,9 @@ msgid "Index"
 msgstr ""
 
 msgid "Information"
+msgstr ""
+
+msgid "Initial context"
 msgstr ""
 
 msgid "Ins"
@@ -1475,6 +1519,10 @@ msgid "No such file: {router}"
 msgstr ""
 
 #, python-brace-format
+msgid "No such folder for the saved context: {path}"
+msgstr ""
+
+#, python-brace-format
 msgid "No such folder: {parent}"
 msgstr ""
 
@@ -1495,8 +1543,14 @@ msgstr ""
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr ""
 
+msgid "Not run"
+msgstr ""
+
 #, python-brace-format
 msgid "Not running: {error}"
+msgstr ""
+
+msgid "Not saved: a paused run cannot be resumed."
 msgstr ""
 
 msgid "Nothing changed since the last commit"
@@ -1516,7 +1570,17 @@ msgid ""
 "every change first."
 msgstr ""
 
+msgid "Nothing saved yet: Run saves the context there."
+msgstr ""
+
 msgid "Nothing to put aside: nothing changed"
+msgstr ""
+
+msgid "Nothing to resume: "
+msgstr ""
+
+#, python-brace-format
+msgid "Nothing was saved{kept}."
 msgstr ""
 
 msgid "Number prefix"
@@ -1647,6 +1711,13 @@ msgstr ""
 msgid "PHP and its extensions: composer checks them, it does not install them."
 msgstr ""
 
+msgid "PHP ended"
+msgstr ""
+
+#, python-brace-format
+msgid "PHP ended (exit code {code})"
+msgstr ""
+
 msgid "PHP ended before Xdebug connected: is Xdebug loaded?\n"
 msgstr ""
 
@@ -1682,8 +1753,15 @@ msgstr ""
 msgid "Paths relative to the project · an empty dialect is the base one"
 msgstr ""
 
+msgid "Paused"
+msgstr ""
+
 #, python-brace-format
 msgid "Paused at {place}{request} · {debug_hint}"
+msgstr ""
+
+#, python-brace-format
+msgid "Paused at {where}{calls}: Resume continues there."
 msgstr ""
 
 msgid "Plain ~s~ymbols"
@@ -1711,6 +1789,9 @@ msgid "Preview shows the template as Div translates it."
 msgstr ""
 
 msgid "Pre~v~ious"
+msgstr ""
+
+msgid "Printed"
 msgstr ""
 
 msgid "Program parameters"
@@ -1881,6 +1962,16 @@ msgstr ""
 msgid "Restore ~a~ll defaults"
 msgstr ""
 
+#, python-brace-format
+msgid "Result: {result}"
+msgstr ""
+
+msgid "Resuming Flow"
+msgstr ""
+
+msgid "Res~u~me"
+msgstr ""
+
 msgid "Router script"
 msgstr ""
 
@@ -1890,13 +1981,31 @@ msgstr ""
 msgid "Ro~u~ter..."
 msgstr ""
 
+msgid "Run Flow"
+msgstr ""
+
 msgid "Run in terminal"
 msgstr ""
 
 msgid "Run in termi~n~al"
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"Runner is not installed in this project: composer require "
+"divengine/runner (divide runs {bootstrap})"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Runner {version} is installed; divide needs 0.2.0 or newer, the first "
+"with its command line: composer require divengine/runner:^0.2"
+msgstr ""
+
 msgid "Running"
+msgstr ""
+
+msgid "Running Flow"
 msgstr ""
 
 #, python-brace-format
@@ -1909,6 +2018,9 @@ msgstr ""
 msgid "Save a~l~l"
 msgstr ""
 
+msgid "Save context to"
+msgstr ""
+
 msgid "Save e~x~ample template..."
 msgstr ""
 
@@ -1917,6 +2029,9 @@ msgid "Save failed: {exc}"
 msgstr ""
 
 msgid "Save file as"
+msgstr ""
+
+msgid "Save the Flow first (F2): Runner runs files."
 msgstr ""
 
 msgid "Save the script first (F2): PHP runs files."
@@ -1928,6 +2043,9 @@ msgid ""
 "folder."
 msgstr ""
 
+msgid "Save to"
+msgstr ""
+
 msgid "Save translation"
 msgstr ""
 
@@ -1935,6 +2053,12 @@ msgid "Save translation as"
 msgstr ""
 
 msgid "Save ~a~s..."
+msgstr ""
+
+msgid "Saved context: "
+msgstr ""
+
+msgid "Saved to"
 msgstr ""
 
 #, python-brace-format
@@ -2015,6 +2139,9 @@ msgstr ""
 msgid "Start"
 msgstr ""
 
+msgid "Start the Flow over? The file is replaced when the new run ends."
+msgstr ""
+
 msgid "Start the script in the debugger first (F7, F8 or F4) and stop at a line."
 msgstr ""
 
@@ -2036,6 +2163,10 @@ msgstr ""
 msgid "Stashes  {n}"
 msgstr ""
 
+#, python-brace-format
+msgid "State: {state}"
+msgstr ""
+
 msgid "Step o~u~t"
 msgstr ""
 
@@ -2043,6 +2174,10 @@ msgid "Stepping"
 msgstr ""
 
 msgid "Stopped"
+msgstr ""
+
+#, python-brace-format
+msgid "Stopped by you: PHP was killed; nothing was saved{kept}."
 msgstr ""
 
 msgid "String length"
@@ -2151,6 +2286,16 @@ msgstr ""
 msgid "The changes go aside, the files go back to the last commit"
 msgstr ""
 
+#, python-brace-format
+msgid "The context is not JSON: {error}"
+msgstr ""
+
+msgid "The context must be a JSON object"
+msgstr ""
+
+msgid "The context was not saved: give a file in Save context to resume this run."
+msgstr ""
+
 msgid ""
 "The debugger needs Xdebug, the PHP extension.\n"
 "\n"
@@ -2171,10 +2316,25 @@ msgstr ""
 msgid "The documentation inside divide, one book each."
 msgstr ""
 
+msgid "The file there is not a context saved by Runner."
+msgstr ""
+
+#, python-brace-format
+msgid "The file there {problem}: Resume cannot use it."
+msgstr ""
+
 msgid "The first line is the summary; a blank line, then the details."
 msgstr ""
 
+#, python-brace-format
+msgid "The function root is not a folder: {path}"
+msgstr ""
+
 msgid "The key is empty"
+msgstr ""
+
+#, python-brace-format
+msgid "The last run ended {state}: Run replaces it when it ends."
 msgstr ""
 
 #, python-brace-format
@@ -2577,6 +2737,10 @@ msgid "can only insert into an object or an array"
 msgstr ""
 
 #, python-brace-format
+msgid "cannot be read: {error}"
+msgstr ""
+
+#, python-brace-format
 msgid "cannot read it: {exc}"
 msgstr ""
 
@@ -2671,6 +2835,9 @@ msgid ""
 "https://github.com/divengine"
 msgstr ""
 
+msgid "done"
+msgstr ""
+
 msgid "each default is {{\"search\": ..., \"replace\": ...}}"
 msgstr ""
 
@@ -2678,6 +2845,9 @@ msgid "each default is {{\"var\": \"name\", \"search\": ..., \"replace\": ...}}"
 msgstr ""
 
 msgid "empty document"
+msgstr ""
+
+msgid "error"
 msgstr ""
 
 #, python-brace-format
@@ -2722,6 +2892,13 @@ msgid "if var is true"
 msgstr ""
 
 msgid "ignore block"
+msgstr ""
+
+#, python-brace-format
+msgid "is not JSON: {error}"
+msgstr ""
+
+msgid "is not a JSON object"
 msgstr ""
 
 msgid "it did not start"
@@ -2769,6 +2946,10 @@ msgid ""
 "servers"
 msgstr ""
 
+#, python-brace-format
+msgid "no such file: {path}"
+msgstr ""
+
 msgid "none"
 msgstr ""
 
@@ -2787,10 +2968,17 @@ msgstr ""
 msgid "not installed"
 msgstr ""
 
+msgid "not run (invocation error)"
+msgstr ""
+
 msgid "number format"
 msgstr ""
 
 msgid "on its first line"
+msgstr ""
+
+#, python-brace-format
+msgid "paused at {where}{inside}"
 msgstr ""
 
 #, python-brace-format
@@ -2815,6 +3003,9 @@ msgstr ""
 msgid "php was not found in the PATH."
 msgstr ""
 
+msgid "php was not found in the PATH: Runner is PHP."
+msgstr ""
+
 msgid "php.ini loads Xdebug already: leave it empty"
 msgstr ""
 
@@ -2836,6 +3027,9 @@ msgstr ""
 msgid "project's"
 msgstr ""
 
+msgid "ran, but the context was not saved"
+msgstr ""
+
 msgid "rebased"
 msgstr ""
 
@@ -2843,6 +3037,16 @@ msgid "remote"
 msgstr ""
 
 msgid "require"
+msgstr ""
+
+msgid "resumed, "
+msgstr ""
+
+#, python-brace-format
+msgid "saved, {name}"
+msgstr ""
+
+msgid "says paused but has no _flow_state to resume from"
 msgstr ""
 
 msgid ""
@@ -2854,6 +3058,9 @@ msgid "squashed into one commit"
 msgstr ""
 
 msgid "starts the project with Div in it."
+msgstr ""
+
+msgid "stopped"
 msgstr ""
 
 msgid "strip block"
@@ -2911,6 +3118,9 @@ msgid "txt block"
 msgstr ""
 
 msgid "type to filter"
+msgstr ""
+
+msgid "typed"
 msgstr ""
 
 msgid "unexpected end, expected ']'"
@@ -3143,6 +3353,14 @@ msgid "{name} has no Div tags."
 msgstr ""
 
 #, python-brace-format
+msgid "{name} holds a paused run (Resume continues it)."
+msgstr ""
+
+#, python-brace-format
+msgid "{name} is not a context of a finished run."
+msgstr ""
+
+#, python-brace-format
 msgid "{name} is not installed (vendor/{name})"
 msgstr ""
 
@@ -3283,6 +3501,18 @@ msgid "{n} window with unsaved changes kept open"
 msgid_plural "{n} windows with unsaved changes kept open"
 msgstr[0] ""
 msgstr[1] ""
+
+#, python-brace-format
+msgid "{path} cannot be read: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is not JSON: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is not a JSON object"
+msgstr ""
 
 #, python-brace-format
 msgid "{path} is not a file"
@@ -3630,6 +3860,9 @@ msgstr ""
 msgid "~F~rom dialect"
 msgstr ""
 
+msgid "~F~unction root, --root (optional; relative to the project)"
+msgstr ""
+
 msgid "~G~ET (a JSON object)"
 msgstr ""
 
@@ -3661,6 +3894,9 @@ msgid "~I~nclude paths (separated by ;)"
 msgstr ""
 
 msgid "~I~ndex"
+msgstr ""
+
+msgid "~I~nitial context: a JSON file, or a JSON object typed here (optional)"
 msgstr ""
 
 msgid "~I~nstall"
@@ -3888,6 +4124,9 @@ msgstr ""
 msgid "~S~ave as..."
 msgstr ""
 
+msgid "~S~ave context to, --save-context (empty: not saved)"
+msgstr ""
+
 msgid "~S~earch"
 msgstr ""
 
@@ -4023,7 +4262,17 @@ msgstr ""
 msgid "~Z~oom"
 msgstr ""
 
+#, python-brace-format
+msgid "── Flow {name}: {state} ──"
+msgstr ""
+
+msgid "── context ──"
+msgstr ""
+
 msgid "── local variables ──"
+msgstr ""
+
+msgid "── log ──"
 msgstr ""
 
 #, python-brace-format
@@ -4032,6 +4281,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "── run of {name}: {split} ──"
+msgstr ""
+
+msgid "── stderr ──"
 msgstr ""
 
 #, python-brace-format

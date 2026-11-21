@@ -1,6 +1,6 @@
 # Running PHP
 
-In a PHP script, **Ctrl+F9** (Run > Run) runs it with `php`, as you would in a shell, and shows what it printed. In a template the same key renders it (see [[Rendering]]).
+In a PHP script, **Ctrl+F9** (Run > Run) runs it with `php`, as you would in a shell, and shows what it printed. In a template the same key renders it (see [[Rendering]]), and in a Runner Flow it runs the Flow (see [[Running Flows]]).
 
 ![Ctrl+F9 on index.php: the box with the verdict, the output behind it](images/run-php.png)
 

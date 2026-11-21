@@ -1,0 +1,9 @@
+{
+    "name": "divengine/divide-runner-example",
+    "description": "Runner Flows to try in divide: Run > Run (Ctrl+F9) on a Flow",
+    "type": "project",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "divengine/runner": "^0.2"
+    }
+}

@@ -13,6 +13,7 @@
 | phpactor or intelephense | PHP completion, hover, definitions | optional; Options > Language servers |
 | git | the Git menu, the project window's marks, the editor's margin; Go to file and Find in files respect `.gitignore` | optional; without it, no Git menu and a folder walk |
 | gh, tea | Git > Pull requests and issues (GitHub; Gitea, Forgejo, Codeberg) | optional; signed in with `gh auth login` / `tea login add` |
+| Runner 0.2+ | Ctrl+F9 on a Runner Flow | optional; `composer require divengine/runner` in the project (`vendor/divengine/runner/bin/run.php`) |
 | Composer | Tools > Composer packages | optional; `$DIVIDE_COMPOSER`, Options, a `composer.phar` in the project or `composer` on `PATH` |
 
 ## 2. Installation
@@ -81,6 +82,7 @@ hand is possible while divide is closed.
 | `lsp`, `lsp_commands` | Options > Language servers | which server per language, and custom commands |
 | `run_args` | Run > Parameters | the arguments of each script |
 | `web` | Run > Web server | address, document root, router, browser |
+| `flows` | Run Flow (Ctrl+F9 on a Flow) | per Flow: the initial context, the function root and the file the context is saved to |
 | `mcp` | Options > MCP server | `host`, `port`, `autostart` (start with divide; off by default), `token` (require one on loopback too). The token is not here: `mcp-token`, beside this file, readable by the user alone |
 | `language` | Options > Language | the interface's language: `auto` (the system's), `en`, `es` (applies at the next start) |
 | `history` | every input line with `▐↓▌` | the input histories, by kind (`file`, `find`, `find-files`, `commands`...), 20 entries each |

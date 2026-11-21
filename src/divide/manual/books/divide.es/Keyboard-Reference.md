@@ -16,7 +16,7 @@
 | **Ctrl+P** | ir a archivo (con un `>` delante: los comandos), ver [[Buscar archivos y comandos\|Finding Files and Commands]] |
 | **Alt+P** | paleta de comandos |
 | **Shift+F2** | buscar en archivos |
-| **Ctrl+F9** | ejecutar: renderizar la plantilla, ejecutar el script PHP (en el depurador: continuar; con el [[Servidor web\|Web Server]] en marcha: abrir la página en el navegador) |
+| **Ctrl+F9** | ejecutar: renderizar la plantilla, ejecutar el script PHP, ejecutar un [[Flow de Runner\|Running Flows]] (en el depurador: continuar; con el [[Servidor web\|Web Server]] en marcha: abrir la página en el navegador) |
 | **Alt+F5** | ventana Salida |
 | **Alt+F9** | verificar: cuadro de progreso y después la ventana Mensajes |
 | **Alt+F8** / **Alt+F7** | error siguiente / anterior |
