@@ -572,3 +572,33 @@ async def test_a_click_on_a_pinned_lane_title_after_scrolling_selects_its_block(
         card = window.board.boxes[visible[-1]]
         await pilot.click(view, offset=(card.x - view.scroll_offset.x + 2, card.y + 1 - view.scroll_offset.y))
         await wait(pilot, lambda: window.key == visible[-1], f"the click selected {window.key}")
+
+
+def test_lanes_titles_and_cards_have_surfaces_of_their_own():
+    """A lane is a column with its own surface down to the end, its title a stronger one, each card
+    a third; the gutters keep the window's, so the lines stand out (levels of light in a mono theme)."""
+    b = board()
+    for lane in b.lanes:
+        title = b.boxes[lane[0]]
+        assert all(b.fill[title.y][x] == "title" for x in range(title.x, title.x + title.w))
+        assert all(b.fill[b.height - 1][x] == "lane" for x in range(title.x, title.x + title.w))
+        for key in lane[1:]:
+            box = b.boxes[key]
+            assert all(b.fill[y][x] == "card" for y in range(box.y, box.y + box.h) for x in range(box.x, box.x + box.w))
+    gutter = b.boxes[b.lanes[0][0]].x + b.card_width
+    assert all(b.fill[y][gutter] == "" for y in range(b.height))
+    doc = fm.parse(FLOW)
+    review = b.boxes[("step", "main", "review")]
+    assert b.styles[review.y + 1][review.x + 2] == "kw.condition" and b.styles[review.y + 2][review.x + 2] == "kw.call"
+
+
+async def test_the_board_draws_its_surfaces_from_the_theme(project):
+    from divide.app import Divide
+
+    for palette in ("free-pascal", "phosphor-green"):
+        app = Divide(project, [project / "flows/fulfil.yml"], palette=palette)
+        async with app.run_test(size=(120, 34)) as pilot:
+            window = await open_designer(app, pilot)
+            surfaces = window.board_view.surfaces()
+            colours = [surfaces[k].bgcolor for k in ("lane", "card", "title")]
+            assert all(colours) and len(set(colours)) == 3, (palette, colours)

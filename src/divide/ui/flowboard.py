@@ -72,19 +72,28 @@ def board_styles() -> dict[str, Style]:
     t = themes.current().token_styles()
 
     def tok(name: str, fallback: str = "") -> Style:
-        return t.get(name) or (t.get(fallback) if fallback else None) or Style()
+        """A syntax colour without its background: the board's surfaces are under it."""
+        st = t.get(name) or (t.get(fallback) if fallback else None) or Style()
+        return Style(color=st.color, bold=st.bold, italic=st.italic, underline=st.underline)
 
     out = {
         "": Style(), "text": Style(), "border": Style(), "rule": tok("div.comment"), "dim": tok("div.comment"),
         "id": tok("json.key") + Style(bold=True), "kw": tok("ts.keyword", "php.keyword"),
+        # each row of a card in its own colour (bold: still told apart where the theme has one hue)
+        "kw.condition": tok("ts.operator", "php.operator") + Style(bold=True),
+        "kw.context": tok("php.variable", "div.var") + Style(bold=True),
+        "kw.call": tok("ts.string", "json.string") + Style(bold=True),
+        "kw.activity": tok("div.keyword", "php.keyword") + Style(bold=True),
+        "kw.jump": tok("php.tag", "div.special") + Style(bold=True),
+        "kw.pause": tok("ts.number", "json.number") + Style(bold=True),
         "title": Style(bold=True), "entry": Style(reverse=True, bold=True),
         "error": tok("diag.error"), "warning": tok("diag.warning"), "port": Style(bold=True),
-        "call": tok("ts.function.call", "php.function"), "jump": tok("ts.conditional", "php.keyword"),
+        "call": tok("ts.string", "json.string"), "jump": tok("php.tag", "div.special"),
         "hot": Style(bold=True), "chosen": Style(reverse=True, bold=True), "mark": Style(bold=True, reverse=True),
         "taken": Style(bold=True, underline=True),
     }
-    for name in list(out):
-        out["sel:" + name] = out[name] + Style(reverse=True)
+    for name in list(out):  # the selection: the text reversed, its colours left out (bold kept)
+        out["sel:" + name] = Style(reverse=True, bold=out[name].bold)
     return out
 
 
@@ -140,17 +149,18 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         self.board = board
         styles = board_styles()
         base = self.rich_style
+        surfaces = self.surfaces()
         strips = []
-        for row in board.paint(selected, connection, overlay):
+        for row, fills in zip(board.paint(selected, connection, overlay), board.fill):
             segments, run, style = [], [], None
-            for ch, name in row:
-                if name != style and run:
-                    segments.append(Segment("".join(run), base + styles.get(style or "", Style())))
+            for (ch, name), fill in zip(row, fills):
+                if (name, fill) != style and run:
+                    segments.append(Segment("".join(run), base + surfaces[style[1]] + styles.get(style[0] or "", Style())))
                     run = []
-                style = name
+                style = (name, fill)
                 run.append(ch)
             if run:
-                segments.append(Segment("".join(run), base + styles.get(style or "", Style())))
+                segments.append(Segment("".join(run), base + surfaces[style[1]] + styles.get(style[0] or "", Style())))
             strips.append(Strip(segments, board.width))
         self._strips = strips
         self.virtual_size = Size(board.width, board.height)
@@ -186,6 +196,18 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
                 x = max(earlier) if max(earlier) + width >= min(right, board.width) else x
         self.scroll_to(x=max(0, x), animate=False, force=True)
         self.scroll_to_region(Region(max(0, x), region.y, 1, region.height), animate=False, force=True)
+
+    def surfaces(self) -> dict[str, Style]:
+        """The board's surfaces, as levels between the window's background and its text: the lanes a
+        little lighter (or darker), their titles and the cards more. In a theme of one hue they are
+        levels of light, so lanes and cards stand out in the monochrome themes too."""
+        bg, fg = self.styles.background, self.styles.color
+        if bg.a == 0:
+            return {"": Style(), "lane": Style(), "title": Style(), "card": Style()}
+
+        def level(amount: float) -> Style:
+            return Style(bgcolor=bg.blend(fg, amount).rich_color)
+        return {"": Style(), "lane": level(0.08), "card": level(0.17), "title": level(0.28)}
 
     def render_line(self, y: int) -> Strip:
         """The lane titles stay at the top (the rows above ``header_height``); the cards scroll under them."""

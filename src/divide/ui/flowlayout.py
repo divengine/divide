@@ -307,12 +307,16 @@ class Board:
 
         self.chars = [[" "] * self.width for _ in range(self.height)]
         self.styles = [[""] * self.width for _ in range(self.height)]
+        self.fill = [[""] * self.width for _ in range(self.height)]  # the surface under each cell: lane, title, card
         bits: dict[tuple[int, int], dict[str, str]] = {}
         owner: dict[tuple[int, int], int] = {}
 
         # lanes and cards
         for i, block in enumerate(blocks):
             lane: list[Key] = [("block", block.id)]
+            for yy in range(card_y[-1], self.height):  # a lane is a column of its own, down to the end
+                for xx in range(lane_x[i], lane_x[i] + cw):
+                    self.fill[yy][xx] = "lane"
             self._lane_title(i, block, lane_x[i], card_y[-1], height(i, -1))
             for r, step in enumerate(steps_of[i]):
                 key: Key = ("step", block.id, step.id)
@@ -413,6 +417,9 @@ class Board:
         under = block.description or (_('{n} Step(s)').format(n=count) if count else _('(no Steps)'))
         self._put(x, y + 1, " " + _cut(under, cw - 2), "dim")
         self._put(x, y + h - 1, "─" * cw, "rule")
+        for yy in range(y, y + h - 1):  # the title and the description: the lane's head
+            for xx in range(x, x + cw):
+                self.fill[yy][xx] = "title"
         self.boxes[key] = Box(key, x, y, cw, h)
 
     def _card(self, key: Key, step: fm.Step, row: int, lines: list[tuple[str, str]], x: int, y: int) -> None:
@@ -434,13 +441,16 @@ class Board:
             if what in ("empty",):
                 self._put(x + 2, y + 1 + n, shown, "dim")
             else:
-                self._put(x + 2, y + 1 + n, shown[:len(word)], "kw")
+                self._put(x + 2, y + 1 + n, shown[:len(word)], "kw." + what)
         bottom = "└" + "─" * (cw - 2) + "┘"
         count = self._incoming.get(key, 0)
         if count:
             mark = f" ◄{count} "
             bottom = "└" + "─" * (cw - 3 - len(mark)) + mark + "─┘"
         self._put(x, y + h - 1, bottom, "border")
+        for yy in range(y, y + h):
+            for xx in range(x, x + cw):
+                self.fill[yy][xx] = "card"
         self.boxes[key] = Box(key, x, y, cw, h)
 
     # ------------------------------------------------------------ reading it
