@@ -128,6 +128,7 @@ from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.ui.mcp import McpMixin
 from divide.ui.flow import FlowMixin
 from divide.ui.flowboard import FlowDesignWindow
+from divide.ui.flowfunctions import FlowFunctionsMixin, FunctionsWindow
 from divide.ui.flowmodel import FlowModelMixin, FlowView, FlowWindow
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.forge import CM_FORGE, ForgeMixin
@@ -183,6 +184,7 @@ GIT_COMMANDS = (CM_GIT_CHANGES, CM_GIT_HISTORY, CM_GIT_BRANCHES, CM_GIT_COMMIT, 
 CM_DATA_TREE = Command.USER + 14
 CM_FLOW_MODEL = Command.USER + 206  # Run > Flow structure: the Flow window (Ctrl+T on a Flow)
 CM_FLOW_DESIGN = Command.USER + 207  # Run > Flow designer: the board (Ctrl+D in a Flow view)
+CM_FLOW_FUNCTIONS = Command.USER + 220  # Run > Flow functions: the Modules and Functions (F on the board)
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
 CM_PREV_ERROR = Command.USER + 17
@@ -246,6 +248,7 @@ COMMANDS: dict[str, int] = {
     "OUTPUT": CM_OUTPUT,
     "DATA_TREE": CM_DATA_TREE,
     "FLOW_MODEL": CM_FLOW_MODEL,
+    "FLOW_FUNCTIONS": CM_FLOW_FUNCTIONS,
     "CHECK": CM_CHECK,
     "NEXT_ERROR": CM_NEXT_ERROR,
     "PREV_ERROR": CM_PREV_ERROR,
@@ -361,7 +364,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowModelMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowModelMixin, FlowFunctionsMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -534,6 +537,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                     MenuItem(_('D~a~ta tree'), CM_DATA_TREE, "Ctrl+T"),
                     MenuItem(_('~F~low structure'), CM_FLOW_MODEL, "Ctrl+T"),
                     MenuItem(_('F~l~ow designer'), CM_FLOW_DESIGN, "Ctrl+D"),
+                    MenuItem(_('Flow funct~i~ons'), CM_FLOW_FUNCTIONS),
                 ),
                 SubMenu(
                     _('~D~ebug'),
@@ -910,6 +914,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
         project = self.project_window()
         if project is not None:
             project.project_tree.refresh_members(win.path)  # an unfolded file shows its members as saved
+        self.flow_functions_saved(win.path)
         return True
 
     async def save(self, win: EditorWindow, *, ask_name: bool = False) -> bool:
@@ -1201,6 +1206,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                     self.flow_to_code(win)
                 else:
                     self.open_flow_design(source)
+            case _ if command == CM_FLOW_FUNCTIONS:
+                self.open_flow_functions(self.flow_source() or (win.source if isinstance(win, FunctionsWindow) else None))
             case _ if command == CM_DIV_ENGINE:
                 await self.choose_engine()
             case _ if command == CM_DIV_SETUP:
@@ -2587,6 +2594,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
             return
         if isinstance(active, ComposerWindow):
             status.set_hint(ComposerWindow.HINT)
+            return
+        if isinstance(active, FunctionsWindow):
+            status.set_hint(FunctionsWindow.HINT)
             return
         if isinstance(active, BlameWindow):
             status.set_hint(active.hint())

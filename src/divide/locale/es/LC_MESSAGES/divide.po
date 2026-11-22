@@ -4521,8 +4521,8 @@ msgid "{key} {module}:{name}: no file {tried}"
 msgstr "{key} {module}:{name}: no existe {tried}"
 
 #, python-brace-format
-msgid "{key} {name}: no file {tried}"
-msgstr "{key} {name}: no existe {tried}"
+#~ msgid "{key} {name}: no file {tried}"
+#~ msgstr "{key} {name}: no existe {tried}"
 
 #, python-brace-format
 msgid "{key} {name}: no file {tried}, no PHP function"
@@ -4703,8 +4703,8 @@ msgstr "¿Borrar el Step {name}?"
 msgid "ENTRY"
 msgstr "ENTRADA"
 
-msgid "Enter edit · Ins Step · B Block · C/J connect · Tab links · ^T code"
-msgstr "Enter editar · Ins Step · B Block · C/J conectar · Tab enlaces · ^T código"
+#~ msgid "Enter edit · Ins Step · B Block · C/J connect · Tab links · ^T code"
+#~ msgstr "Enter editar · Ins Step · B Block · C/J conectar · Tab enlaces · ^T código"
 
 msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
 msgstr "Enter editar · Ins añadir · Supr borrar · ^Enter ir a · ^D tablero · ^T código"
@@ -4971,3 +4971,367 @@ msgstr "~E~ditar contexto..."
 
 msgid "~J~SON"
 msgstr "~J~SON"
+
+msgid "\"modules\" must be an object: {\"module\": \"folder\"}"
+msgstr "\"modules\" debe ser un objeto: {\"module\": \"carpeta\"}"
+
+#, python-brace-format
+msgid "\"modules\": {name} is not a Module name (letters, digits, _ and -)"
+msgstr "\"modules\": {name} no es un nombre de Module (letras, dígitos, _ y -)"
+
+#, python-brace-format
+msgid "\"modules\": {name} needs a folder (a string)"
+msgstr "\"modules\": {name} necesita una carpeta (un texto)"
+
+msgid "\"root\" must be a path (a string)"
+msgstr "\"root\" debe ser una ruta (un texto)"
+
+msgid "(cannot be read: see PHP's lint)"
+msgstr "(no se puede leer: mira el lint de PHP)"
+
+msgid "(its folder is made too)"
+msgstr "(también se crea su carpeta)"
+
+msgid "(no Functions here)"
+msgstr "(no hay Functions aquí)"
+
+msgid "(no folder)"
+msgstr "(sin carpeta)"
+
+msgid "(not there)"
+msgstr "(no está)"
+
+msgid "(outside: read-only)"
+msgstr "(fuera: solo lectura)"
+
+msgid "--root of the Run Flow dialog"
+msgstr "--root del diálogo Ejecutar Flow"
+
+#, python-brace-format
+msgid "? (line {n}: computed, unknown)"
+msgstr "? (línea {n}: calculado, desconocido)"
+
+msgid ""
+"A Function is a PHP file that returns a callable; Runner calls it with the Flow's shared context:\n"
+"\n"
+"  return function (array &$context): mixed { ... };\n"
+"\n"
+"- condition: true runs the Step's activity, call or jump; false skips them.\n"
+"- activity: what it returns is kept in $context[<the Step's id>].\n"
+"- module: the folder of a Step's condition and activity (not a Block).\n"
+"- $context['_importer']('name', 'module') gives another Function's callable.\n"
+"Any PHP is fine inside: Composer's autoload, other files, other Functions."
+msgstr ""
+"Una Function es un archivo PHP que devuelve un callable; Runner lo llama con el contexto compartido del Flow:\n"
+"\n"
+"  return function (array &$context): mixed { ... };\n"
+"\n"
+"- condition: true ejecuta la activity, el call o el jump del Step; false los salta.\n"
+"- activity: lo que devuelve se guarda en $context[<el id del Step>].\n"
+"- module: la carpeta de la condition y la activity de un Step (no es un Block).\n"
+"- $context['_importer']('name', 'module') da el callable de otra Function.\n"
+"Dentro vale cualquier PHP: el autoload de Composer, otros archivos, otras Functions."
+
+msgid "A Function is an activity or a condition"
+msgstr "Una Function es una activity o una condition"
+
+msgid "A Function name is letters, digits, _ and - (and / between folders inside a Module)"
+msgstr "El nombre de una Function son letras, dígitos, _ y - (y / entre carpetas dentro de un Module)"
+
+msgid "A Function needs a name"
+msgstr "Una Function necesita un nombre"
+
+msgid "A Module name is letters, digits, _ and -, not starting with -"
+msgstr "El nombre de un Module son letras, dígitos, _ y -, sin empezar por -"
+
+msgid "A Module needs a name"
+msgstr "Un Module necesita un nombre"
+
+#, python-brace-format
+msgid "A Step uses it with module: {name}, and its condition and activity are files of this folder. A Module is not a Block."
+msgstr "Un Step lo usa con module: {name}, y su condition y su activity son archivos de esta carpeta. Un Module no es un Block."
+
+#, python-brace-format
+msgid "A folder in {root}"
+msgstr "Una carpeta en {root}"
+
+msgid "C~o~ndition: true runs the Step, false skips it"
+msgstr "C~o~ndition: true ejecuta el Step, false lo salta"
+
+msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links · ^T code"
+msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · Tab enlaces · ^T código"
+
+msgid "Enter makes it, from a template, and opens it."
+msgstr "Enter la crea desde una plantilla y la abre."
+
+msgid "Enter open · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
+msgstr "Enter abrir · Ins Function · Shift+Ins Module · Alt+F10 menú · ^R recargar"
+
+msgid "Enter opens it. Runner keeps an activity's result under the Step id."
+msgstr "Enter la abre. Runner guarda el resultado de una activity bajo el id del Step."
+
+msgid "Flow funct~i~ons"
+msgstr "F~u~nctions del Flow"
+
+msgid "Function"
+msgstr "Function"
+
+msgid "Function root "
+msgstr "Raíz de funciones "
+
+msgid "Functions"
+msgstr "Functions"
+
+#, python-brace-format
+msgid "Functions: {flow}"
+msgstr "Functions: {flow}"
+
+msgid "Ins makes a Function here."
+msgstr "Ins crea aquí una Function."
+
+#, python-brace-format
+msgid "Made at {path}"
+msgstr "Se crea en {path}"
+
+#, python-brace-format
+msgid "Made {path}"
+msgstr "Creado {path}"
+
+#, python-brace-format
+msgid "Make {file}, the project's function root ({root}) and Module folders, shared with the team in Git?"
+msgstr "¿Crear {file}, la raíz de funciones del proyecto ({root}) y las carpetas de los Modules, compartido con el equipo en Git?"
+
+msgid "Missing"
+msgstr "Falta"
+
+msgid "Module"
+msgstr "Module"
+
+#, python-brace-format
+msgid "Module {name} is already there: {path}"
+msgstr "El Module {name} ya existe: {path}"
+
+msgid "New Function"
+msgstr "Nueva Function"
+
+msgid "New Function for the Step"
+msgstr "Nueva Function para el Step"
+
+msgid "New Module"
+msgstr "Nuevo Module"
+
+#, python-brace-format
+msgid "No {key} yet: New... makes its Function"
+msgstr "Aún no hay {key}: Nueva... crea su Function"
+
+msgid "Not found"
+msgstr "No encontradas"
+
+#, python-brace-format
+msgid "OK makes {path}"
+msgstr "Aceptar crea {path}"
+
+#, python-brace-format
+msgid "OK writes the Step and makes {path} (then opens it); Cancel makes nothing."
+msgstr "Aceptar escribe el Step y crea {path} (y lo abre); Cancelar no crea nada."
+
+msgid "Outside a Module a Function is one name: a folder of the root is a Module"
+msgstr "Fuera de un Module una Function es un solo nombre: una carpeta de la raíz es un Module"
+
+msgid "Outside the project: Functions are not made there."
+msgstr "Fuera del proyecto: allí no se crean Functions."
+
+msgid "Outside the project: shown, never written (no new Functions there)."
+msgstr "Fuera del proyecto: se muestra, nunca se escribe (allí no se crean Functions)."
+
+msgid "References of Steps that resolve to no file. Enter on one makes it (the Step is not changed). ? : not a file; Runner tries a PHP callable of that name (strlen, ns\\fn, Cls::method)."
+msgstr "Referencias de Steps que no llevan a ningún archivo. Intro sobre una la crea (el Step no cambia). ? : no es un archivo; Runner prueba un callable de PHP con ese nombre (strlen, ns\\fn, Cls::method)."
+
+msgid "Runner also tries a PHP callable of that name: a function or Cls::method of the code."
+msgstr "Runner también prueba un callable de PHP con ese nombre: una función o un Cls::method del código."
+
+msgid "The Step was not changed."
+msgstr "El Step no se cambió."
+
+#, python-brace-format
+msgid "The Step's {other} is in {module}: a Step has one module, for its condition and its activity"
+msgstr "La {other} del Step está en {module}: un Step tiene un solo module, para su condition y su activity"
+
+msgid "Type its name"
+msgstr "Escribe su nombre"
+
+msgid "What now?"
+msgstr "¿Qué hacer?"
+
+msgid "Where Runner looks, first that gives one:"
+msgstr "Dónde busca Runner, lo primero que dé uno:"
+
+msgid "Write the name without .php: Runner adds it"
+msgstr "Escribe el nombre sin .php: Runner lo añade"
+
+#, python-brace-format
+msgid "Written to {path}{made}. The Step says {reference}{key}: {name}"
+msgstr "Se escribe en {path}{made}. El Step dice {reference}{key}: {name}"
+
+msgid "a Module: the context's _modules, .div/runner.json \"modules\", <root>/<module>"
+msgstr "un Module: el _modules del contexto, \"modules\" de .div/runner.json, <raíz>/<module>"
+
+msgid "a closure"
+msgstr "un closure"
+
+msgid "a folder of the root"
+msgstr "una carpeta de la raíz"
+
+msgid "an arrow function"
+msgstr "una arrow function"
+
+msgid "another callable (not read here)"
+msgstr "otro callable (no se lee aquí)"
+
+msgid "file"
+msgstr "archivo"
+
+msgid "folder"
+msgstr "carpeta"
+
+msgid "from"
+msgstr "de"
+
+msgid "functions"
+msgstr "functions"
+
+msgid "imported"
+msgstr "importada"
+
+msgid "imports"
+msgstr "importa"
+
+msgid "it takes the context by value: what it changes there is lost (&$context keeps it)"
+msgstr "recibe el contexto por valor: lo que cambie en él se pierde (&$context lo conserva)"
+
+#, python-brace-format
+msgid "its first parameter is {type}: Runner passes the context, an array"
+msgstr "su primer parámetro es {type}: Runner le pasa el contexto, un array"
+
+msgid "looked at"
+msgstr "buscada en"
+
+msgid "module"
+msgstr "module"
+
+msgid "no Step"
+msgstr "ningún Step"
+
+msgid "none (Alt+F10 makes one)"
+msgstr "ninguno (Alt+F10 crea uno)"
+
+msgid "nothing"
+msgstr "nada"
+
+msgid "returns"
+msgstr "devuelve"
+
+msgid "root: --root, the context's _root_folder, .div/runner.json \"root\", the project"
+msgstr "la raíz: --root, el _root_folder del contexto, \"root\" de .div/runner.json, el proyecto"
+
+msgid "settings"
+msgstr "ajustes"
+
+#, python-brace-format
+msgid "the callable needs {n} arguments: Runner passes only the context"
+msgstr "el callable necesita {n} argumentos: Runner solo le pasa el contexto"
+
+msgid "the context's _modules"
+msgstr "el _modules del contexto"
+
+msgid "the context's _root_folder"
+msgstr "el _root_folder del contexto"
+
+msgid "the file returns nothing: Runner needs it to return a callable"
+msgstr "el archivo no devuelve nada: Runner necesita que devuelva un callable"
+
+msgid "the project"
+msgstr "el proyecto"
+
+msgid "the project: Runner's default"
+msgstr "el proyecto: lo que Runner usa por defecto"
+
+msgid "the root"
+msgstr "la raíz"
+
+msgid "used by"
+msgstr "usada por"
+
+msgid "vendor is Composer's folder, not a Module"
+msgstr "vendor es la carpeta de Composer, no un Module"
+
+#, python-brace-format
+msgid "{file} is not JSON: {why}"
+msgstr "{file} no es JSON: {why}"
+
+#, python-brace-format
+msgid "{file} must be a JSON object"
+msgstr "{file} debe ser un objeto JSON"
+
+#, python-brace-format
+msgid "{key} {name}: no file yet"
+msgstr "{key} {name}: aún no hay archivo"
+
+#, python-brace-format
+msgid "{key} {name}: {path}"
+msgstr "{key} {name}: {path}"
+
+#, python-brace-format
+msgid "{key}: not a setting of {file} (root, modules)"
+msgstr "{key}: no es un ajuste de {file} (root, modules)"
+
+#, python-brace-format
+msgid "{path} is already there: open it instead"
+msgstr "{path} ya existe: ábrelo en su lugar"
+
+#, python-brace-format
+msgid "{path} is in Composer's vendor folder: divide only reads it"
+msgstr "{path} está en la carpeta vendor de Composer: divide solo lo lee"
+
+#, python-brace-format
+msgid "{path} is in a hidden folder"
+msgstr "{path} está en una carpeta oculta"
+
+#, python-brace-format
+msgid "{path} is outside the project: divide only reads it"
+msgstr "{path} está fuera del proyecto: divide solo lo lee"
+
+msgid "~A~ctivity: does the work, its result kept under the Step id"
+msgstr "~A~ctivity: hace el trabajo, su resultado se guarda bajo el id del Step"
+
+#, python-brace-format
+msgid "~F~unction root, --root (empty: {root}, from .div/runner.json)"
+msgstr "Raíz de ~f~unciones, --root (vacío: {root}, de .div/runner.json)"
+
+msgid "~F~unction..."
+msgstr "~F~unction..."
+
+msgid "~M~odule (a folder of Functions; empty: the function root)"
+msgstr "~M~odule (una carpeta de Functions; vacío: la raíz de funciones)"
+
+msgid "~M~odule..."
+msgstr "~M~odule..."
+
+msgid "~N~ame (letters, digits, _ and -): what a Step's module says"
+msgstr "~N~ombre (letras, dígitos, _ y -): lo que dice el module de un Step"
+
+msgid "~N~ame (letters, digits, _ and -; in a Module also folder/name)"
+msgstr "~N~ombre (letras, dígitos, _ y -; en un Module también carpeta/nombre)"
+
+msgid "~N~ew..."
+msgstr "~N~ueva..."
+
+msgid "~S~ettings"
+msgstr "~A~justes"
+
+msgid "~U~se"
+msgstr "~U~so"
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried} (Enter, Function... makes it)"
+msgstr "{key} {name}: no hay archivo {tried} (Intro, Function... lo crea)"

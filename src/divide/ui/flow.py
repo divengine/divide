@@ -33,6 +33,7 @@ from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 
 from divide import config
+from divide.run.flowfunctions import load_settings, run_options
 from divide.run.flow import (FlowRun, Runner, Saved, check_context_file, check_context_text, default_checkpoint, find_runner,
                              is_managed, prepare_checkpoint, read_saved, run_flow)
 from divide.run.script import ScriptError, ScriptMessage, size_text
@@ -61,6 +62,24 @@ def flow_settings(flow: Path) -> dict:
     here = here if isinstance(here, dict) else {}
     return {"context": str(here.get("context") or ""), "root": str(here.get("root") or ""),
             "save": str(here.get("save") or "")}
+
+
+def flow_context(given: str, project: Path) -> dict:
+    """The initial context of the Run Flow dialog (a JSON object typed there, or a JSON file), as data;
+    {} when there is none or it cannot be read."""
+    given = given.strip()
+    context: object = {}
+    try:
+        if given.startswith("{"):
+            context = json.loads(given)
+        elif given:
+            path = Path(given).expanduser()
+            path = path if path.is_absolute() else project / path
+            if path.is_file():
+                context = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError):
+        context = {}
+    return context if isinstance(context, dict) else {}
 
 
 def save_flow_settings(flow: Path, values: dict) -> None:
@@ -109,9 +128,10 @@ class FlowDialog(_Dialog):
     FlowDialog .flow-saved { color: $text; background: $surface; height: 2; margin-top: 1; }
     """
 
-    def __init__(self, flow: Path, project: Path, runner: Runner, settings: dict) -> None:
+    def __init__(self, flow: Path, project: Path, runner: Runner, settings: dict, default_root: str = "") -> None:
         super().__init__(title=_('Run Flow'))
         self.flow, self.project, self.runner = flow, project, runner
+        self.default_root = default_root  # the project's .div/runner.json root
         self.context_input = InputLine(max_len=4096)
         self.context_input.data = settings["context"]
         self.root_input = InputLine(max_len=1024)
@@ -131,7 +151,9 @@ class FlowDialog(_Dialog):
                      classes="flow-about", markup=False)
         yield Label(_('~I~nitial context: a JSON file, or a JSON object typed here (optional)'), link=self.context_input)
         yield self.context_input
-        yield Label(_('~F~unction root, --root (optional; relative to the project)'), link=self.root_input)
+        about = (_('~F~unction root, --root (empty: {root}, from .div/runner.json)').format(root=self.default_root)
+                 if self.default_root else _('~F~unction root, --root (optional; relative to the project)'))
+        yield Label(about, link=self.root_input)
         yield self.root_input
         yield Label(_('~S~ave context to, --save-context (empty: not saved)'), link=self.save_input)
         yield self.save_input
@@ -271,7 +293,7 @@ class FlowMixin:
         if not runner.usable:
             await self.run_dialog(information(_('Run Flow'), runner.problem or ""))  # type: ignore[attr-defined]
             return
-        dialog = FlowDialog(flow, project, runner, flow_settings(flow))
+        dialog = FlowDialog(flow, project, runner, flow_settings(flow), load_settings(project).root)
         if await self.run_dialog(dialog) != Command.OK or dialog.choice is None:  # type: ignore[attr-defined]
             return
         save_flow_settings(flow, dialog.values)
@@ -296,6 +318,18 @@ class FlowMixin:
         functions = dialog.path_of(dialog.values["root"])
         shown = (_('saved, {name}').format(name=save.name) if resume and save is not None
                  else _('typed') if typed is not None else (context.name if context is not None else _('(none)')))
+        # the project's .div/runner.json: its root when neither the Flow nor the context gives one, its
+        # Modules where the context does not map them (added to the context Runner reads, which is
+        # left as it is when it cannot be read here)
+        given = typed if typed is not None else (str(context) if context is not None else "")
+        data = flow_context(given, project)
+        root, extra = run_options(load_settings(project), dialog.values["root"], data)
+        if functions is None and root:
+            functions = dialog.path_of(root)
+        if extra and (data or not given):
+            mapped = data.get("_modules") if isinstance(data.get("_modules"), dict) else {}
+            data["_modules"] = {**{k: str(dialog.path_of(v)) for k, v in extra.items()}, **mapped}
+            typed, context = json.dumps(data), None
         box = ProgressDialog(_('Resuming Flow') if resume else _('Running Flow'), [
             (_('Flow'), dialog._rel(flow)),
             (_('Context'), shown),

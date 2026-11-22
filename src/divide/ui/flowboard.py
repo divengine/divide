@@ -130,6 +130,7 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         Binding("c", "connect('call')", "Call", show=False),
         Binding("j", "connect('jump')", "Jump", show=False),
         Binding("x", "context", "Context", show=False),
+        Binding("f", "functions", "Functions", show=False),
         Binding("ctrl+up,alt+up", "reorder(0, -1)", "Step up", show=False),
         Binding("ctrl+down,alt+down", "reorder(0, 1)", "Step down", show=False),
         Binding("ctrl+left,alt+left", "reorder(-1, 0)", "Block left", show=False),
@@ -286,6 +287,10 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
     def action_connect(self, key: str) -> None:
         self._window().connect(key)
 
+    def action_functions(self) -> None:
+        window = self._window()
+        self.app.open_flow_functions(window.source)  # type: ignore[attr-defined]
+
     def action_context(self) -> None:
         self._window().edit_context()
 
@@ -392,7 +397,7 @@ class BlockDialog(_Dialog):
 class FlowDesignWindow(FlowView):
     """The board | the selected item, with Runner's verdict below (under the board when narrow)."""
 
-    HINT = _('Enter edit · Ins Step · B Block · C/J connect · Tab links · ^T code')
+    HINT = _('Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links · ^T code')
     DEFAULT_CSS = """
     FlowDesignWindow .design-main { layout: horizontal; width: 1fr; height: 1fr; }
     FlowDesignWindow .design-left { width: 1fr; height: 1fr; }
@@ -710,14 +715,14 @@ class FlowDesignWindow(FlowView):
     async def _say(self, exc: Exception) -> None:
         await self.app.run_dialog(information(_('Flow Designer'), str(exc)))  # type: ignore[attr-defined]
 
-    async def _plan(self, make, cursor: Key) -> bool:
+    async def _plan(self, make, cursor: Key) -> bool | None:
         try:
             plan = make()
         except fm.EditError as exc:
             await self._say(exc)
             return False
         if plan is None:
-            return False
+            return None  # nothing to change
         return self.apply_plan(plan, cursor)
 
     async def _edit_step(self) -> None:
@@ -731,7 +736,7 @@ class FlowDesignWindow(FlowView):
         note = odd or _("Another id renames the Step and the calls and jumps to it; its activity's result is then "
                         "stored under the new id.")
         dialog = StepDialog(_('Step {name}').format(name=step.name), step, new_id=False, rename=True,
-                            offers=self._offers(), note=note)
+                            offers=self._offers(), note=note, **self._function_args())
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
         # only what was changed in the dialog: its other fields still say what the Step said before a
@@ -739,10 +744,13 @@ class FlowDesignWindow(FlowView):
         values = {k: v for k, v in dialog.values.items()
                   if not fm._unchanged(step.attrs.get(k), k, fm.normalize({k: v}).get(k))}
         block_id, old, new = step.block, step.id, dialog.step_id
-        await self._plan(lambda: fe.chain(
-            self.doc,
-            lambda d: fe.rename_step(d, d.step(block_id, old), new),
-            lambda d: fe.edit_step(d, d.step(block_id, new), values)), ("step", block_id, new))
+
+        async def write() -> bool | None:
+            return await self._plan(lambda: fe.chain(
+                self.doc,
+                lambda d: fe.rename_step(d, d.step(block_id, old), new),
+                lambda d: fe.edit_step(d, d.step(block_id, new), values)), ("step", block_id, new))
+        await self._write_step(dialog, block_id, new, write)
 
     async def _edit_block(self) -> None:
         block = self.selected()

@@ -19,6 +19,7 @@
 * [[Ejecutar Flows|Running Flows]]
 * [[Estructura del Flow|Flow Structure]]
 * [[Diseñador de Flows|Flow Designer]]
+* [[Functions del Flow|Flow Functions]]
 * [[Depurar PHP|Debugging PHP]]
 * [[Servidor web|Web Server]]
 * [[Archivos de datos|Data Files]]

@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from divide.i18n import _
 
-import json
 import textwrap
 from pathlib import Path
 
@@ -44,14 +43,17 @@ from divide import themes
 from divide.lang.div.diagnostics import Diagnostic
 from divide.run import flowedit as fe
 from divide.run import flowmodel as fm
+from divide.run.flowfunctions import inspect_source
 from divide.run.flow import find_runner, is_flow
-from divide.ui.dialogs import _Dialog, confirm, information
+from divide.ui.dialogs import MessageBox, _Dialog, confirm, information
 from divide.ui.filter import Filtered, FilteredTree
 from divide.ui.history import HistoryInput
 from divide.ui.windows import EditorWindow, HRule, VRule, _TVWindow
 
 Key = tuple  # ("flow",) | ("block", id) | ("step", block, id)
 CM_EDIT_CONTEXT = Command.USER + 210  # the Step dialog's Edit context... button
+CM_STEP_FUNCTION = Command.USER + 211  # the Step dialog's Function... button
+CM_FN_OPEN, CM_FN_NEW = Command.YES, Command.NO  # what Function... asks (a message box ends on these)
 
 
 def _style(kind: str):
@@ -95,8 +97,12 @@ class StepDialog(_Dialog):
     """
 
     def __init__(self, title: str, step: fm.Step | None, *, new_id: bool, offers: dict, note: str = "",
-                 rename: bool = False) -> None:
+                 rename: bool = False, functions: fm.Functions | None = None, project: Path | None = None) -> None:
         super().__init__(title=title)
+        self.functions, self.project = functions, project  # for Function... (none: no button)
+        self.pending = None  # a Function to make on OK (flowfunctions.FunctionSpec), from New...
+        self.open_function: str | None = None  # condition | activity: open its file once the Step is written
+        self._last_function_key = "activity"
         self.new_id = new_id or rename  # the id field: a new Step's, or the Step's own to rename it
         self.id_input = InputLine(max_len=128)
         if rename and step is not None:
@@ -132,11 +138,14 @@ class StepDialog(_Dialog):
             offer = self.offers.get(key)
             yield HistoryInput(line, f"flow-{key}", offer=offer) if offer is not None else line
         yield self.pause
+        self.note_line = Static(self.note, classes="flow-note", markup=False)
         if self.note:
-            yield Static(self.note, classes="flow-note", markup=False)
+            yield self.note_line
         with Horizontal(classes="dlg-buttons"):
             yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
             yield Button(_('~E~dit context...'), CM_EDIT_CONTEXT, id="context")
+            if self.functions is not None:
+                yield Button(_('~F~unction...'), CM_STEP_FUNCTION, id="function")
             yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_command_message(self, message) -> None:
@@ -144,6 +153,66 @@ class StepDialog(_Dialog):
             message.stop()
             message.prevent_default()
             self.run_worker(self._edit_context(), exclusive=True)
+        elif message.command == CM_STEP_FUNCTION:
+            message.stop()
+            message.prevent_default()
+            self.run_worker(self._function(), exclusive=True)
+
+    def on_descendant_focus(self, event) -> None:
+        for key in fm.FUNCTION_ATTRS:
+            if event.widget is self.inputs[key]:
+                self._last_function_key = key
+
+    def function_key(self) -> str:
+        """The condition or activity Function... is about: the one last in focus, else the one written."""
+        key = self._last_function_key
+        if self.inputs[key].data.strip():
+            return key
+        other = "condition" if key == "activity" else "activity"
+        return other if self.inputs[other].data.strip() else key
+
+    async def _function(self) -> None:
+        """Function...: the file of the Step's activity (or condition) opened, or a new one made for it."""
+        from divide.run import flowfunctions as ff
+        from divide.ui.flowfunctions import FunctionDialog
+
+        key = self.function_key()
+        module = self.inputs["module"].data.strip() or None
+        name = self.inputs[key].data.strip()
+        project = self.project or Path.cwd()
+        found = self.functions.find(name, module, project) if name and not (module and fm.module_problem(module, name)) else None
+        qualified = f"{module}:{name}" if module else name
+        if found is not None:
+            about = _('{key} {name}: {path}').format(key=key, name=qualified, path=ff.shown(found, project))
+            buttons = [(_('~O~pen'), CM_FN_OPEN, "open"), (_('~N~ew...'), CM_FN_NEW, "new"), (_('Cancel'), Command.CANCEL, "cancel")]
+        else:
+            about = (_('{key} {name}: no file yet').format(key=key, name=qualified) if name
+                     else _('No {key} yet: New... makes its Function').format(key=key))
+            buttons = [(_('~N~ew...'), CM_FN_NEW, "new"), (_('Cancel'), Command.CANCEL, "cancel")]
+        answer = await self.app.run_dialog(MessageBox(_('Function'), about, buttons, width=max(44, min(70, len(about) + 8))))  # type: ignore[attr-defined]
+        if answer == CM_FN_OPEN:
+            self.open_function = key
+            self.end_modal(Command.OK)
+            return
+        if answer != CM_FN_NEW:
+            return
+        dialog = FunctionDialog(self.functions, project, module=module or "", name=name if found is None else "", role=key,
+                                title=_('New Function for the Step'))
+        if await self.app.run_dialog(dialog) != Command.OK or dialog.spec is None:  # type: ignore[attr-defined]
+            return
+        spec = dialog.spec
+        other = "condition" if spec.role == "activity" else "activity"
+        if self.inputs[other].data.strip() and (spec.module or "") != (module or ""):
+            self.app.notify(_('The Step\'s {other} is in {module}: a Step has one module, for its condition and its activity').format(
+                other=other, module=module or _('the root')), severity="error", timeout=6)
+            return
+        self.inputs["module"].data = spec.module or ""
+        self.inputs[spec.role].data = spec.name
+        self.pending = spec
+        self.note_line.update(_('OK writes the Step and makes {path} (then opens it); Cancel makes nothing.').format(
+            path=ff.shown(spec.path, project)))
+        if not self.note_line.is_mounted:
+            self.app.notify(_('OK makes {path}').format(path=ff.shown(spec.path, project)), timeout=4)
 
     async def _edit_context(self) -> None:
         """The context field edited as a tree or as JSON (ContextDialog); the result back in the field."""
@@ -179,6 +248,9 @@ class StepDialog(_Dialog):
             return False
         self.values = {key: line.data.strip() for key, line in self.inputs.items()}
         self.values["pause"] = bool(self.pause.value & 1)
+        spec = self.pending
+        if spec is not None and (self.values["module"] != (spec.module or "") or self.values[spec.role] != spec.name):
+            self.pending = None  # its fields were changed since: nothing to make
         return True
 
 
@@ -414,7 +486,7 @@ class FlowView(_TVWindow):
     def _run(self, coro) -> None:
         self.app.run_worker(coro, group="flowmodel", exclusive=True)
 
-    def _change(self, change: fm.Change, cursor: Key, check) -> None:
+    def _change(self, change: fm.Change, cursor: Key, check) -> bool:
         """Write ``change`` into the code as one edit, then make sure it reads back as meant (else undo it)."""
         editor = self.source.editor
         doc = editor.document
@@ -429,6 +501,7 @@ class FlowView(_TVWindow):
             self.app.notify(_('The edit was undone: {problem}').format(problem=problem), severity="error", timeout=6)
         self.doc = fm.parse(editor.text)
         self.rebuild(cursor)
+        return problem is None
 
     def apply_plan(self, plan: fe.Plan, cursor: Key) -> bool:
         """Write a structural plan into the code as one edit; undone at once if it reads back wrong.
@@ -487,7 +560,8 @@ class FlowView(_TVWindow):
             return
         odd = next((a.why for a in step.attrs.values() if a.why and a.key in fm.ATTRS), None)
         dialog = StepDialog(_('Step {name}').format(name=step.name), step, new_id=False, offers=self._offers(),
-                            note=odd or _('An empty line removes the attribute. Only what you change is written.'))
+                            note=odd or _('An empty line removes the attribute. Only what you change is written.'),
+                            **self._function_args())
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
         try:
@@ -495,10 +569,52 @@ class FlowView(_TVWindow):
         except fm.EditError as exc:
             await self.app.run_dialog(information(_('Flow'), str(exc)))  # type: ignore[attr-defined]
             return
-        if change is None:
-            return
         block_id, step_id, values = step.block, step.id, dialog.values
-        self._change(change, ("step", block_id, step_id), lambda before, text: fm.verify(before, text, block_id, step_id, values))
+        await self._write_step(dialog, block_id, step_id, self._writer(change, block_id, step_id, values))
+
+    def _writer(self, change: fm.Change | None, block_id: str, step_id: str, values: dict | None):
+        async def write() -> bool | None:
+            if change is None:
+                return None
+            return self._change(change, ("step", block_id, step_id),
+                                lambda before, text: fm.verify(before, text, block_id, step_id, values))
+        return write
+
+    def _function_args(self) -> dict:
+        functions = self.app.flow_functions(self.source) if hasattr(self.app, "flow_functions") else None  # type: ignore[attr-defined]
+        return {"functions": functions, "project": getattr(self.app, "root", None)}
+
+    async def _write_step(self, dialog: StepDialog, block_id: str, step_id: str, write) -> None:
+        """The Step dialog's OK: the Function its New... asked for made first (nothing else written if it
+        cannot be), then the Step's edit (``write``: True written, False refused or undone, None nothing to
+        write); an edit that is not written takes the new file back. Then the Function opened."""
+        from divide.run import flowfunctions as ff
+
+        app = self.app
+        made = None
+        spec = dialog.pending
+        if spec is not None:
+            try:
+                made = ff.create_function(dialog.functions, app.root, spec.module, spec.name, spec.role)  # type: ignore[attr-defined]
+            except ff.CreateError as exc:
+                await app.run_dialog(information(_('New Function'), str(exc) + "\n" + _('The Step was not changed.')))  # type: ignore[attr-defined]
+                return
+        if await write() is False:
+            if made is not None:
+                made.undo()
+            return
+        if made is not None:
+            app.notify(_('Made {path}').format(path=ff.shown(made.path, app.root)), timeout=3)  # type: ignore[attr-defined]
+            if hasattr(app, "refresh_functions_windows"):
+                app.refresh_functions_windows()  # type: ignore[attr-defined]
+            app.check_flow(self.source.editor)  # type: ignore[attr-defined]
+            app.flow_open_function_file(made.path)  # type: ignore[attr-defined]
+        elif dialog.open_function:
+            step = self.doc.step(block_id, step_id)
+            if step is not None:
+                single = fm.Step(step.block, step.id, 0, 0, 0, 0,
+                                 {k: v for k, v in step.attrs.items() if k in ("module", dialog.open_function)})
+                app.flow_open_function(self.source, single)  # type: ignore[attr-defined]
 
     def add_step(self) -> None:
         self._run(self._add_step())
@@ -518,7 +634,7 @@ class FlowView(_TVWindow):
             return
         where = _('after {step}').format(step=after.id) if after is not None else _('at the end of {block}').format(block=block.id)
         dialog = StepDialog(_('New Step in {block}').format(block=block.id), None, new_id=True, offers=self._offers(),
-                            note=_('Written {where}, indented as its siblings.').format(where=where))
+                            note=_('Written {where}, indented as its siblings.').format(where=where), **self._function_args())
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
         try:
@@ -527,7 +643,7 @@ class FlowView(_TVWindow):
             await self.app.run_dialog(information(_('Flow'), str(exc)))  # type: ignore[attr-defined]
             return
         block_id, step_id, values = block.id, dialog.step_id, dialog.values
-        self._change(change, ("step", block_id, step_id), lambda before, text: fm.verify(before, text, block_id, step_id, values))
+        await self._write_step(dialog, block_id, step_id, self._writer(change, block_id, step_id, values))
 
     def delete_step(self) -> None:
         self._run(self._delete_step())
@@ -780,27 +896,18 @@ class FlowModelMixin:
         self._select_in(win.source, *where)  # type: ignore[attr-defined]
 
     # ------------------------------------------------------------- functions
-    def flow_functions(self, source: EditorWindow) -> fm.Functions | None:
-        """The function root and Modules of the Flow's Run Flow settings (issue #1's dialog)."""
-        from divide.ui.flow import flow_settings
+    def flow_functions(self, source: EditorWindow | None) -> fm.Functions | None:
+        """The function root and Modules of the Flow's Run Flow settings (its ``--root`` and initial
+        context), over the project's ``.div/runner.json`` (:mod:`divide.run.flowfunctions`)."""
+        from divide.run.flowfunctions import load_settings
+        from divide.ui.flow import flow_context, flow_settings
 
         project = self.root  # type: ignore[attr-defined]
-        if source.path is None:
-            return fm.functions_for(project)
+        project_settings = load_settings(project)
+        if source is None or source.path is None:
+            return fm.functions_for(project, settings=project_settings)
         settings = flow_settings(source.path.resolve())
-        context: dict = {}
-        given = settings["context"].strip()
-        try:
-            if given.startswith("{"):
-                context = json.loads(given)
-            elif given:
-                path = Path(given).expanduser()
-                path = path if path.is_absolute() else project / path
-                if path.is_file():
-                    context = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            context = {}
-        return fm.functions_for(project, settings["root"], context if isinstance(context, dict) else {})
+        return fm.functions_for(project, settings["root"], flow_context(settings["context"], project), project_settings)
 
     def flow_open_function(self, source: EditorWindow, step: fm.Step) -> bool:
         functions = self.flow_functions(source)
@@ -809,12 +916,13 @@ class FlowModelMixin:
             name = step.get(key)
             if not name or functions is None:
                 continue
-            found = functions.find(name, module, self.root)  # type: ignore[attr-defined]
+            found = None if module and fm.module_problem(module, name) else functions.find(name, module, self.root)  # type: ignore[attr-defined]
             if found is not None:
-                self.open_file(found)  # type: ignore[attr-defined]
+                self.flow_open_function_file(found)  # type: ignore[attr-defined]
                 return True
             tried = ", ".join(fm._shown(p, self.root) for p in functions.candidates(name, module, self.root))  # type: ignore[attr-defined]
-            self.notify(_('{key} {name}: no file {tried}').format(key=key, name=name, tried=tried), severity="warning", timeout=4)  # type: ignore[attr-defined]
+            self.notify(_('{key} {name}: no file {tried} (Enter, Function... makes it)').format(key=key, name=name, tried=tried),  # type: ignore[attr-defined]
+                        severity="warning", timeout=5)
             return True
         self.notify(_('This Step has no call, jump, activity or condition to go to'), timeout=2)  # type: ignore[attr-defined]
         return True
@@ -862,7 +970,7 @@ class FlowModelMixin:
                                 win.path.name if win.path is not None else "flow.yml", fm.function_names(doc))
         if ed.text != text:
             return None
-        found = fm.diagnose(doc, self.flow_functions(win), self.root, result)  # type: ignore[attr-defined]
+        found = fm.diagnose(doc, self.flow_functions(win), self.root, result, inspect=inspect_source)  # type: ignore[attr-defined]
         self._flow_checks[id(ed)] = (text, result)
         ed.set_lint(found)
         verdict, bad = self.flow_verdict(runner, result, found)

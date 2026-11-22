@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-22 03:06+0000\n"
+"POT-Creation-Date: 2026-11-22 16:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,6 +64,21 @@ msgid " · no upstream"
 msgstr ""
 
 #, python-brace-format
+msgid "\"modules\" must be an object: {\"module\": \"folder\"}"
+msgstr ""
+
+#, python-brace-format
+msgid "\"modules\": {name} is not a Module name (letters, digits, _ and -)"
+msgstr ""
+
+#, python-brace-format
+msgid "\"modules\": {name} needs a folder (a string)"
+msgstr ""
+
+msgid "\"root\" must be a path (a string)"
+msgstr ""
+
+#, python-brace-format
 msgid "\"{key}\" must be an object"
 msgstr ""
 
@@ -96,10 +111,22 @@ msgstr ""
 msgid "(between cycles)"
 msgstr ""
 
+msgid "(cannot be read: see PHP's lint)"
+msgstr ""
+
+msgid "(its folder is made too)"
+msgstr ""
+
+msgid "(no Functions here)"
+msgstr ""
+
 msgid "(no Steps)"
 msgstr ""
 
 msgid "(no differences in the text)"
+msgstr ""
+
+msgid "(no folder)"
 msgstr ""
 
 msgid "(no grammar for this language: pip install its tree-sitter package)"
@@ -126,6 +153,9 @@ msgstr ""
 msgid "(not set)"
 msgstr ""
 
+msgid "(not there)"
+msgstr ""
+
 msgid "(nothing found)"
 msgstr ""
 
@@ -133,6 +163,9 @@ msgid "(nothing to do)"
 msgstr ""
 
 msgid "(nothing to list)"
+msgstr ""
+
+msgid "(outside: read-only)"
 msgstr ""
 
 msgid "(read-only)"
@@ -154,6 +187,9 @@ msgstr ""
 msgid "--mcp takes one project folder: divide --mcp /path/to/project"
 msgstr ""
 
+msgid "--root of the Run Flow dialog"
+msgstr ""
+
 #, python-brace-format
 msgid "-> Block {block} (no Steps)"
 msgstr ""
@@ -169,6 +205,10 @@ msgstr ""
 msgid "16 colours (Windows console)"
 msgstr ""
 
+#, python-brace-format
+msgid "? (line {n}: computed, unknown)"
+msgstr ""
+
 msgid "? no target"
 msgstr ""
 
@@ -179,6 +219,39 @@ msgstr ""
 
 #, python-brace-format
 msgid "A Flow needs a Block: {block} is the only one"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"A Function is a PHP file that returns a callable; Runner calls it with "
+"the Flow's shared context:\n"
+"\n"
+"  return function (array &$context): mixed { ... };\n"
+"\n"
+"- condition: true runs the Step's activity, call or jump; false skips "
+"them.\n"
+"- activity: what it returns is kept in $context[<the Step's id>].\n"
+"- module: the folder of a Step's condition and activity (not a Block).\n"
+"- $context['_importer']('name', 'module') gives another Function's "
+"callable.\n"
+"Any PHP is fine inside: Composer's autoload, other files, other Functions."
+msgstr ""
+
+msgid "A Function is an activity or a condition"
+msgstr ""
+
+msgid ""
+"A Function name is letters, digits, _ and - (and / between folders inside"
+" a Module)"
+msgstr ""
+
+msgid "A Function needs a name"
+msgstr ""
+
+msgid "A Module name is letters, digits, _ and -, not starting with -"
+msgstr ""
+
+msgid "A Module needs a name"
 msgstr ""
 
 msgid "A Module needs an activity or a condition"
@@ -192,7 +265,17 @@ msgstr ""
 msgid "A Step needs something to do: an activity, a call, a jump, a pause..."
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"A Step uses it with module: {name}, and its condition and activity are "
+"files of this folder. A Module is not a Block."
+msgstr ""
+
 msgid "A folder cannot go inside itself."
+msgstr ""
+
+#, python-brace-format
+msgid "A folder in {root}"
 msgstr ""
 
 msgid "A monochrome screen: white and grays on black, nothing told by hue."
@@ -719,6 +802,9 @@ msgstr ""
 msgid "C~o~ndition (a function: the Step runs only when it returns true)"
 msgstr ""
 
+msgid "C~o~ndition: true runs the Step, false skips it"
+msgstr ""
+
 msgid "C~r~eate"
 msgstr ""
 
@@ -1066,7 +1152,9 @@ msgstr ""
 msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
 msgstr ""
 
-msgid "Enter edit · Ins Step · B Block · C/J connect · Tab links · ^T code"
+msgid ""
+"Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links ·"
+" ^T code"
 msgstr ""
 
 msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
@@ -1098,6 +1186,9 @@ msgstr ""
 msgid "Enter its diff · Ctrl+R reload · Alt+F10 new branch here, copy the hash"
 msgstr ""
 
+msgid "Enter makes it, from a template, and opens it."
+msgstr ""
+
 msgid "Enter new line ~n~umber"
 msgstr ""
 
@@ -1112,6 +1203,12 @@ msgid ""
 msgstr ""
 
 msgid "Enter open · Del forget a recent one · type to filter"
+msgstr ""
+
+msgid "Enter open · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
+msgstr ""
+
+msgid "Enter opens it. Runner keeps an activity's result under the Step id."
 msgstr ""
 
 msgid "Enter sets it · Del removes it · Esc cancels"
@@ -1267,6 +1364,9 @@ msgstr ""
 msgid "Flow Designer"
 msgstr ""
 
+msgid "Flow funct~i~ons"
+msgstr ""
+
 #, python-brace-format
 msgid "Flow {flow} · Runner {version}"
 msgstr ""
@@ -1302,10 +1402,23 @@ msgstr ""
 msgid "From {start}"
 msgstr ""
 
+msgid "Function"
+msgstr ""
+
 msgid "Function root"
 msgstr ""
 
+msgid "Function root "
+msgstr ""
+
 msgid "Function separator"
+msgstr ""
+
+msgid "Functions"
+msgstr ""
+
+#, python-brace-format
+msgid "Functions: {flow}"
 msgstr ""
 
 msgid "F~l~ow designer"
@@ -1426,6 +1539,9 @@ msgid ""
 msgstr ""
 
 msgid "Ins adds a package (Div is divengine/div)."
+msgstr ""
+
+msgid "Ins makes a Function here."
 msgstr ""
 
 msgid "Ins new file · F7 folder · F2 rename · Del delete · Alt+F10 menu"
@@ -1576,6 +1692,20 @@ msgstr ""
 msgid "Macro end"
 msgstr ""
 
+#, python-brace-format
+msgid "Made at {path}"
+msgstr ""
+
+#, python-brace-format
+msgid "Made {path}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Make {file}, the project's function root ({root}) and Module folders, "
+"shared with the team in Git?"
+msgstr ""
+
 msgid "Max ~f~ile name size (DIV_MAX_FILENAME_SIZE)"
 msgstr ""
 
@@ -1615,7 +1745,17 @@ msgstr ""
 msgid "Minimum"
 msgstr ""
 
+msgid "Missing"
+msgstr ""
+
 msgid "Modifiers"
+msgstr ""
+
+msgid "Module"
+msgstr ""
+
+#, python-brace-format
+msgid "Module {name} is already there: {path}"
 msgstr ""
 
 msgid "Move"
@@ -1647,6 +1787,15 @@ msgid "Nested folders are fine (a/b/c)"
 msgstr ""
 
 msgid "New Block"
+msgstr ""
+
+msgid "New Function"
+msgstr ""
+
+msgid "New Function for the Step"
+msgstr ""
+
+msgid "New Module"
 msgstr ""
 
 #, python-brace-format
@@ -1768,6 +1917,10 @@ msgid "No such folder: {root}"
 msgstr ""
 
 #, python-brace-format
+msgid "No {key} yet: New... makes its Function"
+msgstr ""
+
+#, python-brace-format
 msgid "No {language} errors"
 msgstr ""
 
@@ -1782,6 +1935,9 @@ msgid "Not committed yet · "
 msgstr ""
 
 msgid "Not drawn"
+msgstr ""
+
+msgid "Not found"
 msgstr ""
 
 msgid "Not installed yet: Alt+F10 > Install"
@@ -1841,6 +1997,14 @@ msgid "Number suffix"
 msgstr ""
 
 msgid "N~u~ll"
+msgstr ""
+
+#, python-brace-format
+msgid "OK makes {path}"
+msgstr ""
+
+#, python-brace-format
+msgid "OK writes the Step and makes {path} (then opens it); Cancel makes nothing."
 msgstr ""
 
 #, python-brace-format
@@ -1957,6 +2121,15 @@ msgstr ""
 
 #, python-brace-format
 msgid "Output: {name}"
+msgstr ""
+
+msgid "Outside a Module a Function is one name: a folder of the root is a Module"
+msgstr ""
+
+msgid "Outside the project: Functions are not made there."
+msgstr ""
+
+msgid "Outside the project: shown, never written (no new Functions there)."
 msgstr ""
 
 msgid "O~K~"
@@ -2151,6 +2324,12 @@ msgstr ""
 msgid "Recent folders"
 msgstr ""
 
+msgid ""
+"References of Steps that resolve to no file. Enter on one makes it (the "
+"Step is not changed). ? : not a file; Runner tries a PHP callable of that"
+" name (strlen, ns\\fn, Cls::method)."
+msgstr ""
+
 msgid "Refre~s~h"
 msgstr ""
 
@@ -2271,6 +2450,11 @@ msgid "Run in terminal"
 msgstr ""
 
 msgid "Run in termi~n~al"
+msgstr ""
+
+msgid ""
+"Runner also tries a PHP callable of that name: a function or Cls::method "
+"of the code."
 msgstr ""
 
 #, python-brace-format
@@ -2623,6 +2807,15 @@ msgstr ""
 msgid "The MCP server stopped: {error}"
 msgstr ""
 
+msgid "The Step was not changed."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The Step's {other} is in {module}: a Step has one module, for its "
+"condition and its activity"
+msgstr ""
+
 #, python-brace-format
 msgid ""
 "The Steps of {blocks} are written in flow style: their calls and jumps "
@@ -2931,6 +3124,9 @@ msgstr ""
 msgid "Type a name."
 msgstr ""
 
+msgid "Type its name"
+msgstr ""
+
 msgid "Type what to find in the tags, and what to write instead."
 msgstr ""
 
@@ -3029,6 +3225,9 @@ msgid ""
 "defaults, system variables."
 msgstr ""
 
+msgid "What now?"
+msgstr ""
+
 msgid "What the next commit takes (Ctrl+K commits it). Space takes a file out."
 msgstr ""
 
@@ -3038,6 +3237,9 @@ msgid ""
 msgstr ""
 
 msgid "What the project needs to run (require), and what came with it."
+msgstr ""
+
+msgid "Where Runner looks, first that gives one:"
 msgstr ""
 
 msgid ""
@@ -3060,7 +3262,14 @@ msgstr ""
 msgid "Write a title."
 msgstr ""
 
+msgid "Write the name without .php: Runner adds it"
+msgstr ""
+
 msgid "Writing the autoloader"
+msgstr ""
+
+#, python-brace-format
+msgid "Written to {path}{made}. The Step says {reference}{key}: {name}"
 msgstr ""
 
 #, python-brace-format
@@ -3127,7 +3336,18 @@ msgstr ""
 msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
 msgstr ""
 
+msgid ""
+"a Module: the context's _modules, .div/runner.json \"modules\", "
+"<root>/<module>"
+msgstr ""
+
+msgid "a closure"
+msgstr ""
+
 msgid "a comment would be lost"
+msgstr ""
+
+msgid "a folder of the root"
 msgstr ""
 
 msgid ""
@@ -3185,6 +3405,9 @@ msgstr ""
 msgid "an anchor"
 msgstr ""
 
+msgid "an arrow function"
+msgstr ""
+
 msgid "an extension is expected, like \"tpl\""
 msgstr ""
 
@@ -3198,6 +3421,9 @@ msgid "an object of prefix: PHP function is expected"
 msgstr ""
 
 msgid "an object of variables is expected"
+msgstr ""
+
+msgid "another callable (not read here)"
 msgstr ""
 
 #, python-brace-format
@@ -3349,7 +3575,13 @@ msgstr ""
 msgid "expected ':' after the key {key!r}"
 msgstr ""
 
+msgid "file"
+msgstr ""
+
 msgid "first Block: the Flow starts here"
+msgstr ""
+
+msgid "folder"
 msgstr ""
 
 #, python-brace-format
@@ -3359,11 +3591,17 @@ msgstr ""
 msgid "friendly tag"
 msgstr ""
 
+msgid "from"
+msgstr ""
+
 msgid "from no Step"
 msgstr ""
 
 #, python-brace-format
 msgid "from {step}"
+msgstr ""
+
+msgid "functions"
 msgstr ""
 
 msgid "git blame failed"
@@ -3398,6 +3636,12 @@ msgstr ""
 msgid "ignore block"
 msgstr ""
 
+msgid "imported"
+msgstr ""
+
+msgid "imports"
+msgstr ""
+
 #, python-brace-format
 msgid "is not JSON: {error}"
 msgstr ""
@@ -3419,8 +3663,17 @@ msgstr ""
 msgid "it is written in flow style ({...}): edit it in the code (Ctrl+T)"
 msgstr ""
 
+msgid ""
+"it takes the context by value: what it changes there is lost (&$context "
+"keeps it)"
+msgstr ""
+
 #, python-brace-format
 msgid "item of {name}"
+msgstr ""
+
+#, python-brace-format
+msgid "its first parameter is {type}: Runner passes the context, an array"
 msgstr ""
 
 #, python-brace-format
@@ -3439,6 +3692,9 @@ msgstr ""
 msgid "local"
 msgstr ""
 
+msgid "looked at"
+msgstr ""
+
 msgid "loop is empty"
 msgstr ""
 
@@ -3449,8 +3705,14 @@ msgstr ""
 msgid "merge commit"
 msgstr ""
 
+msgid "module"
+msgstr ""
+
 #, python-brace-format
 msgid "more than {n} folders open"
+msgstr ""
+
+msgid "no Step"
 msgstr ""
 
 msgid "no data"
@@ -3472,6 +3734,9 @@ msgstr ""
 msgid "none"
 msgstr ""
 
+msgid "none (Alt+F10 makes one)"
+msgstr ""
+
 msgid "none yet"
 msgstr ""
 
@@ -3491,6 +3756,9 @@ msgid "not installed"
 msgstr ""
 
 msgid "not run (invocation error)"
+msgstr ""
+
+msgid "nothing"
 msgstr ""
 
 msgid "nowhere: not in the Flow"
@@ -3567,7 +3835,15 @@ msgstr ""
 msgid "resumed, "
 msgstr ""
 
+msgid "returns"
+msgstr ""
+
 msgid "returns here when the called Block ends"
+msgstr ""
+
+msgid ""
+"root: --root, the context's _root_folder, .div/runner.json \"root\", the "
+"project"
 msgstr ""
 
 #, python-brace-format
@@ -3580,6 +3856,9 @@ msgstr ""
 msgid ""
 "serve divide's MCP server for the project folder over stdio, without the "
 "interface (in divide, Options > MCP server serves it over HTTP)"
+msgstr ""
+
+msgid "settings"
 msgstr ""
 
 msgid "squashed into one commit"
@@ -3621,6 +3900,16 @@ msgid "the Flow's id or description would change"
 msgstr ""
 
 #, python-brace-format
+msgid "the callable needs {n} arguments: Runner passes only the context"
+msgstr ""
+
+msgid "the context's _modules"
+msgstr ""
+
+msgid "the context's _root_folder"
+msgstr ""
+
+#, python-brace-format
 msgid ""
 "the data uses {names}: Div decodes a data file before any variable "
 "exists, so these come out empty (they work in {{= var: {{...}} =}} inside"
@@ -3630,10 +3919,16 @@ msgstr ""
 msgid "the engine is a .php file (autoload.php or div.php)"
 msgstr ""
 
+msgid "the file returns nothing: Runner needs it to return a callable"
+msgstr ""
+
 msgid "the name is vendor/project, in lowercase: divengine/shop"
 msgstr ""
 
 msgid "the namespace is like App\\ or Acme\\Shop\\"
+msgstr ""
+
+msgid "the project"
 msgstr ""
 
 msgid "the project folder"
@@ -3642,6 +3937,12 @@ msgstr ""
 msgid ""
 "the project's \"php\" settings are not applied until you trust them "
 "(Options > Div setup)"
+msgstr ""
+
+msgid "the project: Runner's default"
+msgstr ""
+
+msgid "the root"
 msgstr ""
 
 msgid "the root has no parent"
@@ -3717,6 +4018,9 @@ msgstr ""
 msgid "unterminated string"
 msgstr ""
 
+msgid "used by"
+msgstr ""
+
 msgid "user"
 msgstr ""
 
@@ -3724,6 +4028,9 @@ msgid "user's"
 msgstr ""
 
 msgid "valid"
+msgstr ""
+
+msgid "vendor is Composer's folder, not a Module"
 msgstr ""
 
 msgid "vendor/ is missing: Alt+F10 > Install"
@@ -3860,6 +4167,10 @@ msgid "{expression}: (not running)"
 msgstr ""
 
 #, python-brace-format
+msgid "{file} is not JSON: {why}"
+msgstr ""
+
+#, python-brace-format
 msgid "{file} is not in the repository"
 msgstr ""
 
@@ -3875,6 +4186,10 @@ msgid ""
 "\n"
 "Trust these settings? (Until they change; Options > Div setup can trust "
 "them later.)"
+msgstr ""
+
+#, python-brace-format
+msgid "{file} must be a JSON object"
 msgstr ""
 
 #, python-brace-format
@@ -3926,7 +4241,11 @@ msgid "{key} {module}:{name}: no file {tried}"
 msgstr ""
 
 #, python-brace-format
-msgid "{key} {name}: no file {tried}"
+msgid "{key} {name}: no file yet"
+msgstr ""
+
+#, python-brace-format
+msgid "{key} {name}: no file {tried} (Enter, Function... makes it)"
 msgstr ""
 
 #, python-brace-format
@@ -3938,7 +4257,15 @@ msgid "{key} {name}: no file {tried}; Runner tries a PHP callable"
 msgstr ""
 
 #, python-brace-format
+msgid "{key} {name}: {path}"
+msgstr ""
+
+#, python-brace-format
 msgid "{key}: a $reference is not a value here"
+msgstr ""
+
+#, python-brace-format
+msgid "{key}: not a setting of {file} (root, modules)"
 msgstr ""
 
 #, python-brace-format
@@ -4152,6 +4479,18 @@ msgid "{path} cannot be read: {error}"
 msgstr ""
 
 #, python-brace-format
+msgid "{path} is already there: open it instead"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is in Composer's vendor folder: divide only reads it"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is in a hidden folder"
+msgstr ""
+
+#, python-brace-format
 msgid "{path} is not JSON: {error}"
 msgstr ""
 
@@ -4165,6 +4504,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{path} is not a folder"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is outside the project: divide only reads it"
 msgstr ""
 
 #, python-brace-format
@@ -4317,6 +4660,9 @@ msgid "~A~bout..."
 msgstr ""
 
 msgid "~A~ctivity (a function that does the work)"
+msgstr ""
+
+msgid "~A~ctivity: does the work, its result kept under the Step id"
 msgstr ""
 
 msgid "~A~dd"
@@ -4579,7 +4925,14 @@ msgstr ""
 msgid "~F~rom dialect"
 msgstr ""
 
+#, python-brace-format
+msgid "~F~unction root, --root (empty: {root}, from .div/runner.json)"
+msgstr ""
+
 msgid "~F~unction root, --root (optional; relative to the project)"
+msgstr ""
+
+msgid "~F~unction..."
 msgstr ""
 
 msgid "~G~ET (a JSON object)"
@@ -4670,7 +5023,13 @@ msgstr ""
 msgid "~M~odifiers: {\"prefix:\": \"php_function\"}"
 msgstr ""
 
+msgid "~M~odule (a folder of Functions; empty: the function root)"
+msgstr ""
+
 msgid "~M~odule (folder of the activity and condition; optional)"
+msgstr ""
+
+msgid "~M~odule..."
 msgstr ""
 
 msgid "~M~ove to..."
@@ -4684,6 +5043,12 @@ msgstr ""
 
 #, python-brace-format
 msgid "~N~ame (in {where}/)"
+msgstr ""
+
+msgid "~N~ame (letters, digits, _ and -): what a Step's module says"
+msgstr ""
+
+msgid "~N~ame (letters, digits, _ and -; in a Module also folder/name)"
 msgstr ""
 
 msgid "~N~ame (vendor/project)"
@@ -4702,6 +5067,9 @@ msgid "~N~ew pull request..."
 msgstr ""
 
 msgid "~N~ew text"
+msgstr ""
+
+msgid "~N~ew..."
 msgstr ""
 
 msgid "~N~ext"
@@ -4870,6 +5238,9 @@ msgstr ""
 msgid "~S~earch..."
 msgstr ""
 
+msgid "~S~ettings"
+msgstr ""
+
 msgid "~S~quash and merge it"
 msgstr ""
 
@@ -4946,6 +5317,9 @@ msgid "~U~ndo"
 msgstr ""
 
 msgid "~U~pdate the package"
+msgstr ""
+
+msgid "~U~se"
 msgstr ""
 
 msgid "~U~ser's setup (all projects)"

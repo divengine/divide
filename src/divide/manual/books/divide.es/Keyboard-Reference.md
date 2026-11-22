@@ -117,12 +117,22 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **Esc** / **Retroceso** | dejar la conexión o la elección de destino / volver |
 | **C / J** | conectar un `call` / `jump`: elegir el destino, Enter |
 | **X** | el contexto del Step, como árbol o como JSON |
+| **F** | los Modules y las Functions del Flow |
 | **Ins** / **B** | Step nuevo / Block nuevo |
 | **Supr** | borrar el Step o el Block, o quitar la conexión escogida |
 | **Ctrl+↑ / Ctrl+↓** | mover el Step dentro de su Block |
 | **Ctrl+← / Ctrl+→** | mover el Block |
 | **Ctrl+D** | el árbol de la ventana Flow ⇄ el tablero |
 | **Ctrl+Z / Ctrl+Y** | deshacer / rehacer |
+
+## Functions del Flow
+
+| Tecla | Acción |
+|---|---|
+| **Intro** | abrir la Function (en su `return`), ir al Step, o crear la Function que falta |
+| **Ins** / **Shift+Ins** | Function nueva (en el Module bajo el cursor) / Module nuevo |
+| **Alt+F10** / **Shift+F10** | menú: Function..., Module..., Ajustes (`.div/runner.json`) |
+| **Ctrl+R** | leer el disco otra vez |
 
 ## Dialector
 

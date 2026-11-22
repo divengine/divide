@@ -108,6 +108,7 @@ A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. L
 | **Ctrl+Intro** (Ctrl+J) | Ir al otro extremo de la conexión escogida, si no al destino del call o jump del Step; en un Step sin ninguno, abrir el archivo de su activity o su condition |
 | **C / J** | Conectar el Step elegido con un `call` / `jump`: elige su destino en el tablero |
 | **X** | Editar el contexto del Step elegido, como árbol o como JSON |
+| **F** | Los Modules y las Functions del Flow ([[Functions del Flow|Flow Functions]]) |
 | **Ins** | Un Step nuevo después del elegido (en el título de un carril: al final del Block) |
 | **B** | Un Block nuevo después del de lo elegido, con su primer Step |
 | **Supr** | Borrar el Step o el Block (se pregunta antes), o quitar la conexión escogida |
@@ -127,7 +128,7 @@ El ratón es opcional: un clic elige una tarjeta o un título, y un doble clic l
 Un Flow nuevo solo necesita un `id` y un `blocks:` vacío en su archivo YAML. En el tablero:
 
 1. **B** crea un Block. Da su id, una descripción opcional, el id de su primer Step y la activity de ese Step (**Abajo** ofrece los archivos de función). Se escribe después del Block elegido, sangrado como los demás.
-2. **Ins** añade un Step después del elegido, con el mismo diálogo que en la ventana Flow: module, condition, activity, call, jump, context, pause.
+2. **Ins** añade un Step después del elegido, con el mismo diálogo que en la ventana Flow: module, condition, activity, call, jump, context, pause. Su **Function...** abre la Function del Step, o crea una nueva para él ([[Functions del Flow|Flow Functions]]).
 3. **C** (o **J**) en un Step empieza una conexión. Arriba del panel dice `CALL desde main.greet` y qué hacen Intro, Supr y Esc. Ve a la tarjeta de destino y pulsa **Intro**: divide escribe `call: check.mark`, la forma explícita `block.step`. En el título de un carril, Intro escribe `check.`, que lleva al primer Step de ese Block, sea cual sea. **Supr** en cambio quita el call (o el jump) del Step, y **Esc** cancela.
 4. **Alt+F9** pide a Runner que lo verifique, **F2** lo guarda y **Ctrl+F9** lo ejecuta.
 
@@ -200,7 +201,7 @@ Si el código deja de ser YAML válido (a medio escribir, o con un corchete sin 
 
 El tablero, el código (como marcas bajo el texto) y Mensajes (**Alt+F9**) muestran los mismos problemas. Una tarjeta o un carril con un error dice **!E**, y uno con un aviso **!W**. Se encuentran como en la ventana Flow:
 - con el propio compilador de Runner, sin ejecutar nada;
-- con las búsquedas de divide de destinos que faltan y archivos de función que faltan.
+- con las búsquedas de divide de destinos que faltan, archivos de función que faltan y archivos que no le dan a Runner un callable que pueda llamar ([[Functions del Flow|Flow Functions]]).
 
 Consulta [[Problemas|Flow Structure]].
 

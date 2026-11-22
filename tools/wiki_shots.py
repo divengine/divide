@@ -812,6 +812,86 @@ async def designer():
 
 
 @shot
+async def functions():
+    """The Functions window on examples/generator (composer install there), in a copy of it, its
+    .div/runner.json giving the root: at 120 columns on a Function used by a Step, at 80 on a
+    Module; the New Function dialog; the Step dialog after Function... > New... made one to write."""
+    import tempfile as _tempfile
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flowboard import FlowDesignWindow
+    from divide.ui.flowfunctions import FunctionDialog, FunctionsWindow
+    from divide.ui.flowmodel import StepDialog
+    example = ROOT / "examples" / "generator"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        print("skipped functions: composer install in examples/generator")
+        return
+
+    async def window_of(app, pilot):
+        await settle(pilot, 10)
+        app.run_command(CM_FLOW_DESIGN)
+        await until(pilot, lambda: isinstance(app.active_window(), FlowDesignWindow), tries=200)
+        designer = app.active_window()
+        await until(pilot, lambda: id(designer.source.editor) in app._flow_checks, tries=300)
+        await settle(pilot, 6)
+        await pilot.press("f")
+        await until(pilot, lambda: isinstance(app.active_window(), FunctionsWindow) and app.active_window().catalog, tries=200)
+        await settle(pilot, 8)
+        return designer, app.active_window()
+
+    def cursor_on(win, kind, module, name=""):
+        node = next(n for n in win.fn_tree._tree_nodes.values()
+                    if n.data is not None and (n.data.kind, n.data.module, n.data.name) == (kind, module, name))
+        win.fn_tree.move_cursor(node)
+
+    with _tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "generator"
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", "build"))
+        flow = root / "flows" / "generate_php_dto.yml"
+        for width, height in ((120, 34), (80, 24)):
+            app = Divide(root, [flow])
+            async with app.run_test(size=(width, height)) as pilot:
+                designer, win = await window_of(app, pilot)
+                if width == 120:
+                    cursor_on(win, "function", "render", "php_class")
+                else:
+                    cursor_on(win, "module", "validate")
+                await settle(pilot, 6)
+                app.update_status()
+                await settle(pilot, 2)
+                save(app, f"flow-functions-{width}")
+                if width != 120:
+                    continue
+                cursor_on(win, "module", "render")
+                await settle(pilot, 4)
+                await pilot.press("insert")
+                await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FunctionDialog), tries=200)
+                await pilot.press(*"slug")
+                await settle(pilot, 6)
+                save(app, "flow-functions-new")
+                await pilot.press("escape")
+                await settle(pilot, 4)
+                app.raise_window(designer)
+                designer.select(("step", "main", "report"))
+                await settle(pilot, 4)
+                await pilot.press("insert")
+                await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), StepDialog), tries=200)
+                step = app.screen.dialog
+                step.id_input.data, step.inputs["module"].data = "publish", "render"
+                await pilot.press("alt+f")
+                await settle(pilot, 6)
+                await pilot.press("n")
+                await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FunctionDialog), tries=200)
+                await pilot.press(*"publish")
+                await settle(pilot, 4)
+                await pilot.press("alt+k")
+                await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), StepDialog)
+                            and app.screen.dialog.pending is not None, tries=200)
+                await settle(pilot, 6)
+                save(app, "flow-functions-step")
+                await pilot.press("escape")
+
+
+@shot
 async def trace():
     """Debug > Render trace on the shop: the row where Div decides the condition."""
     from divide.ui.tracer import TraceWindow

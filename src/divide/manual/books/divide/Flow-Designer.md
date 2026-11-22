@@ -108,6 +108,7 @@ At 80 columns the board shows two or three lanes and the inspector goes under it
 | **Ctrl+Enter** (Ctrl+J) | Go to the chosen connection's other end, else to the Step's call or jump target; on a Step without one, open its activity's or condition's file |
 | **C / J** | Connect the selected Step with a `call` / `jump`: choose its target on the board |
 | **X** | Edit the selected Step's context, as a tree or as JSON |
+| **F** | The Flow's Modules and Functions ([[Flow Functions]]) |
 | **Ins** | A new Step after the selected one (on a lane's title: at the end of the Block) |
 | **B** | A new Block after the selected one's, with its first Step |
 | **Del** | Delete the Step or Block (asked first), or remove the chosen connection |
@@ -127,7 +128,7 @@ The mouse is optional: a click selects a card or a title, and a double click edi
 A new Flow needs only an `id` and an empty `blocks:` in its YAML file. On the board:
 
 1. **B** creates a Block. Give its id, an optional description, the id of its first Step and that Step's activity (**Down** offers the function files). It is written after the selected Block, indented like the others.
-2. **Ins** adds a Step after the selected one, with the same dialog as in the Flow window: module, condition, activity, call, jump, context, pause.
+2. **Ins** adds a Step after the selected one, with the same dialog as in the Flow window: module, condition, activity, call, jump, context, pause. **Function...** there opens the Step's Function, or makes a new one for it ([[Flow Functions]]).
 3. **C** (or **J**) on a Step starts a connection. The top of the panel says `CALL from main.greet` and what Enter, Del and Esc do. Move to the target card and press **Enter**: divide writes `call: check.mark`, the explicit `block.step` form. On a lane's title, Enter writes `check.`, which leads to that Block's first Step, whichever it is. **Del** instead removes the Step's call (or jump), and **Esc** cancels.
 4. **Alt+F9** asks Runner to check it, **F2** saves it and **Ctrl+F9** runs it.
 
@@ -200,7 +201,7 @@ If the code stops being valid YAML (half typed, or a bracket left open), the boa
 
 The board, the code (as marks under the text) and Messages (**Alt+F9**) show the same problems. A card or lane with an error says **!E**, and one with a warning **!W**. They are found as in the Flow window:
 - Runner's own compiler, run without running anything;
-- divide's lookups of missing targets and missing function files.
+- divide's lookups of missing targets, missing function files, and files that do not give Runner a callable it can call ([[Flow Functions]]).
 
 See [[Problems|Flow Structure]].
 

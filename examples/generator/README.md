@@ -21,6 +21,7 @@ divide .
 | `functions/` | What each Step does, as Runner functions: one PHP file that returns a callable each. `validate/`, `render/` and `quality/` are the Modules of the Blocks with those names |
 | `lib/generator.php` | What the functions share: paths, the model as the templates read it, rendering with Div, hashes, writing |
 | `generate.json` | The initial context: which model, and the output folder |
+| `.div/runner.json` | divide's project setting for Runner: the function root, `functions/`, so the Designer and a run find the Functions without typing it |
 | `build/` | The outputs, made by the generator and not kept in Git: `src/PackageInfo.php`, `README.md`, `manifest.json` and `report.json` |
 
 ## The Flow
@@ -42,8 +43,10 @@ divide .
   nullability) and that `fromArray()` gives back the data `toArray()` returns. Finally, it checks that the README
   lists every field.
 
-Open the Flow and use **Run > Flow designer** to see it as a board. **Ctrl+F9** runs it: give `generate.json` as
-the initial context and `functions` as the function root. The same without divide:
+Open the Flow and use **Run > Flow designer** to see it as a board, and **F** there for its Modules and Functions:
+which Steps use each one, and new ones made from a template (**Ins**, or **Function...** in a Step's dialog).
+**Ctrl+F9** runs it: give `generate.json` as the initial context; the function root, `functions`, comes from
+`.div/runner.json`. The same without divide:
 
 ```bash
 php vendor/divengine/runner/bin/run.php flows/generate_php_dto.yml --context generate.json --root functions

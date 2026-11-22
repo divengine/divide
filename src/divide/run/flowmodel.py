@@ -465,15 +465,25 @@ def resolve_target(doc: FlowDoc, block_id: str, reference: str) -> tuple[Block |
     return block, step, None
 
 
+# where a function root or a Module's folder comes from, as the Functions window says it
+ROOT_OPTION, ROOT_CONTEXT, ROOT_SETTINGS, ROOT_PROJECT = "--root", "_root_folder", ".div/runner.json", "project"
+MODULE_FOLDER, MODULE_CONTEXT, MODULE_SETTINGS = "folder", "_modules", ".div/runner.json"
+
+
 @dataclass(frozen=True)
 class Functions:
     """Where Runner's importer looks for activity and condition files."""
 
-    root: Path  # the function root: --root, else the context's _root_folder, else the project
-    modules: dict[str, Path] = field(default_factory=dict)  # the context's _modules
+    root: Path  # the function root: --root, else the context's _root_folder, else the project's setting, else the project
+    modules: dict[str, Path] = field(default_factory=dict)  # the context's _modules, over the project's
+    origin: str = ROOT_PROJECT  # where the root comes from (ROOT_*)
+    module_origins: dict[str, str] = field(default_factory=dict)  # where each mapped Module comes from (MODULE_*)
 
     def folder(self, module: str) -> Path:
         return self.modules.get(module) or self.root / module
+
+    def module_origin(self, module: str) -> str:
+        return self.module_origins.get(module, MODULE_FOLDER) if module in self.modules else MODULE_FOLDER
 
     def candidates(self, name: str, module: str | None, cwd: Path) -> list[Path]:
         """The files the importer would ``require`` for ``name`` (only checked for existence here)."""
@@ -516,20 +526,36 @@ class Functions:
         return sorted(found)
 
 
-def functions_for(project: Path, root: str = "", context: dict | None = None) -> Functions:
-    """The function root and Modules a run of the Run Flow dialog would give Runner: ``--root``
-    (``root``, relative to the project), else the initial context's ``_root_folder``, else the project
-    (Runner runs there, and its default root is ``./``); Modules from the context's ``_modules``."""
+def functions_for(project: Path, root: str = "", context: dict | None = None, settings=None) -> Functions:
+    """The function root and Modules a run of the Run Flow dialog would give Runner. The root: ``--root``
+    (``root``, relative to the project), else the initial context's ``_root_folder``, else the project's
+    ``.div/runner.json`` (``settings``, :mod:`divide.run.flowfunctions`), else the project (Runner runs
+    there, and its default root is ``./``). Modules: the context's ``_modules``, else the project's
+    ``modules``, else ``<root>/<module>``."""
     context = context or {}
 
     def at(value: str) -> Path:
         path = Path(value).expanduser()
         return path if path.is_absolute() else project / path
 
-    folder = root.strip() or (context.get("_root_folder") if isinstance(context.get("_root_folder"), str) else "") or ""
-    modules = context.get("_modules") if isinstance(context.get("_modules"), dict) else {}
-    return Functions(at(folder) if folder.strip() else project,
-                     {str(k): at(v) for k, v in modules.items() if isinstance(v, str) and v.strip()})
+    given = context.get("_root_folder") if isinstance(context.get("_root_folder"), str) else ""
+    if root.strip():
+        folder, origin = at(root.strip()), ROOT_OPTION
+    elif given.strip():
+        folder, origin = at(given.strip()), ROOT_CONTEXT
+    elif settings is not None and settings.root:
+        folder, origin = at(settings.root), ROOT_SETTINGS
+    else:
+        folder, origin = project, ROOT_PROJECT
+    modules: dict[str, Path] = {}
+    origins: dict[str, str] = {}
+    for name, path in (settings.modules.items() if settings is not None else ()):
+        modules[name], origins[name] = at(path), MODULE_SETTINGS
+    mapped = context.get("_modules") if isinstance(context.get("_modules"), dict) else {}
+    for name, path in mapped.items():
+        if isinstance(path, str) and path.strip():
+            modules[str(name)], origins[str(name)] = at(path.strip()), MODULE_CONTEXT
+    return Functions(folder, modules, origin, origins)
 
 
 def module_problem(module: str, name: str) -> str | None:
@@ -1006,9 +1032,10 @@ def function_names(doc: FlowDoc) -> list[str]:
     return names
 
 
-def diagnose(doc: FlowDoc, functions: Functions | None, cwd: Path, result: CheckResult | None) -> list[Diagnostic]:
+def diagnose(doc: FlowDoc, functions: Functions | None, cwd: Path, result: CheckResult | None, inspect=None) -> list[Diagnostic]:
     """What is wrong, where it is written: the YAML's own problems, Runner's verdict, targets missing
-    from the file, and function files missing where Runner's importer would look."""
+    from the file, function files missing where Runner's importer would look, and (``inspect``, a
+    path -> :class:`divide.run.flowfunctions.SourceInfo`) files that do not give Runner a callable it can call."""
     out = [Diagnostic(p.start, p.end, "error", p.message) for p in doc.problems]
     php_functions = result.functions if result is not None else frozenset()
     for step in doc.steps():
@@ -1029,7 +1056,13 @@ def diagnose(doc: FlowDoc, functions: Functions | None, cwd: Path, result: Check
             name = str(attr.value).strip()
             if module and module_problem(module, name):
                 continue  # Runner's schema says why
-            if functions.find(name, module, cwd) is not None:
+            found = functions.find(name, module, cwd)
+            if found is not None:
+                info = inspect(found) if inspect is not None else None
+                for severity, message, _line in (info.problems if info is not None else ()):
+                    if severity in ("error", "warning"):
+                        out.append(Diagnostic(attr.value_start, attr.value_end, severity,
+                                              f"{key} {module + ':' if module else ''}{name}: {_shown(found, cwd)}: {message}"))
                 continue
             tried = _shown(functions.candidates(name, module, cwd)[0], cwd)  # where it should be (the root's)
             if module:
