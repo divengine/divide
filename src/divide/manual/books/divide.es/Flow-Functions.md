@@ -20,12 +20,18 @@ return function (array &$context): mixed {
 
 La **ventana Functions** muestra dónde están las Functions de un Flow, los Modules y las Functions de cada uno, qué Steps usan cada una y qué referencias no llevan a ningún sitio. Desde ella, y desde el diálogo del Step, creas Modules y Functions sin escribir tú las carpetas ni el `return function (...)`. Los archivos son archivos PHP normales, que se abren en el [[editor de PHP|Editing PHP]], con su lint, su servidor de lenguaje y su [[depurador|Debugging PHP]].
 
+![Desde el diseñador de Flows: F, un Module nuevo y una Function dentro desde una plantilla, su PHP escrito y guardado, un Step nuevo que la usa, y el Flow ejecutado por Runner con el resultado del Step en el contexto](images/flow-functions.gif)
+
 ## Abrirla
 
 - **F** en el tablero del [[diseñador de Flows|Flow Designer]].
 - **Ejecutar > Functions del Flow**, desde el código de un Flow, su [[ventana Flow|Flow Structure]] o su tablero: la ventana de ese Flow. Desde cualquier otro sitio: la del proyecto.
 
 La ventana tiene las Functions como un árbol a la izquierda y lo que es el elemento elegido a la derecha. A 80 columnas, la parte de la derecha va debajo del árbol.
+
+![La ventana Functions del Flow del generador a 120 columnas: la raíz functions/ de .div/runner.json, sus Modules, render:php_class elegida y el Step que la usa](images/flow-functions-120.png)
+
+![La misma ventana a 80 columnas: el Module validate elegido, lo que es debajo del árbol](images/flow-functions-80.png)
 
 | Fila | Qué es |
 |---|---|
@@ -66,6 +72,8 @@ En la fila de la raíz, el contrato de arriba y dónde busca Runner.
 - **Nombre**: letras, dígitos, `_` y `-`. En un Module, también `carpeta/nombre` (`tax/compute`), como permite Runner. Sin `.php`: Runner lo añade.
 - **Uso**: **Activity** o **Condition**.
 
+![Nueva Function en el Module render: el nombre slug, su uso, y dónde se escribirá y qué dice un Step para usarla](images/flow-functions-new.png)
+
 Debajo, el diálogo dice dónde quedará el archivo y qué dirá un Step para usarla (`module: render, activity: slug`), o por qué no se puede crear. **OK** escribe el archivo, crea sus carpetas si no están, y lo abre en el editor de PHP en su callable.
 
 El archivo es una Function de PHP 8.1 mínima y válida: una condition devuelve `bool` (`true`), una activity devuelve `mixed` (`null`), cada una con un comentario que dice qué son el contexto y el valor devuelto. Es un comienzo, no un formulario que haya que mantener: escribe ahí cualquier PHP. divide nunca reescribe una Function, generada o no.
@@ -84,6 +92,8 @@ En el diálogo del Step (Intro en una tarjeta, Ins para un Step nuevo, en el dis
 - **Function...** trata de la activity del Step, o de su condition cuando ese es el campo en el que estabas:
   - **Abrir**: su archivo en el editor de PHP, una vez escrito el Step (como **OK**).
   - **Nueva...**: el diálogo Nueva Function, con el Module del Step. Su **OK** rellena el `module` y la `activity` (o la `condition`) del Step y dice que el archivo se va a crear. Todavía no se escribe nada: el **OK** del diálogo del Step escribe el Step, como una sola edición del YAML (un Ctrl+Z), crea el archivo y lo abre. **Cancelar** no escribe ni crea nada. Si el Step no se puede escribir, el archivo nuevo se quita.
+
+![El diálogo del Step después de Function... > Nueva...: module y activity rellenos, y la nota de que OK escribe el Step y crea functions/render/publish.php](images/flow-functions-step.png)
 
 Un Step tiene un solo `module`, para su condition y su activity: se rechaza una Function nueva en otro Module que el de la otra Function del Step.
 

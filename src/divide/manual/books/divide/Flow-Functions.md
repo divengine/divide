@@ -20,12 +20,18 @@ return function (array &$context): mixed {
 
 The **Functions window** shows where a Flow's Functions are, the Modules and the Functions in each, which Steps use each one and which references lead nowhere. From it, and from the Step dialog, you make Modules and Functions without writing the folders or the `return function (...)` yourself. The files are ordinary PHP files, opened in the [[PHP editor|Editing PHP]], with its lint, language server and [[debugger|Debugging PHP]].
 
+![From the Flow Designer: F, a new Module and a Function in it from a template, its PHP written and saved, a new Step that uses it, and the Flow run by Runner with the Step's result in the context](images/flow-functions.gif)
+
 ## Open it
 
 - **F** on the [[Flow Designer]]'s board.
 - **Run > Flow functions**, from a Flow's code, its [[Flow window|Flow Structure]] or its board: the window of that Flow. From anywhere else: the project's.
 
 The window has the Functions as a tree on the left and what the selected item is on the right. At 80 columns, the right part goes under the tree.
+
+![The Functions window of the generator's Flow at 120 columns: the root functions/ from .div/runner.json, its Modules, render:php_class selected and the Step that uses it](images/flow-functions-120.png)
+
+![The same window at 80 columns: the Module validate selected, what it is under the tree](images/flow-functions-80.png)
 
 | Row | What it is |
 |---|---|
@@ -66,6 +72,8 @@ On the root's row, the contract above and where Runner looks.
 - **Name**: letters, digits, `_` and `-`. In a Module, also `folder/name` (`tax/compute`), as Runner allows. Without `.php`: Runner adds it.
 - **Use**: **Activity** or **Condition**.
 
+![New Function in the Module render: the name slug, its use, and where it will be written and what a Step says to use it](images/flow-functions-new.png)
+
 Under them, the dialog says where the file will be and what a Step will say to use it (`module: render, activity: slug`), or why it cannot be made. **OK** writes the file, making its folders if they are not there, and opens it in the PHP editor at its callable.
 
 The file is a minimal, valid PHP 8.1 Function: a condition returns `bool` (`true`), an activity returns `mixed` (`null`), each with a comment that says what the context and the return value are. It is a start, not a form to keep: write any PHP there. divide never rewrites a Function, generated or not.
@@ -84,6 +92,8 @@ In the Step dialog (Enter on a card, Ins for a new Step, in the Flow Designer an
 - **Function...** is about the Step's activity, or its condition when that is the field you were in:
   - **Open**: its file in the PHP editor, once the Step is written (as **OK**).
   - **New...**: the New Function dialog, with the Step's Module. Its **OK** fills the Step's `module` and `activity` (or `condition`) and says that the file will be made. Nothing is written yet: the Step dialog's **OK** writes the Step, as one edit of the YAML (one Ctrl+Z), makes the file and opens it. **Cancel** writes and makes nothing. If the Step cannot be written, the new file is removed.
+
+![The Step dialog after Function... > New...: module and activity filled in, and the note that OK writes the Step and makes functions/render/publish.php](images/flow-functions-step.png)
 
 A Step has one `module`, for both its condition and its activity: a new Function in another Module than the Step's other Function is refused.
 

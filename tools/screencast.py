@@ -1206,6 +1206,122 @@ SCENES.update({"project": project_window, "finding": finding, "desktop": desktop
                 "filter": filtering, "moving": moving, "git": git_scene})
 
 
+async def flow_functions(rec_dir: Path) -> Recorder:
+    """Flow-Functions.md: on a copy of examples/generator (composer install there), a Module and a
+    Function made from the Flow Designer, its PHP written, a new Step that uses it, the Flow run."""
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flow import FlowDialog, save_flow_settings
+    from divide.ui.flowboard import FlowDesignWindow
+    from divide.ui.flowfunctions import FunctionDialog, FunctionsWindow, ModuleDialog
+    from divide.ui.flowmodel import StepDialog
+    from divide.ui.windows import EditorWindow
+    example = Path(__file__).resolve().parent.parent / "examples" / "generator"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        sys.exit("composer install in examples/generator first")
+    root = rec_dir.parent / "generator"
+    shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", "build"))
+    flow = root / "flows" / "generate_php_dto.yml"
+    save_flow_settings(flow.resolve(), {"context": "generate.json", "root": "", "save": ""})
+    app = Divide(root, [flow])
+
+    def dialog(kind):
+        return isinstance(getattr(app.screen, "dialog", None), kind)
+
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        app.run_command(CM_FLOW_DESIGN)
+        await until(pilot, lambda: isinstance(app.active_window(), FlowDesignWindow), tries=200)
+        designer = app.active_window()
+        await until(pilot, lambda: id(designer.source.editor) in app._flow_checks, tries=300)
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("The generator's Flow: its Steps name Functions, PHP files in Modules",
+                       "El Flow del generador: sus Steps nombran Functions, archivos PHP en Modules"))
+        await rec.snap(2.0, 8)
+        rec.caption(tr("F: the Modules, the Functions and the Steps that use each one",
+                       "F: los Modules, las Functions y los Steps que usan cada una"))
+        await pilot.press("f")
+        await rec.until(lambda: isinstance(app.active_window(), FunctionsWindow) and app.active_window().catalog is not None)
+        await rec.snap(1.2, 8)
+        await rec.press("down", "down", "down", "down", "down", "down", "down", hold=0.35)
+        await rec.press("right", hold=1.0)
+        await rec.press("right", hold=1.6)
+
+        rec.caption(tr("Shift+Ins: a new Module, a folder of the function root",
+                       "Shift+Ins: un Module nuevo, una carpeta de la raíz de funciones"))
+        await pilot.press("shift+insert")
+        await rec.until(lambda: dialog(ModuleDialog))
+        await rec.snap(0.6)
+        await rec.type("publish")
+        await rec.snap(1.4)
+        await pilot.press("enter")
+        await rec.until(lambda: not dialog(ModuleDialog))
+        await rec.snap(1.2, 8)
+
+        rec.caption(tr("Ins: a Function in it, an activity or a condition, from a template",
+                       "Ins: una Function dentro, activity o condition, desde una plantilla"))
+        await pilot.press("insert")
+        await rec.until(lambda: dialog(FunctionDialog))
+        await rec.snap(0.6)
+        await rec.type("stamp")
+        await rec.snap(2.2)
+        await pilot.press("enter")
+        await rec.until(lambda: isinstance(app.active_window(), EditorWindow) and app.active_window().path.name == "stamp.php")
+        await rec.snap(2.2, 8)
+
+        rec.caption(tr("Ordinary PHP in the PHP editor: write it, F2 saves it",
+                       "PHP normal en el editor de PHP: escríbelo, F2 lo guarda"))
+        await rec.press("down", "end", hold=0.3)
+        for _ in range(5):
+            await pilot.press("backspace")
+        await rec.snap(0.3)
+        await rec.type("'stamped';", 0.08)
+        await rec.press("f2", hold=1.4)
+
+        rec.caption(tr("A new Step that uses it: Down offers the Module's Functions",
+                       "Un Step nuevo que la usa: Abajo ofrece las Functions del Module"))
+        app.raise_window(designer)
+        designer.select(("step", "main", "report"))
+        await rec.snap(1.0, 8)
+        await pilot.press("insert")
+        await rec.until(lambda: dialog(StepDialog))
+        await rec.type("stamp", 0.1)
+        step = app.screen.dialog
+        step.inputs["module"].focus()
+        await rec.snap(0.4)
+        await rec.type("publish", 0.08)
+        step.inputs["activity"].focus()
+        await rec.snap(0.4)
+        await rec.press("down", hold=1.4)
+        await rec.press("enter", hold=1.0)
+        await rec.snap(0.8)
+        await pilot.press("alt+k")
+        await rec.until(lambda: not dialog(StepDialog))
+        await rec.snap(2.2, 8)
+
+        rec.caption(tr("Ctrl+F9: Runner runs it, the new Step's result in the context",
+                       "Ctrl+F9: Runner lo ejecuta, el resultado del Step nuevo en el contexto"))
+        await pilot.press("ctrl+f9")
+        await rec.until(lambda: dialog(FlowDialog), tries=200)
+        await rec.snap(1.4)
+        await pilot.press("enter")
+        await rec.box()
+        await rec.until(lambda: app.output_window() is not None and '"stamp":' in app.output_window().view.text, tries=400)
+        out = app.output_window()
+        lines = out.view.text.split("\n")
+        row = next((i for i, line in enumerate(lines) if line.strip().startswith('"stamp":')), 0)
+        if hasattr(out.view, "move_cursor"):
+            out.view.move_cursor((row, 0), center=True)
+        else:
+            out.view.scroll_to(y=max(0, row - 8), animate=False)
+        await rec.snap(4.0, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+SCENES["flow-functions"] = flow_functions
+
+
 # ------------------------------------------------------------------ output
 def _stamp(seconds: float) -> str:
     ms = round(seconds * 1000)
