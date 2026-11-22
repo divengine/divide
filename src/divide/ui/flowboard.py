@@ -219,6 +219,8 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         # two columns far apart, one darker and one lighter than the window (still two colours where the
         # terminal has only 256 or 16), neither the window's own; the cards a level between them
         dark = Color(0, 0, 0)
+        if bg.brightness < 0.1:  # a black (or nearly) window has nothing darker: both columns lighter, apart
+            return {"": Style(), "lane": level(0.14), "lane.alt": level(0.36), "title": level(0.36), "card": level(0.25)}
         return {"": Style(), "lane": level(0.5, dark), "lane.alt": level(0.36), "title": level(0.36), "card": level(0.16)}
 
     def render_line(self, y: int) -> Strip:

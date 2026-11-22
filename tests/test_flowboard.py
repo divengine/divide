@@ -599,7 +599,7 @@ def test_each_block_is_a_column_of_alternating_colour_holding_its_cards():
 async def test_the_board_draws_its_surfaces_from_the_theme(project):
     from divide.app import Divide
 
-    for palette in ("free-pascal", "phosphor-green"):
+    for palette in ("free-pascal", "phosphor-green", "phosphor-amber-black"):  # a black window too
         app = Divide(project, [project / "flows/fulfil.yml"], palette=palette)
         async with app.run_test(size=(120, 34)) as pilot:
             window = await open_designer(app, pilot)
