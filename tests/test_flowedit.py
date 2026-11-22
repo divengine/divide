@@ -382,3 +382,18 @@ def test_a_swap_at_the_end_of_a_crlf_file_keeps_its_line_endings():
 def test_targets_that_yaml_would_read_as_numbers_are_quoted():
     assert fm.render_target("-.inf") == '"-.inf"' and fm.render_target(".Nan") == '".Nan"' and fm.render_target("1.5") == '"1.5"'
     assert fm.render_target(".total") == ".total" and fm.render_target("main.") == "main."
+
+
+def test_no_edit_leaves_a_step_without_anything_to_do():
+    """Runner wants a Step to be a mapping: removing its last call, jump or activity would leave
+    ``step:`` with a null value. Refused for every edit (the dialog, a connection removed)."""
+    text = "blocks:\n  main:\n    steps:\n      a:\n        module: m\n        jump: .b\n      b:\n        call: .a\n      c:\n        activity: x\n"
+    doc = fm.parse(text)
+    for step, values in (("b", {"call": ""}), ("a", {"jump": ""}), ("c", {"activity": ""}),
+                         ("c", {"activity": "", "module": "m"}), ("a", {"jump": "", "module": "n"})):
+        with pytest.raises(fm.EditError, match="something to do"):
+            fm.edit_step(doc, doc.step("main", step), values)
+    with pytest.raises(fm.EditError, match="something to do"):
+        fe.set_target(doc, doc.step("main", "b"), "call", None)
+    after = done(text, fe.edit_step(doc, doc.step("main", "b"), {"call": "", "pause": True}))  # replaced: fine
+    assert "      b:\n        pause: true\n" in after

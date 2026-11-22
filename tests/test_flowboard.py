@@ -513,3 +513,62 @@ async def test_renaming_a_step_that_jumps_to_itself_keeps_the_jump_on_it(project
         assert window.source.editor.text == "blocks:\n  main:\n    steps:\n      again:\n        activity: greet\n        jump: .again\n"
         await pilot.press("ctrl+z")  # the rename alone, in one undo
         await wait(pilot, lambda: window.source.editor.text == flow.read_text(), "one undo did not undo it")
+
+
+async def test_removing_a_steps_only_connection_is_refused_everywhere(project):
+    from divide.app import Divide
+    from divide.ui.dialogs import MessageBox
+    from divide.ui.flowmodel import StepDialog
+
+    flow = project / "flows/fulfil.yml"
+    before = flow.read_text()
+    app = Divide(project, [flow])
+    async with app.run_test(size=(160, 44)) as pilot:
+        window = await open_designer(app, pilot)
+        code = window.source
+
+        async def refused():
+            await wait(pilot, lambda: dialog_of(app, MessageBox) and "something to do" in dialog_of(app, MessageBox)._text,
+                       "not refused")
+            await pilot.press("enter")
+            await pilot.pause(0.2)
+            assert code.editor.text == before
+
+        window.select(("step", "main", "stock"))  # only: call stock.reserve
+        await pilot.press("tab", "delete")  # the chosen connection
+        await wait(pilot, lambda: dialog_of(app, MessageBox), "removing was not asked")
+        await pilot.press("y")
+        await refused()
+        window.select(("step", "main", "stock"))
+        await pilot.press("c", "delete")  # Del while choosing the target
+        await refused()
+        window.select(("step", "main", "stock"))
+        await pilot.press("enter")  # the Step dialog with its call emptied
+        await wait(pilot, lambda: dialog_of(app, StepDialog), "no Step dialog")
+        dialog_of(app, StepDialog).inputs["call"].data = ""
+        await pilot.press("alt+k")
+        await refused()
+
+
+async def test_a_click_on_a_pinned_lane_title_after_scrolling_selects_its_block(project):
+    from divide.app import Divide
+
+    flow = project / "flows/fulfil.yml"
+    app = Divide(project, [flow])
+    async with app.run_test(size=(80, 30)) as pilot:
+        window = await open_designer(app, pilot)
+        view = window.board_view
+        window.select(("step", "main", "receipt"))  # the last card: the board scrolls down
+        await wait(pilot, lambda: view.scroll_offset.y > 0, "the board did not scroll")
+        title = window.board.boxes[("block", "main")]
+        await pilot.click(view, offset=(title.x - view.scroll_offset.x + 2, title.y))
+        await wait(pilot, lambda: window.key == ("block", "main"), f"the click selected {window.key}")
+        window.select(("step", "main", "receipt"))  # scrolled down again: a card is still found where it is drawn
+        await wait(pilot, lambda: view.scroll_offset.y > 0, "the board did not scroll")
+        await pilot.pause(0.2)
+        visible = [key for key in window.board.lanes[0][1:] if key != window.key
+                   and window.board.header_height <= window.board.boxes[key].y + 1 - view.scroll_offset.y < view.size.height]
+        assert visible, "no other card shows below the titles"
+        card = window.board.boxes[visible[-1]]
+        await pilot.click(view, offset=(card.x - view.scroll_offset.x + 2, card.y + 1 - view.scroll_offset.y))
+        await wait(pilot, lambda: window.key == visible[-1], f"the click selected {window.key}")

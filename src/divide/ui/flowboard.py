@@ -257,17 +257,24 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
     def action_redo(self) -> None:
         self._window().source.editor.redo()
 
+    def key_at(self, x: int, y: int) -> Key | None:
+        """What is drawn at the widget's (x, y): the lane titles' rows are pinned, not scrolled."""
+        if self.board is None:
+            return None
+        row = y if y < self.board.header_height else y + self.scroll_offset.y
+        return self.board.at(x + self.scroll_offset.x, row)
+
     def on_mouse_down(self, event: events.MouseDown) -> None:
         self.tv_select_self()
         if self.board is None:
             return
-        key = self.board.at(event.x + self.scroll_offset.x, event.y + self.scroll_offset.y)
+        key = self.key_at(event.x, event.y)
         if key is not None:
             self._window().select(key)
 
     def on_click(self, event: events.Click) -> None:
         if event.chain == 2 and self.board is not None:
-            key = self.board.at(event.x + self.scroll_offset.x, event.y + self.scroll_offset.y)
+            key = self.key_at(event.x, event.y)
             if key is not None:
                 self._window().enter()
 

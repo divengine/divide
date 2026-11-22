@@ -128,8 +128,8 @@ def test_adding_an_attribute_is_one_line_with_the_siblings_indentation():
 
 
 def test_removing_an_attribute_removes_only_its_lines():
-    after = edited(COMMENTED, "main", "review", {"call": ""})
-    assert changed_lines(COMMENTED, after) == ["-                call: 'review.check'"]
+    after = edited(COMMENTED, "main", "review", {"call": "", "pause": True})  # never left empty: Runner refuses it
+    assert changed_lines(COMMENTED, after) == ["-                call: 'review.check'", "+                pause: true"]
     assert "            review:   # goes to review\n" in after  # the Step's own comment stays
 
 

@@ -39,6 +39,7 @@ ATTRS = ("module", "condition", "activity", "call", "jump", "context", "pause") 
 STEP_KEYS = ("description",) + ATTRS  # Runner's STEP_KEYS
 FUNCTION_ATTRS = ("condition", "activity")
 TARGET_ATTRS = ("call", "jump")
+IDLE = ("description", "module")  # a Step left with only these (or nothing: a null value Runner refuses) does nothing
 CHECKER = Path(__file__).with_name("flowcheck.php")
 _MODULE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_-]*$")  # Runner's MODULE_PATTERN
 _SEGMENT = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -694,6 +695,9 @@ def edit_step(doc: FlowDoc, step: Step, values: dict) -> Change | None:
     if not changes:
         return None
     _keep_comments(doc, changes)
+    left = {k for k in step.attrs if not (k in values and values[k] is None)} | {k for k, v in values.items() if v is not None}
+    if not left - set(IDLE):  # Runner: a Step is a mapping (not a null), and one with only these does nothing
+        raise EditError(_('A Step needs something to do: an activity, a call, a jump, a pause...'))
     return _merge(text, changes)
 
 

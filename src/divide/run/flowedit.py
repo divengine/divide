@@ -212,7 +212,7 @@ def _all_read(doc: FlowDoc) -> None:
                           "Rename or delete in the code (Ctrl+T)").format(blocks=", ".join(hidden)))
 
 
-IDLE = ("description", "module")  # what a Step left with only these does not have: anything to do
+IDLE = fm.IDLE  # what a Step left with only these does not have: anything to do
 
 
 def _newline(text: str) -> str:
