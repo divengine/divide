@@ -5058,14 +5058,14 @@ msgstr "Una carpeta en {root}"
 msgid "C~o~ndition: true runs the Step, false skips it"
 msgstr "C~o~ndition: true ejecuta el Step, false lo salta"
 
-msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links · ^T code"
-msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · Tab enlaces · ^T código"
+#~ msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links · ^T code"
+#~ msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · Tab enlaces · ^T código"
 
 msgid "Enter makes it, from a template, and opens it."
 msgstr "Enter la crea desde una plantilla y la abre."
 
-msgid "Enter open · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
-msgstr "Enter abrir · Ins Function · Shift+Ins Module · Alt+F10 menú · ^R recargar"
+#~ msgid "Enter open · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
+#~ msgstr "Enter abrir · Ins Function · Shift+Ins Module · Alt+F10 menú · ^R recargar"
 
 msgid "Enter opens it. Runner keeps an activity's result under the Step id."
 msgstr "Enter la abre. Runner guarda el resultado de una activity bajo el id del Step."
@@ -5335,3 +5335,246 @@ msgstr "~U~so"
 #, python-brace-format
 msgid "{key} {name}: no file {tried} (Enter, Function... makes it)"
 msgstr "{key} {name}: no hay archivo {tried} (Intro, Function... lo crea)"
+
+msgid "(Runner's importer decides)"
+msgstr "(lo decide el importador de Runner)"
+
+msgid "(not resolved)"
+msgstr "(sin resolver)"
+
+msgid "(nothing)"
+msgstr "(nada)"
+
+msgid "(output cut at 4 MB)"
+msgstr "(salida cortada a 4 MB)"
+
+msgid "A direct call: in a Flow, Runner keeps an activity's result in $context[<the Step's id>]; here no Step ran, so it is only returned."
+msgstr "Una llamada directa: en un Flow, Runner guarda el resultado de una activity en $context[<el id del Step>]; aquí no se ejecutó ningún Step, así que solo se devuelve."
+
+msgid "A program is being debugged: Ctrl+F2 ends it first."
+msgstr "Se está depurando un programa: Ctrl+F2 lo termina primero."
+
+msgid "A scenario name is letters, digits, spaces, _ . and -"
+msgstr "El nombre de un escenario son letras, dígitos, espacios, _ . y -"
+
+#, python-brace-format
+msgid "As a condition: {verdict}."
+msgstr "Como condition: {verdict}."
+
+msgid "Choose a Step with an activity or a condition"
+msgstr "Elige un Step con una activity o una condition"
+
+msgid "Context after:"
+msgstr "Contexto después:"
+
+msgid "Context before:"
+msgstr "Contexto antes:"
+
+msgid "Context changes (by reference)"
+msgstr "Cambios del contexto (por referencia)"
+
+msgid "Context: unchanged"
+msgstr "Contexto: sin cambios"
+
+msgid "Con~t~ext: a JSON object, passed by reference (Edit... as a tree or JSON)"
+msgstr "Con~t~exto: un objeto JSON, pasado por referencia (Editar... como árbol o JSON)"
+
+msgid "Debug Function"
+msgstr "Depurar Function"
+
+msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T code"
+msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · ^T código"
+
+msgid "Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
+msgstr "Enter abrir · ^F9 probar · Ins Function · Shift+Ins Module · Alt+F10 menú · ^R recargar"
+
+#, python-brace-format
+msgid "Exception {cls}: {message}"
+msgstr "Excepción {cls}: {message}"
+
+#, python-brace-format
+msgid "Exit code: {code}"
+msgstr "Código de salida: {code}"
+
+#, python-brace-format
+msgid "Expectation fails: {what}"
+msgstr "Falla lo esperado: {what}"
+
+msgid "Expectations"
+msgstr "Lo esperado"
+
+msgid "Expected conte~x~t after: keys it must hold (JSON object, optional)"
+msgstr "Conte~x~to esperado después: claves que debe tener (objeto JSON, opcional)"
+
+msgid "Expected ret~u~rn (JSON, optional)"
+msgstr "Valor devuelto esperado, ret~u~rn (JSON, opcional)"
+
+#, python-brace-format
+msgid "Fatal error: {message}"
+msgstr "Error fatal: {message}"
+
+#, python-brace-format
+msgid "File: {path}"
+msgstr "Archivo: {path}"
+
+#, python-brace-format
+msgid "Function test: {name}"
+msgstr "Prueba de Function: {name}"
+
+msgid "No Function to test"
+msgstr "No hay Function que probar"
+
+msgid "Real PHP code ran: it may have written files, used a database or the network. Not a sandbox."
+msgstr "Se ejecutó código PHP real: puede haber escrito archivos, usado una base de datos o la red. No es un sandbox."
+
+#, python-brace-format
+msgid "Replace the scenario {name} in {path}?"
+msgstr "¿Reemplazar el escenario {name} en {path}?"
+
+#, python-brace-format
+msgid "Result: {state}"
+msgstr "Resultado: {state}"
+
+#, python-brace-format
+msgid "Returned ({type}):"
+msgstr "Devuelto ({type}):"
+
+msgid "Runner is not installed: composer require divengine/runner"
+msgstr "Runner no está instalado: composer require divengine/runner"
+
+#, python-brace-format
+msgid "Running {name}... (Ctrl+F2 stops)"
+msgstr "Ejecutando {name}... (Ctrl+F2 lo detiene)"
+
+msgid "Runs the real PHP code of the project: it may write files, use a database or the network. Not a sandbox: only for code you trust."
+msgstr "Ejecuta el código PHP real del proyecto: puede escribir archivos, usar una base de datos o la red. No es un sandbox: solo para código en el que confías."
+
+msgid "Save scenario"
+msgstr "Guardar escenario"
+
+#, python-brace-format
+msgid "Saved in {path}"
+msgstr "Guardado en {path}"
+
+msgid "Sa~v~e"
+msgstr "Guarda~r~"
+
+msgid "Stopped after the time limit: PHP was ended."
+msgstr "Detenido al llegar al límite de tiempo: PHP se terminó."
+
+msgid "Test Function"
+msgstr "Probar Function"
+
+#, python-brace-format
+msgid "Test Function {name}"
+msgstr "Probar la Function {name}"
+
+msgid "Testing Function"
+msgstr "Probando la Function"
+
+msgid "The callable takes the context by value: what it changes there is not kept."
+msgstr "El callable recibe el contexto por valor: lo que cambie en él no se conserva."
+
+#, python-brace-format
+msgid "The context is not JSON: {why}"
+msgstr "El contexto no es JSON: {why}"
+
+msgid "The context must be a JSON object: {\"key\": \"value\"}"
+msgstr "El contexto debe ser un objeto JSON: {\"key\": \"value\"}"
+
+#, python-brace-format
+msgid "The expected context is not JSON: {why}"
+msgstr "El contexto esperado no es JSON: {why}"
+
+msgid "The expected context must be a JSON object, the keys to find in the context after"
+msgstr "El contexto esperado debe ser un objeto JSON, las claves que buscar en el contexto después"
+
+#, python-brace-format
+msgid "The expected return is not JSON: {why}"
+msgstr "El valor devuelto esperado no es JSON: {why}"
+
+msgid "The time limit is a number of seconds, up to 3600"
+msgstr "El límite de tiempo es un número de segundos, hasta 3600"
+
+msgid "This Step has no activity or condition to test"
+msgstr "Este Step no tiene activity ni condition que probar"
+
+msgid "Time limit"
+msgstr "Límite de tiempo"
+
+msgid "Time ~l~imit, seconds"
+msgstr "Límite de tie~m~po, segundos"
+
+msgid "an expectation fails"
+msgstr "falla algo esperado"
+
+msgid "exception"
+msgstr "excepción"
+
+msgid "exit() called"
+msgstr "exit() llamado"
+
+msgid "expectations hold"
+msgstr "se cumple lo esperado"
+
+msgid "false, the Step would skip the rest"
+msgstr "false, el Step saltaría el resto"
+
+msgid "fatal error"
+msgstr "error fatal"
+
+msgid "no result"
+msgstr "sin resultado"
+
+msgid "not run"
+msgstr "no ejecutada"
+
+msgid "returned"
+msgstr "devolvió"
+
+#, python-brace-format
+msgid "returns {value}"
+msgstr "devuelve {value}"
+
+#, python-brace-format
+msgid "the context after has {value}"
+msgstr "el contexto después tiene {value}"
+
+msgid "timed out"
+msgstr "tiempo agotado"
+
+msgid "true, the Step would run its activity, call or jump"
+msgstr "true, el Step ejecutaría su activity, call o jump"
+
+#, python-brace-format
+msgid "{module}:{name} is not a Runner reference ({what})"
+msgstr "{module}:{name} no es una referencia de Runner ({what})"
+
+#, python-brace-format
+msgid "{module}:{name}: no file {tried}"
+msgstr "{module}:{name}: no hay archivo {tried}"
+
+#, python-brace-format
+msgid "{name} · {path}"
+msgstr "{name} · {path}"
+
+#, python-brace-format
+msgid "{path} is not JSON: {why}"
+msgstr "{path} no es JSON: {why}"
+
+#, python-brace-format
+msgid "{path} is not a scenarios file"
+msgstr "{path} no es un archivo de escenarios"
+
+msgid "~E~dit..."
+msgstr "~E~ditar..."
+
+msgid "~S~cenario (optional; Save keeps it in .div/function-tests/)"
+msgstr "Esce~n~ario (opcional; Guardar lo deja en .div/function-tests/)"
+
+msgid "~T~est..."
+msgstr "~P~robar..."
+
+#, python-brace-format
+msgid "── test of {name}: {state} ──"
+msgstr "── prueba de {name}: {state} ──"

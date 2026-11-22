@@ -58,6 +58,7 @@ On the root's row, the contract above and where Runner looks.
 | **Ins** | A new Function, in the Module under the cursor (else in the root) |
 | **Shift+Ins** | A new Module |
 | **Alt+F10** (Shift+F10) | The window's menu: Function..., Module..., Settings (`.div/runner.json`) |
+| **Ctrl+F9** | Test the Function under the cursor: run or debug it with a JSON context (below) |
 | **Ctrl+R** | Read the disk again (also done when a PHP file, a Flow or the settings are saved) |
 | typing | Filter the rows |
 
@@ -91,6 +92,7 @@ In the Step dialog (Enter on a card, Ins for a new Step, in the Flow Designer an
 - **Down** on Module offers the Modules, and on Condition or Activity the Functions of that Module (or of the root).
 - **Function...** is about the Step's activity, or its condition when that is the field you were in:
   - **Open**: its file in the PHP editor, once the Step is written (as **OK**).
+  - **Test...**: the Test Function dialog for it, once the Step is written (see Test a Function).
   - **New...**: the New Function dialog, with the Step's Module. Its **OK** fills the Step's `module` and `activity` (or `condition`) and says that the file will be made. Nothing is written yet: the Step dialog's **OK** writes the Step, as one edit of the YAML (one Ctrl+Z), makes the file and opens it. **Cancel** writes and makes nothing. If the Step cannot be written, the new file is removed.
 
 ![The Step dialog after Function... > New...: module and activity filled in, and the note that OK writes the Step and makes functions/render/publish.php](images/flow-functions-step.png)
@@ -98,6 +100,54 @@ In the Step dialog (Enter on a card, Ins for a new Step, in the Flow Designer an
 A Step has one `module`, for both its condition and its activity: a new Function in another Module than the Step's other Function is refused.
 
 **Ctrl+Enter** on a Step (on the board, in the Flow window or on its line in the code) opens its Function's file. When there is none, it says where Runner looked.
+
+## Test a Function
+
+**Test Function** calls one Function on its own, with a context you give, and shows what it did: what it returned, how it changed the context, what it printed, and any exception or error with its place. It does not run a Flow or a Step.
+
+> **It runs the project's real PHP code.** The Function and whatever it calls may write files, use a database or the network. The test runs in a PHP process of its own, with a time limit and a memory limit, but that is not a sandbox, and the debugger is not one either. Test only code you trust.
+
+Open it with:
+- **Ctrl+F9** on a Function in the Functions window (on one of its Steps: as that Step uses it);
+- **T** on a Step in the Flow Designer: its activity, else its condition;
+- **Function... > Test...** in the Step dialog: the activity, or the condition if that was the field you were in.
+
+The Function is the one a run of the Flow would load: Runner's own importer resolves it, with the Flow's function root and Module folders (see Where Runner looks, below), `_modules` mappings included. With a Module, nothing outside that Module's folder is tried: the same name in another Module is never run instead.
+
+The dialog:
+- **Context**: a JSON object, the context the Function gets, by reference. **Edit...** opens it as a tree or as JSON text, the editor of a Step's context. The last input of each Function is remembered in your own settings, never in the project.
+- **Scenario**: a name for this input. **Save** writes it in the project, in `.div/function-tests/<module>/<name>.json`, as a fixture the team can use; nothing is saved there unless you save it. **Down** offers the saved ones, and choosing one fills the fields.
+- **Expected return** (JSON) and **Expected context after** (a JSON object: the keys the context must hold afterwards, a subset): optional checks.
+- **Time limit**, in seconds (30 by default): past it, PHP is ended.
+- **Run** (Enter) runs it, in a box that **Esc** stops. **Debug** runs it in the debugger.
+
+Unsaved PHP files are saved first: PHP runs what is on disk.
+
+### The report
+
+The Output window has, each part apart:
+- the file Runner's importer loaded, and how the call ended: returned, exception, fatal error, `exit()`, not found, time limit, stopped;
+- the expectations, `ok` or `FAIL`;
+- **the returned value**, as JSON (objects, closures and resources described), and its type. This is a direct call: in a Flow, Runner would keep an activity's result in `$context[<the Step's id>]`; here no Step runs, so it is only returned. For a condition, the report says what the value would do to a Step (true runs it, false skips the rest);
+- an exception's class, message, file and line, and its trace; a fatal error's message and place;
+- **the context's changes**, key by key (`+` added, `~` changed, `-` removed), then the context before and after;
+- **stdout** and **stderr**, what the Function printed, never mixed with the result.
+
+An exception's or a fatal error's place, PHP's warnings, and a failed expectation go to Messages, where Enter opens the file at that line.
+
+### Debug a Function
+
+**Debug** makes the same call under the [[debugger|Debugging PHP]], with Xdebug. When the Function's file has no breakpoint, the debugger stops at the Function's first line; otherwise it runs to your breakpoints, in the Function or in any PHP file it calls. Then **F7**, **F8**, **Shift+F8**, **F4**, watches, the call stack and **Ctrl+F4** work as for any PHP script, **Ctrl+F9** goes on, and **Ctrl+F2** ends it. When it ends, the same report appears in Output.
+
+### How it calls the Function
+
+A small PHP harness that ships with divide, in the project's folder:
+1. loads the project's Composer autoload (`vendor/autoload.php`) and Runner;
+2. resolves the Function with `runner::importer()`;
+3. calls it as Runner calls a condition or an activity, `$func($context)`, with `$context['_importer']` in the context so it can import other Functions;
+4. writes the result to a temporary file of its own.
+
+It never writes a Flow's saved context (`.div/runner/`), the Function, or any file of yours.
 
 ## Where Runner looks
 
@@ -142,5 +192,5 @@ Any other callable is not judged: an invokable object, a function's name, `requi
 ## Limits
 
 - The window makes Modules and Functions; it does not rename, move or delete them. That is the [[Project Window]]'s, and the Flow's references are then yours to change.
-- It does not run a Function on its own, nor simulate one or a Flow. Running is Runner's, with the whole Flow ([[Running Flows]]).
+- A Function test runs real PHP, once; it does not simulate a Function with mocks, nor a Flow. Running a Flow is Runner's ([[Running Flows]]).
 - References are read where they are written literally. An import whose name is computed at run time is unknown.

@@ -892,6 +892,67 @@ async def functions():
 
 
 @shot
+async def functest():
+    """Test Function on examples/generator (composer install there; Debug needs Xdebug: DIVIDE_XDEBUG
+    or php.ini): the dialog from T on validate.identifiers, the report in Output, and the debugger
+    stopped in the Function."""
+    import tempfile as _tempfile
+    from divide import config as _config
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flowboard import FlowDesignWindow
+    from divide.ui.functest import FunctionTestDialog
+    example = ROOT / "examples" / "generator"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        print("skipped functest: composer install in examples/generator")
+        return
+    if os.environ.get("DIVIDE_XDEBUG"):
+        settings = _config.load()
+        settings["xdebug"] = os.environ["DIVIDE_XDEBUG"]
+        _config.save(settings)
+    with _tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "generator"
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", "build"))
+        flow = root / "flows" / "generate_php_dto.yml"
+        app = Divide(root, [flow])
+        async with app.run_test(size=(120, 34)) as pilot:
+            await settle(pilot, 10)
+            app.run_command(CM_FLOW_DESIGN)
+            await until(pilot, lambda: isinstance(app.active_window(), FlowDesignWindow), tries=200)
+            designer = app.active_window()
+            await until(pilot, lambda: id(designer.source.editor) in app._flow_checks, tries=300)
+            designer.select(("step", "validate", "identifiers"))
+            await settle(pilot, 4)
+            await pilot.press("t")
+            await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FunctionTestDialog), tries=200)
+            dialog = app.screen.dialog
+            dialog.context_input.data = '{"dto": {"namespace": "Acme\\\\Dto", "class": "package", "fields": [{"name": "id"}, {"name": "id"}]}, "problems": [], "trail": []}'
+            dialog.return_input.data = "2"
+            await settle(pilot, 6)
+            save(app, "function-test-dialog")
+            await pilot.press("enter")
+            await until(pilot, lambda: app.output_window() is not None and "validate:identifiers" in app.output_window().view.text, tries=400)
+            await settle(pilot, 10)
+            from divide.ui.progress import ProgressScreen
+            if isinstance(app.screen, ProgressScreen):
+                await pilot.press("escape")
+            await settle(pilot, 6)
+            save(app, "function-test-report")
+            app.raise_window(designer)
+            designer.board_view.focus()
+            await settle(pilot, 4)
+            await pilot.press("t")
+            await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), FunctionTestDialog), tries=200)
+            await pilot.press("alt+d")
+            await until(pilot, lambda: app.paused, tries=400)
+            await pilot.press("f8", "f8")
+            await until(pilot, lambda: app.paused, tries=200)
+            await settle(pilot, 10)
+            save(app, "function-test-debug")
+            await pilot.press("ctrl+f2")
+            await settle(pilot, 6)
+
+
+@shot
 async def trace():
     """Debug > Render trace on the shop: the row where Div decides the condition."""
     from divide.ui.tracer import TraceWindow

@@ -58,6 +58,7 @@ En la fila de la raíz, el contrato de arriba y dónde busca Runner.
 | **Ins** | Una Function nueva, en el Module bajo el cursor (si no, en la raíz) |
 | **Shift+Ins** | Un Module nuevo |
 | **Alt+F10** (Shift+F10) | El menú de la ventana: Function..., Module..., Ajustes (`.div/runner.json`) |
+| **Ctrl+F9** | Probar la Function bajo el cursor: ejecutarla o depurarla con un contexto JSON (abajo) |
 | **Ctrl+R** | Leer el disco otra vez (también se hace al guardar un archivo PHP, un Flow o los ajustes) |
 | escribir | Filtrar las filas |
 
@@ -91,6 +92,7 @@ En el diálogo del Step (Intro en una tarjeta, Ins para un Step nuevo, en el dis
 - **Abajo** en Module ofrece los Modules, y en Condition o Activity las Functions de ese Module (o de la raíz).
 - **Function...** trata de la activity del Step, o de su condition cuando ese es el campo en el que estabas:
   - **Abrir**: su archivo en el editor de PHP, una vez escrito el Step (como **OK**).
+  - **Probar...**: el diálogo Probar Function para ella, una vez escrito el Step (ver Probar una Function).
   - **Nueva...**: el diálogo Nueva Function, con el Module del Step. Su **OK** rellena el `module` y la `activity` (o la `condition`) del Step y dice que el archivo se va a crear. Todavía no se escribe nada: el **OK** del diálogo del Step escribe el Step, como una sola edición del YAML (un Ctrl+Z), crea el archivo y lo abre. **Cancelar** no escribe ni crea nada. Si el Step no se puede escribir, el archivo nuevo se quita.
 
 ![El diálogo del Step después de Function... > Nueva...: module y activity rellenos, y la nota de que OK escribe el Step y crea functions/render/publish.php](images/flow-functions-step.png)
@@ -98,6 +100,54 @@ En el diálogo del Step (Intro en una tarjeta, Ins para un Step nuevo, en el dis
 Un Step tiene un solo `module`, para su condition y su activity: se rechaza una Function nueva en otro Module que el de la otra Function del Step.
 
 **Ctrl+Enter** en un Step (en el tablero, en la ventana Flow o en su línea del código) abre el archivo de su Function. Cuando no lo hay, dice dónde buscó Runner.
+
+## Probar una Function
+
+**Probar Function** llama a una Function sola, con el contexto que le des, y muestra lo que hizo: qué devolvió, cómo cambió el contexto, qué imprimió, y cualquier excepción o error con su lugar. No ejecuta un Flow ni un Step.
+
+> **Ejecuta el código PHP real del proyecto.** La Function y todo lo que llama pueden escribir archivos, usar una base de datos o la red. La prueba se ejecuta en un proceso PHP propio, con un límite de tiempo y uno de memoria, pero eso no es un sandbox, y el depurador tampoco lo es. Prueba solo código en el que confías.
+
+Se abre con:
+- **Ctrl+F9** sobre una Function en la ventana Functions (sobre uno de sus Steps: como la usa ese Step);
+- **T** sobre un Step en el diseñador de Flows: su activity, si no su condition;
+- **Function... > Probar...** en el diálogo del Step: la activity, o la condition si ese era el campo en el que estabas.
+
+La Function es la que cargaría una ejecución del Flow: la resuelve el propio importador de Runner, con la raíz de funciones y las carpetas de los Modules del Flow (ver Dónde busca Runner, abajo), incluidos los `_modules`. Con un Module, no se prueba nada fuera de su carpeta: nunca se ejecuta en su lugar el mismo nombre de otro Module.
+
+El diálogo:
+- **Contexto**: un objeto JSON, el contexto que recibe la Function, por referencia. **Editar...** lo abre como árbol o como texto JSON, el editor del contexto de un Step. La última entrada de cada Function se recuerda en tus propios ajustes, nunca en el proyecto.
+- **Escenario**: un nombre para esta entrada. **Guardar** lo escribe en el proyecto, en `.div/function-tests/<module>/<nombre>.json`, como fixture para el equipo; no se guarda nada ahí si no lo guardas. **Abajo** ofrece los guardados, y elegir uno rellena los campos.
+- **Valor devuelto esperado** (JSON) y **Contexto esperado después** (un objeto JSON: las claves que debe tener el contexto después, un subconjunto): comprobaciones opcionales.
+- **Límite de tiempo**, en segundos (30 por defecto): pasado, PHP se termina.
+- **Ejecutar** (Intro) la ejecuta, en un cuadro que **Esc** detiene. **Depurar** la ejecuta en el depurador.
+
+Los archivos PHP sin guardar se guardan antes: PHP ejecuta lo que está en el disco.
+
+### El informe
+
+La ventana de salida tiene, cada parte por separado:
+- el archivo que cargó el importador de Runner, y cómo terminó la llamada: devolvió, excepción, error fatal, `exit()`, no encontrada, límite de tiempo, detenida;
+- lo esperado, `ok` o `FAIL`;
+- **el valor devuelto**, como JSON (objetos, closures y recursos descritos), y su tipo. Es una llamada directa: en un Flow, Runner guardaría el resultado de una activity en `$context[<el id del Step>]`; aquí no se ejecuta ningún Step, así que solo se devuelve. Para una condition, el informe dice qué haría el valor con un Step (true lo ejecuta, false salta el resto);
+- la clase, el mensaje, el archivo y la línea de una excepción, y su traza; el mensaje y el lugar de un error fatal;
+- **los cambios del contexto**, clave por clave (`+` añadida, `~` cambiada, `-` quitada), y después el contexto antes y después;
+- **stdout** y **stderr**, lo que imprimió la Function, nunca mezclado con el resultado.
+
+El lugar de una excepción o de un error fatal, los avisos de PHP y lo esperado que falla van a Mensajes, donde Intro abre el archivo en esa línea.
+
+### Depurar una Function
+
+**Depurar** hace la misma llamada en el [[depurador|Debugging PHP]], con Xdebug. Cuando el archivo de la Function no tiene ningún punto de ruptura, el depurador se para en la primera línea de la Function; si no, va hasta tus puntos de ruptura, en la Function o en cualquier archivo PHP que llame. Después **F7**, **F8**, **Shift+F8**, **F4**, las inspecciones, la pila de llamadas y **Ctrl+F4** funcionan como en cualquier script PHP, **Ctrl+F9** sigue y **Ctrl+F2** termina. Al terminar, el mismo informe aparece en la ventana de salida.
+
+### Cómo llama a la Function
+
+Un pequeño harness PHP que viene con divide, en la carpeta del proyecto:
+1. carga el autoload de Composer del proyecto (`vendor/autoload.php`) y Runner;
+2. resuelve la Function con `runner::importer()`;
+3. la llama como Runner llama a una condition o una activity, `$func($context)`, con `$context['_importer']` en el contexto para que pueda importar otras Functions;
+4. escribe el resultado en un archivo temporal propio.
+
+Nunca escribe el contexto guardado de un Flow (`.div/runner/`), la Function ni ningún archivo tuyo.
 
 ## Dónde busca Runner
 
@@ -142,5 +192,5 @@ Cualquier otro callable no se juzga: un objeto invocable, el nombre de una funci
 ## Límites
 
 - La ventana crea Modules y Functions; no los renombra, mueve ni borra. Eso es de la [[ventana de proyecto|Project Window]], y entonces las referencias del Flow las cambias tú.
-- No ejecuta una Function sola, ni simula una Function o un Flow. Ejecutar es de Runner, con el Flow entero ([[Ejecutar Flows|Running Flows]]).
+- Una prueba de Function ejecuta PHP real, una vez; no simula una Function con mocks, ni un Flow. Ejecutar un Flow es de Runner ([[Ejecutar Flows|Running Flows]]).
 - Las referencias se leen donde están escritas literalmente. Una importación cuyo nombre se calcula al ejecutar es desconocida.

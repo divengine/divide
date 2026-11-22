@@ -129,6 +129,7 @@ from divide.ui.mcp import McpMixin
 from divide.ui.flow import FlowMixin
 from divide.ui.flowboard import FlowDesignWindow
 from divide.ui.flowfunctions import FlowFunctionsMixin, FunctionsWindow
+from divide.ui.functest import FunctionTestMixin
 from divide.ui.flowmodel import FlowModelMixin, FlowView, FlowWindow
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.forge import CM_FORGE, ForgeMixin
@@ -364,7 +365,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowModelMixin, FlowFunctionsMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowModelMixin, FlowFunctionsMixin, FunctionTestMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -444,6 +445,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
         self._mcp_init()
         self._flow_init()
         self._flowmodel_init()
+        self._functest_init()
         self.folder: Path | None = root.resolve() if root is not None else None  # the open folder: the project
         self._loose_dir: Path | None = None  # without a folder: where the last file opened is
         self.initial_files = files
@@ -1131,6 +1133,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
             case _ if command == CM_RENDER:
                 if self.wants_run():
                     await self.run_script_command()
+                elif self.wants_function_test():
+                    await self.function_test_command()
                 elif self.wants_flow():
                     await self.flow_command()
                 else:

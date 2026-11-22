@@ -109,6 +109,7 @@ At 80 columns the board shows two or three lanes and the inspector goes under it
 | **C / J** | Connect the selected Step with a `call` / `jump`: choose its target on the board |
 | **X** | Edit the selected Step's context, as a tree or as JSON |
 | **F** | The Flow's Modules and Functions ([[Flow Functions]]) |
+| **T** | Test the Step's Function: run or debug it with a JSON context ([[Flow Functions]]) |
 | **Ins** | A new Step after the selected one (on a lane's title: at the end of the Block) |
 | **B** | A new Block after the selected one's, with its first Step |
 | **Del** | Delete the Step or Block (asked first), or remove the chosen connection |

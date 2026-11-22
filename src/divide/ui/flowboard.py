@@ -131,6 +131,7 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         Binding("j", "connect('jump')", "Jump", show=False),
         Binding("x", "context", "Context", show=False),
         Binding("f", "functions", "Functions", show=False),
+        Binding("t", "test_function", "Test Function", show=False),
         Binding("ctrl+up,alt+up", "reorder(0, -1)", "Step up", show=False),
         Binding("ctrl+down,alt+down", "reorder(0, 1)", "Step down", show=False),
         Binding("ctrl+left,alt+left", "reorder(-1, 0)", "Block left", show=False),
@@ -287,6 +288,9 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
     def action_connect(self, key: str) -> None:
         self._window().connect(key)
 
+    def action_test_function(self) -> None:
+        self._window().test_step_function()
+
     def action_functions(self) -> None:
         window = self._window()
         self.app.open_flow_functions(window.source)  # type: ignore[attr-defined]
@@ -397,7 +401,7 @@ class BlockDialog(_Dialog):
 class FlowDesignWindow(FlowView):
     """The board | the selected item, with Runner's verdict below (under the board when narrow)."""
 
-    HINT = _('Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links · ^T code')
+    HINT = _('Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T code')
     DEFAULT_CSS = """
     FlowDesignWindow .design-main { layout: horizontal; width: 1fr; height: 1fr; }
     FlowDesignWindow .design-left { width: 1fr; height: 1fr; }

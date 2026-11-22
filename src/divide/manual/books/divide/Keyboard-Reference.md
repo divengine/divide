@@ -118,6 +118,7 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **C / J** | connect a `call` / `jump`: choose the target, Enter |
 | **X** | the Step's context, as a tree or as JSON |
 | **F** | the Flow's Modules and Functions |
+| **T** | test the Step's Function |
 | **Ins** / **B** | new Step / new Block |
 | **Del** | delete the Step or Block, or remove the chosen connection |
 | **Ctrl+↑ / Ctrl+↓** | move the Step in its Block |
@@ -131,6 +132,7 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 |---|---|
 | **Enter** | open the Function (at its `return`), go to the Step, or make the missing Function |
 | **Ins** / **Shift+Ins** | new Function (in the Module under the cursor) / new Module |
+| **Ctrl+F9** | test the Function: run or debug it with a JSON context |
 | **Alt+F10** / **Shift+F10** | menu: Function..., Module..., Settings (`.div/runner.json`) |
 | **Ctrl+R** | read the disk again |
 

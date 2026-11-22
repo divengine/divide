@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-22 16:29+0000\n"
+"POT-Creation-Date: 2026-11-22 18:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -105,6 +105,9 @@ msgstr ""
 msgid "(Ins adds a watch; variables show while the debugger is paused)"
 msgstr ""
 
+msgid "(Runner's importer decides)"
+msgstr ""
+
 msgid "(as typed)"
 msgstr ""
 
@@ -144,6 +147,9 @@ msgstr ""
 msgid "(none)"
 msgstr ""
 
+msgid "(not resolved)"
+msgstr ""
+
 msgid "(not running)"
 msgstr ""
 
@@ -163,6 +169,12 @@ msgid "(nothing to do)"
 msgstr ""
 
 msgid "(nothing to list)"
+msgstr ""
+
+msgid "(nothing)"
+msgstr ""
+
+msgid "(output cut at 4 MB)"
 msgstr ""
 
 msgid "(outside: read-only)"
@@ -271,6 +283,11 @@ msgid ""
 "files of this folder. A Module is not a Block."
 msgstr ""
 
+msgid ""
+"A direct call: in a Flow, Runner keeps an activity's result in "
+"$context[<the Step's id>]; here no Step ran, so it is only returned."
+msgstr ""
+
 msgid "A folder cannot go inside itself."
 msgstr ""
 
@@ -279,6 +296,12 @@ msgid "A folder in {root}"
 msgstr ""
 
 msgid "A monochrome screen: white and grays on black, nothing told by hue."
+msgstr ""
+
+msgid "A program is being debugged: Ctrl+F2 ends it first."
+msgstr ""
+
+msgid "A scenario name is letters, digits, spaces, _ . and -"
 msgstr ""
 
 #, python-brace-format
@@ -353,6 +376,10 @@ msgid ""
 msgstr ""
 
 msgid "Apply it, ~k~eeping it"
+msgstr ""
+
+#, python-brace-format
+msgid "As a condition: {verdict}."
 msgstr ""
 
 msgid "As in a shell: quotes keep spaces. Ctrl+F9 and the debugger pass them."
@@ -588,6 +615,9 @@ msgstr ""
 msgid "Checking"
 msgstr ""
 
+msgid "Choose a Step with an activity or a condition"
+msgstr ""
+
 msgid "Choose a package (vendor/package)"
 msgstr ""
 
@@ -710,6 +740,15 @@ msgstr ""
 msgid "Context"
 msgstr ""
 
+msgid "Context after:"
+msgstr ""
+
+msgid "Context before:"
+msgstr ""
+
+msgid "Context changes (by reference)"
+msgstr ""
+
 msgid "Context not saved"
 msgstr ""
 
@@ -719,6 +758,12 @@ msgstr ""
 
 #, python-brace-format
 msgid "Context saved to {path}"
+msgstr ""
+
+msgid "Context: unchanged"
+msgstr ""
+
+msgid "Con~t~ext: a JSON object, passed by reference (Edit... as a tree or JSON)"
 msgstr ""
 
 #, python-brace-format
@@ -846,6 +891,9 @@ msgid "Dates {/div.now:Y-m-d/}, numbers {#price:2.#} and formulas (# 1 + 2 #)"
 msgstr ""
 
 msgid "Debug"
+msgstr ""
+
+msgid "Debug Function"
 msgstr ""
 
 msgid "Deep grays, light text and a blue accent, high contrast."
@@ -1153,8 +1201,8 @@ msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, examp
 msgstr ""
 
 msgid ""
-"Enter edit · Ins Step · B Block · C/J connect · F functions · Tab links ·"
-" ^T code"
+"Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T"
+" code"
 msgstr ""
 
 msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
@@ -1205,7 +1253,9 @@ msgstr ""
 msgid "Enter open · Del forget a recent one · type to filter"
 msgstr ""
 
-msgid "Enter open · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
+msgid ""
+"Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · "
+"^R reload"
 msgstr ""
 
 msgid "Enter opens it. Runner keeps an activity's result under the Step id."
@@ -1256,11 +1306,32 @@ msgstr ""
 msgid "Example template"
 msgstr ""
 
+#, python-brace-format
+msgid "Exception {cls}: {message}"
+msgstr ""
+
 msgid "Exit code"
 msgstr ""
 
 #, python-brace-format
 msgid "Exit code {exit_code}"
+msgstr ""
+
+#, python-brace-format
+msgid "Exit code: {code}"
+msgstr ""
+
+#, python-brace-format
+msgid "Expectation fails: {what}"
+msgstr ""
+
+msgid "Expectations"
+msgstr ""
+
+msgid "Expected conte~x~t after: keys it must hold (JSON object, optional)"
+msgstr ""
+
+msgid "Expected ret~u~rn (JSON, optional)"
 msgstr ""
 
 msgid "Export as ~P~HP code"
@@ -1290,6 +1361,10 @@ msgstr ""
 msgid "False end suffix"
 msgstr ""
 
+#, python-brace-format
+msgid "Fatal error: {message}"
+msgstr ""
+
 msgid "Fetching from the remotes"
 msgstr ""
 
@@ -1300,6 +1375,10 @@ msgid "File extensions"
 msgstr ""
 
 msgid "File h~i~story"
+msgstr ""
+
+#, python-brace-format
+msgid "File: {path}"
 msgstr ""
 
 msgid "Files changed since the last commit, not staged yet: Space stages them."
@@ -1412,6 +1491,10 @@ msgid "Function root "
 msgstr ""
 
 msgid "Function separator"
+msgstr ""
+
+#, python-brace-format
+msgid "Function test: {name}"
 msgstr ""
 
 msgid "Functions"
@@ -1850,6 +1933,9 @@ msgid "Next page"
 msgstr ""
 
 msgid "Ne~w~ composer.json..."
+msgstr ""
+
+msgid "No Function to test"
 msgstr ""
 
 msgid "No Xdebug: it serves, but requests cannot be debugged"
@@ -2318,6 +2404,11 @@ msgstr ""
 msgid "Read-only: {why}"
 msgstr ""
 
+msgid ""
+"Real PHP code ran: it may have written files, used a database or the "
+"network. Not a sandbox."
+msgstr ""
+
 msgid "Recent files"
 msgstr ""
 
@@ -2396,6 +2487,10 @@ msgstr ""
 msgid "Replace"
 msgstr ""
 
+#, python-brace-format
+msgid "Replace the scenario {name} in {path}?"
+msgstr ""
+
 msgid "Replace this occurrence?"
 msgstr ""
 
@@ -2428,10 +2523,18 @@ msgstr ""
 msgid "Result: {result}"
 msgstr ""
 
+#, python-brace-format
+msgid "Result: {state}"
+msgstr ""
+
 msgid "Resuming Flow"
 msgstr ""
 
 msgid "Res~u~me"
+msgstr ""
+
+#, python-brace-format
+msgid "Returned ({type}):"
 msgstr ""
 
 msgid "Router script"
@@ -2477,6 +2580,9 @@ msgid ""
 "divengine/runner (divide runs {bootstrap})"
 msgstr ""
 
+msgid "Runner is not installed: composer require divengine/runner"
+msgstr ""
+
 #, python-brace-format
 msgid ""
 "Runner {version} is installed; divide needs 0.2.0 or newer, the first "
@@ -2498,7 +2604,16 @@ msgid "Running Flow"
 msgstr ""
 
 #, python-brace-format
+msgid "Running {name}... (Ctrl+F2 stops)"
+msgstr ""
+
+#, python-brace-format
 msgid "Running: {url}"
+msgstr ""
+
+msgid ""
+"Runs the real PHP code of the project: it may write files, use a database"
+" or the network. Not a sandbox: only for code you trust."
 msgstr ""
 
 msgid "Runtime (require)"
@@ -2518,6 +2633,9 @@ msgid "Save failed: {exc}"
 msgstr ""
 
 msgid "Save file as"
+msgstr ""
+
+msgid "Save scenario"
 msgstr ""
 
 msgid "Save the Flow first (F2): Runner runs files."
@@ -2547,6 +2665,10 @@ msgstr ""
 msgid "Saved context: "
 msgstr ""
 
+#, python-brace-format
+msgid "Saved in {path}"
+msgstr ""
+
 msgid "Saved to"
 msgstr ""
 
@@ -2555,6 +2677,9 @@ msgid "Saved {name}"
 msgstr ""
 
 msgid "Say into which branch it goes (main, for example)."
+msgstr ""
+
+msgid "Sa~v~e"
 msgstr ""
 
 msgid "Script"
@@ -2692,6 +2817,9 @@ msgstr ""
 msgid "Stopped"
 msgstr ""
 
+msgid "Stopped after the time limit: PHP was ended."
+msgstr ""
+
 #, python-brace-format
 msgid "Stopped by you: PHP was killed; nothing was saved{kept}."
 msgstr ""
@@ -2784,6 +2912,16 @@ msgstr ""
 msgid "Template variables"
 msgstr ""
 
+msgid "Test Function"
+msgstr ""
+
+#, python-brace-format
+msgid "Test Function {name}"
+msgstr ""
+
+msgid "Testing Function"
+msgstr ""
+
 #, python-brace-format
 msgid "The Flow already has a Block '{block}'"
 msgstr ""
@@ -2839,6 +2977,11 @@ msgstr ""
 msgid "The blocks are written another way: add the Block in the code (Ctrl+T)"
 msgstr ""
 
+msgid ""
+"The callable takes the context by value: what it changes there is not "
+"kept."
+msgstr ""
+
 msgid "The changes go aside, the files go back to the last commit"
 msgstr ""
 
@@ -2858,6 +3001,10 @@ msgid "The context is not JSON: {error}"
 msgstr ""
 
 #, python-brace-format
+msgid "The context is not JSON: {why}"
+msgstr ""
+
+#, python-brace-format
 msgid "The context is not YAML: write a mapping, {a: 1, b: x}"
 msgstr ""
 
@@ -2865,6 +3012,10 @@ msgid "The context is not a mapping of key: value: edit it in the code (Ctrl+T)"
 msgstr ""
 
 msgid "The context must be a JSON object"
+msgstr ""
+
+#, python-brace-format
+msgid "The context must be a JSON object: {\"key\": \"value\"}"
 msgstr ""
 
 #, python-brace-format
@@ -2913,6 +3064,19 @@ msgstr ""
 
 #, python-brace-format
 msgid "The edit was undone: {problem}"
+msgstr ""
+
+#, python-brace-format
+msgid "The expected context is not JSON: {why}"
+msgstr ""
+
+msgid ""
+"The expected context must be a JSON object, the keys to find in the "
+"context after"
+msgstr ""
+
+#, python-brace-format
+msgid "The expected return is not JSON: {why}"
 msgstr ""
 
 msgid "The file there is not a context saved by Runner."
@@ -3011,6 +3175,9 @@ msgstr ""
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr ""
 
+msgid "The time limit is a number of seconds, up to 3600"
+msgstr ""
+
 #, python-brace-format
 msgid "The {count} comment(s) written in it go with it."
 msgstr ""
@@ -3021,6 +3188,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "These lead to it and lose their {what}: {refs}."
+msgstr ""
+
+msgid "This Step has no activity or condition to test"
 msgstr ""
 
 msgid "This Step has no call, jump, activity or condition to go to"
@@ -3053,6 +3223,12 @@ msgid "Throw away the changes to {file}? They cannot be brought back."
 msgstr ""
 
 msgid "Time"
+msgstr ""
+
+msgid "Time limit"
+msgstr ""
+
+msgid "Time ~l~imit, seconds"
 msgstr ""
 
 msgid "Toggle ~b~reakpoint"
@@ -3408,6 +3584,9 @@ msgstr ""
 msgid "an arrow function"
 msgstr ""
 
+msgid "an expectation fails"
+msgstr ""
+
 msgid "an extension is expected, like \"tpl\""
 msgstr ""
 
@@ -3567,12 +3746,27 @@ msgstr ""
 msgid "error"
 msgstr ""
 
+msgid "exception"
+msgstr ""
+
 #, python-brace-format
 msgid "exit code {exit_code}"
 msgstr ""
 
+msgid "exit() called"
+msgstr ""
+
+msgid "expectations hold"
+msgstr ""
+
 #, python-brace-format
 msgid "expected ':' after the key {key!r}"
+msgstr ""
+
+msgid "false, the Step would skip the rest"
+msgstr ""
+
+msgid "fatal error"
 msgstr ""
 
 msgid "file"
@@ -3727,6 +3921,9 @@ msgid ""
 "servers"
 msgstr ""
 
+msgid "no result"
+msgstr ""
+
 #, python-brace-format
 msgid "no such file: {path}"
 msgstr ""
@@ -3753,6 +3950,9 @@ msgid "not in the Flow"
 msgstr ""
 
 msgid "not installed"
+msgstr ""
+
+msgid "not run"
 msgstr ""
 
 msgid "not run (invocation error)"
@@ -3835,10 +4035,17 @@ msgstr ""
 msgid "resumed, "
 msgstr ""
 
+msgid "returned"
+msgstr ""
+
 msgid "returns"
 msgstr ""
 
 msgid "returns here when the called Block ends"
+msgstr ""
+
+#, python-brace-format
+msgid "returns {value}"
 msgstr ""
 
 msgid ""
@@ -3903,6 +4110,10 @@ msgstr ""
 msgid "the callable needs {n} arguments: Runner passes only the context"
 msgstr ""
 
+#, python-brace-format
+msgid "the context after has {value}"
+msgstr ""
+
 msgid "the context's _modules"
 msgstr ""
 
@@ -3960,10 +4171,16 @@ msgstr ""
 msgid "this is missing"
 msgstr ""
 
+msgid "timed out"
+msgstr ""
+
 msgid "too long: cut"
 msgstr ""
 
 msgid "true colour"
+msgstr ""
+
+msgid "true, the Step would run its activity, call or jump"
 msgstr ""
 
 msgid "txt block"
@@ -4269,6 +4486,14 @@ msgid "{key}: not a setting of {file} (root, modules)"
 msgstr ""
 
 #, python-brace-format
+msgid "{module}:{name} is not a Runner reference ({what})"
+msgstr ""
+
+#, python-brace-format
+msgid "{module}:{name}: no file {tried}"
+msgstr ""
+
+#, python-brace-format
 msgid ""
 "{name} cannot be a branch name: no spaces or symbols such as .. : ? * [ "
 "^, and not starting with - or ."
@@ -4350,6 +4575,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{name} {strip} has no closing {strip2}{where}"
+msgstr ""
+
+#, python-brace-format
+msgid "{name} · {path}"
 msgstr ""
 
 #, python-brace-format
@@ -4495,6 +4724,10 @@ msgid "{path} is not JSON: {error}"
 msgstr ""
 
 #, python-brace-format
+msgid "{path} is not JSON: {why}"
+msgstr ""
+
+#, python-brace-format
 msgid "{path} is not a JSON object"
 msgstr ""
 
@@ -4504,6 +4737,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{path} is not a folder"
+msgstr ""
+
+#, python-brace-format
+msgid "{path} is not a scenarios file"
 msgstr ""
 
 #, python-brace-format
@@ -4851,6 +5088,9 @@ msgid "~E~dit data"
 msgstr ""
 
 msgid "~E~dit section..."
+msgstr ""
+
+msgid "~E~dit..."
 msgstr ""
 
 msgid "~E~ngine (autoload.php or div.php)"
@@ -5226,6 +5466,9 @@ msgstr ""
 msgid "~S~ave context to, --save-context (empty: not saved)"
 msgstr ""
 
+msgid "~S~cenario (optional; Save keeps it in .div/function-tests/)"
+msgstr ""
+
 msgid "~S~earch"
 msgstr ""
 
@@ -5272,6 +5515,9 @@ msgid "~T~emplate"
 msgstr ""
 
 msgid "~T~emplates (DIV_DEFAULT_TPL_FILE_EXT)"
+msgstr ""
+
+msgid "~T~est..."
 msgstr ""
 
 msgid "~T~ext to find"
@@ -5389,6 +5635,10 @@ msgid "── run of {name}: {split} ──"
 msgstr ""
 
 msgid "── stderr ──"
+msgstr ""
+
+#, python-brace-format
+msgid "── test of {name}: {state} ──"
 msgstr ""
 
 #, python-brace-format

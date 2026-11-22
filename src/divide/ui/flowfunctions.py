@@ -306,7 +306,7 @@ class FunctionTree(FilteredTree, Tree[Row], TVViewMixin):
 class FunctionsWindow(_TVWindow):
     """Modules and Functions | what the selected one is (its file, the Steps that use it, its callable)."""
 
-    HINT = _('Enter open · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload')
+    HINT = _('Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload')
     BINDINGS = [
         Binding("insert", "new_function", show=False),
         Binding("shift+insert", "new_module", show=False),

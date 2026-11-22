@@ -286,7 +286,7 @@ class RunMixin:
         items = []
         if self.run_messages and (path is None or path == self.last_script):
             items += self.run_messages
-        return items + self.flow_items(path) + self.web_items()  # type: ignore[attr-defined]
+        return items + self.flow_items(path) + self.function_items + self.web_items()  # type: ignore[attr-defined]
 
     async def run_parameters(self) -> None:
         """Run > Parameters: the script's ``$argv`` (remembered per script)."""
@@ -426,6 +426,8 @@ class RunMixin:
         if session.request is not None:  # a web request: what it printed went to the browser
             self.notify(f"{session.request}: {'ended (program reset)' if reset else 'done'}", timeout=2)
             self.update_status()
+            return
+        if self.function_debug_ended(session, reset):  # type: ignore[attr-defined]  # a Function test: its report
             return
         state = _('program reset') if reset else _('exit code {exit_code}').format(exit_code=session.exit_code)
         summary = f"{session.script.name} · {state} · {size_text(session.output)}"

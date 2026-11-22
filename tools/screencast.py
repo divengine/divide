@@ -1322,6 +1322,86 @@ async def flow_functions(rec_dir: Path) -> Recorder:
 SCENES["flow-functions"] = flow_functions
 
 
+async def function_test(rec_dir: Path) -> Recorder:
+    """Flow-Functions.md, Test a Function: T on a Step, a JSON context, Run and its report, then
+    Debug: stopped in the Function, a step, on to the same report (Xdebug: DIVIDE_XDEBUG or php.ini)."""
+    from divide import config as _config
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flowboard import FlowDesignWindow
+    from divide.ui.functest import FunctionTestDialog
+    example = Path(__file__).resolve().parent.parent / "examples" / "generator"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        sys.exit("composer install in examples/generator first")
+    if os.environ.get("DIVIDE_XDEBUG"):
+        settings = _config.load()
+        settings["xdebug"] = os.environ["DIVIDE_XDEBUG"]
+        _config.save(settings)
+    root = rec_dir.parent / "generator"
+    shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", "build"))
+    app = Divide(root, [root / "flows" / "generate_php_dto.yml"])
+
+    def dialog():
+        return getattr(app.screen, "dialog", None) if isinstance(getattr(app.screen, "dialog", None), FunctionTestDialog) else None
+
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        app.run_command(CM_FLOW_DESIGN)
+        await until(pilot, lambda: isinstance(app.active_window(), FlowDesignWindow), tries=200)
+        designer = app.active_window()
+        await until(pilot, lambda: id(designer.source.editor) in app._flow_checks, tries=300)
+        designer.select(("step", "validate", "identifiers"))
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("T on a Step: test its Function on its own, with a JSON context",
+                       "T en un Step: probar su Function sola, con un contexto JSON"))
+        await rec.snap(1.6, 8)
+        await pilot.press("t")
+        await rec.until(lambda: dialog() is not None)
+        await rec.snap(1.0)
+        text = '{"dto": {"class": "package", "fields": [{"name": "id"}, {"name": "id"}]}, "problems": [], "trail": []}'
+        for end in range(8, len(text) + 8, 8):  # as typed (JSON's punctuation has no key names)
+            dialog().context_input.data = text[:end]
+            await rec.snap(0.12, 2)
+        await rec.snap(0.8)
+        rec.caption(tr("What it should return, if you like; and a warning: this is real PHP",
+                       "Lo que debería devolver, si quieres; y un aviso: es PHP real"))
+        dialog().return_input.tv_select_self()
+        await rec.snap(0.3)
+        await rec.type("2")
+        await rec.snap(2.4)
+        rec.caption(tr("Run: the return, the context's changes, stdout and stderr, apart",
+                       "Ejecutar: lo devuelto, los cambios del contexto, stdout y stderr, por separado"))
+        dialog().query_one("#run").press()
+        await rec.until(lambda: app.output_window() is not None and "validate:identifiers" in app.output_window().view.text, tries=400)
+        await rec.snap(0.4, 8)
+        from divide.ui.progress import ProgressScreen
+        if isinstance(app.screen, ProgressScreen):
+            await pilot.press("escape")
+        await rec.snap(4.0, 8)
+        rec.caption(tr("Debug: the same call in the debugger, stopped in the Function",
+                       "Depurar: la misma llamada en el depurador, parada en la Function"))
+        app.raise_window(designer)
+        designer.board_view.focus()
+        await rec.snap(0.8, 6)
+        await pilot.press("t")
+        await rec.until(lambda: dialog() is not None)
+        await rec.snap(1.0)
+        dialog().query_one("#debug").press()
+        await rec.until(lambda: app.paused, tries=400)
+        await rec.snap(2.0, 8)
+        rec.caption(tr("F8 steps, Ctrl+F9 goes on: the report again when it ends",
+                       "F8 avanza, Ctrl+F9 sigue: el informe otra vez al terminar"))
+        await rec.press("f8", "f8", "f8", hold=0.9)
+        await pilot.press("ctrl+f9")
+        await rec.until(lambda: app.session is None, tries=400)
+        await rec.snap(3.5, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+SCENES["function-test"] = function_test
+
+
 # ------------------------------------------------------------------ output
 def _stamp(seconds: float) -> str:
     ms = round(seconds * 1000)
