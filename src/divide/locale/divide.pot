@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-22 01:14+0000\n"
+"POT-Creation-Date: 2026-11-22 03:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,9 +52,6 @@ msgid " CALL returns  "
 msgstr ""
 
 msgid " JUMP goes on  "
-msgstr ""
-
-msgid " READ-ONLY "
 msgstr ""
 
 msgid " on the same line"
@@ -511,6 +508,9 @@ msgstr ""
 msgid "Choose a package (vendor/package)"
 msgstr ""
 
+msgid "Choose its target on the board."
+msgstr ""
+
 msgid "Choose the Block (or the Step) to add the Step to."
 msgstr ""
 
@@ -631,6 +631,10 @@ msgid "Context not saved"
 msgstr ""
 
 #, python-brace-format
+msgid "Context of {step}"
+msgstr ""
+
+#, python-brace-format
 msgid "Context saved to {path}"
 msgstr ""
 
@@ -686,6 +690,9 @@ msgid "Ctrl+K"
 msgstr ""
 
 msgid "Ctrl+Left/Right moves a Block; Ctrl+Up/Down moves a Step"
+msgstr ""
+
+msgid "Ctrl+T: fix it in the code"
 msgstr ""
 
 msgid "Current"
@@ -1068,6 +1075,9 @@ msgstr ""
 msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
 msgstr ""
 
+msgid "Enter edit · Ins add · Del delete · Ctrl+Up/Down move · Alt+J the JSON"
+msgstr ""
+
 msgid "Enter go there · Space fold · Left Right fold, unfold"
 msgstr ""
 
@@ -1102,6 +1112,9 @@ msgid ""
 msgstr ""
 
 msgid "Enter open · Del forget a recent one · type to filter"
+msgstr ""
+
+msgid "Enter sets it · Del removes it · Esc cancels"
 msgstr ""
 
 msgid "Enter switch to it · Ins new branch · Del delete · Alt+F10 more"
@@ -1758,14 +1771,17 @@ msgstr ""
 msgid "No {language} errors"
 msgstr ""
 
+#, python-brace-format
+msgid "Not JSON: {error}"
+msgstr ""
+
 msgid "Not a line number"
 msgstr ""
 
 msgid "Not committed yet · "
 msgstr ""
 
-#, python-brace-format
-msgid "Not drawn, their id is taken: {names}. Ctrl+T: the code"
+msgid "Not drawn"
 msgstr ""
 
 msgid "Not installed yet: Alt+F10 > Install"
@@ -2111,6 +2127,9 @@ msgid "P~H~P version"
 msgstr ""
 
 msgid "P~u~sh"
+msgstr ""
+
+msgid "READ-ONLY"
 msgstr ""
 
 msgid "Raw URL encode"
@@ -2613,6 +2632,9 @@ msgstr ""
 msgid "The YAML has errors: fix them in the code first (Ctrl+T)"
 msgstr ""
 
+msgid "The YAML has errors: the board is the last design that parsed."
+msgstr ""
+
 msgid ""
 "The YAML has errors: the board shows the last design that parsed and "
 "edits nothing."
@@ -2625,6 +2647,17 @@ msgid "The blocks are written another way: add the Block in the code (Ctrl+T)"
 msgstr ""
 
 msgid "The changes go aside, the files go back to the last commit"
+msgstr ""
+
+msgid "The context as JSON: an object. Alt+R the tree"
+msgstr ""
+
+msgid "The context has a key divide does not read: edit it in the code (Ctrl+T)"
+msgstr ""
+
+msgid ""
+"The context has something divide does not read (a block scalar, an "
+"anchor...): edit it in the code (Ctrl+T)"
 msgstr ""
 
 #, python-brace-format
@@ -2643,6 +2676,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "The context must be a mapping: {a: 1, b: x}"
+msgstr ""
+
+#, python-brace-format
+msgid "The context must be an object: {\"key\": \"value\"}"
 msgstr ""
 
 msgid "The context repeats a key: edit it in the code (Ctrl+T)"
@@ -2786,6 +2823,10 @@ msgid "The {count} comment(s) written in it go with it."
 msgstr ""
 
 #, python-brace-format
+msgid "Their id is taken: {names}."
+msgstr ""
+
+#, python-brace-format
 msgid "These lead to it and lose their {what}: {refs}."
 msgstr ""
 
@@ -2897,6 +2938,9 @@ msgid "Type words · Enter open · Esc close"
 msgstr ""
 
 msgid "T~o~ dialect"
+msgstr ""
+
+msgid "T~r~ee"
 msgstr ""
 
 msgid "T~y~pe"
@@ -3045,9 +3089,6 @@ msgid "Xdebug found: requests stop at the breakpoints"
 msgstr ""
 
 msgid "Xdebug sent no init packet"
-msgstr ""
-
-msgid "YAML errors: the last design that parsed. Ctrl+T: the code"
 msgstr ""
 
 #, python-brace-format
@@ -3325,10 +3366,6 @@ msgstr ""
 msgid "from {step}"
 msgstr ""
 
-#, python-brace-format
-msgid "from {step}: choose the target, Enter sets it, Del removes it, Esc cancels"
-msgstr ""
-
 msgid "git blame failed"
 msgstr ""
 
@@ -3549,6 +3586,10 @@ msgid "squashed into one commit"
 msgstr ""
 
 msgid "starts at"
+msgstr ""
+
+#, python-brace-format
+msgid "starts at {block}"
 msgstr ""
 
 msgid "starts the project with Div in it."
@@ -4457,6 +4498,9 @@ msgstr ""
 msgid "~E~dit"
 msgstr ""
 
+msgid "~E~dit context..."
+msgstr ""
+
 msgid "~E~dit data"
 msgstr ""
 
@@ -4581,6 +4625,9 @@ msgid "~I~nstall it now (composer install)"
 msgstr ""
 
 msgid "~I~nto branch"
+msgstr ""
+
+msgid "~J~SON"
 msgstr ""
 
 msgid "~J~ump block.step (and go on from there)"

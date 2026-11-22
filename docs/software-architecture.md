@@ -211,7 +211,16 @@ flowchart TB
   (Run > Flow designer; Ctrl+D flips with the tree, Ctrl+T with the code,
   which reopens the last view), a `FlowView` like the tree's, sharing its
   inspector, verdict and Step dialog; invalid YAML keeps the last design
-  that parsed, read-only.
+  that parsed, read-only. Each Block is a full-height column of one of two
+  alternating surfaces and each card a third, levels blended from the
+  window's colours (one darker, one lighter, so they stay apart in 256 or
+  16 colours and are levels of light in a monochrome theme); the panel holds
+  what is going on (in reverse video, only while so), the inspector, the
+  Flow's summary and the verdict. `ui.flowcontext` edits a Step's context as
+  data on a copy, in the JSON editor's tree and item dialog or as JSON text in
+  the code editor; `run.flowmodel.context_data`/`render_context` read it from
+  YAML (Runner's scalar rules) and write it back as a flow mapping, through
+  the same Step edit (a block-style context changed key by key).
 - **The MCP server.** Three layers, standard library only (no MCP SDK, no
   web framework). `mcpserver.tools`: each tool calls the same functions the
   IDE calls: `workbench.check_template` (the dialect Div loads, the lexer,

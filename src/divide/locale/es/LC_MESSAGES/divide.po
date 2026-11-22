@@ -4631,8 +4631,8 @@ msgstr " CALL vuelve  "
 msgid " JUMP goes on  "
 msgstr " JUMP sigue desde allí  "
 
-msgid " READ-ONLY "
-msgstr " SOLO LECTURA "
+#~ msgid " READ-ONLY "
+#~ msgstr " SOLO LECTURA "
 
 msgid "(no Steps)"
 msgstr "(sin Steps)"
@@ -4781,8 +4781,8 @@ msgstr "Estos llevan a él y pierden su {what}: {refs}."
 msgid "Written {where}, indented as the other Blocks, with its first Step."
 msgstr "Se escribe {where}, sangrado como los otros Blocks, con su primer Step."
 
-msgid "YAML errors: the last design that parsed. Ctrl+T: the code"
-msgstr "Errores en el YAML: el último diseño que se leyó. Ctrl+T: el código"
+#~ msgid "YAML errors: the last design that parsed. Ctrl+T: the code"
+#~ msgstr "Errores en el YAML: el último diseño que se leyó. Ctrl+T: el código"
 
 #, python-brace-format
 msgid "after {block}"
@@ -4795,9 +4795,8 @@ msgstr "al final"
 msgid "from {step}"
 msgstr "desde {step}"
 
-#, python-brace-format
-msgid "from {step}: choose the target, Enter sets it, Del removes it, Esc cancels"
-msgstr "desde {step}: elige el destino, Enter lo pone, Supr lo quita, Esc cancela"
+#~ msgid "from {step}: choose the target, Enter sets it, Del removes it, Esc cancels"
+#~ msgstr "desde {step}: elige el destino, Enter lo pone, Supr lo quita, Esc cancela"
 
 msgid "goes on from there, does not return"
 msgstr "sigue desde allí, no vuelve"
@@ -4908,10 +4907,67 @@ msgstr "~D~escripción (opcional)"
 msgid "~F~irst Step id"
 msgstr "Id del ~p~rimer Step"
 
-#, python-brace-format
-msgid "Not drawn, their id is taken: {names}. Ctrl+T: the code"
-msgstr "Sin dibujar, su id ya está usado: {names}. Ctrl+T: el código"
+#~ msgid "Not drawn, their id is taken: {names}. Ctrl+T: the code"
+#~ msgstr "Sin dibujar, su id ya está usado: {names}. Ctrl+T: el código"
 
 #, python-brace-format
 msgid "The Steps of {blocks} are written in flow style: their calls and jumps cannot be followed. Rename or delete in the code (Ctrl+T)"
 msgstr "Los Steps de {blocks} están escritos en estilo flow: sus call y jump no se pueden seguir. Renombra o borra en el código (Ctrl+T)"
+
+msgid "Choose its target on the board."
+msgstr "Elige su destino en el tablero."
+
+#, python-brace-format
+msgid "Context of {step}"
+msgstr "Contexto de {step}"
+
+msgid "Ctrl+T: fix it in the code"
+msgstr "Ctrl+T: corrígelo en el código"
+
+msgid "Enter edit · Ins add · Del delete · Ctrl+Up/Down move · Alt+J the JSON"
+msgstr "Intro editar · Ins añadir · Supr borrar · Ctrl+Arriba/Abajo mover · Alt+J el JSON"
+
+msgid "Enter sets it · Del removes it · Esc cancels"
+msgstr "Intro lo pone · Supr lo quita · Esc cancela"
+
+#, python-brace-format
+msgid "Not JSON: {error}"
+msgstr "No es JSON: {error}"
+
+msgid "Not drawn"
+msgstr "Sin dibujar"
+
+msgid "READ-ONLY"
+msgstr "SOLO LECTURA"
+
+msgid "The YAML has errors: the board is the last design that parsed."
+msgstr "El YAML tiene errores: el tablero es el último diseño que se leyó."
+
+msgid "The context as JSON: an object. Alt+R the tree"
+msgstr "El contexto como JSON: un objeto. Alt+R el árbol"
+
+msgid "The context has a key divide does not read: edit it in the code (Ctrl+T)"
+msgstr "El contexto tiene una clave que divide no lee: edítalo en el código (Ctrl+T)"
+
+msgid "The context has something divide does not read (a block scalar, an anchor...): edit it in the code (Ctrl+T)"
+msgstr "El contexto tiene algo que divide no lee (un escalar de bloque, un ancla...): edítalo en el código (Ctrl+T)"
+
+msgid "The context must be an object: {\"key\": \"value\"}"
+msgstr "El contexto debe ser un objeto: {\"key\": \"value\"}"
+
+#, python-brace-format
+msgid "Their id is taken: {names}."
+msgstr "Su id ya está usado: {names}."
+
+msgid "T~r~ee"
+msgstr "Á~r~bol"
+
+#, python-brace-format
+msgid "starts at {block}"
+msgstr "empieza en {block}"
+
+msgid "~E~dit context..."
+msgstr "~E~ditar contexto..."
+
+msgid "~J~SON"
+msgstr "~J~SON"

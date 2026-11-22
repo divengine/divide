@@ -65,7 +65,6 @@ def test_lanes_in_order_the_first_is_the_entry():
     assert [lane[1:] for lane in b.lanes][0] == [("step", "main", "total"), ("step", "main", "review"), ("step", "main", "receipt")]
     rows = b.text().split("\n")
     top = b.boxes[("block", "main")].y
-    assert rows[0].startswith("┌") and rows[-1].startswith("└")  # each Block a framed column
     assert "1 main" in rows[top] and "ENTRY" in rows[top] and rows[top].count("ENTRY") == 1
     assert "2 review" in rows[top] and "3 approval" in rows[top] and "Takes it" in rows[top + 1]
     xs = [b.boxes[lane[0]].x for lane in b.lanes]
@@ -576,22 +575,23 @@ async def test_a_click_on_a_pinned_lane_title_after_scrolling_selects_its_block(
         await wait(pilot, lambda: window.key == visible[-1], f"the click selected {window.key}")
 
 
-def test_lanes_titles_and_cards_have_surfaces_of_their_own():
-    """A lane is a column with its own surface down to the end, its title a stronger one, each card
-    a third; the gutters keep the window's, so the lines stand out (levels of light in a mono theme)."""
+def test_each_block_is_a_column_of_alternating_colour_holding_its_cards():
+    """No frames, no rules: each Block a column of its own surface, from its left edge to the next
+    one's and down to the end, neighbours alternating; its title on it; each card a surface above it."""
     b = board()
-    for lane in b.lanes:
+    for i, lane in enumerate(b.lanes):
         title = b.boxes[lane[0]]
-        assert all(b.fill[title.y][x] == "title" for x in range(title.x, title.x + title.w))
-        assert all(b.fill[b.height - 1][x] == "lane" for x in range(title.x, title.x + title.w))
+        colour = "lane" if i % 2 == 0 else "lane.alt"
+        assert all(b.fill[y][title.x] == colour for y in range(b.height))  # the whole height
+        assert b.fill[title.y][title.x + 2] == colour  # the title has no surface of its own
         for key in lane[1:]:
             box = b.boxes[key]
             assert all(b.fill[y][x] == "card" for y in range(box.y, box.y + box.h) for x in range(box.x, box.x + box.w))
-    gutter = b.boxes[b.lanes[0][0]].x + b.card_width + 3  # past the lane's frame
-    assert all(b.fill[y][gutter] == "" for y in range(b.height))
-    frame = b.boxes[b.lanes[0][0]].x - 1
-    assert b.chars[0][frame] == "┌" and b.chars[b.height - 1][frame] == "└" and b.fill[5][frame] == "lane"
-    doc = fm.parse(FLOW)
+    first, second = b.boxes[b.lanes[0][0]], b.boxes[b.lanes[1][0]]
+    assert {b.fill[3][x] for x in range(first.x, second.x - 1)} <= {"lane", "card"}  # its gutter is its own
+    assert b.fill[3][second.x - 1] == "lane.alt"
+    assert not any(ch in "┌┐└┘" for ch in b.text().split("\n")[0])  # no frame
+    assert b.filler() == b.fill[-1]
     review = b.boxes[("step", "main", "review")]
     assert b.styles[review.y + 1][review.x + 2] == "kw.condition" and b.styles[review.y + 2][review.x + 2] == "kw.call"
 
@@ -604,5 +604,106 @@ async def test_the_board_draws_its_surfaces_from_the_theme(project):
         async with app.run_test(size=(120, 34)) as pilot:
             window = await open_designer(app, pilot)
             surfaces = window.board_view.surfaces()
-            colours = [surfaces[k].bgcolor for k in ("lane", "card", "title")]
+            colours = [surfaces[k].bgcolor for k in ("lane", "lane.alt", "card")]
             assert all(colours) and len(set(colours)) == 3, (palette, colours)
+            window_bg = window.board_view.styles.background.rich_color
+            assert window_bg not in colours  # neither column is the window's own
+
+
+
+# ------------------------------------------------------------------ the panel and the context
+async def test_the_panel_holds_the_summary_and_says_when_a_target_is_chosen(project):
+    from divide.app import Divide
+
+    app = Divide(project, [project / "flows/fulfil.yml"])
+    async with app.run_test(size=(120, 34)) as pilot:
+        window = await open_designer(app, pilot)
+        summary = str(window.summary.render())
+        assert "4 Block(s), 13 Step(s)" in summary and "starts at main" in summary and "CALL returns" in summary
+        assert not window.bar.display  # nothing going on: no message
+        window.select(("step", "stock", "short"))
+        await pilot.press("j")
+        await wait(pilot, lambda: window.bar.display, "no message while choosing a target")
+        said = str(window.bar.render())
+        assert "JUMP from stock.short" in said and "Esc cancels" in said
+        assert window.bar.region.x > window.board_view.region.x + window.board_view.region.width - 1  # in the panel
+        await pilot.press("escape")
+        await wait(pilot, lambda: not window.bar.display, "the message stayed")
+
+
+def test_a_context_as_data_and_back():
+    for text in ("{approved: true, by: ana, n: 3, x: 1.5, s: \"a b\", l: [1, two], m: {k: null}}",
+                 "  a: yes\n  b:\n    c: 2\n  d:\n    - x\n    - y", "{}", ""):
+        data = fm.context_data(text)
+        assert fm.context_data(fm.render_context(data)) == data
+    assert fm.context_data("{a: yes, b: '1', c: ~, d: 017}") == {"a": True, "b": "1", "c": None, "d": 17}
+    assert fm.render_context({"k": "a: b", "t": "true", "n": None, "l": []}) == '{k: "a: b", t: "true", n: null, l: []}'
+    with pytest.raises(fm.EditError):
+        fm.context_data("[1, 2]")
+
+
+async def test_x_edits_a_steps_context_as_a_tree_or_json_in_one_undo(project):
+    from divide.app import Divide
+    from divide.ui.flowcontext import ContextDialog
+    from divide.ui.jsontree import EditItemDialog
+
+    flow = project / "flows/fulfil.yml"
+    before = flow.read_text()
+    app = Divide(project, [flow])
+    async with app.run_test(size=(120, 34)) as pilot:
+        window = await open_designer(app, pilot)
+        code = window.source
+        window.select(("step", "stock", "short"))
+        await pilot.press("x")
+        await wait(pilot, lambda: dialog_of(app, ContextDialog), "no context dialog")
+        dialog = dialog_of(app, ContextDialog)
+        assert dialog.value == {"retried": True} and dialog.mode == "tree"
+        await pilot.press("insert")  # a new key, with the JSON editor's item dialog
+        await wait(pilot, lambda: dialog_of(app, EditItemDialog), "no item dialog")
+        item = dialog_of(app, EditItemDialog)
+        item.key_input.data, item.value_input.data = "by", "ana maria"
+        await pilot.press("enter")
+        await wait(pilot, lambda: dialog_of(app, ContextDialog) and "by" in dialog_of(app, ContextDialog).value, "not added")
+        await pilot.press("alt+j")  # the same value as JSON text
+        await wait(pilot, lambda: dialog.mode == "text", "not the JSON view")
+        assert '"by": "ana maria"' in dialog.json_text.text
+        dialog.json_text.load_text('{"retried": true, "by": "ana maria", "tries": [1, 2]}')
+        await pilot.press("alt+k")
+        await wait(pilot, lambda: 'context: {retried: true, by: "ana maria", tries: [1, 2]}' in code.editor.text, "not written")
+        await pilot.press("ctrl+z")
+        await wait(pilot, lambda: code.editor.text == before, "one undo did not undo it")
+        window.select(("step", "stock", "short"))
+        await pilot.press("x")  # invalid JSON keeps the text, Cancel changes nothing
+        await wait(pilot, lambda: dialog_of(app, ContextDialog), "no context dialog")
+        dialog = dialog_of(app, ContextDialog)
+        await pilot.press("alt+j")
+        await wait(pilot, lambda: dialog.mode == "text", "not the JSON view")
+        dialog.json_text.load_text("{not json")
+        await pilot.press("alt+r")
+        await pilot.pause(0.2)
+        assert dialog.mode == "text"
+        await pilot.press("escape")
+        await pilot.pause(0.2)
+        assert code.editor.text == before
+
+
+async def test_the_step_dialog_edits_its_context_with_the_same_dialog(project):
+    from divide.app import Divide
+    from divide.ui.flowcontext import ContextDialog
+    from divide.ui.flowmodel import StepDialog
+
+    app = Divide(project, [project / "flows/fulfil.yml"])
+    async with app.run_test(size=(120, 34)) as pilot:
+        window = await open_designer(app, pilot)
+        window.select(("step", "review", "approve"))
+        await pilot.press("enter")
+        await wait(pilot, lambda: dialog_of(app, StepDialog), "no Step dialog")
+        step_dialog = dialog_of(app, StepDialog)
+        await pilot.press("alt+e")
+        await wait(pilot, lambda: dialog_of(app, ContextDialog), "no context dialog")
+        context = dialog_of(app, ContextDialog)
+        assert context.value == {"approved": True}
+        context.value["by"] = "ana"
+        await pilot.press("alt+k")
+        await wait(pilot, lambda: dialog_of(app, StepDialog), "not back in the Step dialog")
+        assert step_dialog.inputs["context"].data == "{approved: true, by: ana}"

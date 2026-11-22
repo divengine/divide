@@ -1,7 +1,7 @@
 # Flow Designer
 
 The **Flow Designer** draws a [Runner](https://github.com/divengine/runner) Flow as a board you work on with the keyboard:
-- its Blocks as **lanes**, side by side in the order they are written, the first one marked **ENTRY** (where the Flow starts);
+- its Blocks as **lanes**: columns side by side in the order they are written, in two alternating colours, the first one marked **ENTRY** (where the Flow starts);
 - each Block's Steps as **cards** down its lane, in the order they run;
 - every `call` and `jump` as a **line** from the Step that has it to the Step it leads to.
 
@@ -25,9 +25,9 @@ In a Flow's code window (a YAML file whose root has `blocks`), use **Run > Flow 
 
 ![The same board at 160 columns: four lanes, the call and jump lines between them](images/flow-designer-160.png)
 
-- **The top line** says how many Blocks and Steps the Flow has, and what the lines mean.
+- **The lanes.** Each Block is a column from the top of the window to the bottom, in a colour of its own: neighbours alternate between two colours, neither of them the window's, one darker and one lighter. The colours alone tell one Block from the next, with no frame or line between them. They stay two colours when the terminal has only 256 or 16, and in the monochrome themes they are two levels of light.
 - **A lane's title** is the Block's number and id, with **ENTRY** on the first one, and its description (or how many Steps it has) under it. The titles stay at the top while the cards scroll.
-- **A card** is a Step. Its top edge holds its number and id, and its rows say what it does, in the order Runner does it:
+- **A card** is a Step, on a surface of its own above its lane's colour. Its top edge holds its number and id, and its rows say what it does, in the order Runner does it:
 
   | Row | What it is |
   |---|---|
@@ -38,7 +38,7 @@ In a Flow's code window (a YAML file whose root has `blocks`), use **Run > Flow 
   | `JUMP .reserve` | `jump`: go on from there, without coming back |
   | `PAUSE` | `pause`: the Flow pauses after the Step |
 
-  A card without any of these says *(nothing to do)*.
+  Each row's word is in its own colour and in bold. A card without any of these says *(nothing to do)*.
   - Marks on its top edge: **!E** means the Step has an error, **!W** a warning, **RO** that it is written in a way the board shows but does not edit.
   - On its bottom edge, **◄2** says how many calls and jumps lead to it.
 - **The lines.** Each `call` and `jump` starts at its card's `CALL` or `JUMP` row and ends in an arrow (`►` or `◄`) at the target card. They are told apart without colour:
@@ -48,12 +48,17 @@ In a Flow's code window (a YAML file whose root has `blocks`), use **Run > Flow 
 
   Lines run between the lanes and between the rows of cards, never over a card. Where two lines cross, the crossing is drawn as a crossing (`┼ ╫ ╪ ╬`). A `call` or `jump` to `block.` (the Block's first Step) leads to that first Step, or to the lane's title when the Block has no Steps.
 - **The selection.** The selected card (or title) is drawn in reverse video and its lines in bold. The connection you choose with Tab is drawn in reverse video too. This works the same in every theme, the monochrome phosphor themes included.
-- **The inspector**, at the right (under the board when the window is narrower than 100 columns), shows the selected item, as in the Flow window:
+- **The panel**, at the right (under the board when the window is narrower than 100 columns), has three parts:
+  - **at its top, what is going on**, in reverse video and only while it is so: choosing a call's or jump's target, the YAML not parsing (read-only), or Blocks and Steps not drawn;
+  - **the inspector**: the selected item, as in the Flow window;
+  - **under it, the Flow**: how many Blocks and Steps it has, where it starts, and what the lines mean.
+
+  The inspector shows
   - a Step's attributes, where its call and jump lead, and the function file of its activity or condition;
   - a Block's Steps and which Steps lead into it;
   - the problems found;
   - with a connection chosen, what it is: a call or a jump, from where, to where.
-- **Below the inspector: Runner's verdict.**
+- **At the bottom of the panel: Runner's verdict.**
 
 At 80 columns the board shows two or three lanes and the inspector goes under it. Wider terminals show more lanes and wider cards. The board scrolls with the selection.
 
@@ -71,6 +76,7 @@ At 80 columns the board shows two or three lanes and the inspector goes under it
 | **Backspace** | Back to where you were before following a connection |
 | **Ctrl+Enter** (Ctrl+J) | Go to the chosen connection's other end, else to the Step's call or jump target; on a Step without one, open its activity's or condition's file |
 | **C / J** | Connect the selected Step with a `call` / `jump`: choose its target on the board |
+| **X** | Edit the selected Step's context, as a tree or as JSON |
 | **Ins** | A new Step after the selected one (on a lane's title: at the end of the Block) |
 | **B** | A new Block after the selected one's, with its first Step |
 | **Del** | Delete the Step or Block (asked first), or remove the chosen connection |
@@ -91,10 +97,10 @@ A new Flow needs only an `id` and an empty `blocks:` in its YAML file. On the bo
 
 1. **B** creates a Block. Give its id, an optional description, the id of its first Step and that Step's activity (**Down** offers the function files). It is written after the selected Block, indented like the others.
 2. **Ins** adds a Step after the selected one, with the same dialog as in the Flow window: module, condition, activity, call, jump, context, pause.
-3. **C** (or **J**) on a Step starts a connection. The top line says `CALL from main.greet: choose the target...`. Move to the target card and press **Enter**: divide writes `call: check.mark`, the explicit `block.step` form. On a lane's title, Enter writes `check.`, which leads to that Block's first Step, whichever it is. **Del** instead removes the Step's call (or jump), and **Esc** cancels.
+3. **C** (or **J**) on a Step starts a connection. The top of the panel says `CALL from main.greet` and what Enter, Del and Esc do. Move to the target card and press **Enter**: divide writes `call: check.mark`, the explicit `block.step` form. On a lane's title, Enter writes `check.`, which leads to that Block's first Step, whichever it is. **Del** instead removes the Step's call (or jump), and **Esc** cancels.
 4. **Alt+F9** asks Runner to check it, **F2** saves it and **Ctrl+F9** runs it.
 
-![Choosing the target of stock.short's jump: the top line says what Enter, Del and Esc do](images/flow-designer-connect.png)
+![Choosing the target of stock.short's jump: the top of the panel says what Enter, Del and Esc do](images/flow-designer-connect.png)
 
 ## Edit, rename, reorder, delete
 
@@ -134,13 +140,28 @@ divide reads the result again before keeping it. If anything else would change (
 - deleting the only Block;
 - renaming or deleting while a Block's Steps are written in flow style (`steps: {a: {jump: main.s}}`): a `call` or `jump` there could not be followed.
 
-A Block or Step whose id is already taken by an earlier one is not drawn, and the top line names it: Runner refuses it too, so fix it in the code.
+A Block or Step whose id is already taken by an earlier one is not drawn, and the top of the panel names it: Runner refuses it too, so fix it in the code.
+
+## Edit a context
+
+**X** on a card, or **Edit context...** in the Step dialog (in the board and in the [[Flow window|Flow Structure]]), opens the Step's context as data, in two views of the same value:
+
+![The context of stock.short as a tree, with the JSON editor's item dialog](images/flow-designer-context.png)
+
+- **Tree** (Alt+R): the [[Data Files]] tree and its item dialog (key, type, value). **Enter** edits an item, **Ins** adds one, **Del** deletes one, **Ctrl+↑ / Ctrl+↓** moves one. Objects and lists can be nested; values are strings, numbers, booleans or null.
+- **JSON** (Alt+J): the same value as JSON text, in divide's code editor. Going back to the tree, or OK, reads the text again. If it is not a JSON object, you are told and stay in the text.
+
+The dialog works on a copy: **Cancel** changes nothing. **OK** writes the context as a YAML mapping, `{approved: true, by: "ana maria", tries: [1, 2]}`:
+- From **X**, it is one edit of the Flow, undone by one Ctrl+Z.
+- From the Step dialog, it goes into its Context field, applied with the rest of the dialog.
+
+A context written one key per line is changed key by key, as in the Flow window: the keys keep their order and their comments, and what cannot be changed that way is refused. A context with something divide does not read, such as a block scalar or an anchor, is edited in the code.
 
 ## When the YAML does not parse
 
 ![The YAML broken in the code: the board keeps the last design that parsed, read-only](images/flow-designer-readonly.png)
 
-If the code stops being valid YAML (half typed, or a bracket left open), the board keeps showing **the last design that parsed** and says **READ-ONLY** on its top line. The inspector lists the problems.
+If the code stops being valid YAML (half typed, or a bracket left open), the board keeps showing **the last design that parsed** and says **READ-ONLY** at the top of the panel. The inspector lists the problems.
 - Nothing on the board edits the Flow: each key that would edit says *Fix the YAML in the code first*. Your unsaved text is never touched.
 - **Ctrl+T** goes to the code, at the first problem. Once the YAML parses again, the board follows it and can edit again.
 
@@ -156,5 +177,5 @@ See [[Problems|Flow Structure]].
 
 - The board is a design workspace, not a debugger. It does not simulate a Flow, play it back, step through it or stop it at breakpoints. Running is Runner's, through [[Running Flows]].
 - Steps move only within their Block, and Blocks are created with their first Step.
-- A Step's `call` and `jump` targets are chosen on the board. Its other attributes are edited in the Step dialog. A `context` is one line there, `{key: value, ...}`.
+- A Step's `call` and `jump` targets are chosen on the board, and its context in the context dialog. Its other attributes are edited in the Step dialog.
 - The layout is fixed: lanes in the YAML's order and cards in their Steps' order. Nothing about the board is stored.

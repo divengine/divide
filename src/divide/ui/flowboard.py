@@ -33,6 +33,7 @@ from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.color import Color
 from textual.geometry import Region, Size
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
@@ -128,6 +129,7 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         Binding("delete", "delete", "Delete", show=False),
         Binding("c", "connect('call')", "Call", show=False),
         Binding("j", "connect('jump')", "Jump", show=False),
+        Binding("x", "context", "Context", show=False),
         Binding("ctrl+up,alt+up", "reorder(0, -1)", "Step up", show=False),
         Binding("ctrl+down,alt+down", "reorder(0, 1)", "Step down", show=False),
         Binding("ctrl+left,alt+left", "reorder(-1, 0)", "Block left", show=False),
@@ -163,6 +165,13 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
                 segments.append(Segment("".join(run), base + surfaces[style[1]] + styles.get(style[0] or "", Style())))
             strips.append(Strip(segments, board.width))
         self._strips = strips
+        filler, run_start = [], 0
+        fills = board.filler()
+        for x in range(1, len(fills) + 1):  # the columns carry on below the board, to the window's bottom
+            if x == len(fills) or fills[x] != fills[run_start]:
+                filler.append(Segment(" " * (x - run_start), base + surfaces[fills[run_start]]))
+                run_start = x
+        self._filler = Strip(filler, board.width)
         self.virtual_size = Size(board.width, board.height)
         self.refresh()
         box = board.boxes.get(selected) if selected is not None else None
@@ -203,11 +212,14 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         levels of light, so lanes and cards stand out in the monochrome themes too."""
         bg, fg = self.styles.background, self.styles.color
         if bg.a == 0:
-            return {"": Style(), "lane": Style(), "title": Style(), "card": Style()}
+            return {"": Style(), "lane": Style(), "lane.alt": Style(), "title": Style(), "card": Style()}
 
-        def level(amount: float) -> Style:
-            return Style(bgcolor=bg.blend(fg, amount).rich_color)
-        return {"": Style(), "lane": level(0.14), "card": level(0.28), "title": level(0.40)}
+        def level(amount: float, towards=None) -> Style:
+            return Style(bgcolor=bg.blend(towards or fg, amount).rich_color)
+        # two columns far apart, one darker and one lighter than the window (still two colours where the
+        # terminal has only 256 or 16), neither the window's own; the cards a level between them
+        dark = Color(0, 0, 0)
+        return {"": Style(), "lane": level(0.5, dark), "lane.alt": level(0.36), "title": level(0.36), "card": level(0.16)}
 
     def render_line(self, y: int) -> Strip:
         """The lane titles stay at the top (the rows above ``header_height``); the cards scroll under them."""
@@ -216,7 +228,9 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         row = y if y < header else y + scroll_y
         width = self.size.width
         if row >= len(self._strips):
-            return Strip.blank(width, self.rich_style)
+            if getattr(self, "_filler", None) is None:
+                return Strip.blank(width, self.rich_style)
+            return self._filler.crop_extend(scroll_x, scroll_x + width, self.rich_style)
         return self._strips[row].crop_extend(scroll_x, scroll_x + width, self.rich_style)
 
     def notify_style_update(self) -> None:
@@ -269,6 +283,9 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
 
     def action_connect(self, key: str) -> None:
         self._window().connect(key)
+
+    def action_context(self) -> None:
+        self._window().edit_context()
 
     def action_reorder(self, dx: int, dy: int) -> None:
         self._window().reorder(dx, dy)
@@ -377,16 +394,17 @@ class FlowDesignWindow(FlowView):
     DEFAULT_CSS = """
     FlowDesignWindow .design-main { layout: horizontal; width: 1fr; height: 1fr; }
     FlowDesignWindow .design-left { width: 1fr; height: 1fr; }
-    FlowDesignWindow .design-bar { height: 1; padding: 0 1; background: $window-content-background; color: $foreground; }
+    FlowDesignWindow .design-bar { height: auto; padding: 0 1; background: $foreground; color: $window-content-background; }
     FlowDesignWindow .design-right { width: 40; height: 1fr; }
     FlowDesignWindow.narrow .design-main { layout: vertical; }
-    FlowDesignWindow.narrow .design-right { width: 1fr; height: 9; }
+    FlowDesignWindow.narrow .design-right { width: 1fr; height: 11; }
     FlowDesignWindow.narrow .design-vrule { display: none; }
     FlowDesignWindow.narrow .design-hrule-top { display: block; }
     FlowDesignWindow .design-hrule-top { display: none; }
     FlowDesignWindow .flow-inspector { width: 1fr; height: auto; padding: 0 1; background: $window-content-background; color: $foreground; }
     FlowDesignWindow VerticalScroll { background: $window-content-background; scrollbar-size: 1 1; }
     FlowDesignWindow .flow-verdict { height: 3; padding: 0 1; background: $window-content-background; color: $foreground; }
+    FlowDesignWindow .design-summary { height: auto; padding: 0 1; background: $window-content-background; color: $foreground; }
     FlowDesignWindow.narrow .flow-verdict { height: 2; }
     """
 
@@ -394,6 +412,7 @@ class FlowDesignWindow(FlowView):
         super().__init__(source, number=number)
         self.board_view = FlowBoard()
         self.bar = Static("", classes="design-bar")
+        self.summary = Static("", classes="design-summary")  # what the Flow holds and what the lines mean
         self.shown = self.doc if not self.doc.problems else fm.parse("")  # the design drawn: the last that parsed
         self.board: Board | None = None
         self.key: Key | None = None
@@ -409,13 +428,15 @@ class FlowDesignWindow(FlowView):
     def compose_content(self) -> ComposeResult:
         with Vertical(classes="design-main"):
             with Vertical(classes="design-left"):
-                yield self.bar
                 yield self.board_view
             yield VRule(classes="design-vrule")
             yield HRule(classes="design-hrule-top")
             with Vertical(classes="design-right"):
+                yield self.bar
                 with VerticalScroll():
                     yield self.inspector
+                yield HRule()
+                yield self.summary
                 yield HRule()
                 yield self.verdict
 
@@ -507,30 +528,42 @@ class FlowDesignWindow(FlowView):
         self.show_selected()
 
     def show_bar(self) -> None:
+        """What is going on (choosing a target, read-only, ids taken), at the top of the panel in reverse
+        video: it stands out in every theme, and only while it is so."""
         bar = Text()
-        dim = themes.current().token_styles().get("div.comment")
+        strong = Style(bold=True)
         if self.connecting is not None:
             key, source = self.connecting
-            bar.append(f" {key.upper()} ", style=Style(reverse=True, bold=True))
-            bar.append(" " + _('from {step}: choose the target, Enter sets it, Del removes it, Esc cancels').format(
-                step=f"{source[1]}.{source[2]}"))
+            bar.append(f"{key.upper()} ", style=strong)
+            bar.append(_('from {step}').format(step=f"{source[1]}.{source[2]}") + "\n", style=strong)
+            bar.append(_('Choose its target on the board.') + "\n")
+            bar.append(_('Enter sets it · Del removes it · Esc cancels'))
         elif self.board is not None and self.board.duplicates:
-            bar.append(" ! ", style=Style(reverse=True, bold=True))
-            bar.append(" " + _('Not drawn, their id is taken: {names}. Ctrl+T: the code').format(
-                names=", ".join(self.board.duplicates)))
+            bar.append(_('Not drawn') + "\n", style=strong)
+            bar.append(_('Their id is taken: {names}.').format(names=", ".join(self.board.duplicates)) + "\n")
+            bar.append(_('Ctrl+T: fix it in the code'))
         elif self.read_only:
-            bar.append(_(' READ-ONLY '), style=Style(reverse=True, bold=True))
-            bar.append(" " + _('YAML errors: the last design that parsed. Ctrl+T: the code'))
-        else:
-            doc = self.shown
-            bar.append(_('{blocks} Block(s), {steps} Step(s)').format(blocks=len(doc.blocks), steps=len(doc.steps())), style=dim)
-            bar.append("   ")
-            bar.append("─", style=Style(bold=True))
-            bar.append(_(' CALL returns  '))
-            bar.append("═", style=Style(bold=True))
-            bar.append(_(' JUMP goes on  '))
-            bar.append(_('? no target'), style=dim)
+            bar.append(_('READ-ONLY') + "\n", style=strong)
+            bar.append(_('The YAML has errors: the board is the last design that parsed.') + "\n")
+            bar.append(_('Ctrl+T: fix it in the code'))
+        self.bar.display = bool(bar.plain)
         self.bar.update(bar)
+        self.show_summary()
+
+    def show_summary(self) -> None:
+        doc = self.shown
+        dim = themes.current().token_styles().get("div.comment")
+        text = Text()
+        text.append(_('{blocks} Block(s), {steps} Step(s)').format(blocks=len(doc.blocks), steps=len(doc.steps())))
+        if doc.blocks:
+            text.append(" · " + _('starts at {block}').format(block=doc.blocks[0].id), style=dim)
+        text.append("\n")
+        text.append("─", style=Style(bold=True))
+        text.append(_(' CALL returns  '))
+        text.append("═", style=Style(bold=True))
+        text.append(_(' JUMP goes on  '))
+        text.append(_('? no target'), style=dim)
+        self.summary.update(text)
 
     # ------------------------------------------------------------ the selection
     def selected(self) -> fm.Block | fm.Step | None:
@@ -794,6 +827,32 @@ class FlowDesignWindow(FlowView):
             return
         key = self.key
         await self._plan(lambda: fe.set_target(self.doc, step, conn.key, None), key)
+
+    # ------------------------------------------------------------ the context
+    def edit_context(self) -> None:
+        self._run(self._edit_context())
+
+    async def _edit_context(self) -> None:
+        """X: the selected Step's context as a tree or JSON (ContextDialog), written as one edit."""
+        from divide.ui.flowcontext import ContextDialog
+        step = self.selected()
+        if not isinstance(step, fm.Step) or not await self._can_edit():
+            return
+        attr = step.attrs.get("context")
+        try:
+            if step.why is not None:
+                raise fm.EditError(_('{step} cannot be edited here: {why}').format(step=step.name, why=step.why))
+            value = fm.context_data(attr.raw if attr is not None else "")
+        except fm.EditError as exc:
+            await self._say(exc)
+            return
+        dialog = ContextDialog(_('Context of {step}').format(step=step.name), value)
+        if await self.app.run_dialog(dialog) != Command.OK or dialog.result is None:  # type: ignore[attr-defined]
+            return
+        text = fm.render_context(dialog.result) if dialog.result else ""
+        block_id, step_id = step.block, step.id
+        await self._plan(lambda: fe.edit_step(self.doc, self.doc.step(block_id, step_id), {"context": text}),
+                         ("step", block_id, step_id))
 
     # ------------------------------------------------------------ connecting
     def connect(self, key: str) -> None:

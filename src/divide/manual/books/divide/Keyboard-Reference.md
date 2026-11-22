@@ -116,6 +116,7 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **Enter** | follow the chosen connection; else edit the Step or Block |
 | **Esc** / **Backspace** | leave the connection or target choice / back |
 | **C / J** | connect a `call` / `jump`: choose the target, Enter |
+| **X** | the Step's context, as a tree or as JSON |
 | **Ins** / **B** | new Step / new Block |
 | **Del** | delete the Step or Block, or remove the chosen connection |
 | **Ctrl+↑ / Ctrl+↓** | move the Step in its Block |

@@ -51,6 +51,7 @@ from divide.ui.history import HistoryInput
 from divide.ui.windows import EditorWindow, HRule, VRule, _TVWindow
 
 Key = tuple  # ("flow",) | ("block", id) | ("step", block, id)
+CM_EDIT_CONTEXT = Command.USER + 210  # the Step dialog's Edit context... button
 
 
 def _style(kind: str):
@@ -135,7 +136,26 @@ class StepDialog(_Dialog):
             yield Static(self.note, classes="flow-note", markup=False)
         with Horizontal(classes="dlg-buttons"):
             yield Button(_('O~K~'), Command.OK, is_default=True, id="ok")
+            yield Button(_('~E~dit context...'), CM_EDIT_CONTEXT, id="context")
             yield Button(_('Cancel'), Command.CANCEL, id="cancel")
+
+    def on_command_message(self, message) -> None:
+        if message.command == CM_EDIT_CONTEXT:
+            message.stop()
+            message.prevent_default()
+            self.run_worker(self._edit_context(), exclusive=True)
+
+    async def _edit_context(self) -> None:
+        """The context field edited as a tree or as JSON (ContextDialog); the result back in the field."""
+        from divide.ui.flowcontext import ContextDialog
+        try:
+            value = fm.context_data(self.inputs["context"].data)
+        except fm.EditError as exc:
+            self.app.notify(str(exc), severity="error")
+            return
+        dialog = ContextDialog(_('Context'), value)
+        if await self.app.run_dialog(dialog) == Command.OK and dialog.result is not None:  # type: ignore[attr-defined]
+            self.inputs["context"].data = fm.render_context(dialog.result) if dialog.result else ""
 
     def on_mount(self) -> None:
         first = self.id_input if self.new_id and not self.id_input.data else self.inputs["activity"] if not self.inputs["call"].data else self.inputs["call"]

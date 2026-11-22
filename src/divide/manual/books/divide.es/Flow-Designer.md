@@ -1,7 +1,7 @@
 # Diseñador de Flows
 
 El **diseñador de Flows** dibuja un Flow de [Runner](https://github.com/divengine/runner) como un tablero que trabajas con el teclado:
-- sus Blocks como **carriles**, uno al lado del otro en el orden en que están escritos, con el primero marcado **ENTRADA** (donde empieza el Flow);
+- sus Blocks como **carriles**: columnas una al lado de la otra en el orden en que están escritos, en dos colores alternos, con la primera marcada **ENTRADA** (donde empieza el Flow);
 - los Steps de cada Block como **tarjetas** a lo largo de su carril, en el orden en que se ejecutan;
 - cada `call` y cada `jump` como una **línea** desde el Step que lo tiene hasta el Step al que lleva.
 
@@ -25,9 +25,9 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
 
 ![El mismo tablero a 160 columnas: cuatro carriles, las líneas de call y jump entre ellos](images/flow-designer-160.png)
 
-- **La línea de arriba** dice cuántos Blocks y Steps tiene el Flow, y qué significan las líneas.
+- **Los carriles.** Cada Block es una columna desde arriba hasta abajo de la ventana, con un color propio: las vecinas alternan entre dos colores, ninguno el de la ventana, uno más oscuro y otro más claro. Los colores bastan para distinguir un Block del siguiente, sin marco ni línea entre ellos. Siguen siendo dos colores cuando el terminal solo tiene 256 o 16, y en los temas monocromos son dos niveles de luz.
 - **El título de un carril** es el número y el id del Block, con **ENTRADA** en el primero, y debajo su descripción (o cuántos Steps tiene). Los títulos se quedan arriba mientras las tarjetas se desplazan.
-- **Una tarjeta** es un Step. Su borde de arriba lleva su número y su id, y sus filas dicen lo que hace, en el orden en que lo hace Runner:
+- **Una tarjeta** es un Step, sobre una superficie propia encima del color de su carril. Su borde de arriba lleva su número y su id, y sus filas dicen lo que hace, en el orden en que lo hace Runner:
 
   | Fila | Qué es |
   |---|---|
@@ -38,7 +38,7 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
   | `JUMP .reserve` | `jump`: seguir desde allí, sin volver |
   | `PAUSE` | `pause`: el Flow se pausa después del Step |
 
-  Una tarjeta sin ninguna de estas filas dice *(nada que hacer)*.
+  La palabra de cada fila va en su propio color y en negrita. Una tarjeta sin ninguna de estas filas dice *(nada que hacer)*.
   - Marcas en su borde de arriba: **!E** quiere decir que el Step tiene un error, **!W** un aviso, **RO** que está escrito de una forma que el tablero muestra pero no edita.
   - En su borde de abajo, **◄2** dice cuántos call y jump llevan a él.
 - **Las líneas.** Cada `call` y cada `jump` sale de la fila `CALL` o `JUMP` de su tarjeta y termina en una flecha (`►` o `◄`) en la tarjeta de destino. Se distinguen sin color:
@@ -48,12 +48,17 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
 
   Las líneas van entre los carriles y entre las filas de tarjetas, nunca por encima de una tarjeta. Donde dos líneas se cruzan, el cruce se dibuja como un cruce (`┼ ╫ ╪ ╬`). Un `call` o un `jump` a `block.` (el primer Step del Block) lleva a ese primer Step, o al título del carril cuando el Block no tiene Steps.
 - **Lo elegido.** La tarjeta (o el título) elegida se dibuja en vídeo inverso y sus líneas en negrita. La conexión que escoges con Tab también se dibuja en vídeo inverso. Funciona igual en todos los temas, incluidos los temas de fósforo monocromos.
-- **El inspector**, a la derecha (debajo del tablero cuando la ventana tiene menos de 100 columnas), muestra lo elegido, como en la ventana Flow:
+- **El panel**, a la derecha (debajo del tablero cuando la ventana tiene menos de 100 columnas), tiene tres partes:
+  - **arriba, lo que está pasando**, en vídeo inverso y solo mientras pasa: eligiendo el destino de un call o un jump, el YAML sin poder leerse (solo lectura), o Blocks y Steps sin dibujar;
+  - **el inspector**: lo elegido, como en la ventana Flow;
+  - **debajo, el Flow**: cuántos Blocks y Steps tiene, dónde empieza y qué significan las líneas.
+
+  El inspector muestra
   - de un Step: sus atributos, adónde llevan su call y su jump, y el archivo de función de su activity o su condition;
   - de un Block: sus Steps y qué Steps llevan a él;
   - los problemas encontrados;
   - con una conexión escogida, qué es: un call o un jump, desde dónde y hacia dónde.
-- **Debajo del inspector: el veredicto de Runner.**
+- **Abajo del panel: el veredicto de Runner.**
 
 A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. Los terminales más anchos muestran más carriles y tarjetas más anchas. El tablero se desplaza con lo elegido.
 
@@ -71,6 +76,7 @@ A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. L
 | **Retroceso** | Volver a donde estabas antes de seguir una conexión |
 | **Ctrl+Intro** (Ctrl+J) | Ir al otro extremo de la conexión escogida, si no al destino del call o jump del Step; en un Step sin ninguno, abrir el archivo de su activity o su condition |
 | **C / J** | Conectar el Step elegido con un `call` / `jump`: elige su destino en el tablero |
+| **X** | Editar el contexto del Step elegido, como árbol o como JSON |
 | **Ins** | Un Step nuevo después del elegido (en el título de un carril: al final del Block) |
 | **B** | Un Block nuevo después del de lo elegido, con su primer Step |
 | **Supr** | Borrar el Step o el Block (se pregunta antes), o quitar la conexión escogida |
@@ -91,10 +97,10 @@ Un Flow nuevo solo necesita un `id` y un `blocks:` vacío en su archivo YAML. En
 
 1. **B** crea un Block. Da su id, una descripción opcional, el id de su primer Step y la activity de ese Step (**Abajo** ofrece los archivos de función). Se escribe después del Block elegido, sangrado como los demás.
 2. **Ins** añade un Step después del elegido, con el mismo diálogo que en la ventana Flow: module, condition, activity, call, jump, context, pause.
-3. **C** (o **J**) en un Step empieza una conexión. La línea de arriba dice `CALL desde main.greet: elige el destino...`. Ve a la tarjeta de destino y pulsa **Intro**: divide escribe `call: check.mark`, la forma explícita `block.step`. En el título de un carril, Intro escribe `check.`, que lleva al primer Step de ese Block, sea cual sea. **Supr** en cambio quita el call (o el jump) del Step, y **Esc** cancela.
+3. **C** (o **J**) en un Step empieza una conexión. Arriba del panel dice `CALL desde main.greet` y qué hacen Intro, Supr y Esc. Ve a la tarjeta de destino y pulsa **Intro**: divide escribe `call: check.mark`, la forma explícita `block.step`. En el título de un carril, Intro escribe `check.`, que lleva al primer Step de ese Block, sea cual sea. **Supr** en cambio quita el call (o el jump) del Step, y **Esc** cancela.
 4. **Alt+F9** pide a Runner que lo verifique, **F2** lo guarda y **Ctrl+F9** lo ejecuta.
 
-![Eligiendo el destino del jump de stock.short: la línea de arriba dice qué hacen Intro, Supr y Esc](images/flow-designer-connect.png)
+![Eligiendo el destino del jump de stock.short: arriba del panel dice qué hacen Intro, Supr y Esc](images/flow-designer-connect.png)
 
 ## Editar, renombrar, reordenar, borrar
 
@@ -134,13 +140,28 @@ divide vuelve a leer el resultado antes de quedárselo. Si cambiara algo más (o
 - borrar el único Block;
 - renombrar o borrar mientras los Steps de un Block están escritos en estilo flow (`steps: {a: {jump: main.s}}`): un `call` o `jump` allí no se podría seguir.
 
-Un Block o Step cuyo id ya usa uno anterior no se dibuja, y la línea de arriba lo nombra: Runner también lo rechaza, así que corrígelo en el código.
+Un Block o Step cuyo id ya usa uno anterior no se dibuja, y arriba del panel se nombra: Runner también lo rechaza, así que corrígelo en el código.
+
+## Editar un contexto
+
+**X** en una tarjeta, o **Editar contexto...** en el diálogo del Step (en el tablero y en la [[ventana Flow|Flow Structure]]), abre el contexto del Step como datos, en dos vistas del mismo valor:
+
+![El contexto de stock.short como árbol, con el diálogo de elemento del editor JSON](images/flow-designer-context.png)
+
+- **Árbol** (Alt+R): el árbol de [[Archivos de datos|Data Files]] y su diálogo de elemento (clave, tipo, valor). **Intro** edita un elemento, **Ins** añade uno, **Supr** borra uno, **Ctrl+↑ / Ctrl+↓** mueve uno. Los objetos y las listas se pueden anidar; los valores son textos, números, booleanos o null.
+- **JSON** (Alt+J): el mismo valor como texto JSON, en el editor de código de divide. Al volver al árbol, o con OK, se vuelve a leer el texto. Si no es un objeto JSON, se te dice y te quedas en el texto.
+
+El diálogo trabaja sobre una copia: **Cancelar** no cambia nada. **OK** escribe el contexto como un mapping de YAML, `{approved: true, by: "ana maria", tries: [1, 2]}`:
+- Desde **X**, es una edición del Flow, que se deshace con un Ctrl+Z.
+- Desde el diálogo del Step, va a su campo Contexto y se aplica con el resto del diálogo.
+
+Un contexto escrito con una clave por línea se cambia clave a clave, como en la ventana Flow: las claves conservan su orden y sus comentarios, y lo que no se puede cambiar así se rechaza. Un contexto con algo que divide no lee, como un escalar de bloque o un ancla, se edita en el código.
 
 ## Cuando el YAML no se puede leer
 
 ![El YAML roto en el código: el tablero conserva el último diseño que se leyó, de solo lectura](images/flow-designer-readonly.png)
 
-Si el código deja de ser YAML válido (a medio escribir, o con un corchete sin cerrar), el tablero sigue mostrando **el último diseño que se leyó** y dice **SOLO LECTURA** en su línea de arriba. El inspector lista los problemas.
+Si el código deja de ser YAML válido (a medio escribir, o con un corchete sin cerrar), el tablero sigue mostrando **el último diseño que se leyó** y dice **SOLO LECTURA** arriba del panel. El inspector lista los problemas.
 - Nada en el tablero edita el Flow: cada tecla que editaría dice *Corrige primero el YAML en el código*. Tu texto sin guardar nunca se toca.
 - **Ctrl+T** va al código, al primer problema. Cuando el YAML vuelve a leerse, el tablero lo sigue y puede editar de nuevo.
 
@@ -156,5 +177,5 @@ Consulta [[Problemas|Flow Structure]].
 
 - El tablero es un espacio de diseño, no un depurador. No simula un Flow, no lo reproduce, no lo ejecuta paso a paso ni lo detiene en puntos de ruptura. Ejecutar es cosa de Runner, mediante [[Ejecutar Flows|Running Flows]].
 - Los Steps solo se mueven dentro de su Block, y los Blocks se crean con su primer Step.
-- Los destinos de `call` y `jump` de un Step se eligen en el tablero. Sus demás atributos se editan en el diálogo del Step. Un `context` es allí una línea, `{clave: valor, ...}`.
+- Los destinos de `call` y `jump` de un Step se eligen en el tablero, y su contexto en el diálogo del contexto. Sus demás atributos se editan en el diálogo del Step.
 - La disposición es fija: carriles en el orden del YAML y tarjetas en el orden de sus Steps. Nada del tablero se guarda.

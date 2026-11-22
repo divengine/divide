@@ -49,7 +49,7 @@ A Flow is a YAML file (`.yml`, `.yaml`) whose root has `blocks`. In its code win
 - **Condition**: a function; the Step runs only when it returns true.
 - **Activity**: the function that does the work.
 - **Call** `block.step`: go there and come back. **Jump** `block.step`: go on from there. An empty Block (`.step`) means the Step's own Block; an empty Step (`block.`) means the Block's first Step.
-- **Context**: values the Step sets, as a mapping, `{approved: true, by: ana}`.
+- **Context**: values the Step sets, as a mapping, `{approved: true, by: ana}`. **Edit context...** (Alt+E) opens it as a tree or as JSON ([[Edit a context|Flow Designer]]).
 - **Pause**: pause the Flow after the Step.
 
 **Down** in a field offers what the project already has:

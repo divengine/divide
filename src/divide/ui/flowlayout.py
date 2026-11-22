@@ -288,7 +288,7 @@ class Board:
         self.lane_x = [lx - 1 for lx in lane_x]  # where a lane begins: what horizontal scrolling snaps to
         gutter_x = [lane_x[g] + cw for g in range(len(blocks))]
         band_y, card_y = {}, {}
-        y = 1  # row 0: the top of the lanes' frames
+        y = 0
         band_y[-1] = y
         y += band_count.get(-1, 0)
         card_y[-1] = y
@@ -314,9 +314,12 @@ class Board:
         # lanes and cards
         for i, block in enumerate(blocks):
             lane: list[Key] = [("block", block.id)]
-            for yy in range(self.height):  # a lane is a column of its own, frame included, down to the end
-                for xx in range(lane_x[i] - 1, lane_x[i] + cw + 1):
-                    self.fill[yy][xx] = "lane"
+            # a Block is a column of its own colour, from its left edge to the next one's, down to the end;
+            # neighbours alternate, so the colour alone tells one Block from the next
+            right = lane_x[i + 1] - 1 if i + 1 < len(blocks) else self.width
+            for yy in range(self.height):
+                for xx in range(0 if i == 0 else lane_x[i] - 1, right):
+                    self.fill[yy][xx] = self.column_fill(i)
             self._lane_title(i, block, lane_x[i], card_y[-1], height(i, -1))
             for r, step in enumerate(steps_of[i]):
                 key: Key = ("step", block.id, step.id)
@@ -394,19 +397,14 @@ class Board:
         for ax, ay_, head, n in arrows:
             self.chars[ay_][ax] = head
             self.styles[ay_][ax] = "error" if head == "?" else ("jump" if routes[n][0].kind == "d" else "call")
-        # each Block a framed column holding its title and its Steps; the frame opens where a line
-        # enters or leaves (the frame's columns are the gutters' outer ones: no track runs there)
-        for i in range(len(blocks)):
-            left, right, bottom = lane_x[i] - 1, lane_x[i] + cw, self.height - 1
-            edges = [(left, 0, "┌"), (right, 0, "┐"), (left, bottom, "└"), (right, bottom, "┘")]
-            edges += [(xx, 0, "─") for xx in range(left + 1, right)] + [(xx, bottom, "─") for xx in range(left + 1, right)]
-            rule = card_y[-1] + height(i, -1) - 1  # the rule under the title joins the frame
-            edges += [(left, rule, "├"), (right, rule, "┤")]
-            edges += [(xx, yy, "│") for yy in range(1, bottom) for xx in (left, right) if yy != rule]
-            for xx, yy, ch in edges:
-                if 0 <= xx < self.width and self.chars[yy][xx] == " ":
-                    self.chars[yy][xx] = ch
-                    self.styles[yy][xx] = "frame"
+
+    @staticmethod
+    def column_fill(index: int) -> str:
+        return "lane" if index % 2 == 0 else "lane.alt"
+
+    def filler(self) -> list[str]:
+        """A row under the board: each Block's column carries on to the bottom of the window."""
+        return self.fill[-1][:] if self.fill else []
 
     def _put(self, x: int, y: int, text: str, style: str) -> None:
         row, styles = self.chars[y], self.styles[y]
@@ -430,10 +428,6 @@ class Board:
         count = len(block.steps)
         under = block.description or (_('{n} Step(s)').format(n=count) if count else _('(no Steps)'))
         self._put(x, y + 1, " " + _cut(under, cw - 2), "dim")
-        self._put(x, y + h - 1, "─" * cw, "rule")
-        for yy in range(y, y + h - 1):  # the title and the description: the lane's head
-            for xx in range(x, x + cw):
-                self.fill[yy][xx] = "title"
         self.boxes[key] = Box(key, x, y, cw, h)
 
     def _card(self, key: Key, step: fm.Step, row: int, lines: list[tuple[str, str]], x: int, y: int) -> None:

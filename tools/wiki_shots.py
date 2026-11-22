@@ -693,7 +693,7 @@ async def flowmodel():
             await pilot.press("ctrl+t")
             await until(pilot, lambda: isinstance(app.active_window(), FlowWindow), tries=200)
             window = app.active_window()
-            await until(pilot, lambda: "compiles" in str(window.verdict.render()), tries=200)
+            await until(pilot, lambda: id(window.source.editor) in app._flow_checks, tries=200)  # Runner answered (any language)
             window.select(("step", "approval", "ask"))
             await settle(pilot, 6)
             save(app, "flow-window")
@@ -711,7 +711,7 @@ async def flowmodel():
             await pilot.press("ctrl+t")
             await until(pilot, lambda: isinstance(app.active_window(), FlowWindow), tries=200)
             window = app.active_window()
-            await until(pilot, lambda: "error(s)" in str(window.verdict.render()), tries=200)
+            await until(pilot, lambda: id(window.source.editor) in app._flow_checks, tries=200)
             await pilot.press("alt+f9")
             await until(pilot, lambda: app.messages_window() is not None, tries=200)
             await settle(pilot, 4)
@@ -744,7 +744,7 @@ async def designer():
         app.run_command(CM_FLOW_DESIGN)
         await until(pilot, lambda: isinstance(app.active_window(), FlowDesignWindow), tries=200)
         window = app.active_window()
-        await until(pilot, lambda: "compiles" in str(window.verdict.render()) or "error" in str(window.verdict.render()), tries=300)
+        await until(pilot, lambda: id(window.source.editor) in app._flow_checks, tries=300)  # Runner answered (any language)
         await settle(pilot, 8)
         return window
 
@@ -777,6 +777,19 @@ async def designer():
                     await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), BlockDialog), tries=200)
                     await settle(pilot, 6)
                     save(app, "flow-designer-block")
+                    await pilot.press("escape")
+                    window.select(("step", "stock", "short"))
+                    await pilot.press("x")  # the context as a tree, a new item in the JSON editor's dialog
+                    from divide.ui.jsontree import EditItemDialog
+                    await settle(pilot, 6)
+                    await pilot.press("insert")
+                    await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), EditItemDialog), tries=200)
+                    dialog = app.screen.dialog
+                    dialog.key_input.data, dialog.value_input.data = "by", "ana maria"
+                    await settle(pilot, 6)
+                    save(app, "flow-designer-context")
+                    await pilot.press("escape")
+                    await settle(pilot, 4)
                     await pilot.press("escape")
         app = Divide(root, [flow], palette="phosphor-green")
         async with app.run_test(size=(120, 34)) as pilot:
@@ -1099,7 +1112,7 @@ async def phosphor():
                     await pilot.press("ctrl+t")
                     await until(pilot, lambda: isinstance(app.active_window(), FlowWindow), tries=200)
                     window = app.active_window()
-                    await until(pilot, lambda: "error(s)" in str(window.verdict.render()), tries=200)
+                    await until(pilot, lambda: id(window.source.editor) in app._flow_checks, tries=200)
                     await pilot.press("alt+f9")
                     await until(pilot, lambda: app.messages_window() is not None, tries=200)
                     await settle(pilot, 4)

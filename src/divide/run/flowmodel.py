@@ -749,6 +749,86 @@ def _edit_block_mapping(text: str, attr: Attr, value: str) -> list[Change]:
     return changes
 
 
+# ---------------------------------------------------------------- a context as data
+_INT = re.compile(r"^[-+]?(0|[1-9][0-9_]*)$")
+_FLOAT = re.compile(r"^[-+]?(\.[0-9]+|[0-9][0-9_]*(\.[0-9]*)?)([eE][-+]?[0-9]+)?$")
+
+
+def _yaml_scalar(src: "_Source", node) -> object:
+    """A scalar as Runner reads it (YAML 1.1, as PyYAML's safe_load): quoted text stays text."""
+    if node.type in ("double_quote_scalar", "single_quote_scalar"):
+        return _scalar(src, node)
+    raw = src.raw(node).strip()
+    low = raw.lower()
+    if low in ("true", "yes", "on"):
+        return True
+    if low in ("false", "no", "off"):
+        return False
+    if low in ("null", "~", ""):
+        return None
+    if _INT.match(raw):
+        return int(raw.replace("_", ""))
+    if _FLOAT.match(raw) and any(c.isdigit() for c in raw):
+        return float(raw.replace("_", ""))
+    return raw
+
+
+def _yaml_data(src: "_Source", node) -> object:
+    node = _unwrap(node)
+    if node is None:
+        return None
+    if node.type in ("block_mapping", "flow_mapping"):
+        out = {}
+        for pair in _pairs(node):
+            named = _key(src, pair)
+            if named is None:
+                raise EditError(_('The context has a key divide does not read: edit it in the code (Ctrl+T)'))
+            out[named[0]] = _yaml_data(src, pair.child_by_field_name("value"))
+        return out
+    if node.type in ("block_sequence", "flow_sequence"):
+        items = [c for c in node.named_children if c.type in ("block_sequence_item", "flow_node", "block_node")]
+        return [_yaml_data(src, c.named_children[0] if c.type == "block_sequence_item" and c.named_children else c) for c in items]
+    if node.type.endswith("scalar") and node.type != "block_scalar":
+        return _yaml_scalar(src, node)
+    raise EditError(_('The context has something divide does not read (a block scalar, an anchor...): edit it in the code (Ctrl+T)'))
+
+
+def context_data(text: str) -> dict:
+    """A context written as YAML (a flow mapping ``{a: 1}``, or the lines of a block mapping) as data."""
+    text = text.strip("\n")
+    if not text.strip():
+        return {}
+    body = ("x:\n" + text) if not text.lstrip().startswith("{") else ("x: " + text.strip())
+    src = _Source(body + "\n")
+    tree = _parser().parse(src.data)
+    if tree.root_node.has_error:
+        raise EditError(_('The context is not YAML: write a mapping, {a: 1, b: x}'))
+    top = _unwrap(next((c for c in tree.root_node.named_children if c.type == "document"), None))
+    if top is None or not _pairs(top):
+        return {}
+    value = _yaml_data(src, _pairs(top)[0].child_by_field_name("value"))
+    if not isinstance(value, dict):
+        raise EditError(_('The context must be a mapping: {a: 1, b: x}'))
+    return value
+
+
+def render_context(value: object) -> str:
+    """Data as a YAML flow collection Runner reads back the same: ``{a: 1, b: [x, "y z"]}``."""
+    if isinstance(value, dict):
+        return "{" + ", ".join(f"{render_scalar(str(k))}: {render_context(v)}" for k, v in value.items()) + "}"
+    if isinstance(value, list):
+        return "[" + ", ".join(render_context(v) for v in value) + "]"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if value is None:
+        return "null"
+    if isinstance(value, (int, float)):
+        return json.dumps(value)
+    return render_scalar(str(value))
+
+
 def _flow_pairs(raw: str) -> list[tuple[str, str]] | None:
     """``{a: 1, b: x}`` as its pairs, keys and values as written (None: not a flow mapping)."""
     src = _Source("x: " + raw.strip() + "\n")

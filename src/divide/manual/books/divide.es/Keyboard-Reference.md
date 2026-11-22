@@ -116,6 +116,7 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **Enter** | seguir la conexión escogida; si no, editar el Step o el Block |
 | **Esc** / **Retroceso** | dejar la conexión o la elección de destino / volver |
 | **C / J** | conectar un `call` / `jump`: elegir el destino, Enter |
+| **X** | el contexto del Step, como árbol o como JSON |
 | **Ins** / **B** | Step nuevo / Block nuevo |
 | **Supr** | borrar el Step o el Block, o quitar la conexión escogida |
 | **Ctrl+↑ / Ctrl+↓** | mover el Step dentro de su Block |
