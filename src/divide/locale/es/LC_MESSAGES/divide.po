@@ -4907,3 +4907,11 @@ msgstr "~D~escripción (opcional)"
 
 msgid "~F~irst Step id"
 msgstr "Id del ~p~rimer Step"
+
+#, python-brace-format
+msgid "Not drawn, their id is taken: {names}. Ctrl+T: the code"
+msgstr "Sin dibujar, su id ya está usado: {names}. Ctrl+T: el código"
+
+#, python-brace-format
+msgid "The Steps of {blocks} are written in flow style: their calls and jumps cannot be followed. Rename or delete in the code (Ctrl+T)"
+msgstr "Los Steps de {blocks} están escritos en estilo flow: sus call y jump no se pueden seguir. Renombra o borra en el código (Ctrl+T)"

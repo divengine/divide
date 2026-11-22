@@ -462,3 +462,54 @@ async def test_views_switch_and_ctrl_t_remembers_the_board(project):
         styles = window.board.paint(window.key)
         box = window.board.boxes[window.key]
         assert styles[box.y][box.x][1].startswith("sel:")
+
+
+# ------------------------------------------------------------------ found in review
+def test_more_arrows_than_rows_make_the_card_taller_never_share_a_row():
+    text = ("blocks:\n  main:\n    steps:\n      a:\n        activity: x\n"
+            + "".join(f"      s{n}:\n        jump: .a\n" for n in range(5)))
+    b = board(text)
+    a = b.boxes[("step", "main", "a")]
+    assert a.h >= 6  # five arrows, each on its own row
+    heads = [c.cells[-1] for c in b.connections]
+    assert len(set(heads)) == 5
+    cells: dict = {}
+    for conn in b.connections:
+        for cell in conn.cells:
+            cells.setdefault(cell, []).append(conn)
+    assert all(b.chars[y][x] in CROSSINGS for (x, y), cs in cells.items() if len(cs) > 1)
+
+
+def test_a_missing_target_is_a_question_mark_at_its_port_alone():
+    text = FLOW + "      far:\n        jump: main.total\n"
+    b = board(text)
+    lost = next(c for c in b.connections if c.target is None)
+    assert len(lost.cells) == 1 and b.chars[lost.cells[0][1]][lost.cells[0][0]] == "?"
+    assert not any(lost.cells[0] in c.cells for c in b.connections if c is not lost)
+
+
+def test_duplicate_ids_are_not_drawn_and_navigation_reaches_every_card():
+    text = "blocks:\n  main:\n    steps:\n      a:\n        activity: x\n      a:\n        activity: y\n      b:\n        activity: z\n  main:\n    steps:\n      c:\n        pause: true\n"
+    b = board(text)
+    assert b.lanes == [[("block", "main"), ("step", "main", "a"), ("step", "main", "b")]]
+    assert b.duplicates == ["main", "main.a"]
+
+
+async def test_renaming_a_step_that_jumps_to_itself_keeps_the_jump_on_it(project):
+    from divide.app import Divide
+    from divide.ui.flowmodel import StepDialog
+
+    flow = project / "flows/loop.yml"
+    flow.write_text("blocks:\n  main:\n    steps:\n      retry:\n        activity: greet\n        jump: .retry\n")
+    app = Divide(project, [flow])
+    async with app.run_test(size=(120, 34)) as pilot:
+        window = await open_designer(app, pilot)
+        window.select(("step", "main", "retry"))
+        await pilot.press("enter")
+        await wait(pilot, lambda: dialog_of(app, StepDialog), "no Step dialog")
+        dialog_of(app, StepDialog).id_input.data = "again"
+        await pilot.press("alt+k")
+        await wait(pilot, lambda: "again:" in window.source.editor.text, "not renamed")
+        assert window.source.editor.text == "blocks:\n  main:\n    steps:\n      again:\n        activity: greet\n        jump: .again\n"
+        await pilot.press("ctrl+z")  # the rename alone, in one undo
+        await wait(pilot, lambda: window.source.editor.text == flow.read_text(), "one undo did not undo it")

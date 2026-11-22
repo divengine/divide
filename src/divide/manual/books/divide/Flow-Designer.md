@@ -131,7 +131,10 @@ divide reads the result again before keeping it. If anything else would change (
 - removing the only thing a Step does: a Step left empty is not a valid Step, so change or delete that Step first;
 - moving two items that are indented differently, or that have something else written on the same line as their key;
 - renaming to an id that the Flow already has, or that starts with `_` or has a dot (Runner's rules for ids);
-- deleting the only Block.
+- deleting the only Block;
+- renaming or deleting while a Block's Steps are written in flow style (`steps: {a: {jump: main.s}}`): a `call` or `jump` there could not be followed.
+
+A Block or Step whose id is already taken by an earlier one is not drawn, and the top line names it: Runner refuses it too, so fix it in the code.
 
 ## When the YAML does not parse
 

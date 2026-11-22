@@ -113,6 +113,7 @@ class Block:
     steps_style: str = "missing"  # block, empty, flow, missing, other
     key_column: int = 0
     attrs: dict[str, Attr] = field(default_factory=dict)  # its own keys but steps (description, unknown ones)
+    style: str = "block"  # how its body is written: block, flow, empty, other
 
     def step(self, step_id: str) -> Step | None:
         return next((s for s in self.steps if s.id == step_id), None)
@@ -325,6 +326,8 @@ def _block(src: _Source, pair) -> Block | None:
     block = Block(block_id, start, end, key_start, key_end, key_column=_column(src.text, key_start))
     body = _unwrap(pair.child_by_field_name("value"))
     if body is None or body.type != "block_mapping":
+        block.style = "empty" if body is None or body.type in ("block_node", "flow_node") else \
+            "flow" if body.type == "flow_mapping" else "other"
         return block
     for inner in _pairs(body):
         named = _key(src, inner)
@@ -559,7 +562,7 @@ _TARGET = re.compile(r"^[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$")
 def render_target(value: str) -> str:
     """A ``block.step`` target as YAML: plain unless YAML would read it as a number (``1.5``, ``.5``,
     ``.inf``) or it is not a plain target."""
-    if _TARGET.match(value) and not re.match(r"^[-+]?\.?\d", value) and value.lower() not in (".inf", ".nan", "."):
+    if _TARGET.match(value) and not re.match(r"^[-+]?\.?\d", value) and value.lower().lstrip("+-") not in (".inf", ".nan", "."):
         if not re.match(r"^[-+]?\d+\.\d*$", value):
             return value
     return render_scalar(value)

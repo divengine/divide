@@ -485,6 +485,10 @@ class FlowDesignWindow(FlowView):
             bar.append(f" {key.upper()} ", style=Style(reverse=True, bold=True))
             bar.append(" " + _('from {step}: choose the target, Enter sets it, Del removes it, Esc cancels').format(
                 step=f"{source[1]}.{source[2]}"))
+        elif self.board is not None and self.board.duplicates:
+            bar.append(" ! ", style=Style(reverse=True, bold=True))
+            bar.append(" " + _('Not drawn, their id is taken: {names}. Ctrl+T: the code').format(
+                names=", ".join(self.board.duplicates)))
         elif self.read_only:
             bar.append(_(' READ-ONLY '), style=Style(reverse=True, bold=True))
             bar.append(" " + _('YAML errors: the last design that parsed. Ctrl+T: the code'))
@@ -660,7 +664,11 @@ class FlowDesignWindow(FlowView):
                             offers=self._offers(), note=note)
         if await self.app.run_dialog(dialog) != Command.OK:  # type: ignore[attr-defined]
             return
-        block_id, old, new, values = step.block, step.id, dialog.step_id, dialog.values
+        # only what was changed in the dialog: its other fields still say what the Step said before a
+        # rename rewrote them (a jump to the Step itself, say)
+        values = {k: v for k, v in dialog.values.items()
+                  if not fm._unchanged(step.attrs.get(k), k, fm.normalize({k: v}).get(k))}
+        block_id, old, new = step.block, step.id, dialog.step_id
         await self._plan(lambda: fe.chain(
             self.doc,
             lambda d: fe.rename_step(d, d.step(block_id, old), new),

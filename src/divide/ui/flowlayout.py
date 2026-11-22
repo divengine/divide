@@ -164,14 +164,33 @@ class Board:
         self.width = self.height = 0
         self.header_height = 0
         self.lane_x: list[int] = []
+        self.duplicates: list[str] = []  # Blocks and Steps not drawn: their id is taken by an earlier one
         self._build()
 
     # ------------------------------------------------------------ building
     def _build(self) -> None:
         doc, cw = self.doc, self.card_width
-        blocks = doc.blocks
+        # a Block or Step whose id is taken by an earlier one is not drawn (Runner refuses it too): said
+        blocks, seen = [], set()
+        for b in doc.blocks:
+            if b.id in seen:
+                self.duplicates.append(b.id)
+            else:
+                seen.add(b.id)
+                blocks.append(b)
+        steps_of: list[list[fm.Step]] = []
+        for b in blocks:
+            mine, ids = [], set()
+            for st in b.steps:
+                if st.id in ids:
+                    self.duplicates.append(st.name)
+                else:
+                    ids.add(st.id)
+                    mine.append(st)
+            steps_of.append(mine)
         lane_of = {id(b): i for i, b in enumerate(blocks)}
-        lines = {id(s): step_lines(s) for b in blocks for s in b.steps}
+        lines = {id(s): step_lines(s) for st_list in steps_of for s in st_list}
+        pad: dict[tuple[int, int], int] = {}  # blank rows a card gets when more arrows arrive than it has rows
         incoming: dict[Key, int] = {}
         for ref in fe.references(doc):
             if ref.target is not None:
@@ -180,24 +199,25 @@ class Board:
         self._incoming = incoming
 
         def height(i: int, row: int) -> int:
-            return self.HEADER if row < 0 else 2 + len(lines[id(blocks[i].steps[row])])
+            if row < 0:
+                return self.HEADER + max((v for (_l, r), v in pad.items() if r < 0), default=0)
+            return 2 + len(lines[id(steps_of[i][row])]) + pad.get((i, row), 0)
 
-        rows = max((len(b.steps) for b in blocks), default=0)
-        row_height = [max((height(i, r) for i, b in enumerate(blocks) if r < len(b.steps)), default=3) for r in range(rows)]
+        rows = max((len(st) for st in steps_of), default=0)
 
         # the connections: from the port (lane i, row a, offset p) to (lane j, row b) or nowhere
         routes = []
         for ref in fe.references(doc):
             step = ref.step
             block = doc.block(step.block)
-            if block is None or id(block) not in lane_of:
+            if block is None or id(block) not in lane_of or step not in steps_of[lane_of[id(block)]]:
                 continue
-            i, a = lane_of[id(block)], block.steps.index(step)
+            i, a = lane_of[id(block)], steps_of[lane_of[id(block)]].index(step)
             port = 1 + [k for k, _t in lines[id(step)]].index(ref.key)
             source: Key = ("step", step.block, step.id)
             if ref.block is not None and id(ref.block) in lane_of:
                 j = lane_of[id(ref.block)]
-                b = ref.block.steps.index(ref.target) if ref.target is not None else -1
+                b = steps_of[j].index(ref.target) if ref.target is not None and ref.target in steps_of[j] else -1
                 if ref.target is None and ref.step_part:
                     routes.append([Connection(source, ref.key, str(ref.attr.value), None), i, a, port, None, None])
                     continue
@@ -208,22 +228,31 @@ class Board:
 
         # where each arrives: a free row of the target's side (left: from lanes to its left)
         ports = {(i, r): {1 + n for n, (k, _t) in enumerate(lines[id(st)]) if k in fm.TARGET_ATTRS}
-                 for i, blk in enumerate(blocks) for r, st in enumerate(blk.steps)}
+                 for i, st_list in enumerate(steps_of) for r, st in enumerate(st_list)}
         # a gutter's rows are taken by the ports of the lane on its left and by the arrows into the
         # lanes on both its sides: each arrow gets a row of its target no other line of that gutter uses
-        taken: set[tuple[int, int, int, int]] = {(i, r, 1, o) for (i, r), offsets in ports.items() for o in offsets}
-        for route in routes:
-            conn, i, a, port, j, b = route
-            if j is None:
-                route.extend([None, None])
-                continue
-            side = "left" if j > i else "right"
-            gutter = j - 1 if side == "left" else j
-            h = height(j, b)
-            free = [o for o in range(0, h - 1) if (gutter, b, 1, o) not in taken]
-            entry = free[0] if free else 0
-            taken.add((gutter, b, 1, entry))
-            route.extend([side, entry])
+        # (a card short of free rows grows by a blank row, and the arrows are placed again)
+        for _attempt in range(64):
+            taken: set[tuple[int, int, int, int]] = {(i, r, 1, o) for (i, r), offsets in ports.items() for o in offsets}
+            short = None
+            for route in routes:
+                del route[6:]
+                conn, i, a, port, j, b = route
+                if j is None:
+                    route.extend([None, None])
+                    continue
+                side = "left" if j > i else "right"
+                gutter = j - 1 if side == "left" else j
+                free = [o for o in range(0, height(j, b) - 1) if (gutter, b, 1, o) not in taken]
+                if not free and short is None:
+                    short = (j, b)
+                entry = free[0] if free else 0
+                taken.add((gutter, b, 1, entry))
+                route.extend([side, entry])
+            if short is None:
+                break
+            pad[short] = pad.get(short, 0) + 1
+        row_height = [max((height(i, r) for i, st in enumerate(steps_of) if r < len(st)), default=3) for r in range(rows)]
 
         # tracks in gutters (abstract y: (row, 0 band / 1 card, sub)) and channels in bands
         channel_items, track_items = {}, {}
@@ -263,7 +292,7 @@ class Board:
         band_y[-1] = y
         y += band_count.get(-1, 0)
         card_y[-1] = y
-        y += self.HEADER
+        y += height(0, -1) if blocks else self.HEADER
         self.header_height = y  # the rows the lane titles take: kept in view while the cards scroll
         for r in range(rows):
             band_y[r] = y
@@ -284,11 +313,11 @@ class Board:
         # lanes and cards
         for i, block in enumerate(blocks):
             lane: list[Key] = [("block", block.id)]
-            self._lane_title(i, block, lane_x[i], card_y[-1])
-            for r, step in enumerate(block.steps):
+            self._lane_title(i, block, lane_x[i], card_y[-1], height(i, -1))
+            for r, step in enumerate(steps_of[i]):
                 key: Key = ("step", block.id, step.id)
                 lane.append(key)
-                self._card(key, step, r, lines[id(step)], lane_x[i], card_y[r])
+                self._card(key, step, r, lines[id(step)] + [("pad", "")] * pad.get((i, r), 0), lane_x[i], card_y[r])
             self.lanes.append(lane)
 
         # connections
@@ -314,13 +343,9 @@ class Board:
             self.chars[py][gutter_x[i] - 1] = "├" if kind == "s" else "╞"
             self.styles[py][gutter_x[i] - 1] = "port"
             cells: list[tuple[int, int]] = []
-            if j is None:
-                points = [start, (gutter_x[i] + 1, py)]
-                walk(n, [(gutter_x[i] - 1, py)] + points, kind)
-                bits.get((gutter_x[i] - 1, py), {}).clear()
-                arrows.append((gutter_x[i] + 2, py, "?", n))
-                cells = [(gutter_x[i], py), (gutter_x[i] + 1, py), (gutter_x[i] + 2, py)]
-                conn.cells = cells
+            if j is None:  # nowhere to go: a ? right at the port, on the port's own row of the gutter
+                arrows.append((gutter_x[i], py, "?", n))
+                conn.cells = [start]
                 self.connections.append(conn)
                 continue
             ey = ay((b, 1, entry))
@@ -372,7 +397,7 @@ class Board:
                 row[x + k] = ch
                 styles[x + k] = style
 
-    def _lane_title(self, index: int, block: fm.Block, x: int, y: int) -> None:
+    def _lane_title(self, index: int, block: fm.Block, x: int, y: int, h: int = 3) -> None:
         cw = self.card_width
         key: Key = ("block", block.id)
         entry = _('ENTRY') if index == 0 else ""
@@ -387,8 +412,8 @@ class Board:
         count = len(block.steps)
         under = block.description or (_('{n} Step(s)').format(n=count) if count else _('(no Steps)'))
         self._put(x, y + 1, " " + _cut(under, cw - 2), "dim")
-        self._put(x, y + 2, "─" * cw, "rule")
-        self.boxes[key] = Box(key, x, y, cw, self.HEADER)
+        self._put(x, y + h - 1, "─" * cw, "rule")
+        self.boxes[key] = Box(key, x, y, cw, h)
 
     def _card(self, key: Key, step: fm.Step, row: int, lines: list[tuple[str, str]], x: int, y: int) -> None:
         cw = self.card_width

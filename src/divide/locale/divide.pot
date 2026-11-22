@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-22 01:02+0000\n"
+"POT-Creation-Date: 2026-11-22 01:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1764,6 +1764,10 @@ msgstr ""
 msgid "Not committed yet · "
 msgstr ""
 
+#, python-brace-format
+msgid "Not drawn, their id is taken: {names}. Ctrl+T: the code"
+msgstr ""
+
 msgid "Not installed yet: Alt+F10 > Install"
 msgstr ""
 
@@ -2598,6 +2602,12 @@ msgstr ""
 
 #, python-brace-format
 msgid "The MCP server stopped: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The Steps of {blocks} are written in flow style: their calls and jumps "
+"cannot be followed. Rename or delete in the code (Ctrl+T)"
 msgstr ""
 
 msgid "The YAML has errors: fix them in the code first (Ctrl+T)"

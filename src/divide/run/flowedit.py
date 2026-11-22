@@ -203,6 +203,22 @@ def _editable(doc: FlowDoc) -> None:
         raise EditError(_('The YAML has errors: fix them in the code first (Ctrl+T)'))
 
 
+def _all_read(doc: FlowDoc) -> None:
+    """Renames and deletions follow every reference: refused while a Block's Steps are written in a way
+    divide does not read (a call or jump there could not be followed)."""
+    hidden = [b.id for b in doc.blocks if b.style in ("flow", "other") or b.steps_style in ("flow", "other")]
+    if hidden:
+        raise EditError(_("The Steps of {blocks} are written in flow style: their calls and jumps cannot be followed. "
+                          "Rename or delete in the code (Ctrl+T)").format(blocks=", ".join(hidden)))
+
+
+IDLE = ("description", "module")  # what a Step left with only these does not have: anything to do
+
+
+def _newline(text: str) -> str:
+    return "\r\n" if "\r\n" in text else "\n"
+
+
 def _line_end(text: str, offset: int) -> int:
     end = text.find("\n", offset)
     return len(text) if end < 0 else end + 1
@@ -279,8 +295,9 @@ def _swap(doc: FlowDoc, first: Block | Step, second: Block | Step) -> Change:
         raise EditError(_('Something is written between {a} and {b}: move them in the code (Ctrl+T)').format(
             a=_name(first), b=_name(second)))
     if not b.endswith("\n"):  # the last line of the file: it keeps having no newline
-        b += "\n"
-        a = a[:-1] if a.endswith("\n") else a
+        newline = "\r\n" if a.endswith("\r\n") else "\n"
+        b += newline
+        a = a[:-len(newline)] if a.endswith(newline) else a
     return Change(a0, b1, b + mid + a)
 
 
@@ -310,11 +327,14 @@ def _retarget(ref: Ref, value: str) -> Change:
                   _quoted_like(raw, value) if raw[:1] in "'\"" else fm.render_target(value))
 
 
-def _unlink(doc: FlowDoc, ref: Ref) -> Change:
-    """The lines of a reference, removed: only when they carry no comment and the Step keeps something to do."""
+def _unlink(doc: FlowDoc, ref: Ref, gone: dict[int, set[str]]) -> Change:
+    """The lines of a reference, removed: only when they carry no comment and its Step keeps something
+    to do once every reference removed with it is gone (``gone``: Step -> keys removed)."""
     if ref.step.why is not None or ref.attr.why is not None:
         raise EditError(_('{ref} cannot be removed here: {why}').format(ref=ref.describe(), why=ref.step.why or ref.attr.why))
-    if not [k for k in ref.step.attrs if k != ref.key and k != "description"]:
+    removed = gone.setdefault(id(ref.step), set())
+    removed.add(ref.key)
+    if not [k for k in ref.step.attrs if k not in IDLE and k not in removed]:
         raise EditError(_('{step} would have nothing left to do: change or delete it first').format(step=ref.step.name))
     start, end = fm._whole_lines(doc.text, ref.attr.start, ref.attr.end)
     if fm.comments_in(doc, start, end):
@@ -365,6 +385,7 @@ def first_step_refs(doc: FlowDoc, block: Block) -> list[Ref]:
 def rename_step(doc: FlowDoc, step: Step, new_id: str) -> Plan | None:
     """``step`` called ``new_id``, and every ``call`` and ``jump`` that names it with it."""
     _editable(doc)
+    _all_read(doc)
     new_id = _check_id(new_id, _('Step'))
     if new_id == step.id:
         return None
@@ -398,6 +419,7 @@ def rename_block(doc: FlowDoc, block: Block, new_id: str) -> Plan | None:
     """``block`` called ``new_id``, and every ``call`` and ``jump`` that names it with it (``.step``
     from inside it names no Block and stays)."""
     _editable(doc)
+    _all_read(doc)
     new_id = _check_id(new_id, _('Block'))
     if new_id == block.id:
         return None
@@ -454,7 +476,7 @@ def edit_block(doc: FlowDoc, block: Block, description: str | None) -> Plan | No
             column = block.key_column + 2
         raw = fm.render_scalar(description)
         prefix = "" if at == 0 or text[at - 1] == "\n" else "\n"
-        change = Change(at, at, prefix + " " * column + f"description: {raw}\n")
+        change = Change(at, at, (prefix + " " * column + f"description: {raw}\n").replace("\n", _newline(text)))
     elif attr.kind == "empty":
         raw = fm.render_scalar(description)
         change = Change(attr.key_end + 1, attr.key_end + 1, " " + raw)
@@ -469,6 +491,7 @@ def delete_step(doc: FlowDoc, step: Step, *, unlink: bool = False) -> Plan:
     """``step``'s unit removed. The references that name it are removed too when ``unlink``
     (else the deletion is refused while there are any)."""
     _editable(doc)
+    _all_read(doc)
     block = doc.block(step.block)
     start, end = unit(doc, step)
     refs = [r for r in incoming(doc, step) if r.step_part and r.step is not step]
@@ -477,8 +500,11 @@ def delete_step(doc: FlowDoc, step: Step, *, unlink: bool = False) -> Plan:
     changes = [Change(start, end, "")]
     expected = _expected(doc)
     notes = []
+    gone: dict[int, set[str]] = {}
     for ref in refs:
-        changes.append(_unlink(doc, ref))
+        gone.setdefault(id(ref.step), set()).add(ref.key)
+    for ref in refs:
+        changes.append(_unlink(doc, ref, gone))
         _set_raw(expected, ref.step.block, ref.step.id, ref.key, None)
         notes.append(f"{ref.step.name}: {ref.key} {ref.attr.value}")
     for b in expected:
@@ -498,6 +524,7 @@ def delete_block(doc: FlowDoc, block: Block, *, unlink: bool = False) -> Plan:
     """``block``'s unit removed (never the only Block); the references from other Blocks that lead
     into it removed too when ``unlink`` (else refused while there are any)."""
     _editable(doc)
+    _all_read(doc)
     if len(doc.blocks) == 1:
         raise EditError(_('A Flow needs a Block: {block} is the only one').format(block=block.id))
     start, end = unit(doc, block)
@@ -507,8 +534,11 @@ def delete_block(doc: FlowDoc, block: Block, *, unlink: bool = False) -> Plan:
     changes = [Change(start, end, "")]
     expected = [b for b in _expected(doc) if b[0] != block.id]
     notes = []
+    gone: dict[int, set[str]] = {}
     for ref in refs:
-        changes.append(_unlink(doc, ref))
+        gone.setdefault(id(ref.step), set()).add(ref.key)
+    for ref in refs:
+        changes.append(_unlink(doc, ref, gone))
         _set_raw(expected, ref.step.block, ref.step.id, ref.key, None)
         notes.append(f"{ref.step.name}: {ref.key} {ref.attr.value}")
     lost = fm.comments_in(doc, start, end)
@@ -562,7 +592,8 @@ def add_block(doc: FlowDoc, after: Block | None, block_id: str, step_id: str, va
         lines += " " * steps_column + f"description: {fm.render_scalar(description)}\n"
     lines += " " * steps_column + "steps:\n" + " " * step_column + step_id + ":\n" + body
     prefix = "" if at == 0 or text[at - 1] == "\n" else "\n"
-    change = Change(at, at, prefix + lines)
+    newline = _newline(text)
+    change = Change(at, at, (prefix + lines).replace("\n", newline))
     after_doc = fm.parse(fm.apply(text, change))
     expected = _expected(doc)
     new = next((b for b in outline(after_doc) if b[0] == block_id), None)

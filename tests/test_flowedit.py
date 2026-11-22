@@ -341,3 +341,44 @@ def test_every_operation_leaves_a_flow_runner_compiles(tmp_path):
         text = done(text, make(doc))
         result = asyncio.run(fm.check(runner.bootstrap, text, "f.yml", []))
         assert result.ok is True, (result.error, text)
+
+
+# ------------------------------------------------------------------ found in review
+def test_references_hidden_in_flow_style_steps_block_renames_and_deletions():
+    text = "blocks:\n  main:\n    steps:\n      s:\n        activity: x\n  other:\n    steps: {a: {jump: main.s}}\n"
+    doc = fm.parse(text)
+    for make in (lambda: fe.rename_block(doc, doc.block("main"), "m2"), lambda: fe.rename_step(doc, doc.step("main", "s"), "t"),
+                 lambda: fe.delete_block(doc, doc.block("main"), unlink=True), lambda: fe.delete_step(doc, doc.step("main", "s"), unlink=True)):
+        with pytest.raises(fm.EditError, match="flow style"):
+            make()
+    whole = "blocks:\n  main:\n    steps:\n      s:\n        activity: x\n  other: {steps: {a: {jump: main.s}}}\n"
+    doc = fm.parse(whole)
+    with pytest.raises(fm.EditError, match="flow style"):
+        fe.rename_block(doc, doc.block("main"), "m2")
+    assert fe.move_block(doc, doc.block("other"), -1) is not None  # moving follows no reference
+
+
+def test_unlinking_two_references_of_one_step_never_leaves_it_empty():
+    text = "blocks:\n  main:\n    steps:\n      a:\n        call: .b\n        jump: .b\n      b:\n        activity: x\n"
+    doc = fm.parse(text)
+    with pytest.raises(fm.EditError, match="nothing left to do"):
+        fe.delete_step(doc, doc.step("main", "b"), unlink=True)
+    text = "blocks:\n  main:\n    steps:\n      a:\n        module: m\n        jump: .b\n      b:\n        activity: x\n"
+    doc = fm.parse(text)
+    with pytest.raises(fm.EditError, match="nothing left to do"):  # a module alone does nothing
+        fe.delete_step(doc, doc.step("main", "b"), unlink=True)
+
+
+def test_a_swap_at_the_end_of_a_crlf_file_keeps_its_line_endings():
+    text = "blocks:\r\n  main:\r\n    steps:\r\n      a:\r\n        activity: x\r\n      b:\r\n        activity: y"
+    doc = fm.parse(text)
+    after = done(text, fe.move_step(doc, doc.step("main", "a"), 1))
+    assert after == "blocks:\r\n  main:\r\n    steps:\r\n      b:\r\n        activity: y\r\n      a:\r\n        activity: x"
+    doc = fm.parse(text + "\r\n")
+    after = done(doc.text, fe.add_block(doc, None, "next", "go", {"pause": True}))
+    assert after.endswith("  next:\r\n    steps:\r\n      go:\r\n        pause: true\r\n") and "\n" not in after.replace("\r\n", "")
+
+
+def test_targets_that_yaml_would_read_as_numbers_are_quoted():
+    assert fm.render_target("-.inf") == '"-.inf"' and fm.render_target(".Nan") == '".Nan"' and fm.render_target("1.5") == '"1.5"'
+    assert fm.render_target(".total") == ".total" and fm.render_target("main.") == "main."

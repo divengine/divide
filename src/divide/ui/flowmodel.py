@@ -399,8 +399,10 @@ class FlowView(_TVWindow):
         editor = self.source.editor
         doc = editor.document
         before = self.doc
+        editor.history.checkpoint()  # its own undo step: never batched with a keystroke or another edit
         editor.replace(change.text, doc.get_location_from_index(change.start), doc.get_location_from_index(change.end),
                        maintain_selection_offset=False)
+        editor.history.checkpoint()
         problem = check(before, editor.text)
         if problem is not None:
             editor.undo()
@@ -414,8 +416,10 @@ class FlowView(_TVWindow):
         editor = self.source.editor
         doc = editor.document
         change = plan.change
+        editor.history.checkpoint()  # its own undo step: never batched with a keystroke or another edit
         editor.replace(change.text, doc.get_location_from_index(change.start), doc.get_location_from_index(change.end),
                        maintain_selection_offset=False)
+        editor.history.checkpoint()
         problem = plan.check(editor.text)
         if problem is not None:
             editor.undo()

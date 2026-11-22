@@ -131,7 +131,10 @@ divide vuelve a leer el resultado antes de quedárselo. Si cambiara algo más (o
 - quitar lo único que hace un Step: un Step vacío no es un Step válido, así que cambia o borra ese Step primero;
 - mover dos elementos con distinta sangría, o con otra cosa escrita en la misma línea que su clave;
 - renombrar a un id que el Flow ya tiene, o que empieza por `_` o tiene un punto (las reglas de Runner para los ids);
-- borrar el único Block.
+- borrar el único Block;
+- renombrar o borrar mientras los Steps de un Block están escritos en estilo flow (`steps: {a: {jump: main.s}}`): un `call` o `jump` allí no se podría seguir.
+
+Un Block o Step cuyo id ya usa uno anterior no se dibuja, y la línea de arriba lo nombra: Runner también lo rechaza, así que corrígelo en el código.
 
 ## Cuando el YAML no se puede leer
 
