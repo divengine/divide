@@ -64,8 +64,10 @@ def test_lanes_in_order_the_first_is_the_entry():
     assert [lane[0] for lane in b.lanes] == [("block", "main"), ("block", "review"), ("block", "approval")]
     assert [lane[1:] for lane in b.lanes][0] == [("step", "main", "total"), ("step", "main", "review"), ("step", "main", "receipt")]
     rows = b.text().split("\n")
-    assert "1 main" in rows[0] and "ENTRY" in rows[0] and rows[0].count("ENTRY") == 1
-    assert "2 review" in rows[0] and "3 approval" in rows[0] and "Takes it" in rows[1]
+    top = b.boxes[("block", "main")].y
+    assert rows[0].startswith("┌") and rows[-1].startswith("└")  # each Block a framed column
+    assert "1 main" in rows[top] and "ENTRY" in rows[top] and rows[top].count("ENTRY") == 1
+    assert "2 review" in rows[top] and "3 approval" in rows[top] and "Takes it" in rows[top + 1]
     xs = [b.boxes[lane[0]].x for lane in b.lanes]
     assert xs == sorted(xs)  # lanes left to right
     ys = [b.boxes[k].y for k in b.lanes[0][1:]]
@@ -178,7 +180,7 @@ def test_widths():
     assert [card_width(c) for c in (60, 78, 118, 160)] == [20, 22, 24, 28]
     for width in (20, 28):
         b = board(width=width)
-        assert all(box.w == width for box in b.boxes.values())
+        assert all(box.w == (width if key[0] == "step" else width + 2) for key, box in b.boxes.items())
         assert all(len(row) == b.width for row in b.chars)
 
 
@@ -585,8 +587,10 @@ def test_lanes_titles_and_cards_have_surfaces_of_their_own():
         for key in lane[1:]:
             box = b.boxes[key]
             assert all(b.fill[y][x] == "card" for y in range(box.y, box.y + box.h) for x in range(box.x, box.x + box.w))
-    gutter = b.boxes[b.lanes[0][0]].x + b.card_width
+    gutter = b.boxes[b.lanes[0][0]].x + b.card_width + 3  # past the lane's frame
     assert all(b.fill[y][gutter] == "" for y in range(b.height))
+    frame = b.boxes[b.lanes[0][0]].x - 1
+    assert b.chars[0][frame] == "┌" and b.chars[b.height - 1][frame] == "└" and b.fill[5][frame] == "lane"
     doc = fm.parse(FLOW)
     review = b.boxes[("step", "main", "review")]
     assert b.styles[review.y + 1][review.x + 2] == "kw.condition" and b.styles[review.y + 2][review.x + 2] == "kw.call"

@@ -86,7 +86,7 @@ def board_styles() -> dict[str, Style]:
         "kw.activity": tok("div.keyword", "php.keyword") + Style(bold=True),
         "kw.jump": tok("php.tag", "div.special") + Style(bold=True),
         "kw.pause": tok("ts.number", "json.number") + Style(bold=True),
-        "title": Style(bold=True), "entry": Style(reverse=True, bold=True),
+        "title": Style(bold=True), "entry": Style(reverse=True, bold=True), "frame": Style(bold=True),
         "error": tok("diag.error"), "warning": tok("diag.warning"), "port": Style(bold=True),
         "call": tok("ts.string", "json.string"), "jump": tok("php.tag", "div.special"),
         "hot": Style(bold=True), "chosen": Style(reverse=True, bold=True), "mark": Style(bold=True, reverse=True),
@@ -207,7 +207,7 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
 
         def level(amount: float) -> Style:
             return Style(bgcolor=bg.blend(fg, amount).rich_color)
-        return {"": Style(), "lane": level(0.08), "card": level(0.17), "title": level(0.28)}
+        return {"": Style(), "lane": level(0.14), "card": level(0.28), "title": level(0.40)}
 
     def render_line(self, y: int) -> Strip:
         """The lane titles stay at the top (the rows above ``header_height``); the cards scroll under them."""

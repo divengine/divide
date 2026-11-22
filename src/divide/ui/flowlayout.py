@@ -169,7 +169,7 @@ class Board:
 
     # ------------------------------------------------------------ building
     def _build(self) -> None:
-        doc, cw = self.doc, self.card_width
+        doc, cw = self.doc, self.card_width + 2  # a lane: its cards and a column of margin on each side
         # a Block or Step whose id is taken by an earlier one is not drawn (Runner refuses it too): said
         blocks, seen = [], set()
         for b in doc.blocks:
@@ -288,7 +288,7 @@ class Board:
         self.lane_x = [lx - 1 for lx in lane_x]  # where a lane begins: what horizontal scrolling snaps to
         gutter_x = [lane_x[g] + cw for g in range(len(blocks))]
         band_y, card_y = {}, {}
-        y = 0
+        y = 1  # row 0: the top of the lanes' frames
         band_y[-1] = y
         y += band_count.get(-1, 0)
         card_y[-1] = y
@@ -314,14 +314,14 @@ class Board:
         # lanes and cards
         for i, block in enumerate(blocks):
             lane: list[Key] = [("block", block.id)]
-            for yy in range(card_y[-1], self.height):  # a lane is a column of its own, down to the end
-                for xx in range(lane_x[i], lane_x[i] + cw):
+            for yy in range(self.height):  # a lane is a column of its own, frame included, down to the end
+                for xx in range(lane_x[i] - 1, lane_x[i] + cw + 1):
                     self.fill[yy][xx] = "lane"
             self._lane_title(i, block, lane_x[i], card_y[-1], height(i, -1))
             for r, step in enumerate(steps_of[i]):
                 key: Key = ("step", block.id, step.id)
                 lane.append(key)
-                self._card(key, step, r, lines[id(step)] + [("pad", "")] * pad.get((i, r), 0), lane_x[i], card_y[r])
+                self._card(key, step, r, lines[id(step)] + [("pad", "")] * pad.get((i, r), 0), lane_x[i] + 1, card_y[r])
             self.lanes.append(lane)
 
         # connections
@@ -343,12 +343,13 @@ class Board:
         for n, (conn, i, a, port, j, b, side, entry) in enumerate(routes):
             kind = conn.kind
             py = card_y[a] + port
-            start = (gutter_x[i], py)
-            self.chars[py][gutter_x[i] - 1] = "├" if kind == "s" else "╞"
-            self.styles[py][gutter_x[i] - 1] = "port"
+            port_x = gutter_x[i] - 2  # the card's right edge (a margin and the lane's frame after it)
+            start = (gutter_x[i] - 1, py)
+            self.chars[py][port_x] = "├" if kind == "s" else "╞"
+            self.styles[py][port_x] = "port"
             cells: list[tuple[int, int]] = []
             if j is None:  # nowhere to go: a ? right at the port, on the port's own row of the gutter
-                arrows.append((gutter_x[i], py, "?", n))
+                arrows.append((gutter_x[i] - 1, py, "?", n))
                 conn.cells = [start]
                 self.connections.append(conn)
                 continue
@@ -356,29 +357,29 @@ class Board:
             if j == i or j == i + 1:
                 tx = gutter_x[i] + 1 + tracks[i][(n, 0)]
                 if j == i:
-                    end, head = (gutter_x[i], ey), "◄"
+                    end, head = (gutter_x[i] - 1, ey), "◄"
                 else:
-                    end, head = (lane_x[j] - 1, ey), "►"
-                points = [(gutter_x[i] - 1, py), (tx, py), (tx, ey), end]
+                    end, head = (lane_x[j], ey), "►"
+                points = [(port_x, py), (tx, py), (tx, ey), end]
             else:
                 g2 = j - 1 if j > i else j
                 cy = ay((b, 0, channels[b][n]))
                 tx = gutter_x[i] + 1 + tracks[i][(n, 0)]
                 ux = gutter_x[g2] + 1 + tracks[g2][(n, 1)]
                 if j > i:
-                    end, head = (lane_x[j] - 1, ey), "►"
+                    end, head = (lane_x[j], ey), "►"
                 else:
-                    end, head = (gutter_x[j], ey), "◄"
-                points = [(gutter_x[i] - 1, py), (tx, py), (tx, cy), (ux, cy), (ux, ey), end]
+                    end, head = (gutter_x[j] - 1, ey), "◄"
+                points = [(port_x, py), (tx, py), (tx, cy), (ux, cy), (ux, ey), end]
             points = [p for k, p in enumerate(points) if k == 0 or p != points[k - 1]]
             walk(n, points, kind)
-            bits.get((gutter_x[i] - 1, py), {}).clear()  # the port itself is drawn on the card's edge
+            bits.get((port_x, py), {}).clear()  # the port itself is drawn on the card's edge
             arrows.append((end[0], end[1], head, n))
             for (x0, y0), (x1, y1) in zip(points, points[1:]):  # in the order the line runs: the arrow last
                 dx, dy = (x1 > x0) - (x1 < x0), (y1 > y0) - (y1 < y0)
                 cx, cy = x0, y0
                 while True:
-                    if (cx, cy) not in cells and (cx, cy) != (gutter_x[i] - 1, py):
+                    if (cx, cy) not in cells and (cx, cy) != (port_x, py):
                         cells.append((cx, cy))
                     if (cx, cy) == (x1, y1):
                         break
@@ -393,6 +394,19 @@ class Board:
         for ax, ay_, head, n in arrows:
             self.chars[ay_][ax] = head
             self.styles[ay_][ax] = "error" if head == "?" else ("jump" if routes[n][0].kind == "d" else "call")
+        # each Block a framed column holding its title and its Steps; the frame opens where a line
+        # enters or leaves (the frame's columns are the gutters' outer ones: no track runs there)
+        for i in range(len(blocks)):
+            left, right, bottom = lane_x[i] - 1, lane_x[i] + cw, self.height - 1
+            edges = [(left, 0, "┌"), (right, 0, "┐"), (left, bottom, "└"), (right, bottom, "┘")]
+            edges += [(xx, 0, "─") for xx in range(left + 1, right)] + [(xx, bottom, "─") for xx in range(left + 1, right)]
+            rule = card_y[-1] + height(i, -1) - 1  # the rule under the title joins the frame
+            edges += [(left, rule, "├"), (right, rule, "┤")]
+            edges += [(xx, yy, "│") for yy in range(1, bottom) for xx in (left, right) if yy != rule]
+            for xx, yy, ch in edges:
+                if 0 <= xx < self.width and self.chars[yy][xx] == " ":
+                    self.chars[yy][xx] = ch
+                    self.styles[yy][xx] = "frame"
 
     def _put(self, x: int, y: int, text: str, style: str) -> None:
         row, styles = self.chars[y], self.styles[y]
@@ -402,7 +416,7 @@ class Board:
                 styles[x + k] = style
 
     def _lane_title(self, index: int, block: fm.Block, x: int, y: int, h: int = 3) -> None:
-        cw = self.card_width
+        cw = self.card_width + 2
         key: Key = ("block", block.id)
         entry = _('ENTRY') if index == 0 else ""
         flag = {"error": "!E", "warning": "!W"}.get(self.severity(block) or "", "")
