@@ -105,6 +105,8 @@ A Step has one `module`, for both its condition and its activity: a new Function
 
 **Test Function** calls one Function on its own, with a context you give, and shows what it did: what it returned, how it changed the context, what it printed, and any exception or error with its place. It does not run a Flow or a Step.
 
+![T on a Step of the Flow Designer: its Function tested with a JSON context, run and then debugged, stopped in the Function, and its report in Output](images/function-test.gif)
+
 > **It runs the project's real PHP code.** The Function and whatever it calls may write files, use a database or the network. The test runs in a PHP process of its own, with a time limit and a memory limit, but that is not a sandbox, and the debugger is not one either. Test only code you trust.
 
 Open it with:
@@ -123,6 +125,8 @@ The dialog:
 
 Unsaved PHP files are saved first: PHP runs what is on disk.
 
+![The Test Function dialog for validate:identifiers: the context as JSON, a scenario, the expected return 2, the time limit and the warning that this is real PHP code](images/function-test-dialog.png)
+
 ### The report
 
 The Output window has, each part apart:
@@ -135,9 +139,13 @@ The Output window has, each part apart:
 
 An exception's or a fatal error's place, PHP's warnings, and a failed expectation go to Messages, where Enter opens the file at that line.
 
+![The report in Output beside the Flow Designer: the file loaded, returned in 0.06s, the expectation ok, the returned value, the context's changes and the context before](images/function-test-report.png)
+
 ### Debug a Function
 
 **Debug** makes the same call under the [[debugger|Debugging PHP]], with Xdebug. When the Function's file has no breakpoint, the debugger stops at the Function's first line; otherwise it runs to your breakpoints, in the Function or in any PHP file it calls. Then **F7**, **F8**, **Shift+F8**, **F4**, watches, the call stack and **Ctrl+F4** work as for any PHP script, **Ctrl+F9** goes on, and **Ctrl+F2** ends it. When it ends, the same report appears in Output.
+
+![Debug: the debugger stopped in functions/validate/identifiers.php, in the Function's body](images/function-test-debug.png)
 
 ### How it calls the Function
 

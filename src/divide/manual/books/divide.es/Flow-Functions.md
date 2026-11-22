@@ -105,6 +105,8 @@ Un Step tiene un solo `module`, para su condition y su activity: se rechaza una 
 
 **Probar Function** llama a una Function sola, con el contexto que le des, y muestra lo que hizo: qué devolvió, cómo cambió el contexto, qué imprimió, y cualquier excepción o error con su lugar. No ejecuta un Flow ni un Step.
 
+![T sobre un Step del diseñador de Flows: su Function probada con un contexto JSON, ejecutada y después depurada, parada en la Function, y su informe en la ventana de salida](images/function-test.gif)
+
 > **Ejecuta el código PHP real del proyecto.** La Function y todo lo que llama pueden escribir archivos, usar una base de datos o la red. La prueba se ejecuta en un proceso PHP propio, con un límite de tiempo y uno de memoria, pero eso no es un sandbox, y el depurador tampoco lo es. Prueba solo código en el que confías.
 
 Se abre con:
@@ -123,6 +125,8 @@ El diálogo:
 
 Los archivos PHP sin guardar se guardan antes: PHP ejecuta lo que está en el disco.
 
+![El diálogo Probar Function de validate:identifiers: el contexto en JSON, un escenario, el valor devuelto esperado 2, el límite de tiempo y el aviso de que es código PHP real](images/function-test-dialog.png)
+
 ### El informe
 
 La ventana de salida tiene, cada parte por separado:
@@ -135,9 +139,13 @@ La ventana de salida tiene, cada parte por separado:
 
 El lugar de una excepción o de un error fatal, los avisos de PHP y lo esperado que falla van a Mensajes, donde Intro abre el archivo en esa línea.
 
+![El informe en la ventana de salida junto al diseñador de Flows: el archivo cargado, devolvió en 0.06s, lo esperado ok, el valor devuelto, los cambios del contexto y el contexto antes](images/function-test-report.png)
+
 ### Depurar una Function
 
 **Depurar** hace la misma llamada en el [[depurador|Debugging PHP]], con Xdebug. Cuando el archivo de la Function no tiene ningún punto de ruptura, el depurador se para en la primera línea de la Function; si no, va hasta tus puntos de ruptura, en la Function o en cualquier archivo PHP que llame. Después **F7**, **F8**, **Shift+F8**, **F4**, las inspecciones, la pila de llamadas y **Ctrl+F4** funcionan como en cualquier script PHP, **Ctrl+F9** sigue y **Ctrl+F2** termina. Al terminar, el mismo informe aparece en la ventana de salida.
+
+![Depurar: el depurador parado en functions/validate/identifiers.php, en el cuerpo de la Function](images/function-test-debug.png)
 
 ### Cómo llama a la Function
 
