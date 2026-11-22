@@ -1,0 +1,57 @@
+# A generator: a PHP DTO class and its README from a JSON model, rendered by Div.
+# This Flow orders its stages; the work is in functions/ and the rules in templates/.
+id: generate_php_dto
+description: A PHP DTO class and its README from model/package_info.json
+blocks:
+  main:
+    description: From the model to checked code and a report
+    steps:
+      load:
+        activity: load_model          # the model, and one hash of everything it depends on
+      validate:
+        call: validate.               # back here only when the model is sound
+      current:
+        condition: outputs_current    # same inputs, outputs untouched since
+        context: {regenerated: false}
+        jump: .verify                 # nothing to generate
+      generate:
+        context: {regenerated: true}
+        call: generate.
+      verify:
+        call: quality.lint
+      report:
+        activity: write_report        # build/report.json
+  validate:
+    description: The model's schema and identifiers
+    steps:
+      schema:
+        module: validate
+        activity: schema
+      identifiers:
+        module: validate
+        activity: identifiers
+      reject:
+        module: validate
+        condition: has_problems
+        activity: reject              # ends the run in error, before anything is written
+  generate:
+    description: PHP and documentation, rendered by Div
+    steps:
+      php:
+        module: render
+        activity: php_class           # build/src/PackageInfo.php
+      readme:
+        module: render
+        activity: readme              # build/README.md
+      manifest:
+        module: render
+        activity: manifest            # what main.current compares next time
+  quality:
+    description: PHP lint and output checks
+    steps:
+      lint:
+        module: quality
+        activity: lint                # php -l
+      verify:
+        module: quality
+        activity: verify              # the outputs say what the model says

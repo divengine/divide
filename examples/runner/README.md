@@ -15,7 +15,11 @@ Open a Flow and press **Ctrl+F9** (Run > Run):
   it from `.div/runner/flows/order.yml.context.json`, divide's checkpoint for that Flow (`.div/runner/` is kept out of Git). `trail` in the context lists the Steps whose activities ran: none runs twice.
 - `flows/invoice.yml`: the same function name (`total`) in two Modules, `billing` and `shipping`.
 - `flows/fulfil.yml`: four Blocks, calls between them and a jump that retries a Step once (`stock.short` jumps back
-  to `.reserve`). Initial context `order.json`, function root `functions`. Run > Flow designer draws it as a board.
+  to `.reserve`). Initial context `order.json`, function root `functions`.
+
+Run > Flow designer draws any of them as a board. For a generator developed with Runner and Div, the example the
+[Flow Designer](https://github.com/divengine/divide/wiki/Flow-Designer) page is about, see
+[`../generator`](../generator).
 
 The same, without divide:
 

@@ -726,17 +726,17 @@ async def flowmodel():
 
 @shot
 async def designer():
-    """The Flow Designer on examples/runner's fulfil.yml (composer install there), in a copy of it: the
-    board at 160, 120 and 80 columns (main.review selected, its call chosen), choosing a jump's
-    target, the Block dialog, a phosphor theme, and the last good design kept read-only while the
-    YAML does not parse."""
+    """The Flow Designer on examples/generator's generate_php_dto.yml (composer install there), in a
+    copy of it: the board at 160 and 120 columns (main.current selected, its jump over generation chosen)
+    and 80 (main.validate's call), choosing that jump's target, the Block dialog, a Step's context, a phosphor theme, and the
+    last good design kept read-only while the YAML does not parse."""
     import tempfile as _tempfile
     from divide.app import CM_FLOW_DESIGN
     from divide.ui.flow import save_flow_settings
     from divide.ui.flowboard import BlockDialog, FlowDesignWindow
-    example = ROOT / "examples" / "runner"
+    example = ROOT / "examples" / "generator"
     if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
-        print("skipped designer: composer install in examples/runner")
+        print("skipped designer: composer install in examples/generator")
         return
 
     async def opened(app, pilot):
@@ -749,15 +749,15 @@ async def designer():
         return window
 
     with _tempfile.TemporaryDirectory() as work:
-        root = Path(work) / "runner"
-        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", ".div"))
-        flow = root / "flows" / "fulfil.yml"
-        save_flow_settings(flow.resolve(), {"context": "order.json", "root": "functions", "save": ""})
+        root = Path(work) / "generator"
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", ".div", "build"))
+        flow = root / "flows" / "generate_php_dto.yml"
+        save_flow_settings(flow.resolve(), {"context": "generate.json", "root": "functions", "save": ""})
         for width, height in ((160, 44), (120, 34), (80, 24)):
             app = Divide(root, [flow])
             async with app.run_test(size=(width, height)) as pilot:
                 window = await opened(app, pilot)
-                window.select(("step", "main", "review"))
+                window.select(("step", "main", "validate" if width == 80 else "current"))  # 80: its call, near the top
                 await settle(pilot, 4)
                 await pilot.press("tab")
                 await settle(pilot, 6)
@@ -766,26 +766,26 @@ async def designer():
                 save(app, f"flow-designer-{width}")
                 if width == 120:
                     await pilot.press("escape")
-                    window.select(("step", "stock", "short"))
+                    window.select(("step", "main", "current"))
                     await settle(pilot, 4)
-                    await pilot.press("j", "up")
+                    await pilot.press("j", "down", "down")  # from the Step itself to main.verify
                     await settle(pilot, 6)
                     save(app, "flow-designer-connect")
                     await pilot.press("escape")
-                    window.select(("block", "stock"))
+                    window.select(("block", "generate"))
                     await pilot.press("enter")
                     await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), BlockDialog), tries=200)
                     await settle(pilot, 6)
                     save(app, "flow-designer-block")
                     await pilot.press("escape")
-                    window.select(("step", "stock", "short"))
+                    window.select(("step", "main", "current"))
                     await pilot.press("x")  # the context as a tree, a new item in the JSON editor's dialog
                     from divide.ui.jsontree import EditItemDialog
                     await settle(pilot, 6)
                     await pilot.press("insert")
                     await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), EditItemDialog), tries=200)
                     dialog = app.screen.dialog
-                    dialog.key_input.data, dialog.value_input.data = "by", "ana maria"
+                    dialog.key_input.data, dialog.value_input.data = "reason", "outputs current"
                     await settle(pilot, 6)
                     save(app, "flow-designer-context")
                     await pilot.press("escape")
@@ -794,7 +794,7 @@ async def designer():
         app = Divide(root, [flow], palette="phosphor-green")
         async with app.run_test(size=(120, 34)) as pilot:
             window = await opened(app, pilot)
-            window.select(("step", "stock", "short"))
+            window.select(("step", "main", "validate"))
             await settle(pilot, 4)
             await pilot.press("tab")
             await settle(pilot, 6)
@@ -802,9 +802,9 @@ async def designer():
         app = Divide(root, [flow])
         async with app.run_test(size=(120, 34)) as pilot:
             window = await opened(app, pilot)
-            window.select(("step", "review", "approve"))
+            window.select(("step", "generate", "readme"))
             ed = window.source.editor
-            at = ed.text.index("      approve:") + len("      approve:")
+            at = ed.text.index("      readme:") + len("      readme:")
             ed.insert(" [", ed.document.get_location_from_index(at))  # typed in the code: no longer YAML
             await until(pilot, lambda: window.read_only, tries=200)
             await settle(pilot, 10)

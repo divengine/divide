@@ -1,0 +1,11 @@
+{
+    "name": "divengine/divide-generator-example",
+    "description": "A generator to develop in divide: a PHP DTO class and its README from a JSON model, rendered by Div and ordered by a Runner Flow",
+    "type": "project",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": "^8.1",
+        "divengine/div": "^6.1",
+        "divengine/runner": "^0.2"
+    }
+}

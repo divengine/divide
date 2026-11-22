@@ -1,0 +1,14 @@
+{
+    "namespace": "Acme\\Registry\\Dto",
+    "class": "PackageInfo",
+    "description": "A package as the registry lists it.",
+    "fields": [
+        {"name": "name", "type": "string", "description": "vendor/package"},
+        {"name": "version", "type": "string", "description": "The latest stable version"},
+        {"name": "license", "type": "string", "description": "An SPDX identifier"},
+        {"name": "downloads", "type": "int", "description": "Installs in the last 30 days"},
+        {"name": "score", "type": "float", "description": "Quality score, 0 to 1"},
+        {"name": "abandoned", "type": "bool", "description": "No longer maintained"},
+        {"name": "homepage", "type": "string", "nullable": true, "description": "Optional project site"}
+    ]
+}

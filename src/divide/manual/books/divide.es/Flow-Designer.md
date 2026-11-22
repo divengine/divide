@@ -7,13 +7,40 @@ El **diseñador de Flows** dibuja un Flow de [Runner](https://github.com/divengi
 
 Desde el tablero creas Blocks y Steps, los renombras, los reordenas y los borras, editas lo que hace un Step y conectas Steps eligiendo el destino en el tablero. Nunca escribes un destino `block.step`. Como la [[ventana Flow|Flow Structure]], verifica el Flow con Runner y lo ejecuta ([[Ejecutar Flows|Running Flows]]).
 
-![El diseñador de Flows en fulfil.yml a 120 columnas: main.review elegido, su call a review.check escogido, el inspector a la derecha](images/flow-designer-120.png)
+![El diseñador de Flows en generate_php_dto.yml, el Flow del generador, a 120 columnas: main.current elegido, su jump por encima de la generación hasta main.verify escogido, el inspector a la derecha](images/flow-designer-120.png)
 
 **El archivo YAML es el Flow.** El tablero no tiene un modelo propio. Nada del tablero, como su disposición o lo elegido, se guarda en ningún sitio:
 - El tablero dibuja el buffer de la ventana de código que tiene el Flow abierto. Las líneas se calculan cada vez a partir de los valores de `call` y `jump`.
 - Cada cambio hecho en el tablero es una edición de ese buffer. Deshacer (Ctrl+Z), Rehacer (Ctrl+Y), la marca de modificado y F2 funcionan como en el código.
 - Escribir en el código vuelve a dibujar el tablero.
 - Nada llega al disco hasta que guardas.
+
+## El ejemplo: un generador
+
+Las imágenes de esta página son de `examples/generator`, un generador pequeño desarrollado en divide:
+- **El modelo:** `model/package_info.json` describe una clase PHP (un DTO) y sus campos.
+- **Las reglas:** dos plantillas de Div, `templates/dto.tpl` y `templates/readme.tpl`, generan desde el modelo el código fuente de la clase y su README.
+- **Las salidas:** todo se escribe en `build/`, y nada fuera de esa carpeta.
+- **El Flow:** `flows/generate_php_dto.yml` ordena las etapas en cuatro Blocks:
+
+  | Block | Qué hace |
+  |---|---|
+  | `main` | Carga el modelo, lo valida, comprueba si las salidas están al día, genera, verifica y escribe el informe |
+  | `validate` | Comprueba el esquema del modelo y sus identificadores. Si el modelo no es válido, termina la ejecución antes de escribir nada |
+  | `generate` | Genera con Div la clase PHP y el README, y escribe un manifiesto con sus hashes |
+  | `quality` | Pasa `php -l` a la clase y comprueba que las salidas dicen lo que dice el modelo |
+
+  - `main` **llama** a `validate.`, `generate.` y `quality.lint`. Cada uno de esos Blocks se ejecuta y vuelve a `main`, que sigue con su Step siguiente.
+  - Cuando el modelo, las plantillas y las salidas no han cambiado desde la última ejecución, `main.current` **salta** a `.verify`. Una segunda ejecución sin cambios se salta la generación.
+
+Para probarlo:
+1. Ejecuta `composer install` en `examples/generator`.
+2. Ejecuta `divide examples/generator`, abre `flows/generate_php_dto.yml` y usa **Ejecutar > Diseñador del Flow**.
+3. Pulsa **Ctrl+F9** para ejecutarlo, con `generate.json` como contexto inicial y `functions` como raíz de funciones.
+
+La ventana de salida muestra el contexto resultante, y `build/report.json` dice qué hizo la ejecución. El README del ejemplo tiene los detalles.
+
+Runner es una forma de ordenar las etapas de un generador. Este ejemplo lo usa porque el diseñador dibuja Flows de Runner. Un generador no necesita Runner ni ningún pipeline en particular: un script PHP que genera una plantilla con Div también es un generador.
 
 ## Abrirlo
 
@@ -23,7 +50,7 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
 
 ## El tablero
 
-![El mismo tablero a 160 columnas: cuatro carriles, las líneas de call y jump entre ellos](images/flow-designer-160.png)
+![El mismo tablero a 160 columnas: los cuatro Blocks del generador (main, validate, generate, quality), los calls de main a cada uno de los otros y el jump de main.current a main.verify](images/flow-designer-160.png)
 
 - **Los carriles.** Cada Block es una columna desde arriba hasta abajo de la ventana, con un color propio: las vecinas alternan entre dos colores, ninguno el de la ventana, uno más oscuro y otro más claro. Los colores bastan para distinguir un Block del siguiente, sin marco ni línea entre ellos. Siguen siendo dos colores cuando el terminal solo tiene 256 o 16, y en los temas monocromos son dos niveles de luz.
 - **El título de un carril** es el número y el id del Block, con **ENTRADA** en el primero, y debajo su descripción (o cuántos Steps tiene). Los títulos se quedan arriba mientras las tarjetas se desplazan.
@@ -31,11 +58,11 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
 
   | Fila | Qué es |
   |---|---|
-  | `IF needs_approval()` | `condition`: el Step solo hace algo cuando devuelve true |
-  | `SET approved: true` | `context`: los valores que pone el Step |
-  | `CALL review.check` | `call`: ir allí y volver |
-  | `DO billing:total()` | `activity`, con su `module` antes de los dos puntos |
-  | `JUMP .reserve` | `jump`: seguir desde allí, sin volver |
+  | `IF outputs_current()` | `condition`: el Step solo hace algo cuando devuelve true |
+  | `SET regenerated: false` | `context`: los valores que pone el Step |
+  | `CALL quality.lint` | `call`: ir allí y volver |
+  | `DO render:php_class()` | `activity`, con su `module` antes de los dos puntos |
+  | `JUMP .verify` | `jump`: seguir desde allí, sin volver |
   | `PAUSE` | `pause`: el Flow se pausa después del Step |
 
   La palabra de cada fila va en su propio color y en negrita. Una tarjeta sin ninguna de estas filas dice *(nada que hacer)*.
@@ -48,6 +75,8 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
 
   Las líneas van entre los carriles y entre las filas de tarjetas, nunca por encima de una tarjeta. Donde dos líneas se cruzan, el cruce se dibuja como un cruce (`┼ ╫ ╪ ╬`). Un `call` o un `jump` a `block.` (el primer Step del Block) lleva a ese primer Step, o al título del carril cuando el Block no tiene Steps.
 - **Lo elegido.** La tarjeta (o el título) elegida se dibuja en vídeo inverso y sus líneas en negrita. La conexión que escoges con Tab también se dibuja en vídeo inverso. Funciona igual en todos los temas, incluidos los temas de fósforo monocromos.
+
+  ![El tablero en el tema Fósforo verde: main.validate elegido, su call a validate.schema escogido, distinguidos solo por niveles de luz](images/flow-designer-phosphor.png)
 - **El panel**, a la derecha (debajo del tablero cuando la ventana tiene menos de 100 columnas), tiene tres partes:
   - **arriba, lo que está pasando**, en vídeo inverso y solo mientras pasa: eligiendo el destino de un call o un jump, el YAML sin poder leerse (solo lectura), o Blocks y Steps sin dibujar;
   - **el inspector**: lo elegido, como en la ventana Flow;
@@ -61,6 +90,8 @@ En la ventana de código de un Flow (un archivo YAML cuya raíz tiene `blocks`),
 - **Abajo del panel: el veredicto de Runner.**
 
 A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. Los terminales más anchos muestran más carriles y tarjetas más anchas. El tablero se desplaza con lo elegido.
+
+![El tablero a 80 columnas: el call de main.validate a validate.schema escogido, el panel debajo del tablero](images/flow-designer-80.png)
 
 ## Teclas
 
@@ -100,14 +131,14 @@ Un Flow nuevo solo necesita un `id` y un `blocks:` vacío en su archivo YAML. En
 3. **C** (o **J**) en un Step empieza una conexión. Arriba del panel dice `CALL desde main.greet` y qué hacen Intro, Supr y Esc. Ve a la tarjeta de destino y pulsa **Intro**: divide escribe `call: check.mark`, la forma explícita `block.step`. En el título de un carril, Intro escribe `check.`, que lleva al primer Step de ese Block, sea cual sea. **Supr** en cambio quita el call (o el jump) del Step, y **Esc** cancela.
 4. **Alt+F9** pide a Runner que lo verifique, **F2** lo guarda y **Ctrl+F9** lo ejecuta.
 
-![Eligiendo el destino del jump de stock.short: arriba del panel dice qué hacen Intro, Supr y Esc](images/flow-designer-connect.png)
+![Eligiendo el destino del jump de main.current, aquí main.verify: arriba del panel dice qué hacen Intro, Supr y Esc](images/flow-designer-connect.png)
 
 ## Editar, renombrar, reordenar, borrar
 
 - **Intro en un Step** abre su diálogo con su **id** primero. Cambiar el id renombra el Step. Todos los `call` y `jump` que llevan a él cambian con él, con las comillas con que está escrito cada uno, y también los `.step` escritos en su propio Block. El resultado de una activity se guarda en el contexto con el id de su Step, así que el código que lee `$context['id_viejo']` también tiene que cambiar; el diálogo lo dice.
 - **Intro en el título de un carril** edita el Block: su id (un renombrado que cambia todos los `call` y `jump` que lo nombran) y su descripción.
 
-  ![Editando el Block stock: su id y su descripción](images/flow-designer-block.png)
+  ![Editando el Block generate: su id y su descripción](images/flow-designer-block.png)
 - **Ctrl+↑ / Ctrl+↓** mueve un Step dentro de su Block, lo que cambia el orden en que se ejecutan sus Steps.
   - Mover un Step al primer lugar, o sacarlo de él, cambia a qué lleva `block.`. Si algún `call` o `jump` está escrito así, se pregunta antes.
   - Un Step se queda en su Block. Para pasar un Step a otro Block, córtalo y pégalo en el código.
@@ -126,7 +157,7 @@ Cada una de estas operaciones es una edición: un Ctrl+Z la deshace, con sus ref
 
 El tablero cambia el texto YAML en su sitio, como la ventana Flow ([[Solo se escribe lo que cambias|Flow Structure]]). Nunca vuelve a escribir el archivo desde un modelo:
 - **Mover** intercambia dos Steps (o Blocks) vecinos, texto por texto. Cada uno conserva sus líneas exactamente como están escritas: sus comentarios, las líneas de comentario justo encima, las comillas y las líneas en blanco de dentro. Las líneas en blanco y los comentarios que hay entre los dos se quedan donde estaban.
-- **Renombrar** sustituye los caracteres del id y de cada destino que lo nombra, y nada más. `call: 'review.check'   # back here` pasa a `call: 'review.inspect'   # back here`.
+- **Renombrar** sustituye los caracteres del id y de cada destino que lo nombra, y nada más. `call: 'quality.lint'   # php -l` pasa a `call: 'quality.php_lint'   # php -l`.
 - **Un Block o un Step nuevo** son líneas nuevas, sangradas como sus hermanos (dos espacios, cuatro...).
 - **Borrar** quita las líneas del propio elemento, con las líneas de comentario justo encima de él. Cada `call` o `jump` que llevaba a él pierde solo su propia línea.
 
@@ -146,12 +177,12 @@ Un Block o Step cuyo id ya usa uno anterior no se dibuja, y arriba del panel se 
 
 **X** en una tarjeta, o **Editar contexto...** en el diálogo del Step (en el tablero y en la [[ventana Flow|Flow Structure]]), abre el contexto del Step como datos, en dos vistas del mismo valor:
 
-![El contexto de stock.short como árbol, con el diálogo de elemento del editor JSON](images/flow-designer-context.png)
+![El contexto de main.current como árbol, con el diálogo de elemento del editor JSON añadiendo una clave](images/flow-designer-context.png)
 
 - **Árbol** (Alt+R): el árbol de [[Archivos de datos|Data Files]] y su diálogo de elemento (clave, tipo, valor). **Intro** edita un elemento, **Ins** añade uno, **Supr** borra uno, **Ctrl+↑ / Ctrl+↓** mueve uno. Los objetos y las listas se pueden anidar; los valores son textos, números, booleanos o null.
 - **JSON** (Alt+J): el mismo valor como texto JSON, en el editor de código de divide. Al volver al árbol, o con OK, se vuelve a leer el texto. Si no es un objeto JSON, se te dice y te quedas en el texto.
 
-El diálogo trabaja sobre una copia: **Cancelar** no cambia nada. **OK** escribe el contexto como un mapping de YAML, `{approved: true, by: "ana maria", tries: [1, 2]}`:
+El diálogo trabaja sobre una copia: **Cancelar** no cambia nada. **OK** escribe el contexto como un mapping de YAML, `{regenerated: false, reason: "outputs current", stages: [lint, verify]}`:
 - Desde **X**, es una edición del Flow, que se deshace con un Ctrl+Z.
 - Desde el diálogo del Step, va a su campo Contexto y se aplica con el resto del diálogo.
 
