@@ -59,7 +59,7 @@ def save_model(root: Path, value: dict) -> None:
 
 
 def outputs(root: Path) -> dict[str, bytes]:
-    return {str(p.relative_to(root / "build")): p.read_bytes() for p in sorted((root / "build").rglob("*")) if p.is_file()}
+    return {p.relative_to(root / "build").as_posix(): p.read_bytes() for p in sorted((root / "build").rglob("*")) if p.is_file()}
 
 
 def php(code: str, cwd: Path) -> str:
