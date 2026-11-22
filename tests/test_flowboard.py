@@ -447,7 +447,7 @@ async def test_views_switch_and_ctrl_t_remembers_the_board(project):
     app = Divide(project, [flow], palette="phosphor-amber")
     async with app.run_test(size=(80, 24)) as pilot:
         window = await open_designer(app, pilot)
-        assert window.has_class("narrow")  # the inspector under the board
+        await wait(pilot, lambda: window.has_class("narrow"), "not narrow")  # the inspector under the board
         window.select(("step", "stock", "short"))
         await pilot.press("ctrl+d")
         await wait(pilot, lambda: isinstance(app.active_window(), FlowWindow), "no Flow window")
