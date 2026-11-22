@@ -1,0 +1,48 @@
+# An order from its total to its receipt: a review when it is large, the stock
+# reserved with one retry, and the invoice in a Block of its own.
+id: fulfil
+description: Fulfil an order - review, stock with a retry, invoice, receipt
+blocks:
+  main:
+    description: Takes the order
+    steps:
+      total:
+        activity: compute_total
+      review:
+        condition: needs_approval   # only large orders
+        call: review.check          # and back here
+      stock:
+        call: stock.reserve
+      invoice:
+        call: invoice.
+      receipt:
+        activity: format_receipt
+  review:
+    description: A person approves it
+    steps:
+      check:
+        activity: mark_reviewed
+      approve:
+        context: {approved: true}
+  stock:
+    description: Reserves the items
+    steps:
+      reserve:
+        activity: reserve_stock
+      short:
+        condition: stock_short
+        context: {retried: true}
+        jump: .reserve              # once more
+      done:
+        context: {reserved: true}
+  invoice:
+    description: Lines and shipping
+    steps:
+      lines:
+        module: billing
+        activity: total
+      shipping:
+        module: shipping
+        activity: total
+      sum:
+        activity: invoice_sum

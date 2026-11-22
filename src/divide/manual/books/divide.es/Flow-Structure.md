@@ -5,7 +5,7 @@ La **ventana Flow** muestra un Flow de [Runner](https://github.com/divengine/run
 - ir al destino de un `call` o un `jump`, o abrir el archivo de una actividad;
 - verificar el Flow con Runner y ejecutarlo ([[Ejecutar Flows|Running Flows]]).
 
-Todo se hace con el teclado.
+Todo se hace con el teclado. El mismo Flow se puede dibujar como un tablero de carriles y tarjetas, con sus call y jump como líneas, en el [[diseñador de Flows|Flow Designer]] (**Ctrl+D**).
 
 ![La ventana Flow en order.yml: los Blocks y Steps a la izquierda, el Step elegido a la derecha, el veredicto de Runner debajo](images/flow-window.png)
 
@@ -37,6 +37,7 @@ Un Flow es un archivo YAML (`.yml`, `.yaml`) cuya raíz tiene `blocks`. En su ve
 | **Ins** | Un Step nuevo después del elegido (en un Block: al final) |
 | **Supr** | Borrar el Step. Antes pregunta, y dice qué Steps llevan a él |
 | **Ctrl+Intro** (Ctrl+J) | Ir al destino del `call` o `jump`. En un Step sin ninguno, abre el archivo de su actividad o condición |
+| **Ctrl+D** | El tablero del [[diseñador de Flows|Flow Designer]], en el mismo Step o Block |
 | **Ctrl+T** | El YAML, en el Step o Block elegido |
 | **Alt+F9** | Verificar el Flow, con los problemas en Mensajes |
 | **Ctrl+F9** | Ejecutar el Flow ([[Ejecutar Flows|Running Flows]]) |
@@ -132,6 +133,6 @@ Sin Runner instalado, el veredicto lo dice y solo se hacen las búsquedas de div
 
 ## Límites
 
-- La ventana edita Steps: sus atributos, añadirlos y borrarlos. Los Blocks se añaden, renombran y reordenan en el código, y el id de un Step también.
-- Muestra la estructura como un árbol, no como un diagrama. No simula un Flow, ni lo reproduce, ni lo ejecuta paso a paso, ni lo detiene en puntos de ruptura. La ejecución es de Runner, a través de [[Ejecutar Flows|Running Flows]].
+- La ventana edita Steps: sus atributos, añadirlos y borrarlos. Los Blocks se añaden, renombran, reordenan y borran en el [[diseñador de Flows|Flow Designer]], y también el id de un Step y su lugar en su Block.
+- Muestra la estructura como un árbol; el [[diseñador de Flows|Flow Designer]] la dibuja como un diagrama. Ninguno de los dos simula un Flow, ni lo reproduce, ni lo ejecuta paso a paso, ni lo detiene en puntos de ruptura. La ejecución es de Runner, a través de [[Ejecutar Flows|Running Flows]].
 - Los archivos de funciones se buscan por su nombre y solo se comprueba que existan; divide nunca los carga. Si devuelven lo que espera Runner se sabe al ejecutar el Flow.

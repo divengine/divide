@@ -96,7 +96,7 @@ flowchart TB
 | `divide.ui` | Turbo Vision windows, dialogs and lists. One module per feature area, usually a window or dialog plus a mixin that adds the feature to the app. |
 | `divide.editor` | `DivEditor`, the text editor (Textual's TextArea with divide's highlighting for Div and Div JSON, tree-sitter for PHP), plus find/replace and the editor colour themes. |
 | `divide.lang` | The languages: which files they own, and their lexers, checkers, completion and outline. UI-independent. `treesitter`: the grammars of the other files of a project (HTML, CSS, JavaScript, Markdown, SQL, XML, YAML, TOML, shell); `plain`: INI and CSV. |
-| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), Runner Flows (`flow`: find Runner, run its bootstrap, read a saved context; `flowmodel`: a Flow's structure from its YAML, in-place edits, Runner's check), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), the folders watched for outside changes (`fswatch`), and the guard that no child outlives divide (`children`). UI-independent. |
+| `divide.run` | Everything that runs an external program: render and resolve through the bridge, a template's engine, data file, dialect and checks as the IDE sees them (`workbench`, shared by the editor and the MCP server), scripts, the web server, the DBGp debugger, the render trace, the Div setup (`setup`), Runner Flows (`flow`: find Runner, run its bootstrap, read a saved context; `flowmodel`: a Flow's structure from its YAML, in-place edits, Runner's check; `flowedit`: the Designer's structural edits), git (`git`), the forges (`forge`, through `gh` and `tea`), Composer (`composer`), the folders watched for outside changes (`fswatch`), and the guard that no child outlives divide (`children`). UI-independent. |
 | `divide.mcpserver` | divide's own MCP server, standard library only: `tools` (the seven tools, on `divide.run`), `protocol` (MCP's JSON-RPC in both eras), `http` (Streamable HTTP on `/mcp`, run by the IDE: Options > MCP server, `divide.ui.mcp`) and `stdio` (`divide --mcp PROJECT`). The project's setup, a template's checks, renders and the render trace for MCP clients, without the UI. See 4.1. |
 | `divide.outline` | The outline of every language divide colours, as trees of `Node`s (one builder per family: PHP, Div, markup, code, data). Search > Outline and the project window's file members use it. UI-independent. |
 | `divide.lsp` | The known language servers and the LSP client (pygls). |
@@ -191,6 +191,27 @@ flowchart TB
   Flow, like the Data tree on JSON): a tree, an inspector and Runner's
   verdict; each edit is one edit of the code's buffer (undo, the modified
   mark, F2); Ctrl+F9 is `ui.flow`'s Run Flow dialog.
+- **The Flow Designer.** The same buffer drawn as a board. `run.flowedit`
+  plans structural edits on `run.flowmodel`'s spans: a Block's or Step's
+  *unit* (its lines, the comment lines right above it at its indentation,
+  the deeper comment lines after it) is what moves (two neighbours swap
+  text for text) and what a deletion removes; a rename replaces the key's
+  characters and those of each `call`/`jump` value that names it, in its
+  quoting; references to what is deleted lose their own lines, refused when
+  a comment is on them or the Step would be left empty. Each plan is one
+  replacement (`chain` joins a rename and an edit into one undo step) whose
+  check reads the result back as an outline of every Block's and Step's
+  keys and values as written, and counts comments. `ui.flowlayout` lays the
+  board out as character cells, with no Textual: lanes, cards in Runner's
+  order of a Step, and connections derived from the YAML, routed in their
+  own gutter tracks and band channels (greedy interval colouring) so lines
+  never run over a card and crossings are drawn as crossings (CP437, calls
+  single, jumps double); selection, emphasis and a playback `Overlay` (for
+  divide #10) are painted over the layout. `ui.flowboard` is the window
+  (Run > Flow designer; Ctrl+D flips with the tree, Ctrl+T with the code,
+  which reopens the last view), a `FlowView` like the tree's, sharing its
+  inspector, verdict and Step dialog; invalid YAML keeps the last design
+  that parsed, read-only.
 - **The MCP server.** Three layers, standard library only (no MCP SDK, no
   web framework). `mcpserver.tools`: each tool calls the same functions the
   IDE calls: `workbench.check_template` (the dialect Div loads, the lexer,

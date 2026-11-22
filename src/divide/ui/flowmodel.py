@@ -42,6 +42,7 @@ from textual_vision.label import Label
 
 from divide import themes
 from divide.lang.div.diagnostics import Diagnostic
+from divide.run import flowedit as fe
 from divide.run import flowmodel as fm
 from divide.run.flow import find_runner, is_flow
 from divide.ui.dialogs import _Dialog, confirm, information
@@ -92,10 +93,13 @@ class StepDialog(_Dialog):
     StepDialog .flow-note { height: 2; margin-top: 1; color: $text; background: $surface; }
     """
 
-    def __init__(self, title: str, step: fm.Step | None, *, new_id: bool, offers: dict, note: str = "") -> None:
+    def __init__(self, title: str, step: fm.Step | None, *, new_id: bool, offers: dict, note: str = "",
+                 rename: bool = False) -> None:
         super().__init__(title=title)
-        self.new_id = new_id
+        self.new_id = new_id or rename  # the id field: a new Step's, or the Step's own to rename it
         self.id_input = InputLine(max_len=128)
+        if rename and step is not None:
+            self.id_input.data = step.id
         self.inputs: dict[str, InputLine] = {}
         for key in fm.ATTRS:
             if key == "pause":
@@ -109,7 +113,7 @@ class StepDialog(_Dialog):
         self.note = note
         self.values: dict = {}
         self.step_id = ""
-        if not new_id:
+        if not self.new_id:
             self.styles.height = 22
 
     def compose_content(self) -> ComposeResult:
@@ -134,7 +138,7 @@ class StepDialog(_Dialog):
             yield Button(_('Cancel'), Command.CANCEL, id="cancel")
 
     def on_mount(self) -> None:
-        first = self.id_input if self.new_id else self.inputs["activity"] if not self.inputs["call"].data else self.inputs["call"]
+        first = self.id_input if self.new_id and not self.id_input.data else self.inputs["activity"] if not self.inputs["call"].data else self.inputs["call"]
         self.call_after_refresh(lambda: (first.tv_select_self(), first.select_all()))
 
     def valid(self, command: Command) -> bool:
@@ -239,59 +243,53 @@ class FlowTree(FilteredTree, Tree[Key], TVViewMixin):
         self.tv_select_self()
 
 
-class FlowWindow(_TVWindow):
-    """Tree of a Flow's Blocks and Steps | what the selected one is, with Runner's verdict below."""
+class FlowView(_TVWindow):
+    """What the Flow's views share (the Flow window's tree, the Flow Designer's board): the source
+    buffer they show, the inspector of the selected item, Runner's verdict, and the Step edits."""
 
-    HINT = _('Enter edit · Ins add · Del del · ^Enter go to · ^T code')
-    DEFAULT_CSS = """
-    FlowWindow .flow-left { width: 1fr; height: 1fr; }
-    FlowWindow .flow-right { width: 48; height: 1fr; }
-    FlowWindow .flow-inspector { width: 1fr; height: auto; padding: 0 1; background: $window-content-background; color: $foreground; }
-    FlowWindow VerticalScroll { background: $window-content-background; scrollbar-size: 1 1; }
-    FlowWindow .flow-verdict { height: 3; padding: 0 1; background: $window-content-background; color: $foreground; }
-    """
+    HINT = ""
+    BINDINGS = [Binding("ctrl+d", "switch_view", "Tree / board", show=False)]
+
+    def action_switch_view(self) -> None:
+        self.app.flow_switch_view(self)  # type: ignore[attr-defined]
 
     def __init__(self, source: EditorWindow, number: int = 0) -> None:
         self.source = source
         super().__init__(self._make_title(), number=number)
-        self.flow_tree = FlowTree()
         self.inspector = Static("", classes="flow-inspector")
         self.verdict = Static(_('Asking Runner...'), classes="flow-verdict")
         self.doc = fm.parse(source.editor.text)
         self._built: str | None = None
 
+    # what each view has: its place, and the selected item
+    def selected(self) -> fm.Block | fm.Step | None:
+        raise NotImplementedError
+
+    def select(self, key: Key) -> None:
+        raise NotImplementedError
+
+    def rebuild(self, cursor: Key | None = None) -> None:
+        raise NotImplementedError
+
+    def reload(self) -> None:
+        raise NotImplementedError
+
+    def current_key(self) -> Key | None:
+        """The selected item as a key another view of the Flow can select."""
+        item = self.selected()
+        if isinstance(item, fm.Step):
+            return ("step", item.block, item.id)
+        if isinstance(item, fm.Block):
+            return ("block", item.id)
+        return None
+
     def _make_title(self) -> str:
         return f"Flow: {self.source.display_name}"
-
-    def compose_content(self) -> ComposeResult:
-        with Horizontal():
-            with Vertical(classes="flow-left"):
-                yield Filtered(self.flow_tree)
-            yield VRule()
-            with Vertical(classes="flow-right"):
-                with VerticalScroll():
-                    yield self.inspector
-                yield HRule()
-                yield self.verdict
-
-    def on_mount(self) -> None:
-        self.call_after_refresh(self.reload)
-        self.call_after_refresh(self.flow_tree.focus)
-        self.app.theme_changed_signal.subscribe(self, lambda _theme: self.rebuild())
 
     # ------------------------------------------------------------- sync
     @property
     def diagnostics(self) -> list[Diagnostic]:
         return list(self.source.editor.diagnostics)
-
-    def reload(self) -> None:
-        """Parse the source buffer again and rebuild the tree, keeping the cursor and what is open."""
-        text = self.source.editor.text
-        if text == self._built:
-            self.show_selected()
-            return
-        self.doc = fm.parse(text)
-        self.rebuild()
 
     def problems_in(self, start: int, end: int) -> list[Diagnostic]:
         return [d for d in self.diagnostics if start <= d.start < end]
@@ -299,85 +297,14 @@ class FlowWindow(_TVWindow):
     def _step_problems(self, step: fm.Step) -> list[Diagnostic]:
         return self.problems_in(step.key_start, max(step.end, step.key_end + 1))
 
-    def _expanded(self) -> set[Key]:
-        out: set[Key] = set()
-        for node in self.flow_tree.root.children:
-            if node.is_expanded and node.data is not None:
-                out.add(node.data)
-        return out
-
-    def rebuild(self, cursor: Key | None = None) -> None:
-        tree = self.flow_tree
-        first = not tree.root.children
-        expanded = self._expanded()
-        if cursor is None and tree.cursor_node is not None:
-            cursor = tree.cursor_node.data
-        doc = self.doc
-        self._built = doc.text
-        tree.clear()
-        tree.root.data = ("flow",)
-        root_label = Text(_('Flow '), style=_style("div.comment"))
-        root_label.append(doc.id or self.source.display_name, style=_style("json.key"))
-        if doc.problems:
-            root_label.append(_('  [YAML errors]'), style=_style("diag.error"))
-        tree.root.set_label(root_label)
-        target: list[TreeNode[Key]] = []
-        for block in doc.blocks:
-            key: Key = ("block", block.id)
-            label = Text()
-            bad = any(self._step_problems(s) for s in block.steps) or self.problems_in(block.key_start, block.key_end + 1)
-            if bad:
-                label.append("! ", style=_style("diag.error"))
-            label.append(block.id, style=_style("json.key"))
-            label.append(f"  ({len(block.steps)})", style=_style("div.comment"))
-            node = tree.root.add(label, data=key, expand=first or key in expanded)
-            if key == cursor:
-                target.append(node)
-            for step in block.steps:
-                step_key: Key = ("step", block.id, step.id)
-                label = Text()
-                problems = self._step_problems(step)
-                if problems:
-                    worst = "diag.error" if any(p.severity == "error" for p in problems) else "diag.warning"
-                    label.append("! ", style=_style(worst))
-                label.append(step.id, style=_style("ts.yaml.field") if "ts.yaml.field" in themes.current().token_styles() else None)
-                summary = _summary(step)
-                if summary:
-                    label.append("  " + summary, style=_style("div.comment"))
-                leaf = node.add_leaf(label, data=step_key)
-                if step_key == cursor:
-                    target.append(leaf)
-        tree.root.expand()
-        if target:
-            node = target[0]
-            parent = node.parent
-            while parent is not None:
-                parent.expand()
-                parent = parent.parent
-            self.call_after_refresh(lambda: (tree.move_cursor(node), self.show_selected()))
-        else:
-            self.call_after_refresh(self.show_selected)
-
-    def select(self, key: Key) -> None:
-        self.rebuild(cursor=key)
-
     # ------------------------------------------------------------- the selection
-    def selected(self) -> fm.Block | fm.Step | None:
-        node = self.flow_tree.cursor_node
-        data = node.data if node is not None else None
-        if not data or data[0] == "flow":
-            return None
-        if data[0] == "block":
-            return self.doc.block(data[1])
-        return self.doc.step(data[1], data[2])
-
-    def on_tree_node_highlighted(self, event) -> None:
-        self.show_selected()
-
     def show_selected(self) -> None:
         if not self.is_mounted:
             return
-        item = self.selected()
+        self.inspector.update(self.describe(self.selected()))
+
+    def describe(self, item: fm.Block | fm.Step | None) -> Text:
+        """What the inspector says about ``item`` (None: the Flow)."""
         doc = self.doc
         text = Text()
         key_style, dim = _style("json.key"), _style("div.comment")
@@ -458,7 +385,7 @@ class FlowWindow(_TVWindow):
             for p in problems[:30]:
                 style = _style("diag.error") if p.severity == "error" else _style("diag.warning")
                 styled(wrapped(f"! {_line_of(doc.text, p.start)}: {p.message}", 0, 2), style)
-        self.inspector.update(text)
+        return text
 
     def show_verdict(self, verdict: str, bad: bool) -> None:
         self.verdict.update(Text(verdict, style=_style("diag.error") if bad else None))
@@ -480,6 +407,24 @@ class FlowWindow(_TVWindow):
             self.app.notify(_('The edit was undone: {problem}').format(problem=problem), severity="error", timeout=6)
         self.doc = fm.parse(editor.text)
         self.rebuild(cursor)
+
+    def apply_plan(self, plan: fe.Plan, cursor: Key) -> bool:
+        """Write a structural plan into the code as one edit; undone at once if it reads back wrong.
+        What else it changed (references rewritten or removed) is said."""
+        editor = self.source.editor
+        doc = editor.document
+        change = plan.change
+        editor.replace(change.text, doc.get_location_from_index(change.start), doc.get_location_from_index(change.end),
+                       maintain_selection_offset=False)
+        problem = plan.check(editor.text)
+        if problem is not None:
+            editor.undo()
+            self.app.notify(_('The edit was undone: {problem}').format(problem=problem), severity="error", timeout=6)
+        elif plan.notes:
+            self.app.notify(_('Also changed: {what}').format(what="; ".join(plan.notes[:6])), timeout=5)
+        self.doc = fm.parse(editor.text)
+        self.rebuild(cursor)
+        return problem is None
 
     async def _can_edit(self) -> bool:
         if self.doc.problems:
@@ -594,6 +539,8 @@ class FlowWindow(_TVWindow):
 
     # ------------------------------------------------------------- going places
     def source_range(self) -> tuple[int, int] | None:
+        if self.doc.problems:  # the code's first problem: what to fix
+            return self.doc.problems[0].start, self.doc.problems[0].end
         item = self.selected()
         if isinstance(item, (fm.Step, fm.Block)):
             return item.key_start, item.key_end
@@ -617,6 +564,122 @@ class FlowWindow(_TVWindow):
         return self.app.flow_open_function(self.source, item)  # type: ignore[attr-defined]
 
 
+class FlowWindow(FlowView):
+    """Tree of a Flow's Blocks and Steps | what the selected one is, with Runner's verdict below."""
+
+    HINT = _('Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code')
+    DEFAULT_CSS = """
+    FlowWindow .flow-left { width: 1fr; height: 1fr; }
+    FlowWindow .flow-right { width: 48; height: 1fr; }
+    FlowWindow .flow-inspector { width: 1fr; height: auto; padding: 0 1; background: $window-content-background; color: $foreground; }
+    FlowWindow VerticalScroll { background: $window-content-background; scrollbar-size: 1 1; }
+    FlowWindow .flow-verdict { height: 3; padding: 0 1; background: $window-content-background; color: $foreground; }
+    """
+
+    def __init__(self, source: EditorWindow, number: int = 0) -> None:
+        super().__init__(source, number=number)
+        self.flow_tree = FlowTree()
+
+    def compose_content(self) -> ComposeResult:
+        with Horizontal():
+            with Vertical(classes="flow-left"):
+                yield Filtered(self.flow_tree)
+            yield VRule()
+            with Vertical(classes="flow-right"):
+                with VerticalScroll():
+                    yield self.inspector
+                yield HRule()
+                yield self.verdict
+
+    def on_mount(self) -> None:
+        self.call_after_refresh(self.reload)
+        self.call_after_refresh(self.flow_tree.focus)
+        self.app.theme_changed_signal.subscribe(self, lambda _theme: self.rebuild())
+
+    def reload(self) -> None:
+        """Parse the source buffer again and rebuild the tree, keeping the cursor and what is open."""
+        text = self.source.editor.text
+        if text == self._built:
+            self.show_selected()
+            return
+        self.doc = fm.parse(text)
+        self.rebuild()
+
+    def _expanded(self) -> set[Key]:
+        out: set[Key] = set()
+        for node in self.flow_tree.root.children:
+            if node.is_expanded and node.data is not None:
+                out.add(node.data)
+        return out
+
+    def rebuild(self, cursor: Key | None = None) -> None:
+        tree = self.flow_tree
+        first = not tree.root.children
+        expanded = self._expanded()
+        if cursor is None and tree.cursor_node is not None:
+            cursor = tree.cursor_node.data
+        doc = self.doc
+        self._built = doc.text
+        tree.clear()
+        tree.root.data = ("flow",)
+        root_label = Text(_('Flow '), style=_style("div.comment"))
+        root_label.append(doc.id or self.source.display_name, style=_style("json.key"))
+        if doc.problems:
+            root_label.append(_('  [YAML errors]'), style=_style("diag.error"))
+        tree.root.set_label(root_label)
+        target: list[TreeNode[Key]] = []
+        for block in doc.blocks:
+            key: Key = ("block", block.id)
+            label = Text()
+            bad = any(self._step_problems(s) for s in block.steps) or self.problems_in(block.key_start, block.key_end + 1)
+            if bad:
+                label.append("! ", style=_style("diag.error"))
+            label.append(block.id, style=_style("json.key"))
+            label.append(f"  ({len(block.steps)})", style=_style("div.comment"))
+            node = tree.root.add(label, data=key, expand=first or key in expanded)
+            if key == cursor:
+                target.append(node)
+            for step in block.steps:
+                step_key: Key = ("step", block.id, step.id)
+                label = Text()
+                problems = self._step_problems(step)
+                if problems:
+                    worst = "diag.error" if any(p.severity == "error" for p in problems) else "diag.warning"
+                    label.append("! ", style=_style(worst))
+                label.append(step.id, style=_style("ts.yaml.field") if "ts.yaml.field" in themes.current().token_styles() else None)
+                summary = _summary(step)
+                if summary:
+                    label.append("  " + summary, style=_style("div.comment"))
+                leaf = node.add_leaf(label, data=step_key)
+                if step_key == cursor:
+                    target.append(leaf)
+        tree.root.expand()
+        if target:
+            node = target[0]
+            parent = node.parent
+            while parent is not None:
+                parent.expand()
+                parent = parent.parent
+            self.call_after_refresh(lambda: (tree.move_cursor(node), self.show_selected()))
+        else:
+            self.call_after_refresh(self.show_selected)
+
+    def select(self, key: Key) -> None:
+        self.rebuild(cursor=key)
+
+    def selected(self) -> fm.Block | fm.Step | None:
+        node = self.flow_tree.cursor_node
+        data = node.data if node is not None else None
+        if not data or data[0] == "flow":
+            return None
+        if data[0] == "block":
+            return self.doc.block(data[1])
+        return self.doc.step(data[1], data[2])
+
+    def on_tree_node_highlighted(self, event) -> None:
+        self.show_selected()
+
+
 # ---------------------------------------------------------------- app side
 class FlowModelMixin:
     """The Flow window, the checks of YAML Flows, and going to targets (mixed into the Divide app)."""
@@ -624,29 +687,44 @@ class FlowModelMixin:
     def _flowmodel_init(self) -> None:
         self._flow_checks: dict[int, tuple[str, fm.CheckResult | None]] = {}  # editor id -> (text checked, verdict)
 
-    def flow_windows(self) -> list[FlowWindow]:
-        return [w for w in self.windows() if isinstance(w, FlowWindow)]  # type: ignore[attr-defined]
+    def flow_windows(self) -> list[FlowView]:
+        """Every view of a Flow: the Flow windows' trees and the Flow Designers' boards."""
+        return [w for w in self.windows() if isinstance(w, FlowView)]  # type: ignore[attr-defined]
 
     @staticmethod
     def is_flow_editor(win) -> bool:
         return isinstance(win, EditorWindow) and win.editor.lang == "yaml" and is_flow(win.path or Path("untitled.yml"), win.editor.text)
 
     def flow_source(self) -> EditorWindow | None:
-        """The YAML Flow the active window shows: its code window, or the code under a Flow window."""
+        """The YAML Flow the active window shows: its code window, or the code under a Flow view."""
         active = self.active_window()  # type: ignore[attr-defined]
-        if isinstance(active, FlowWindow):
+        if isinstance(active, FlowView):
             return active.source
         return active if self.is_flow_editor(active) else None
 
-    def open_flow_window(self, source: EditorWindow) -> FlowWindow:
-        """Ctrl+T on a YAML Flow: its Flow window, in the code's place, at the Step under the cursor."""
-        win = next((w for w in self.flow_windows() if w.source is source), None)
+    def _flow_view_class(self, kind: str) -> type[FlowView]:
+        if kind == "design":
+            from divide.ui.flowboard import FlowDesignWindow
+            return FlowDesignWindow
+        return FlowWindow
+
+    def open_flow_window(self, source: EditorWindow, kind: str | None = None, key: Key | None = None) -> FlowView:
+        """Ctrl+T on a YAML Flow: its last view (the Flow window's tree, else the Flow Designer's board
+        once it was used), in the code's place, at the Step under the cursor (or ``key``)."""
+        kinds = getattr(self, "_flow_kinds", None)
+        if kinds is None:
+            kinds = self._flow_kinds = {}
+        kind = kind or kinds.get(id(source), "structure")
+        kinds[id(source)] = kind
+        cls = self._flow_view_class(kind)
+        win = next((w for w in self.flow_windows() if w.source is source and type(w) is cls), None)
         ed = source.editor
-        here = fm.parse(ed.text).at(ed.document.get_index_from_location(ed.selection.start))
-        key: Key | None = (("step", here.block, here.id) if isinstance(here, fm.Step)
-                           else ("block", here.id) if isinstance(here, fm.Block) else None)
+        if key is None:
+            here = fm.parse(ed.text).at(ed.document.get_index_from_location(ed.selection.start))
+            key = (("step", here.block, here.id) if isinstance(here, fm.Step)
+                   else ("block", here.id) if isinstance(here, fm.Block) else None)
         if win is None:
-            win = FlowWindow(source, number=self._free_number())  # type: ignore[attr-defined]
+            win = cls(source, number=self._free_number())  # type: ignore[attr-defined]
             for attr in ("offset", "width", "height"):
                 setattr(win.styles, attr, getattr(source.styles, attr))
             self.insert_window(win)  # type: ignore[attr-defined]
@@ -659,8 +737,18 @@ class FlowModelMixin:
         self.check_flow(ed)
         return win
 
-    def flow_to_code(self, win: FlowWindow) -> None:
-        """Ctrl+T in a Flow window: its code, with the selected Block or Step selected."""
+    def open_flow_design(self, source: EditorWindow) -> FlowView:
+        """Run > Flow designer: the board of the Flow."""
+        return self.open_flow_window(source, "design")
+
+    def flow_switch_view(self, win: FlowView) -> FlowView:
+        """Ctrl+D in a Flow view: the other one (tree <-> board), at the same Block or Step."""
+        from divide.ui.flowboard import FlowDesignWindow
+        kind = "structure" if isinstance(win, FlowDesignWindow) else "design"
+        return self.open_flow_window(win.source, kind, win.current_key())
+
+    def flow_to_code(self, win: FlowView) -> None:
+        """Ctrl+T in a Flow view: its code, with the selected Block or Step selected."""
         where = win.source_range()
         if where is None:
             self.raise_window(win.source)  # type: ignore[attr-defined]

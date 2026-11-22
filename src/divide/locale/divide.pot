@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-21 20:54+0000\n"
+"POT-Creation-Date: 2026-11-22 01:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,6 +46,15 @@ msgstr ""
 
 #, python-brace-format
 msgid " ({count} names that are not Div tags are left out)"
+msgstr ""
+
+msgid " CALL returns  "
+msgstr ""
+
+msgid " JUMP goes on  "
+msgstr ""
+
+msgid " READ-ONLY "
 msgstr ""
 
 msgid " on the same line"
@@ -90,6 +99,9 @@ msgstr ""
 msgid "(between cycles)"
 msgstr ""
 
+msgid "(no Steps)"
+msgstr ""
+
 msgid "(no differences in the text)"
 msgstr ""
 
@@ -118,6 +130,9 @@ msgid "(not set)"
 msgstr ""
 
 msgid "(nothing found)"
+msgstr ""
+
+msgid "(nothing to do)"
 msgstr ""
 
 msgid "(nothing to list)"
@@ -157,6 +172,18 @@ msgstr ""
 msgid "16 colours (Windows console)"
 msgstr ""
 
+msgid "? no target"
+msgstr ""
+
+msgid ""
+"A Block id here is letters, digits, _ and -, starting with a letter or "
+"digit"
+msgstr ""
+
+#, python-brace-format
+msgid "A Flow needs a Block: {block} is the only one"
+msgstr ""
+
 msgid "A Module needs an activity or a condition"
 msgstr ""
 
@@ -176,6 +203,12 @@ msgstr ""
 
 #, python-brace-format
 msgid "A token is required (kept in {path})"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"A {what} id here is letters, digits, _ and -, starting with a letter or "
+"digit"
 msgstr ""
 
 msgid "Abort the merge"
@@ -209,6 +242,10 @@ msgstr ""
 msgid "Aggregate functions"
 msgstr ""
 
+#, python-brace-format
+msgid "Also changed: {what}"
+msgstr ""
+
 msgid "Amber phosphor on dark amber glass, nothing told by hue."
 msgstr ""
 
@@ -225,6 +262,14 @@ msgid "An empty field: Div's default (or the user's setup)."
 msgstr ""
 
 msgid "An empty line removes the attribute. Only what you change is written."
+msgstr ""
+
+msgid "Another id renames the Block and the calls and jumps that name it."
+msgstr ""
+
+msgid ""
+"Another id renames the Step and the calls and jumps to it; its activity's"
+" result is then stored under the new id."
 msgstr ""
 
 msgid "Apply it, ~k~eeping it"
@@ -284,6 +329,9 @@ msgstr ""
 msgid "Blame: {file}"
 msgstr ""
 
+msgid "Block"
+msgstr ""
+
 msgid "Block "
 msgstr ""
 
@@ -299,12 +347,33 @@ msgstr ""
 
 #, python-brace-format
 msgid ""
+"Block '{block}' has its steps written another way: move it in the code "
+"(Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid ""
 "Block '{block}' has no steps mapping to add to: add it in the code "
 "(Ctrl+T)"
 msgstr ""
 
 #, python-brace-format
+msgid "Block '{block}' has two Steps '{step}': rename them in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
 msgid "Block '{block}' is not in this Flow"
+msgstr ""
+
+#, python-brace-format
+msgid "Block {block}"
+msgstr ""
+
+#, python-brace-format
+msgid "Block {block} would read back differently"
+msgstr ""
+
+msgid "Block ~i~d (letters, digits, _ and -)"
 msgstr ""
 
 msgid "Blocks"
@@ -443,6 +512,9 @@ msgid "Choose a package (vendor/package)"
 msgstr ""
 
 msgid "Choose the Block (or the Step) to add the Step to."
+msgstr ""
+
+msgid "Choose the Step that calls or jumps first"
 msgstr ""
 
 msgid "Classes ~f~older"
@@ -613,6 +685,9 @@ msgstr ""
 msgid "Ctrl+K"
 msgstr ""
 
+msgid "Ctrl+Left/Right moves a Block; Ctrl+Up/Down moves a Step"
+msgstr ""
+
 msgid "Current"
 msgstr ""
 
@@ -701,7 +776,15 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+#, python-brace-format
+msgid "Delete Block {name} and its {count} Step(s)?"
+msgstr ""
+
 msgid "Delete Step"
+msgstr ""
+
+#, python-brace-format
+msgid "Delete Step {name}?"
 msgstr ""
 
 msgid "Delete branch"
@@ -926,6 +1009,9 @@ msgstr ""
 msgid "D~e~scription"
 msgstr ""
 
+msgid "ENTRY"
+msgstr ""
+
 msgid "Edit as ~J~SON"
 msgstr ""
 
@@ -973,7 +1059,10 @@ msgstr ""
 msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, example"
 msgstr ""
 
-msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code"
+msgid "Enter edit · Ins Step · B Block · C/J connect · Tab links · ^T code"
+msgstr ""
+
+msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
 msgstr ""
 
 msgid "Enter edit · Ins add · Del del · ^↑↓ move · ^T code"
@@ -991,6 +1080,9 @@ msgid "Enter go to the match"
 msgstr ""
 
 msgid "Enter go to the tag · Space fold · below a block, what it holds"
+msgstr ""
+
+msgid "Enter goes there, Tab the next one, Esc back to the card"
 msgstr ""
 
 msgid "Enter its diff · Ctrl+R reload · Alt+F10 new branch here, copy the hash"
@@ -1021,6 +1113,9 @@ msgid ""
 msgstr ""
 
 msgid "Enter the commit of the line · Ctrl+F find · Alt+F3 close"
+msgstr ""
+
+msgid "Entry Block"
 msgstr ""
 
 msgid "Error"
@@ -1156,6 +1251,9 @@ msgstr ""
 msgid "Flow "
 msgstr ""
 
+msgid "Flow Designer"
+msgstr ""
+
 #, python-brace-format
 msgid "Flow {flow} · Runner {version}"
 msgstr ""
@@ -1195,6 +1293,9 @@ msgid "Function root"
 msgstr ""
 
 msgid "Function separator"
+msgstr ""
+
+msgid "F~l~ow designer"
 msgstr ""
 
 msgid "Git"
@@ -1340,6 +1441,10 @@ msgstr ""
 msgid "It applies from the next start."
 msgstr ""
 
+#, python-brace-format
+msgid "It is the entry Block: the Flow will start at {block}."
+msgstr ""
+
 msgid "It requires:"
 msgstr ""
 
@@ -1356,6 +1461,9 @@ msgid "Iteration prefix"
 msgstr ""
 
 msgid "Iteration suffix"
+msgstr ""
+
+msgid "Its ~a~ctivity (a function that does the work)"
 msgstr ""
 
 msgid "Its ~f~older"
@@ -1525,6 +1633,9 @@ msgstr ""
 msgid "Nested folders are fine (a/b/c)"
 msgstr ""
 
+msgid "New Block"
+msgstr ""
+
 #, python-brace-format
 msgid "New Step in {block}"
 msgstr ""
@@ -1583,6 +1694,9 @@ msgid "No Xdebug: it serves, but requests cannot be debugged"
 msgstr ""
 
 msgid "No branch is checked out (detached HEAD): switch to a branch first."
+msgstr ""
+
+msgid "No call or jump leads from or to it"
 msgstr ""
 
 msgid "No changes in its text"
@@ -2031,6 +2145,13 @@ msgstr ""
 msgid "Remote branches are deleted on the remote (git push --delete)"
 msgstr ""
 
+msgid "Remove"
+msgstr ""
+
+#, python-brace-format
+msgid "Remove {key} {target} from {step}?"
+msgstr ""
+
 #, python-brace-format
 msgid "Remove {name} from the project (composer remove)?"
 msgstr ""
@@ -2283,6 +2404,10 @@ msgstr ""
 msgid "Something else is written on its line: edit it in the code (Ctrl+T)"
 msgstr ""
 
+#, python-brace-format
+msgid "Something is written between {a} and {b}: move them in the code (Ctrl+T)"
+msgstr ""
+
 msgid "Source"
 msgstr ""
 
@@ -2332,6 +2457,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "State: {state}"
+msgstr ""
+
+msgid "Step"
 msgstr ""
 
 msgid "Step "
@@ -2450,6 +2578,17 @@ msgid "Template variables"
 msgstr ""
 
 #, python-brace-format
+msgid "The Flow already has a Block '{block}'"
+msgstr ""
+
+msgid "The Flow has no blocks: write blocks: in the code first (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "The Flow has two Blocks '{block}': rename them in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
 msgid "The MCP server could not start: {error}"
 msgstr ""
 
@@ -2464,7 +2603,15 @@ msgstr ""
 msgid "The YAML has errors: fix them in the code first (Ctrl+T)"
 msgstr ""
 
+msgid ""
+"The YAML has errors: the board shows the last design that parsed and "
+"edits nothing."
+msgstr ""
+
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
+msgstr ""
+
+msgid "The blocks are written another way: add the Block in the code (Ctrl+T)"
 msgstr ""
 
 msgid "The changes go aside, the files go back to the last commit"
@@ -2521,6 +2668,10 @@ msgid "The documentation inside divide, one book each."
 msgstr ""
 
 #, python-brace-format
+msgid "The edit was not made: {problem}"
+msgstr ""
+
+#, python-brace-format
 msgid "The edit was undone: {problem}"
 msgstr ""
 
@@ -2529,6 +2680,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "The file there {problem}: Resume cannot use it."
+msgstr ""
+
+#, python-brace-format
+msgid "The first Block is where the Flow starts: it will be {block}. Move it?"
 msgstr ""
 
 msgid "The first line is the summary; a blank line, then the details."
@@ -2618,6 +2773,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "The {count} comment(s) written in it go with it."
+msgstr ""
+
+#, python-brace-format
+msgid "These lead to it and lose their {what}: {refs}."
 msgstr ""
 
 msgid "This Step has no call, jump, activity or condition to go to"
@@ -2854,6 +3013,10 @@ msgstr ""
 msgid "Written {where}, indented as its siblings."
 msgstr ""
 
+#, python-brace-format
+msgid "Written {where}, indented as the other Blocks, with its first Step."
+msgstr ""
+
 msgid "Xdebug"
 msgstr ""
 
@@ -2872,6 +3035,9 @@ msgid "Xdebug found: requests stop at the breakpoints"
 msgstr ""
 
 msgid "Xdebug sent no init packet"
+msgstr ""
+
+msgid "YAML errors: the last design that parsed. Ctrl+T: the code"
 msgstr ""
 
 #, python-brace-format
@@ -2955,6 +3121,10 @@ msgid "a whole number of at least 1 is expected"
 msgstr ""
 
 #, python-brace-format
+msgid "after {block}"
+msgstr ""
+
+#, python-brace-format
 msgid "after {step}"
 msgstr ""
 
@@ -2981,6 +3151,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "at line {target} of {name}"
+msgstr ""
+
+msgid "at the end"
 msgstr ""
 
 #, python-brace-format
@@ -3138,6 +3311,14 @@ msgstr ""
 msgid "from no Step"
 msgstr ""
 
+#, python-brace-format
+msgid "from {step}"
+msgstr ""
+
+#, python-brace-format
+msgid "from {step}: choose the target, Enter sets it, Del removes it, Esc cancels"
+msgstr ""
+
 msgid "git blame failed"
 msgstr ""
 
@@ -3156,6 +3337,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "git {command} failed"
+msgstr ""
+
+msgid "goes on from there, does not return"
 msgstr ""
 
 msgid "if var is false"
@@ -3253,10 +3437,16 @@ msgstr ""
 msgid "not found"
 msgstr ""
 
+msgid "not in the Flow"
+msgstr ""
+
 msgid "not installed"
 msgstr ""
 
 msgid "not run (invocation error)"
+msgstr ""
+
+msgid "nowhere: not in the Flow"
 msgstr ""
 
 msgid "number format"
@@ -3330,6 +3520,9 @@ msgstr ""
 msgid "resumed, "
 msgstr ""
 
+msgid "returns here when the called Block ends"
+msgstr ""
+
 #, python-brace-format
 msgid "saved, {name}"
 msgstr ""
@@ -3367,6 +3560,13 @@ msgid "template variable"
 msgstr ""
 
 msgid "text block"
+msgstr ""
+
+#, python-brace-format
+msgid "the Blocks would read back as {got}"
+msgstr ""
+
+msgid "the Flow's id or description would change"
 msgstr ""
 
 #, python-brace-format
@@ -3504,6 +3704,36 @@ msgstr ""
 
 #, python-brace-format
 msgid "{address}: Address already in use (another server is listening there)"
+msgstr ""
+
+#, python-brace-format
+msgid "{a} and {b} are not indented alike: move them in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{a} and {b} overlap: move them in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{blocks} Block(s), {steps} Step(s)"
+msgstr ""
+
+#, python-brace-format
+msgid "{block} is already the first Block"
+msgstr ""
+
+#, python-brace-format
+msgid "{block} is already the last Block"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{block}'s description is written in a way divide does not edit: edit it "
+"in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{block}'s description reads back differently"
 msgstr ""
 
 #, python-brace-format
@@ -3695,6 +3925,12 @@ msgid "{name} has no Div tags."
 msgstr ""
 
 #, python-brace-format
+msgid ""
+"{name} has something else written on its line: change it in the code "
+"(Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
 msgid "{name} holds a finished run, in a file you chose."
 msgstr ""
 
@@ -3748,6 +3984,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{name}: {direct} required, {deps} with them"
+msgstr ""
+
+#, python-brace-format
+msgid "{n} Step(s)"
 msgstr ""
 
 #, python-brace-format
@@ -3893,6 +4133,38 @@ msgid "{program} was not found"
 msgstr ""
 
 #, python-brace-format
+msgid "{refs} lead(s) into {block}"
+msgstr ""
+
+#, python-brace-format
+msgid "{refs} lead(s) to the first Step of {block}: it will be {step}. Move it?"
+msgstr ""
+
+#, python-brace-format
+msgid "{refs} lead(s) to {step}"
+msgstr ""
+
+#, python-brace-format
+msgid "{ref} cannot be changed here: {why}"
+msgstr ""
+
+#, python-brace-format
+msgid "{ref} cannot be removed here: {why}"
+msgstr ""
+
+#, python-brace-format
+msgid "{ref} has a comment on its line: remove it in the code (Ctrl+T)"
+msgstr ""
+
+#, python-brace-format
+msgid "{ref} leads to a Block without Steps"
+msgstr ""
+
+#, python-brace-format
+msgid "{ref} now leads to {step}"
+msgstr ""
+
+#, python-brace-format
 msgid "{rel} already exists. Replace it?"
 msgstr ""
 
@@ -3936,6 +4208,22 @@ msgstr ""
 
 #, python-brace-format
 msgid "{step} cannot be edited here: {why}"
+msgstr ""
+
+#, python-brace-format
+msgid "{step} is already the first Step"
+msgstr ""
+
+#, python-brace-format
+msgid "{step} is already the last Step"
+msgstr ""
+
+#, python-brace-format
+msgid "{step} is not found"
+msgstr ""
+
+#, python-brace-format
+msgid "{step} would have nothing left to do: change or delete it first"
 msgstr ""
 
 #, python-brace-format
@@ -4117,6 +4405,9 @@ msgstr ""
 msgid "~D~elete"
 msgstr ""
 
+msgid "~D~escription (optional)"
+msgstr ""
+
 msgid "~D~evelopment only (require-dev)"
 msgstr ""
 
@@ -4214,6 +4505,9 @@ msgid "~F~ind in the tags"
 msgstr ""
 
 msgid "~F~ind..."
+msgstr ""
+
+msgid "~F~irst Step id"
 msgstr ""
 
 msgid "~F~low structure"

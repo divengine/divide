@@ -20,7 +20,7 @@
 | **Alt+F5** | ventana Salida |
 | **Alt+F9** | verificar: cuadro de progreso y después la ventana Mensajes |
 | **Alt+F8** / **Alt+F7** | error siguiente / anterior |
-| **Ctrl+T** | árbol de datos ⇄ código; en un Flow de Runner, la [[ventana Flow\|Flow Structure]] ⇄ código |
+| **Ctrl+T** | árbol de datos ⇄ código; en un Flow de Runner, su última vista ([[ventana Flow\|Flow Structure]] o [[diseñador de Flows\|Flow Designer]]) ⇄ código |
 | **F1** | ayuda sobre la ventana activa |
 | **Shift+F1** / **Ctrl+F1** / **Alt+F1** | índice de la ayuda / buscar tema: el tema de la palabra bajo el cursor, si no Ayuda > Buscar con ella (en PHP con un servidor de lenguaje: qué es el símbolo) / tema anterior |
 | **Alt+X** / **Ctrl+Q** | salir |
@@ -105,6 +105,23 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **Ctrl+↑ / Ctrl+↓** | mover elemento |
 | **Ctrl+Z / Ctrl+Y** | deshacer / rehacer |
 | **F2** | guardar |
+
+## Diseñador de Flows
+
+| Tecla | Acción |
+|---|---|
+| **flechas** | de Step a Step en un carril, de carril a carril |
+| **Inicio / Fin** | el título del carril / su último Step |
+| **Tab / Mayús+Tab** | las conexiones de lo elegido |
+| **Enter** | seguir la conexión escogida; si no, editar el Step o el Block |
+| **Esc** / **Retroceso** | dejar la conexión o la elección de destino / volver |
+| **C / J** | conectar un `call` / `jump`: elegir el destino, Enter |
+| **Ins** / **B** | Step nuevo / Block nuevo |
+| **Supr** | borrar el Step o el Block, o quitar la conexión escogida |
+| **Ctrl+↑ / Ctrl+↓** | mover el Step dentro de su Block |
+| **Ctrl+← / Ctrl+→** | mover el Block |
+| **Ctrl+D** | el árbol de la ventana Flow ⇄ el tablero |
+| **Ctrl+Z / Ctrl+Y** | deshacer / rehacer |
 
 ## Dialector
 

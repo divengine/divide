@@ -112,6 +112,7 @@ class Block:
     steps_key: tuple[int, int] | None = None  # where ``steps:`` is written
     steps_style: str = "missing"  # block, empty, flow, missing, other
     key_column: int = 0
+    attrs: dict[str, Attr] = field(default_factory=dict)  # its own keys but steps (description, unknown ones)
 
     def step(self, step_id: str) -> Step | None:
         return next((s for s in self.steps if s.id == step_id), None)
@@ -331,6 +332,8 @@ def _block(src: _Source, pair) -> Block | None:
             continue
         key, inner_key = named
         value = _unwrap(inner.child_by_field_name("value"))
+        if key != "steps" and (attr := _attr(src, inner)) is not None:
+            block.attrs.setdefault(key, attr)
         if key == "description" and value is not None and value.type.endswith("scalar"):
             block.description = str(_scalar(src, value))
         elif key == "steps":
@@ -550,6 +553,18 @@ def render_scalar(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
+_TARGET = re.compile(r"^[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$")
+
+
+def render_target(value: str) -> str:
+    """A ``block.step`` target as YAML: plain unless YAML would read it as a number (``1.5``, ``.5``,
+    ``.inf``) or it is not a plain target."""
+    if _TARGET.match(value) and not re.match(r"^[-+]?\.?\d", value) and value.lower() not in (".inf", ".nan", "."):
+        if not re.match(r"^[-+]?\d+\.\d*$", value):
+            return value
+    return render_scalar(value)
+
+
 def _line_start(text: str, offset: int) -> int:
     return text.rfind("\n", 0, offset) + 1
 
@@ -589,6 +604,8 @@ def _value_text(key: str, value) -> str:
         return "true" if value else "false"
     if key == "context":
         return str(value).strip()
+    if key in TARGET_ATTRS:
+        return render_target(str(value).strip())
     return render_scalar(str(value).strip())
 
 

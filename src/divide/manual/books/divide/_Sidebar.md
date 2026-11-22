@@ -18,6 +18,7 @@
 * [[Running PHP]]
 * [[Running Flows]]
 * [[Flow Structure]]
+* [[Flow Designer]]
 * [[Debugging PHP]]
 * [[Web Server]]
 * [[Data Files]]

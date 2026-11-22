@@ -725,6 +725,80 @@ async def flowmodel():
             save(app, "flow-problems")
 
 @shot
+async def designer():
+    """The Flow Designer on examples/runner's fulfil.yml (composer install there), in a copy of it: the
+    board at 160, 120 and 80 columns (main.review selected, its call chosen), choosing a jump's
+    target, the Block dialog, a phosphor theme, and the last good design kept read-only while the
+    YAML does not parse."""
+    import tempfile as _tempfile
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flow import save_flow_settings
+    from divide.ui.flowboard import BlockDialog, FlowDesignWindow
+    example = ROOT / "examples" / "runner"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        print("skipped designer: composer install in examples/runner")
+        return
+
+    async def opened(app, pilot):
+        await settle(pilot, 10)
+        app.run_command(CM_FLOW_DESIGN)
+        await until(pilot, lambda: isinstance(app.active_window(), FlowDesignWindow), tries=200)
+        window = app.active_window()
+        await until(pilot, lambda: "compiles" in str(window.verdict.render()) or "error" in str(window.verdict.render()), tries=300)
+        await settle(pilot, 8)
+        return window
+
+    with _tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "runner"
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("*.context.json", ".div"))
+        flow = root / "flows" / "fulfil.yml"
+        save_flow_settings(flow.resolve(), {"context": "order.json", "root": "functions", "save": ""})
+        for width, height in ((160, 44), (120, 34), (80, 24)):
+            app = Divide(root, [flow])
+            async with app.run_test(size=(width, height)) as pilot:
+                window = await opened(app, pilot)
+                window.select(("step", "main", "review"))
+                await settle(pilot, 4)
+                await pilot.press("tab")
+                await settle(pilot, 6)
+                app.update_status()
+                await settle(pilot, 4)
+                save(app, f"flow-designer-{width}")
+                if width == 120:
+                    await pilot.press("escape")
+                    window.select(("step", "stock", "short"))
+                    await settle(pilot, 4)
+                    await pilot.press("j", "up")
+                    await settle(pilot, 6)
+                    save(app, "flow-designer-connect")
+                    await pilot.press("escape")
+                    window.select(("block", "stock"))
+                    await pilot.press("enter")
+                    await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), BlockDialog), tries=200)
+                    await settle(pilot, 6)
+                    save(app, "flow-designer-block")
+                    await pilot.press("escape")
+        app = Divide(root, [flow], palette="phosphor-green")
+        async with app.run_test(size=(120, 34)) as pilot:
+            window = await opened(app, pilot)
+            window.select(("step", "stock", "short"))
+            await settle(pilot, 4)
+            await pilot.press("tab")
+            await settle(pilot, 6)
+            save(app, "flow-designer-phosphor")
+        app = Divide(root, [flow])
+        async with app.run_test(size=(120, 34)) as pilot:
+            window = await opened(app, pilot)
+            window.select(("step", "review", "approve"))
+            ed = window.source.editor
+            at = ed.text.index("      approve:") + len("      approve:")
+            ed.insert(" [", ed.document.get_location_from_index(at))  # typed in the code: no longer YAML
+            await until(pilot, lambda: window.read_only, tries=200)
+            await settle(pilot, 10)
+            save(app, "flow-designer-readonly")
+
+
+@shot
 async def trace():
     """Debug > Render trace on the shop: the row where Div decides the condition."""
     from divide.ui.tracer import TraceWindow

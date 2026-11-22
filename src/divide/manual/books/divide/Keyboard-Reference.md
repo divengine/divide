@@ -20,7 +20,7 @@
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |
 | **Alt+F8** / **Alt+F7** | next / previous error |
-| **Ctrl+T** | data tree ⇄ code; on a Runner Flow, the [[Flow window\|Flow Structure]] ⇄ code |
+| **Ctrl+T** | data tree ⇄ code; on a Runner Flow, its last view ([[Flow window\|Flow Structure]] or [[Flow Designer]]) ⇄ code |
 | **F1** | help on the active window |
 | **Shift+F1** / **Ctrl+F1** / **Alt+F1** | help index / topic search: the topic of the word under the cursor, else Help > Search with it (in PHP with a language server: what the symbol is) / previous topic |
 | **Alt+X** / **Ctrl+Q** | exit |
@@ -105,6 +105,23 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **Ctrl+↑ / Ctrl+↓** | move item |
 | **Ctrl+Z / Ctrl+Y** | undo / redo |
 | **F2** | save |
+
+## Flow Designer
+
+| Key | Action |
+|---|---|
+| **arrows** | Step to Step in a lane, lane to lane |
+| **Home / End** | the lane's title / its last Step |
+| **Tab / Shift+Tab** | the selected item's connections |
+| **Enter** | follow the chosen connection; else edit the Step or Block |
+| **Esc** / **Backspace** | leave the connection or target choice / back |
+| **C / J** | connect a `call` / `jump`: choose the target, Enter |
+| **Ins** / **B** | new Step / new Block |
+| **Del** | delete the Step or Block, or remove the chosen connection |
+| **Ctrl+↑ / Ctrl+↓** | move the Step in its Block |
+| **Ctrl+← / Ctrl+→** | move the Block |
+| **Ctrl+D** | the Flow window's tree ⇄ the board |
+| **Ctrl+Z / Ctrl+Y** | undo / redo |
 
 ## Dialector
 

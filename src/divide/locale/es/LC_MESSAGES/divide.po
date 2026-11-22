@@ -4342,8 +4342,8 @@ msgstr "Borrar Step"
 msgid "Delete {name}?"
 msgstr "¿Borrar {name}?"
 
-msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code"
-msgstr "Intro editar · Ins añadir · Supr borrar · ^Intro ir · ^T código"
+#~ msgid "Enter edit · Ins add · Del del · ^Enter go to · ^T code"
+#~ msgstr "Intro editar · Ins añadir · Supr borrar · ^Intro ir · ^T código"
 
 #, python-brace-format
 msgid "Fix the YAML in the code first (Ctrl+T):\n{error}"
@@ -4625,3 +4625,285 @@ msgstr "El mismo fósforo ámbar sobre una pantalla negra."
 
 msgid "The same green phosphor on a black screen."
 msgstr "El mismo fósforo verde sobre una pantalla negra."
+msgid " CALL returns  "
+msgstr " CALL vuelve  "
+
+msgid " JUMP goes on  "
+msgstr " JUMP sigue desde allí  "
+
+msgid " READ-ONLY "
+msgstr " SOLO LECTURA "
+
+msgid "(no Steps)"
+msgstr "(sin Steps)"
+
+msgid "(nothing to do)"
+msgstr "(nada que hacer)"
+
+msgid "? no target"
+msgstr "? sin destino"
+
+msgid "A Block id here is letters, digits, _ and -, starting with a letter or digit"
+msgstr "Un id de Block aquí son letras, dígitos, _ y -, empezando por letra o dígito"
+
+#, python-brace-format
+msgid "A Flow needs a Block: {block} is the only one"
+msgstr "Un Flow necesita un Block: {block} es el único"
+
+#, python-brace-format
+msgid "A {what} id here is letters, digits, _ and -, starting with a letter or digit"
+msgstr "Un id de {what} aquí son letras, dígitos, _ y -, empezando por letra o dígito"
+
+#, python-brace-format
+msgid "Also changed: {what}"
+msgstr "También cambió: {what}"
+
+msgid "Another id renames the Block and the calls and jumps that name it."
+msgstr "Otro id renombra el Block y los call y jump que lo nombran."
+
+msgid "Another id renames the Step and the calls and jumps to it; its activity's result is then stored under the new id."
+msgstr "Otro id renombra el Step y los call y jump que llevan a él; el resultado de su activity se guarda entonces con el id nuevo."
+
+msgid "Block"
+msgstr "Block"
+
+#, python-brace-format
+msgid "Block '{block}' has its steps written another way: move it in the code (Ctrl+T)"
+msgstr "El Block '{block}' tiene sus steps escritos de otra forma: muévelo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "Block '{block}' has two Steps '{step}': rename them in the code (Ctrl+T)"
+msgstr "El Block '{block}' tiene dos Steps '{step}': renómbralos en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "Block {block}"
+msgstr "Block {block}"
+
+#, python-brace-format
+msgid "Block {block} would read back differently"
+msgstr "El Block {block} se leería distinto"
+
+msgid "Block ~i~d (letters, digits, _ and -)"
+msgstr "~I~d del Block (letras, dígitos, _ y -)"
+
+msgid "Choose the Step that calls or jumps first"
+msgstr "Elige primero el Step que hace call o jump"
+
+msgid "Ctrl+Left/Right moves a Block; Ctrl+Up/Down moves a Step"
+msgstr "Ctrl+Izq/Der mueve un Block; Ctrl+Arriba/Abajo mueve un Step"
+
+#, python-brace-format
+msgid "Delete Block {name} and its {count} Step(s)?"
+msgstr "¿Borrar el Block {name} y sus {count} Step(s)?"
+
+#, python-brace-format
+msgid "Delete Step {name}?"
+msgstr "¿Borrar el Step {name}?"
+
+msgid "ENTRY"
+msgstr "ENTRADA"
+
+msgid "Enter edit · Ins Step · B Block · C/J connect · Tab links · ^T code"
+msgstr "Enter editar · Ins Step · B Block · C/J conectar · Tab enlaces · ^T código"
+
+msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
+msgstr "Enter editar · Ins añadir · Supr borrar · ^Enter ir a · ^D tablero · ^T código"
+
+msgid "Enter goes there, Tab the next one, Esc back to the card"
+msgstr "Enter va allí, Tab al siguiente, Esc vuelve a la tarjeta"
+
+msgid "Entry Block"
+msgstr "Block de entrada"
+
+msgid "Flow Designer"
+msgstr "Diseñador de Flows"
+
+msgid "F~l~ow designer"
+msgstr "D~i~señador del Flow"
+
+#, python-brace-format
+msgid "It is the entry Block: the Flow will start at {block}."
+msgstr "Es el Block de entrada: el Flow empezará en {block}."
+
+msgid "Its ~a~ctivity (a function that does the work)"
+msgstr "Su ~a~ctivity (una función que hace el trabajo)"
+
+msgid "New Block"
+msgstr "Nuevo Block"
+
+msgid "No call or jump leads from or to it"
+msgstr "Ningún call ni jump sale de él ni llega a él"
+
+msgid "Remove"
+msgstr "Quitar"
+
+#, python-brace-format
+msgid "Remove {key} {target} from {step}?"
+msgstr "¿Quitar {key} {target} de {step}?"
+
+#, python-brace-format
+msgid "Something is written between {a} and {b}: move them in the code (Ctrl+T)"
+msgstr "Hay algo escrito entre {a} y {b}: muévelos en el código (Ctrl+T)"
+
+msgid "Step"
+msgstr "Step"
+
+#, python-brace-format
+msgid "The Flow already has a Block '{block}'"
+msgstr "El Flow ya tiene un Block '{block}'"
+
+msgid "The Flow has no blocks: write blocks: in the code first (Ctrl+T)"
+msgstr "El Flow no tiene blocks: escribe blocks: en el código primero (Ctrl+T)"
+
+#, python-brace-format
+msgid "The Flow has two Blocks '{block}': rename them in the code (Ctrl+T)"
+msgstr "El Flow tiene dos Blocks '{block}': renómbralos en el código (Ctrl+T)"
+
+msgid "The YAML has errors: the board shows the last design that parsed and edits nothing."
+msgstr "El YAML tiene errores: el tablero muestra el último diseño que se leyó y no edita nada."
+
+msgid "The blocks are written another way: add the Block in the code (Ctrl+T)"
+msgstr "Los blocks están escritos de otra forma: añade el Block en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "The edit was not made: {problem}"
+msgstr "No se hizo la edición: {problem}"
+
+#, python-brace-format
+msgid "The first Block is where the Flow starts: it will be {block}. Move it?"
+msgstr "El primer Block es donde empieza el Flow: será {block}. ¿Moverlo?"
+
+#, python-brace-format
+msgid "These lead to it and lose their {what}: {refs}."
+msgstr "Estos llevan a él y pierden su {what}: {refs}."
+
+#, python-brace-format
+msgid "Written {where}, indented as the other Blocks, with its first Step."
+msgstr "Se escribe {where}, sangrado como los otros Blocks, con su primer Step."
+
+msgid "YAML errors: the last design that parsed. Ctrl+T: the code"
+msgstr "Errores en el YAML: el último diseño que se leyó. Ctrl+T: el código"
+
+#, python-brace-format
+msgid "after {block}"
+msgstr "después de {block}"
+
+msgid "at the end"
+msgstr "al final"
+
+#, python-brace-format
+msgid "from {step}"
+msgstr "desde {step}"
+
+#, python-brace-format
+msgid "from {step}: choose the target, Enter sets it, Del removes it, Esc cancels"
+msgstr "desde {step}: elige el destino, Enter lo pone, Supr lo quita, Esc cancela"
+
+msgid "goes on from there, does not return"
+msgstr "sigue desde allí, no vuelve"
+
+msgid "not in the Flow"
+msgstr "no está en el Flow"
+
+msgid "nowhere: not in the Flow"
+msgstr "a ningún sitio: no está en el Flow"
+
+msgid "returns here when the called Block ends"
+msgstr "vuelve aquí cuando termina el Block llamado"
+
+#, python-brace-format
+msgid "the Blocks would read back as {got}"
+msgstr "los Blocks se leerían como {got}"
+
+msgid "the Flow's id or description would change"
+msgstr "cambiaría el id o la descripción del Flow"
+
+#, python-brace-format
+msgid "{a} and {b} are not indented alike: move them in the code (Ctrl+T)"
+msgstr "{a} y {b} no tienen la misma sangría: muévelos en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{a} and {b} overlap: move them in the code (Ctrl+T)"
+msgstr "{a} y {b} se solapan: muévelos en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{blocks} Block(s), {steps} Step(s)"
+msgstr "{blocks} Block(s), {steps} Step(s)"
+
+#, python-brace-format
+msgid "{block} is already the first Block"
+msgstr "{block} ya es el primer Block"
+
+#, python-brace-format
+msgid "{block} is already the last Block"
+msgstr "{block} ya es el último Block"
+
+#, python-brace-format
+msgid "{block}'s description is written in a way divide does not edit: edit it in the code (Ctrl+T)"
+msgstr "La descripción de {block} está escrita de una forma que divide no edita: edítala en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{block}'s description reads back differently"
+msgstr "La descripción de {block} se lee distinta"
+
+#, python-brace-format
+msgid "{name} has something else written on its line: change it in the code (Ctrl+T)"
+msgstr "{name} tiene algo más escrito en su línea: cámbialo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{n} Step(s)"
+msgstr "{n} Step(s)"
+
+#, python-brace-format
+msgid "{refs} lead(s) into {block}"
+msgstr "{refs} lleva(n) a {block}"
+
+#, python-brace-format
+msgid "{refs} lead(s) to the first Step of {block}: it will be {step}. Move it?"
+msgstr "{refs} lleva(n) al primer Step de {block}: será {step}. ¿Moverlo?"
+
+#, python-brace-format
+msgid "{refs} lead(s) to {step}"
+msgstr "{refs} lleva(n) a {step}"
+
+#, python-brace-format
+msgid "{ref} cannot be changed here: {why}"
+msgstr "{ref} no se puede cambiar aquí: {why}"
+
+#, python-brace-format
+msgid "{ref} cannot be removed here: {why}"
+msgstr "{ref} no se puede quitar aquí: {why}"
+
+#, python-brace-format
+msgid "{ref} has a comment on its line: remove it in the code (Ctrl+T)"
+msgstr "{ref} tiene un comentario en su línea: quítalo en el código (Ctrl+T)"
+
+#, python-brace-format
+msgid "{ref} leads to a Block without Steps"
+msgstr "{ref} lleva a un Block sin Steps"
+
+#, python-brace-format
+msgid "{ref} now leads to {step}"
+msgstr "{ref} ahora lleva a {step}"
+
+#, python-brace-format
+msgid "{step} is already the first Step"
+msgstr "{step} ya es el primer Step"
+
+#, python-brace-format
+msgid "{step} is already the last Step"
+msgstr "{step} ya es el último Step"
+
+#, python-brace-format
+msgid "{step} is not found"
+msgstr "No se encuentra {step}"
+
+#, python-brace-format
+msgid "{step} would have nothing left to do: change or delete it first"
+msgstr "{step} se quedaría sin nada que hacer: cámbialo o bórralo primero"
+
+msgid "~D~escription (optional)"
+msgstr "~D~escripción (opcional)"
+
+msgid "~F~irst Step id"
+msgstr "Id del ~p~rimer Step"

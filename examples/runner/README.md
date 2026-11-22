@@ -14,6 +14,8 @@ Open a Flow and press **Ctrl+F9** (Run > Run):
   function root `functions`. It pauses at `approval.ask` inside two calls; Ctrl+F9 again and **Resume** continues
   it from `.div/runner/flows/order.yml.context.json`, divide's checkpoint for that Flow (`.div/runner/` is kept out of Git). `trail` in the context lists the Steps whose activities ran: none runs twice.
 - `flows/invoice.yml`: the same function name (`total`) in two Modules, `billing` and `shipping`.
+- `flows/fulfil.yml`: four Blocks, calls between them and a jump that retries a Step once (`stock.short` jumps back
+  to `.reserve`). Initial context `order.json`, function root `functions`. Run > Flow designer draws it as a board.
 
 The same, without divide:
 

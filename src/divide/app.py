@@ -127,7 +127,8 @@ from divide.ui.findfiles import FindInFilesMixin, FindResultsWindow
 from divide.ui.webserver import ServerLogWindow, WebMixin
 from divide.ui.mcp import McpMixin
 from divide.ui.flow import FlowMixin
-from divide.ui.flowmodel import FlowModelMixin, FlowWindow
+from divide.ui.flowboard import FlowDesignWindow
+from divide.ui.flowmodel import FlowModelMixin, FlowView, FlowWindow
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.forge import CM_FORGE, ForgeMixin
 from divide.ui.git import (
@@ -181,6 +182,7 @@ GIT_COMMANDS = (CM_GIT_CHANGES, CM_GIT_HISTORY, CM_GIT_BRANCHES, CM_GIT_COMMIT, 
                 CM_GIT_FETCH, CM_GIT_DIFF_FILE, CM_GIT_FILE_HISTORY, CM_GIT_BLAME)
 CM_DATA_TREE = Command.USER + 14
 CM_FLOW_MODEL = Command.USER + 206  # Run > Flow structure: the Flow window (Ctrl+T on a Flow)
+CM_FLOW_DESIGN = Command.USER + 207  # Run > Flow designer: the board (Ctrl+D in a Flow view)
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
 CM_PREV_ERROR = Command.USER + 17
@@ -531,6 +533,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                     MenuItem(_('~E~dit data'), CM_EDIT_DATA),
                     MenuItem(_('D~a~ta tree'), CM_DATA_TREE, "Ctrl+T"),
                     MenuItem(_('~F~low structure'), CM_FLOW_MODEL, "Ctrl+T"),
+                    MenuItem(_('F~l~ow designer'), CM_FLOW_DESIGN, "Ctrl+D"),
                 ),
                 SubMenu(
                     _('~D~ebug'),
@@ -1020,9 +1023,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                 dialog = FileDialog(_('Open a file'), start)
                 if await self.run_dialog(dialog) == Command.OK and dialog.chosen:
                     self.open_file(dialog.chosen)
-            case Command.SAVE if editor or isinstance(win, (JsonTreeWindow, DialectorWindow, DivSetupWindow, FlowWindow)):
+            case Command.SAVE if editor or isinstance(win, (JsonTreeWindow, DialectorWindow, DivSetupWindow, FlowView)):
                 await self.save(editor or win.source)  # type: ignore[union-attr]
-            case Command.SAVE_AS if editor or isinstance(win, (JsonTreeWindow, DialectorWindow, DivSetupWindow, FlowWindow)):
+            case Command.SAVE_AS if editor or isinstance(win, (JsonTreeWindow, DialectorWindow, DivSetupWindow, FlowView)):
                 await self.save(editor or win.source, ask_name=True)  # type: ignore[union-attr]
             case Command.SAVE_ALL:
                 for w in self.editor_windows():
@@ -1070,7 +1073,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                 await self.git_command(command)
             case _ if command == CM_FORGE:
                 await self.open_forge()
-            case _ if command == CM_GOTO_INCLUDE and isinstance(win, FlowWindow):
+            case _ if command == CM_GOTO_INCLUDE and isinstance(win, FlowView):
                 win.goto_target()
             case _ if command == CM_GOTO_INCLUDE and editor and self.is_flow_editor(editor) and self.flow_goto_in_code(editor):
                 pass
@@ -1189,7 +1192,15 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                 elif isinstance(win, FlowWindow):
                     self.flow_to_code(win)
                 else:
-                    self.open_flow_window(source)
+                    self.open_flow_window(source, "structure")
+            case _ if command == CM_FLOW_DESIGN:
+                source = self.flow_source()
+                if source is None:
+                    self.notify(_('Open a Runner Flow first: a YAML file whose root has blocks'), timeout=3)
+                elif isinstance(win, FlowDesignWindow):
+                    self.flow_to_code(win)
+                else:
+                    self.open_flow_design(source)
             case _ if command == CM_DIV_ENGINE:
                 await self.choose_engine()
             case _ if command == CM_DIV_SETUP:
@@ -1838,7 +1849,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
         win = self.active_editor()
         if win is not None and win.editor.checked:
             return win
-        if isinstance(self.active_window(), FlowWindow):
+        if isinstance(self.active_window(), FlowView):
             return self.active_window().source
         if self._focused_template is not None and self._focused_template.is_attached:
             return self._focused_template
@@ -2029,6 +2040,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
             return "Div-Setup"
         if isinstance(active, JsonTreeWindow):
             return "Data-Files"
+        if isinstance(active, FlowDesignWindow):
+            return "Flow-Designer"
         if isinstance(active, FlowWindow):
             return "Flow-Structure"
         if isinstance(active, (ComposerWindow, ComposerLogWindow)):
@@ -2441,7 +2454,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
         """Code <-> tree: from a tree go to its code; from JSON code (or a template's data) open its tree;
         a Runner Flow's code <-> its Flow window."""
         active = self.active_window()
-        if isinstance(active, FlowWindow):
+        if isinstance(active, FlowView):
             self.flow_to_code(active)
             return
         if self.is_flow_editor(active):
@@ -2590,9 +2603,9 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
             verdict = getattr(active.verdict, "reason", None)
             status.set_hint(f"{active.source.display_name}{dirty} · " + (f"Div: {verdict}" if verdict else DialectorWindow.HINT))
             return
-        if isinstance(active, FlowWindow):
+        if isinstance(active, FlowView):
             dirty = " *" if active.source.dirty else ""
-            status.set_hint(f"{active.source.display_name}{dirty} · {FlowWindow.HINT}")
+            status.set_hint(f"{active.source.display_name}{dirty} · {active.HINT}")
             return
         if isinstance(active, JsonTreeWindow):
             dirty = " *" if active.source.dirty else ""

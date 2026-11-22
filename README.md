@@ -104,6 +104,11 @@ The examples below generate HTML because it is the easiest output to read; the s
   what you change is written in the YAML, Runner's own compiler checks it, and
   missing targets and function files are marked
   ([Flow Structure](https://github.com/divengine/divide/wiki/Flow-Structure)).
+  Run > Flow designer draws it as a board: Blocks as lanes, Steps as cards,
+  calls and jumps as lines; Blocks and Steps are created, connected,
+  renamed (with what leads to them), reordered and deleted from the
+  keyboard, each change one in-place edit of the YAML
+  ([Flow Designer](https://github.com/divengine/divide/wiki/Flow-Designer)).
 - **An MCP server for agents.** Options > MCP server starts it on
   `http://127.0.0.1:8765/mcp`: an AI coding agent gets the same checks,
   renders and render trace through the real Div engine, with the project's

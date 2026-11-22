@@ -1,6 +1,6 @@
 # Flow Structure
 
-The **Flow window** shows a [Runner](https://github.com/divengine/runner) Flow as what it is made of: its Blocks, each with its Steps, and what each Step does (`condition`, `activity`, `module`, `call`, `jump`, `context`, `pause`). From it you can edit a Step, add one or delete one, go to a `call` or `jump` target, open an activity's file, check the Flow with Runner, and run it ([[Running Flows]]). Everything is done with the keyboard.
+The **Flow window** shows a [Runner](https://github.com/divengine/runner) Flow as what it is made of: its Blocks, each with its Steps, and what each Step does (`condition`, `activity`, `module`, `call`, `jump`, `context`, `pause`). From it you can edit a Step, add one or delete one, go to a `call` or `jump` target, open an activity's file, check the Flow with Runner, and run it ([[Running Flows]]). Everything is done with the keyboard. The same Flow can be drawn as a board of lanes and cards, with its calls and jumps as lines, in the [[Flow Designer]] (**Ctrl+D**).
 
 ![The Flow window on order.yml: Blocks and Steps on the left, the selected Step on the right, Runner's verdict below](images/flow-window.png)
 
@@ -32,6 +32,7 @@ A Flow is a YAML file (`.yml`, `.yaml`) whose root has `blocks`. In its code win
 | **Ins** | A new Step after the selected one (on a Block: at its end) |
 | **Del** | Delete the Step (asked first, saying which Steps lead to it) |
 | **Ctrl+Enter** (Ctrl+J) | Go to the `call` or `jump` target; on a Step without one, open its activity's or condition's file |
+| **Ctrl+D** | The [[Flow Designer]]'s board, at the same Step or Block |
 | **Ctrl+T** | The YAML, at the selected Step or Block |
 | **Alt+F9** | Check the Flow, with the problems in Messages |
 | **Ctrl+F9** | Run the Flow ([[Running Flows]]) |
@@ -119,6 +120,6 @@ Without Runner installed, the verdict says so and only divide's own lookups are 
 
 ## Limits
 
-- The window edits Steps: their attributes, adding and deleting them. Blocks are added, renamed and reordered in the code, and so is a Step's id.
-- It shows the structure as a tree, not as a diagram. It does not simulate a Flow, play it back, step through it, or stop it at breakpoints. Running is Runner's, through [[Running Flows]].
+- The window edits Steps: their attributes, adding and deleting them. Blocks are added, renamed, reordered and deleted in the [[Flow Designer]], and so are a Step's id and its place in its Block.
+- It shows the structure as a tree; the [[Flow Designer]] draws it as a diagram. Neither of them simulates a Flow, plays it back, steps through it or stops it at breakpoints. Running is Runner's, through [[Running Flows]].
 - Function files are found by name and only checked for existence. divide never loads them. Whether they return what Runner expects is found out when the Flow runs.
