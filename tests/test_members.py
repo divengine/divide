@@ -98,8 +98,9 @@ async def test_a_file_unfolds_into_its_members_and_enter_goes_there(tmp_path):
         tree.focus()
         await tree.reload()
         await settle(pilot)
+        # unfolded again once read (the save's own notice may reload the folder meanwhile, later on macOS)
+        await until(pilot, lambda: "    + add(string $name): self" in labels(tree.root), tries=200)
         cart = next(c for c in tree.root.children if c.label.plain == "cart.php")
-        assert "    + add(string $name): self" in labels(tree.root)
 
         # Del on a member deletes nothing
         app.raise_window(app.project_window())

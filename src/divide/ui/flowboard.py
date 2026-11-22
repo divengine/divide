@@ -445,15 +445,21 @@ class FlowDesignWindow(FlowView):
     def on_mount(self) -> None:
         self.call_after_refresh(self.reload)
         self.call_after_refresh(self.board_view.focus)
+        self.call_after_refresh(self._fit)
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.rebuild())
 
     def on_resize(self, event: events.Resize) -> None:
-        narrow = event.size.width < NARROW
-        if narrow != self.has_class("narrow"):
-            self.set_class(narrow, "narrow")
+        self._narrow(event.size.width)
         self.call_after_refresh(self._fit)
 
+    def _narrow(self, width: int) -> None:
+        """Under NARROW columns the panel goes under the board (from the size itself: a Resize may come
+        before the window is ready for it)."""
+        if width and (width < NARROW) != self.has_class("narrow"):
+            self.set_class(width < NARROW, "narrow")
+
     def _fit(self) -> None:
+        self._narrow(self.size.width)
         width = card_width(self.board_view.size.width or self.size.width)
         if self.board is None or width != self.board.card_width:
             self.rebuild()
