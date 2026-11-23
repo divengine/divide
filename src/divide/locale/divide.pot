@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-23 09:11+0000\n"
+"POT-Creation-Date: 2026-11-23 19:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -289,6 +289,13 @@ msgstr ""
 msgid "A Function needs a name"
 msgstr ""
 
+msgid ""
+"A Mock Simulation runs this project's PHP code for real: the Function, "
+"its file's top-level code and, with autoload, the project's classes. Only"
+" the declared dependencies are replaced. It is not a sandbox and not "
+"side-effect-free. Allow Mock Simulations in this project?"
+msgstr ""
+
 msgid "A Module name is letters, digits, _ and -, not starting with -"
 msgstr ""
 
@@ -334,7 +341,13 @@ msgstr ""
 msgid "A program is being debugged: Ctrl+F2 ends it first."
 msgstr ""
 
+msgid "A scenario is a JSON object"
+msgstr ""
+
 msgid "A scenario name is letters, digits, spaces, _ . and -"
+msgstr ""
+
+msgid "A scenario name is letters, digits, spaces, _ and -"
 msgstr ""
 
 #, python-brace-format
@@ -1886,6 +1899,9 @@ msgstr ""
 msgid "MCP server: {url}"
 msgstr ""
 
+msgid "MOCK SIMULATION: real PHP runs; only declared dependencies are replaced"
+msgstr ""
+
 msgid "Macro begin"
 msgstr ""
 
@@ -1946,6 +1962,9 @@ msgid "Minimum"
 msgstr ""
 
 msgid "Missing"
+msgstr ""
+
+msgid "Mock Simulation is not allowed in this project yet: it runs real PHP code"
 msgstr ""
 
 msgid "Modifiers"
@@ -2174,6 +2193,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Not watched for outside changes: {name} ({why}). Ctrl+R refreshes."
+msgstr ""
+
+#, python-brace-format
+msgid "Not {protocol} version {version}"
 msgstr ""
 
 msgid "Nothing changed since the last commit"
@@ -3423,6 +3446,10 @@ msgid ""
 "div.server, div.session."
 msgstr ""
 
+#, python-brace-format
+msgid "The result was cut: over {size} bytes"
+msgstr ""
+
 msgid "The same amber phosphor on a black screen."
 msgstr ""
 
@@ -3537,6 +3564,11 @@ msgstr ""
 msgid "Trans~l~ate a template..."
 msgstr ""
 
+msgid ""
+"Tripwire, not a sandbox: some direct side effects fail, others (fopen, "
+"PDO, static state) still happen"
+msgstr ""
+
 msgid "True begin prefix"
 msgstr ""
 
@@ -3612,6 +3644,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Unknown key(s) in the doubles file: {keys} (Runner takes {allowed})"
+msgstr ""
+
+#, python-brace-format
+msgid "Unknown keys: {keys}"
 msgstr ""
 
 msgid "Unsaved: F2 saves (Div sees the saved file)"
@@ -3927,6 +3963,9 @@ msgstr ""
 msgid "at the end of {block}"
 msgstr ""
 
+msgid "autoload is true or false"
+msgstr ""
+
 #, python-brace-format
 msgid "bad escape \\{nxt}"
 msgstr ""
@@ -3999,6 +4038,12 @@ msgstr ""
 msgid "context"
 msgstr ""
 
+msgid "context is a JSON object"
+msgstr ""
+
+msgid "context keys starting with '_' belong to Runner"
+msgstr ""
+
 #, python-brace-format
 msgid "could not ask Div: {exc}"
 msgstr ""
@@ -4036,6 +4081,9 @@ msgstr ""
 msgid "depth"
 msgstr ""
 
+msgid "description is text"
+msgstr ""
+
 #, python-brace-format
 msgid "detached at {oid}"
 msgstr ""
@@ -4069,6 +4117,27 @@ msgstr ""
 msgid "double"
 msgstr ""
 
+msgid "doubles has importer and services only"
+msgstr ""
+
+msgid "doubles.importer is a JSON object"
+msgstr ""
+
+msgid "doubles.services is a JSON object"
+msgstr ""
+
+#, python-brace-format
+msgid "doubles.services.{service}: '_' keys belong to Runner"
+msgstr ""
+
+#, python-brace-format
+msgid "doubles.services.{service}: also in the context"
+msgstr ""
+
+#, python-brace-format
+msgid "doubles.services.{service}: an object of methods"
+msgstr ""
+
 msgid "dropped"
 msgstr ""
 
@@ -4099,6 +4168,12 @@ msgid "exit code {exit_code}"
 msgstr ""
 
 msgid "exit() called"
+msgstr ""
+
+msgid "expect has returns and context only"
+msgstr ""
+
+msgid "expect.context is a JSON object, the keys to find in the context after"
 msgstr ""
 
 msgid "expectations hold"
@@ -4158,6 +4233,19 @@ msgid "from {step}"
 msgstr ""
 
 msgid "function"
+msgstr ""
+
+msgid "function.module is a Module name or null"
+msgstr ""
+
+msgid "function.name is missing"
+msgstr ""
+
+msgid "function.sha256 is a sha256 hex digest"
+msgstr ""
+
+#, python-brace-format
+msgid "function: {module}:{name} is not a Runner reference ({why})"
 msgstr ""
 
 msgid "functions"
@@ -4264,6 +4352,14 @@ msgstr ""
 msgid ""
 "language of the interface for this run (default: Options > Language, else"
 " the system's)"
+msgstr ""
+
+#, python-brace-format
+msgid "limits has {keys} only"
+msgstr ""
+
+#, python-brace-format
+msgid "limits.{key}: 1..{top}"
 msgstr ""
 
 msgid "local"
@@ -4706,6 +4802,9 @@ msgstr ""
 msgid "unknown type {type}"
 msgstr ""
 
+msgid "unknown: only \"fail\" (a missing double never calls the real dependency)"
+msgstr ""
+
 msgid "unterminated string"
 msgstr ""
 
@@ -5139,11 +5238,19 @@ msgid "{name} · {path}"
 msgstr ""
 
 #, python-brace-format
+msgid "{name}: no such Function file"
+msgstr ""
+
+#, python-brace-format
 msgid "{name}: no such file next to {display_name} or in the project"
 msgstr ""
 
 #, python-brace-format
 msgid "{name}: no {editor} errors"
+msgstr ""
+
+#, python-brace-format
+msgid "{name}: not a Function name"
 msgstr ""
 
 #, python-brace-format
@@ -5452,6 +5559,34 @@ msgstr ""
 
 #, python-brace-format
 msgid "{where} · a path moves it too (../{name})"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: a sequence cannot hold a sequence"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: an outcome is a JSON object"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: context is a JSON object without '_' keys"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: exactly one of returns, throws, sequence ({found})"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: sequence is a non-empty list"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: throws is a message"
+msgstr ""
+
+#, python-brace-format
+msgid "{where}: unknown {keys}"
 msgstr ""
 
 #, python-brace-format

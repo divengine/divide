@@ -29,7 +29,7 @@ the code and updated in the same commits as the changes it describes.
 | Analysis & Design | Software Architecture Document (4+1 views) | [software-architecture.md](software-architecture.md) |
 | Analysis & Design | Design Model (subsystems, classes, collaborations) | [design-model.md](design-model.md) |
 | Analysis & Design | Div as seen by the editor (design note on the lexer) | [div-language.md](div-language.md) |
-| Analysis & Design | Function simulation: feasibility and decision (#15, proposed) | [function-simulation.md](function-simulation.md) |
+| Analysis & Design | Function simulation: feasibility and decision (#15, approved; engine #21) | [function-simulation.md](function-simulation.md) |
 | Test | Test Plan | [test-plan.md](test-plan.md) |
 | Deployment | Deployment and configuration | [deployment.md](deployment.md) |
 | Project Management | Iteration Plan and history, Risk List | [iteration-plan.md](iteration-plan.md) |

@@ -1,7 +1,9 @@
 # Function simulation: feasibility and decision (#15)
 
-**Status:** proposed, for review. **Proof of concept:** [`prototypes/function-simulation`](../prototypes/function-simulation)
-(not packaged, not wired to the UI), tested by `tests/test_funcsim_poc.py`.
+**Status:** approved (#15), with the five decisions of its review. **Engine:** built in `divide.run.funcsim`
+(#21), tested by `tests/test_funcsim.py`; the line trace (#22) and the UI (#23) are not built yet.
+**Proof of concept:** [`prototypes/function-simulation`](../prototypes/function-simulation) (not packaged), kept for
+the line trace until #22 promotes it, tested by `tests/test_funcsim_poc.py`.
 
 ## 1. Question
 
@@ -61,10 +63,10 @@ The **sha256** of the Function's file is in the scenario. A changed file is repo
 
 - **Outcomes:** exactly one of `returns`, `throws` (a message) or `sequence` (one outcome per call, and a call past the end fails). An optional `context` is merged into the context, as in Runner's `--simulate`.
 - **`unknown`:** only `"fail"` is accepted. A missing double never falls back to the real dependency.
-- **`expect`:** the same checks as Test Function's scenarios (`.div/function-tests`). The PoC does not check it yet.
+- **`expect`:** `returns` and `context` (a subset of the context after), the same checks as Test Function's scenarios (`.div/function-tests`): `funcsim.check`.
 - **`limits`:** bounded: lines ≤ 100,000, seconds ≤ 300, stdout ≤ 4 MiB.
 - **Refusal:** the scenario is checked before anything runs. A wrong scenario starts no process (tested with a marker file).
-- **Storage (proposed):** `.div/function-simulations/<module>/<name>.<scenario>.json`, versioned and shareable. Runs go to an ignored cache, `.div/function-simulation/`, with the retention of #10.
+- **Storage:** `.div/function-simulations/<module>/<name>.<scenario>.json` (`_root` for a Function with no Module), versioned and shareable: divide writes no `.gitignore` there. Traced runs (#22) go to an ignored cache, `.div/function-simulation/`, with the retention of #10.
 
 ## 5. The line trace
 
@@ -100,7 +102,7 @@ Line semantics (from the PoC; tests in parentheses):
 
 - **Process:** one PHP child process per simulation. The harness's result goes to its own stdout after a random marker. The Function's stdout goes into a bounded output buffer, so it cannot break the result by accident. A hostile Function runs in the same process and could reach the marker: the project is trusted input (below).
 - **Limits:** wall-clock seconds (the process is killed; tested with an endless loop), lines (the trace is truncated and marked; tested), `memory_limit`, stdout bytes.
-- **Cancellation:** `DebugSession.stop()`, or a kill for the plain run. divide's `children` registry would reap it in the product.
+- **Cancellation:** `DebugSession.stop()` for a traced run (#22), or a kill for the plain run. The process is tracked by divide's `children` registry, so it never outlives divide.
 - **Tripwire (opt-in, best effort):**
   - `disable_functions` covers process, network and mail functions and the commonest file writes;
   - `open_basedir` is the project, the harness and the work folder;

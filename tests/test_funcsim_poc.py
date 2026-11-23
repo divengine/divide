@@ -1,7 +1,8 @@
-"""The proof of concept of #15 (prototypes/function-simulation): Mock Simulation of one Runner
-Function with dependency doubles, and its PHP line trace over Xdebug (DBGp, non-interactive).
+"""The line trace of the proof of concept of #15 (prototypes/function-simulation): a Function's PHP
+lines over Xdebug (DBGp, non-interactive), until #22 promotes it. The engine's cases (doubles,
+scenarios, limits, the tripwire) moved with the engine to tests/test_funcsim.py (#21).
 
-The line-trace tests need Xdebug (php.ini or DIVIDE_XDEBUG=path/xdebug.so)."""
+These tests need Xdebug (php.ini or DIVIDE_XDEBUG=path/xdebug.so)."""
 
 from __future__ import annotations
 
@@ -67,135 +68,6 @@ def sim(project: Path, file: Path, data: dict, **kwargs) -> fs.Simulation:
 # ------------------------------------------------------------------ the scenario
 def test_the_example_scenario_is_valid():
     assert fs.check_scenario(scenario()) == []
-
-
-@pytest.mark.parametrize("change, problem", [
-    ({"version": 2}, "not divide.function-simulation version 1"),
-    ({"unknown": "real"}, "unknown: only"),
-    ({"context": {"_flow_state": {}}}, "belong to Runner"),
-    ({"doubles": {"importer": {"tax": {"returns": 1, "throws": "x"}}}}, "exactly one of"),
-    ({"doubles": {"importer": {"tax": {"sequence": []}}}}, "non-empty list"),
-    ({"doubles": {"importer": {"tax": {"returns": 1, "context": {"_x": 1}}}}}, "without '_' keys"),
-    ({"doubles": {"services": {"mailer": {}}}}, "an object of methods"),
-    ({"doubles": {"classes": {}}}, "importer and services only"),
-    ({"limits": {"lines": 10 ** 9}}, "limits.lines"),
-    ({"function": {"name": "x", "sha256": "abc"}}, "sha256 hex digest"),
-])
-def test_a_wrong_scenario_is_refused_before_anything_runs(project, change, problem):
-    data = scenario(**change) if "function" not in change else {**scenario(), **change}
-    assert any(problem in p for p in fs.check_scenario(data))
-    marker = project / "ran"
-    file = write(project, "marker", f"file_put_contents({str(marker)!r}, 'x');\nreturn fn (array &$c) => 1;\n")
-    with pytest.raises(fs.ScenarioError):
-        sim(project, file, data)
-    assert not marker.exists()
-
-
-# ------------------------------------------------------------------ doubles
-def test_doubles_answer_and_are_recorded(project):
-    result = sim(project, project / "functions" / "checkout.php", scenario())
-    assert result.status == "returned"
-    assert result.result["return"] == "notified"
-    assert result.result["after"]["total"] == 121.0 and result.result["after"]["tax_rate"] == 0.21
-    assert "mailer" not in result.result["after"]  # a service double is not data
-    assert [c["double"] for c in result.result["calls"]] == ["billing:tax", "mailer->send"]
-    assert result.result["calls"][1]["args"] == ["buyer@example.com", "Total: 121"]
-    assert result.result["logs"] == [{"level": "INFO", "message": "large order"}]
-    assert result.result["stdout"] == "sent: yes\n"
-
-
-def test_a_missing_import_double_fails_loudly_and_never_loads_the_real_function(project):
-    real = project / "functions" / "billing"
-    real.mkdir()
-    marker = project / "real-tax-loaded"
-    (real / "tax.php").write_text(f"<?php\nfile_put_contents({str(marker)!r}, 'x');\nreturn fn (array &$c) => 1.0;\n")
-    data = scenario(doubles={"services": {"mailer": {"send": {"returns": True}}}})
-    result = sim(project, project / "functions" / "checkout.php", data)
-    assert result.status == "exception"
-    assert result.result["exception"]["missing_double"] is True
-    assert "billing:tax" in result.result["exception"]["message"]
-    assert not marker.exists()
-
-
-def test_a_missing_service_method_fails_loudly(project):
-    data = scenario(doubles={"importer": {"billing:tax": {"returns": 1.0}}, "services": {"mailer": {"queue": {"returns": 1}}}})
-    result = sim(project, project / "functions" / "checkout.php", data)
-    assert result.status == "exception" and result.result["exception"]["missing_double"] is True
-    assert "mailer->send" in result.result["exception"]["message"]
-
-
-def test_a_sequence_answers_in_order_and_fails_past_its_end(project):
-    file = write(project, "twice", 'return function (array &$c): array {\n'
-                 '    $f = $c["_importer"]("rate");\n    return [$f($c), $f($c)];\n};\n')
-    ok = sim(project, file, scenario("twice", doubles={"importer": {"rate": {"sequence": [{"returns": 1}, {"returns": 2}]}}}))
-    assert ok.result["return"] == [1, 2]
-    short = sim(project, file, scenario("twice", doubles={"importer": {"rate": {"sequence": [{"returns": 1}]}}}))
-    assert short.status == "exception" and "no outcome for call 2" in short.result["exception"]["message"]
-
-
-def test_a_throwing_double_is_the_functions_exception(project):
-    data = scenario(doubles={"importer": {"billing:tax": {"throws": "tax service down"}},
-                             "services": {"mailer": {"send": {"returns": True}}}})
-    result = sim(project, project / "functions" / "checkout.php", data)
-    assert result.status == "exception"
-    assert result.result["exception"]["message"] == "tax service down"
-    assert result.result["exception"]["missing_double"] is False
-
-
-def test_a_class_is_not_autoloaded_unless_the_scenario_opts_in(project):
-    (project / "vendor").mkdir()
-    marker = project / "autoload-ran"
-    (project / "vendor" / "autoload.php").write_text(
-        f"<?php\nfile_put_contents({str(marker)!r}, 'x');\n"
-        "spl_autoload_register(function ($c) { if ($c === 'Acme\\\\Mailer') { eval('namespace Acme; class Mailer { function send() { return 1; } }'); } });\n")
-    file = write(project, "uses_class", "return fn (array &$c) => (new \\Acme\\Mailer())->send();\n")
-    refused = sim(project, file, scenario("uses_class"))
-    assert refused.status == "exception" and refused.result["exception"]["missing_double"] is True
-    assert "Acme\\Mailer" in refused.result["exception"]["message"]
-    assert not marker.exists()
-    allowed = sim(project, file, scenario("uses_class", autoload=True))
-    assert allowed.status == "returned" and allowed.result["return"] == 1 and marker.exists()
-
-
-def test_a_changed_function_is_stale(project):
-    file = project / "functions" / "checkout.php"
-    data = scenario()
-    data["function"]["sha256"] = "0" * 64
-    result = sim(project, file, data)
-    assert result.status == "stale" and result.result["sha256"] == fs.sha256(file)
-
-
-# ------------------------------------------------------------------ not a sandbox
-def test_a_direct_side_effect_is_not_intercepted_without_the_tripwire(project, tmp_path):
-    target = tmp_path / "outside.txt"
-    data = scenario("direct_write", context={"path": str(target)}, doubles={})
-    result = sim(project, project / "functions" / "direct_write.php", data)
-    assert result.status == "returned" and result.result["return"] is True
-    assert target.read_text() == "real write"  # the evidence: doubles do not stop PHP's own functions
-
-
-def test_the_tripwire_stops_some_direct_side_effects(project, tmp_path):
-    target = tmp_path / "outside.txt"
-    data = scenario("direct_write", context={"path": str(target)}, doubles={})
-    result = sim(project, project / "functions" / "direct_write.php", data, harden=True)
-    assert result.status == "exception", result.stderr
-    assert "file_put_contents" in result.result["exception"]["message"]
-    assert not target.exists()
-
-
-def test_the_tripwire_is_a_deny_list_not_a_sandbox(project, tmp_path):
-    target = project / "inside.txt"  # inside open_basedir, by a function not on the list
-    file = write(project, "fopen_write", 'return function (array &$c): bool {\n'
-                 '    $h = fopen($c["path"], "w");\n    return stream_copy_to_stream(fopen("php://memory", "r"), $h) !== false;\n};\n')
-    result = sim(project, file, scenario("fopen_write", context={"path": str(target)}, doubles={}), harden=True)
-    assert result.status == "returned", result.stderr
-    assert target.exists()  # created: fopen is not denied
-
-
-def test_a_runaway_function_is_stopped_at_its_time_limit(project):
-    file = write(project, "spin", "return function (array &$c): void { while (true) { } };\n")
-    result = sim(project, file, scenario("spin", doubles={}, limits={"seconds": 2}))
-    assert result.status == "timeout"
 
 
 # ------------------------------------------------------------------ the line trace

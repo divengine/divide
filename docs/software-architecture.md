@@ -324,7 +324,8 @@ src/divide/
     div/               lexer, dialect, diagnostics, complete, outline, dialector, preview
   outline/             outlines: php, div, markup, code, data
   run/                 render.py, workbench.py, script.py, server.py, dbgp.py, trace.py, setup.py,
-                       git.py, forge.py, composer.py, children.py, bridge.php
+                       git.py, forge.py, composer.py, children.py, bridge.php,
+                       functest.py (+ .php), simulate.py, funcsim.py (+ .php)
   lsp/                 server table, client
   manual/              help engine, books.json, books/<id>/ and books/<id>.<lang>/ (copied pages)
   locale/              gettext catalogues (divide.pot, <lang>/LC_MESSAGES/divide.po, .mo)
@@ -380,6 +381,8 @@ divide has no database. Its persistent data:
 | Settings: palette, colours, icons, Div engine, Xdebug, LSP choices and commands, run arguments, web server, Composer, input histories, the diff's layout, recent folders and files | `$XDG_CONFIG_HOME/divide/config.json` | `divide.config` and the feature that uses each key |
 | Div setup of a project, of the user | `<project>/.div/setup.json`, `~/.div/setup.json` (`$DIV_HOME`) | the developer, through Options > Div setup (`divide.run.setup`) |
 | Trusted PHP settings of projects | `~/.div/trust.json` (a hash per setup file) | `divide.run.setup` |
+| Mock Simulation opt-in of projects | `$XDG_CONFIG_HOME/divide/config.json`, key `function_simulation_trust` (never in the project) | `divide.run.funcsim` |
+| Mock Simulation scenarios | `<project>/.div/function-simulations/<module>/<name>.<scenario>.json` (versioned) | the developer, through `divide.run.funcsim` |
 | Language server caches | `$XDG_CACHE_HOME/...` | `divide.lsp.client` |
 | Help books | `src/divide/manual/books/<id>/` (packaged) | `tools/sync_book.py` |
 | Help search index | `src/divide/manual/search.sqlite`, `search.<lang>.sqlite` per language of the books (packaged; rebuilt in memory when stale) | `tools/sync_book.py` → `divide.manual.fulltext.build` |
@@ -416,8 +419,11 @@ processes, bounded searches, and an incremental lexer cache. See the
 ## 11. Open questions (not designed)
 
 **Function Mock Simulation** (one Runner Function run with dependency doubles
-and a PHP line trace) is proposed, not built: its feasibility, decision and
-proof of concept are in [function-simulation.md](function-simulation.md).
+and a PHP line trace): the decision is in
+[function-simulation.md](function-simulation.md). Its engine is built
+(`divide.run.funcsim`, #21, no UI); the line trace (#22) and the UI (#23) are
+not. A Mock Simulation runs real PHP: it is not a sandbox, and it is not the
+Flow simulation of `divide.run.simulate`, where no Function code runs.
 
 Orchestration and interfaces such as a CLI, an HTTP API or an MCP server may
 be implemented by generator projects; divide may offer tools to develop,

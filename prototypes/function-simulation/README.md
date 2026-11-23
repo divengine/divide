@@ -2,6 +2,8 @@
 
 Feasibility code for [docs/function-simulation.md](../../docs/function-simulation.md). It is not part of divide's package and is not wired to the UI.
 
+The engine (harness, scenarios, doubles, limits, tripwire) is now `divide.run.funcsim` (#21). This prototype stays only for its line trace, until #22 promotes it; its tests are the line-trace cases of `tests/test_funcsim_poc.py`.
+
 | File | What it is |
 |---|---|
 | `funcsim.php` | The PHP harness. It loads one Function file and calls it with the scenario's context. `_importer` and the service objects are doubles, and the project's autoload is off unless the scenario opts in. |

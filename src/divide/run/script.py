@@ -109,10 +109,11 @@ def command(script: Path, args: list[str], *, php: str | None = None, ini: list[
     return [php, *ERROR_INI, *(ini or []), str(script), *args]
 
 
-async def _read(stream: asyncio.StreamReader, sink: bytearray, on_data: Callable[[], None] | None) -> None:
+async def _read(stream: asyncio.StreamReader, sink: bytearray, on_data: Callable[[], None] | None,
+                limit: int = LIMIT) -> None:
     while chunk := await stream.read(65536):
-        if len(sink) < LIMIT:
-            sink.extend(chunk[: LIMIT - len(sink)])
+        if len(sink) < limit:
+            sink.extend(chunk[: limit - len(sink)])
         if on_data is not None:
             on_data()
 
@@ -131,10 +132,12 @@ async def run_script(
     php: str | None = None,
     ini: list[str] | None = None,
     on_data: Callable[[bytes, bytes], None] | None = None,
+    limit: int = LIMIT,
 ) -> ScriptResult:
     """Run ``script``; cancelling the task stops PHP (the result then says ``stopped``).
 
-    ``on_data(stdout, stderr)`` sees what came so far, each time more comes."""
+    ``on_data(stdout, stderr)`` sees what came so far, each time more comes; ``limit`` is the bytes
+    kept of each stream."""
     argv = command(script, args or [], php=php, ini=ini)
     started = time.monotonic()
     proc = children.track(await asyncio.create_subprocess_exec(
@@ -148,7 +151,7 @@ async def run_script(
     result = ScriptResult()
     seen = (lambda: on_data(bytes(out), bytes(err))) if on_data is not None else None
     try:
-        await asyncio.gather(_read(proc.stdout, out, seen), _read(proc.stderr, err, seen))  # type: ignore[arg-type]
+        await asyncio.gather(_read(proc.stdout, out, seen, limit), _read(proc.stderr, err, seen, limit))  # type: ignore[arg-type]
         result.exit_code = await proc.wait()
     except asyncio.CancelledError:
         result.stopped = True

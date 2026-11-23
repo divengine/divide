@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-19 01:52+0000\n"
+"POT-Creation-Date: 2026-11-23 19:27+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -6147,3 +6147,132 @@ msgstr "~R~eproducir"
 
 msgid "~S~imulate"
 msgstr "~S~imular"
+
+msgid "A Mock Simulation runs this project's PHP code for real: the Function, its file's top-level code and, with autoload, the project's classes. Only the declared dependencies are replaced. It is not a sandbox and not side-effect-free. Allow Mock Simulations in this project?"
+msgstr "Una Mock Simulation ejecuta de verdad el código PHP de este proyecto: la Function, el código de nivel superior de su archivo y, con autoload, las clases del proyecto. Solo se reemplazan las dependencias declaradas. No es un sandbox ni está libre de efectos secundarios. ¿Permitir Mock Simulations en este proyecto?"
+
+msgid "A scenario is a JSON object"
+msgstr "Un escenario es un objeto JSON"
+
+msgid "A scenario name is letters, digits, spaces, _ and -"
+msgstr "El nombre de un escenario lleva letras, dígitos, espacios, _ y -"
+
+msgid "MOCK SIMULATION: real PHP runs; only declared dependencies are replaced"
+msgstr "MOCK SIMULATION: se ejecuta PHP real; solo se reemplazan las dependencias declaradas"
+
+msgid "Mock Simulation is not allowed in this project yet: it runs real PHP code"
+msgstr "La Mock Simulation aún no está permitida en este proyecto: ejecuta código PHP real"
+
+#, python-brace-format
+msgid "Not {protocol} version {version}"
+msgstr "No es {protocol} versión {version}"
+
+#, python-brace-format
+msgid "The result was cut: over {size} bytes"
+msgstr "El resultado se cortó: más de {size} bytes"
+
+msgid "Tripwire, not a sandbox: some direct side effects fail, others (fopen, PDO, static state) still happen"
+msgstr "Tripwire, no un sandbox: algunos efectos secundarios directos fallan, otros (fopen, PDO, estado estático) siguen ocurriendo"
+
+#, python-brace-format
+msgid "Unknown keys: {keys}"
+msgstr "Claves desconocidas: {keys}"
+
+msgid "autoload is true or false"
+msgstr "autoload es true o false"
+
+msgid "context is a JSON object"
+msgstr "context es un objeto JSON"
+
+msgid "context keys starting with '_' belong to Runner"
+msgstr "las claves de context que empiezan por '_' son de Runner"
+
+msgid "description is text"
+msgstr "description es texto"
+
+msgid "doubles has importer and services only"
+msgstr "doubles solo tiene importer y services"
+
+msgid "doubles.importer is a JSON object"
+msgstr "doubles.importer es un objeto JSON"
+
+msgid "doubles.services is a JSON object"
+msgstr "doubles.services es un objeto JSON"
+
+#, python-brace-format
+msgid "doubles.services.{service}: '_' keys belong to Runner"
+msgstr "doubles.services.{service}: las claves '_' son de Runner"
+
+#, python-brace-format
+msgid "doubles.services.{service}: also in the context"
+msgstr "doubles.services.{service}: también está en el context"
+
+#, python-brace-format
+msgid "doubles.services.{service}: an object of methods"
+msgstr "doubles.services.{service}: un objeto de métodos"
+
+msgid "expect has returns and context only"
+msgstr "expect solo tiene returns y context"
+
+msgid "expect.context is a JSON object, the keys to find in the context after"
+msgstr "expect.context es un objeto JSON, las claves que se buscan en el context después"
+
+msgid "function.module is a Module name or null"
+msgstr "function.module es un nombre de Module o null"
+
+msgid "function.name is missing"
+msgstr "falta function.name"
+
+msgid "function.sha256 is a sha256 hex digest"
+msgstr "function.sha256 es un resumen sha256 en hexadecimal"
+
+#, python-brace-format
+msgid "function: {module}:{name} is not a Runner reference ({why})"
+msgstr "function: {module}:{name} no es una referencia de Runner ({why})"
+
+#, python-brace-format
+msgid "limits has {keys} only"
+msgstr "limits solo tiene {keys}"
+
+#, python-brace-format
+msgid "limits.{key}: 1..{top}"
+msgstr "limits.{key}: 1..{top}"
+
+msgid "unknown: only \"fail\" (a missing double never calls the real dependency)"
+msgstr "unknown: solo \"fail\" (un doble que falta nunca llama a la dependencia real)"
+
+#, python-brace-format
+msgid "{name}: no such Function file"
+msgstr "{name}: no existe el archivo de la Function"
+
+#, python-brace-format
+msgid "{name}: not a Function name"
+msgstr "{name}: no es un nombre de Function"
+
+#, python-brace-format
+msgid "{where}: a sequence cannot hold a sequence"
+msgstr "{where}: una sequence no puede contener otra sequence"
+
+#, python-brace-format
+msgid "{where}: an outcome is a JSON object"
+msgstr "{where}: un resultado es un objeto JSON"
+
+#, python-brace-format
+msgid "{where}: context is a JSON object without '_' keys"
+msgstr "{where}: context es un objeto JSON sin claves '_'"
+
+#, python-brace-format
+msgid "{where}: exactly one of returns, throws, sequence ({found})"
+msgstr "{where}: exactamente uno de returns, throws, sequence ({found})"
+
+#, python-brace-format
+msgid "{where}: sequence is a non-empty list"
+msgstr "{where}: sequence es una lista no vacía"
+
+#, python-brace-format
+msgid "{where}: throws is a message"
+msgstr "{where}: throws es un mensaje"
+
+#, python-brace-format
+msgid "{where}: unknown {keys}"
+msgstr "{where}: desconocido {keys}"
