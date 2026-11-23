@@ -415,6 +415,10 @@ processes, bounded searches, and an incremental lexer cache. See the
 
 ## 11. Open questions (not designed)
 
+**Function Mock Simulation** (one Runner Function run with dependency doubles
+and a PHP line trace) is proposed, not built: its feasibility, decision and
+proof of concept are in [function-simulation.md](function-simulation.md).
+
 Orchestration and interfaces such as a CLI, an HTTP API or an MCP server may
 be implemented by generator projects; divide may offer tools to develop,
 inspect or test them. divide's own MCP server (4.1) is the IDE's, not a
