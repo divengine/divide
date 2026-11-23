@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-23 19:27+0000\n"
+"POT-Creation-Date: 2026-11-23 20:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -287,6 +287,12 @@ msgid ""
 msgstr ""
 
 msgid "A Function needs a name"
+msgstr ""
+
+msgid "A Function trace has a list of events"
+msgstr ""
+
+msgid "A Function trace is a JSON object"
 msgstr ""
 
 msgid ""
@@ -1616,6 +1622,10 @@ msgstr ""
 msgid "Function test: {name}"
 msgstr ""
 
+#, python-brace-format
+msgid "Function trace version {version}: this divide reads version {known}"
+msgstr ""
+
 msgid "Functions"
 msgstr ""
 
@@ -2160,6 +2170,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Not JSON: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "Not a Function trace ({protocol})"
 msgstr ""
 
 #, python-brace-format
@@ -3386,6 +3400,11 @@ msgstr ""
 
 #, python-brace-format
 msgid "The last run ended {state}: Run replaces it when it ends."
+msgstr ""
+
+msgid ""
+"The line trace needs Xdebug: install it, or set its extension file in "
+"Options"
 msgstr ""
 
 #, python-brace-format
@@ -5141,6 +5160,10 @@ msgstr ""
 msgid ""
 "{name} cannot be a branch name: no spaces or symbols such as .. : ? * [ "
 "^, and not starting with - or ."
+msgstr ""
+
+#, python-brace-format
+msgid "{name} cannot be read: {error}"
 msgstr ""
 
 #, python-brace-format

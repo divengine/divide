@@ -99,6 +99,25 @@ function __divide_funcsim_value(mixed $value, int $depth = 0): mixed
     return $value;
 }
 
+/**
+ * The locals of a frame as JSON, for the line trace (divide.run.functrace): an `eval` of
+ * `__divide_funcsim_locals(get_defined_vars())` in the Function's frame over DBGp.
+ */
+function __divide_funcsim_locals(array $vars): string
+{
+    // get_defined_vars() keeps references: a by-reference $context is the caller's own array.
+    // Never assign into $vars, or observing the Function would change it (#15). Build a new array.
+    $out = [];
+    foreach ($vars as $name => $value) {
+        if ($name === 'GLOBALS') {
+            continue;
+        }
+        $out[$name] = $name === 'context' && is_array($value) ? __divide_funcsim_data($value) : $value;
+    }
+    return (string) json_encode(__divide_funcsim_value($out), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION | JSON_INVALID_UTF8_SUBSTITUTE);
+}
+
 /** The context without what the harness put in it for the call: the helpers and the service doubles. */
 function __divide_funcsim_data(array $context): array
 {

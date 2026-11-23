@@ -159,8 +159,10 @@ class DebugSession:
         php: str | None = None,
         ini: list[str] | None = None,
         on_data: Callable[[], None] | None = None,
+        limit: int = LIMIT,
     ) -> None:
         self.script = script
+        self.limit = limit  # bytes kept of each stream
         self.args = args or []
         self.cwd = cwd or script.parent
         self.php = php or shutil.which("php")
@@ -203,8 +205,8 @@ class DebugSession:
 
     async def _pipe(self, stream: asyncio.StreamReader, sink: bytearray) -> None:
         while chunk := await stream.read(65536):
-            if len(sink) < LIMIT:
-                sink.extend(chunk[: LIMIT - len(sink)])
+            if len(sink) < self.limit:
+                sink.extend(chunk[: self.limit - len(sink)])
             if self.on_data is not None:
                 self.on_data()
 

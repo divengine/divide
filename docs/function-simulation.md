@@ -1,9 +1,9 @@
 # Function simulation: feasibility and decision (#15)
 
-**Status:** approved (#15), with the five decisions of its review. **Engine:** built in `divide.run.funcsim`
-(#21), tested by `tests/test_funcsim.py`; the line trace (#22) and the UI (#23) are not built yet.
-**Proof of concept:** [`prototypes/function-simulation`](../prototypes/function-simulation) (not packaged), kept for
-the line trace until #22 promotes it, tested by `tests/test_funcsim_poc.py`.
+**Status:** approved (#15), with the five decisions of its review. **Engine:** `divide.run.funcsim` (#21),
+tested by `tests/test_funcsim.py`. **Line trace:** `divide.run.functrace` (#22), tested by
+`tests/test_functrace.py`. The UI (#23) is not built yet. The proof of concept of #15 (`prototypes/function-simulation`)
+was removed once #22 promoted its last part; it is in the history at `7f47ab5`.
 
 ## 1. Question
 
@@ -87,16 +87,18 @@ How it works:
 
 It is its own `DebugSession` on its own port. It shares nothing with the user's interactive debugger and never uses the user's breakpoints.
 
-Line semantics (from the PoC; tests in parentheses):
+Line semantics (`divide.run.functrace`; tests in parentheses):
 
 - Xdebug stops **before** a line runs, so a line's `locals` are what the lines before it left.
 - A branch not taken has no line (tested).
-- A line with several statements is one event with a `repeat` count. Changes made by a double are attached to the line that called it (`after_call`).
+- Several statements on one line are one event with a `repeat` count while they change no local. A statement that changed one is a new event on the same line (tested).
+- Changes made by a double while the line ran are attached to the line that called it (`after_call`).
+- Playback folds the state before event N from each event's `locals` and the `after_call` of the lines before it; at the last line it equals the result's context (tested).
 - A `foreach` header appears on the first pass only: Xdebug maps the loop's next-item opcode to the body's first line.
-- Closures defined in the Function file are traced at `depth` > 0.
+- Closures defined in the Function file are traced at `depth` > 0 (tested); "next at the same depth" steps over them.
 - The doubles' own code is not traced (tested: every event has depth 0).
 
-**Observer effect, found and fixed.** `get_defined_vars()` keeps references. The PoC's first version wrote the cleaned context back through the by-reference `$context` and broke the Function (`_importer` became null). The locals encoder now builds a new array and never assigns into what it observes. A test compares a traced run with a plain run (return, context, double calls).
+**Observer effect, found and fixed.** `get_defined_vars()` keeps references. The PoC's first version wrote the cleaned context back through the by-reference `$context` and broke the Function (`_importer` became null). The locals encoder now builds a new array and never assigns into what it observes. Tests compare a traced run with a plain run (return, context, changes, double calls, logs, output, expectations), also for an exception and with the tripwire.
 
 ## 6. Isolation, limits, trust
 
@@ -125,7 +127,7 @@ Line semantics (from the PoC; tests in parentheses):
 {
   "protocol": "divide.function-trace", "version": 1,
   "scenario": {"sha256": "4f92...e7f682", "description": "A large order: tax doubled, the mailer accepts"},
-  "function": {"module": null, "name": "checkout", "file": "functions/checkout.php", "sha256": "79ac...1464"},
+  "function": {"module": null, "name": "checkout", "file": "functions/checkout.php", "sha256": "79ac...1464", "pinned": true},
   "result": {"status": "returned", "return": "notified", "return_type": "string",
              "before": {"...": "..."}, "after": {"...": "...", "total": 121.0, "review": true},
              "calls": [{"double": "billing:tax", "call": 1, "args": [], "outcome": "returns"},
@@ -148,14 +150,19 @@ Statuses:
 - `stale` (the file changed);
 - `missing` (no such Function);
 - `timeout`;
-- `line_limit`.
+- `line_limit`;
+- also `stopped`, `crashed` and `protocol` (the process ended without a result).
 
-Consumers ignore unknown fields and event types, as for Runner's trace.
+`function.sha256` is the file's hash as it ran; `function.pinned` says whether the scenario fixed it (its own `function.sha256`). Only a pinned scenario was checked against its source: a UI never presents an unpinned one as source-pinned (#23).
+
+Consumers ignore unknown fields and event types, as for Runner's trace. The reader (`functrace.parse_trace`) refuses another protocol or version.
+
+**Storage:** each traced run is a folder of `.div/function-simulation/` (out of Git: divide writes its `.gitignore`), marked by `divide-function-run.json`, with `trace.json` and the `scenario.json` it ran. Retention is #10's (20 runs, 64 MiB, runs open in a window kept), applied to this folder only; `.div/runner/` and `.div/simulation/` are never touched (tested).
 
 **Reused from #10 (Runner trace):**
 
-- the session folder and its retention (`divide.run.simulate.cleanup`);
-- the playback cursor (an event list, first/last/next/previous, "the state at event N" folded from changes);
+- the session folder and its retention (`divide.run.simulate.cleanup`, given the cache folder and marker);
+- the playback cursor (`divide.run.simulate.Cursor`: first, last, next, previous), with "next at the same depth" and "the state at event N" folded from changes (`functrace.LinePlayback`);
 - the doubles' outcome grammar;
 - the version gate;
 - the Simulation dialog's layout.

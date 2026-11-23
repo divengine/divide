@@ -520,13 +520,15 @@ def load_session(folder: Path, project: Path) -> Session:
     return session
 
 
-def sessions(project: Path) -> list[Path]:
-    """The project's simulation sessions, newest first (only folders divide marked as its own)."""
-    folder = cache_dir(project)
+def sessions(project: Path, *, cache: Path = CACHE, meta: str = META) -> list[Path]:
+    """The project's simulation sessions, newest first (only folders divide marked as its own with
+    ``meta``). ``cache`` and ``meta`` default to Flow simulations'; Function simulations
+    (:mod:`divide.run.functrace`) keep theirs apart, in their own folder."""
+    folder = project / cache
     if not folder.is_dir():
         return []
-    found = [p for p in folder.iterdir() if p.is_dir() and (p / META).is_file()]
-    return sorted(found, key=lambda p: (p / META).stat().st_mtime, reverse=True)
+    found = [p for p in folder.iterdir() if p.is_dir() and (p / meta).is_file()]
+    return sorted(found, key=lambda p: (p / meta).stat().st_mtime, reverse=True)
 
 
 def _size(folder: Path) -> int:
@@ -541,18 +543,19 @@ def _size(folder: Path) -> int:
 
 
 def cleanup(project: Path, *, keep: int = KEEP_SESSIONS, max_bytes: int = MAX_CACHE_BYTES,
-            active: set[Path] | None = None) -> list[Path]:
+            active: set[Path] | None = None, cache: Path = CACHE, meta: str = META) -> list[Path]:
     """Remove the oldest sessions past ``keep`` or ``max_bytes`` in all; never one in ``active`` (open in a
-    window), never anything that is not a session folder of divide's. Returns what was removed."""
+    window), never anything that is not a session folder of divide's (marked with ``meta``, in
+    ``cache``). Returns what was removed."""
     active = {p.resolve() for p in (active or set())}
     removed: list[Path] = []
     total = 0
-    for n, folder in enumerate(sessions(project)):
+    for n, folder in enumerate(sessions(project, cache=cache, meta=meta)):
         size = _size(folder)
         if folder.resolve() in active or (n < keep and total + size <= max_bytes):
             total += size
             continue
-        if not (folder / META).is_file() or folder.is_symlink():
+        if not (folder / meta).is_file() or folder.is_symlink():
             continue
         shutil.rmtree(folder, ignore_errors=True)
         removed.append(folder)
@@ -701,17 +704,15 @@ def _cut_value(value) -> bool:
     return isinstance(value, dict) and value.get("$type") in ("truncated", "more")
 
 
-class Playback:
-    """A simulation's events, every segment one after the other, and a cursor over them. Moving the
-    cursor changes nothing but the cursor: what the board shows is computed from the events."""
+class Cursor:
+    """A list of recorded events and a position in it: first, last, next, previous. Moving changes
+    nothing but the position. Shared by a Flow simulation's :class:`Playback` (Runner's semantic
+    events) and a Function simulation's line playback (:mod:`divide.run.functrace`, PHP lines);
+    the two never share their events."""
 
-    def __init__(self, traces: list[Trace], doc: fm.FlowDoc) -> None:
-        self.doc = doc
-        self.events: list[Event] = [Event(n, e) for n, t in enumerate(traces, 1) for e in t.events]
-        self.segments = len(traces)
-        self.cursor = 0
+    events: list
+    cursor: int = 0
 
-    # ------------------------------------------------------------ moving
     def __len__(self) -> int:
         return len(self.events)
 
@@ -735,6 +736,17 @@ class Playback:
 
     def next(self, step: int = 1) -> bool:
         return self.go(self.cursor + step)
+
+
+class Playback(Cursor):
+    """A simulation's events, every segment one after the other, and a cursor over them. Moving the
+    cursor changes nothing but the cursor: what the board shows is computed from the events."""
+
+    def __init__(self, traces: list[Trace], doc: fm.FlowDoc) -> None:
+        self.doc = doc
+        self.events: list[Event] = [Event(n, e) for n, t in enumerate(traces, 1) for e in t.events]
+        self.segments = len(traces)
+        self.cursor = 0
 
     def _is_step(self, event: Event) -> bool:
         return event.type in ("step.start", "step.skip") and event.depth == 0

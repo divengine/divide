@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-23 19:27+0000\n"
+"POT-Creation-Date: 2026-11-23 20:57+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -6276,3 +6276,24 @@ msgstr "{where}: throws es un mensaje"
 #, python-brace-format
 msgid "{where}: unknown {keys}"
 msgstr "{where}: desconocido {keys}"
+
+msgid "A Function trace has a list of events"
+msgstr "Una traza de Function tiene una lista de eventos"
+
+msgid "A Function trace is a JSON object"
+msgstr "Una traza de Function es un objeto JSON"
+
+#, python-brace-format
+msgid "Function trace version {version}: this divide reads version {known}"
+msgstr "Traza de Function versión {version}: este divide lee la versión {known}"
+
+#, python-brace-format
+msgid "Not a Function trace ({protocol})"
+msgstr "No es una traza de Function ({protocol})"
+
+msgid "The line trace needs Xdebug: install it, or set its extension file in Options"
+msgstr "La traza de líneas necesita Xdebug: instálalo o indica su archivo de extensión en Opciones"
+
+#, python-brace-format
+msgid "{name} cannot be read: {error}"
+msgstr "No se puede leer {name}: {error}"

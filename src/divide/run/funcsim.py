@@ -22,7 +22,8 @@ Design: ``docs/function-simulation.md``.
 - Scenarios: ``.div/function-simulations/<module>/<name>.<scenario>.json`` in the project,
   versioned and shareable (the folder is not ignored).
 
-The line trace (``divide.function-trace``) is a separate deliverable and not here.
+The PHP line trace (``divide.function-trace`` v1) of the same run is :mod:`divide.run.functrace`
+(``simulate(..., trace=True)``).
 """
 
 from __future__ import annotations
@@ -77,7 +78,8 @@ TRIPWIRE_LABEL = _('Tripwire, not a sandbox: some direct side effects fail, othe
 TRUST_TEXT = _('A Mock Simulation runs this project\'s PHP code for real: the Function, its file\'s top-level code '
                'and, with autoload, the project\'s classes. Only the declared dependencies are replaced. It is not '
                'a sandbox and not side-effect-free. Allow Mock Simulations in this project?')
-STATUSES = ("returned", "exception", "fatal", "exit", "stale", "missing", "timeout", "stopped", "crashed", "protocol")
+STATUSES = ("returned", "exception", "fatal", "exit", "stale", "missing", "timeout", "line_limit", "stopped",
+            "crashed", "protocol")
 
 
 class SimulationError(Exception):
@@ -314,6 +316,9 @@ class Simulation:
     messages: list[ScriptMessage] = field(default_factory=list)
     leaked: str = ""  # what reached the process's stdout around the output buffer (fwrite(STDOUT))
     memory_peak: int | None = None
+    traced: bool = False  # run under the line trace (divide.run.functrace)
+    events: list[dict] = field(default_factory=list)  # the trace's line events
+    truncated: bool = False  # the trace stopped at limits.lines
 
     @property
     def ok(self) -> bool:
@@ -361,7 +366,7 @@ def tripwire_ini(request: SimRequest, work: Path) -> list[str]:
             "-d", "allow_url_include=0"]
 
 
-def _ini(request: SimRequest, work: Path, tripwire: bool) -> list[str]:
+def process_ini(request: SimRequest, work: Path, tripwire: bool) -> list[str]:
     return ["-d", f"memory_limit={MEMORY}", "-d", "max_execution_time=0",
             *(tripwire_ini(request, work) if tripwire else [])]
 
@@ -389,7 +394,8 @@ def read_result(stdout: str, nonce: str) -> tuple[dict | None, str]:
     return (data if isinstance(data, dict) else None), head
 
 
-def _fill(sim: Simulation, data: dict) -> None:
+def fill(sim: Simulation, data: dict) -> None:
+    """The harness's result into ``sim`` (a status already set, such as timeout or line_limit, is kept)."""
     if sim.status in ("", "crashed"):
         status = str(data.get("status") or "protocol")
         sim.status = status if status in STATUSES else "protocol"
@@ -408,13 +414,9 @@ def _fill(sim: Simulation, data: dict) -> None:
     sim.memory_peak = data.get("memory_peak") if isinstance(data.get("memory_peak"), int) else None
 
 
-async def simulate(request: SimRequest, *, tripwire: bool = False, php: str | None = None,
-                   ini: list[str] | None = None, on_data=None) -> Simulation:
-    """Run the request's Function with its doubles, in a PHP process of its own, in the project's folder.
-
-    Refused (:class:`SimulationError`, no process started) when the scenario is wrong, the project is
-    not trusted, or PHP is missing. ``limits.seconds`` kills the process (``timeout``); cancelling the
-    task kills it too, then re-raises."""
+def preflight(request: SimRequest, php: str | None, tripwire: bool = False) -> Simulation:
+    """What every run checks before PHP starts: :class:`SimulationError` if it may not run; a
+    Simulation with no status if it may, or ``missing`` (no file: nothing to start)."""
     if problems := check_scenario(request.scenario):
         raise ScenarioError(problems)
     if not trusted(request.project):
@@ -425,6 +427,24 @@ async def simulate(request: SimRequest, *, tripwire: bool = False, php: str | No
     if request.file is None:
         sim.status = "missing"
         sim.message = _('{name}: no such Function file').format(name=request.qualified)
+    return sim
+
+
+async def simulate(request: SimRequest, *, tripwire: bool = False, php: str | None = None,
+                   ini: list[str] | None = None, on_data=None, trace: bool = False,
+                   xdebug: str | None = None) -> Simulation:
+    """Run the request's Function with its doubles, in a PHP process of its own, in the project's folder.
+
+    Refused (:class:`SimulationError`, no process started) when the scenario is wrong, the project is
+    not trusted, or PHP is missing. ``limits.seconds`` kills the process (``timeout``); cancelling the
+    task kills it too, then re-raises. ``trace``: the same run, with the PHP line trace
+    (:func:`divide.run.functrace.record`; needs Xdebug: php.ini, else the ``xdebug`` extension file)."""
+    if trace:
+        from divide.run import functrace
+
+        return await functrace.record(request, tripwire=tripwire, php=php, ini=ini, xdebug=xdebug)
+    sim = preflight(request, php, tripwire)
+    if sim.status:
         return sim
     # Resolved: on Windows the temp folder can be an 8.3 short path, which open_basedir would refuse.
     work = Path(tempfile.mkdtemp(prefix="divide-funcsim-")).resolve()
@@ -432,7 +452,7 @@ async def simulate(request: SimRequest, *, tripwire: bool = False, php: str | No
     try:
         request_file, nonce = prepare(request, work)
         job = asyncio.ensure_future(run_script(HARNESS, [str(request_file)], cwd=request.project, php=php,
-                                               ini=[*(ini or []), *_ini(request, work, tripwire)],
+                                               ini=[*(ini or []), *process_ini(request, work, tripwire)],
                                                on_data=on_data, limit=RESULT_BYTES))
         try:
             script = await asyncio.wait_for(asyncio.shield(job), limit(request.scenario, "seconds"))
@@ -450,7 +470,7 @@ async def simulate(request: SimRequest, *, tripwire: bool = False, php: str | No
         sim.messages = php_messages(script.errors)
         data, sim.leaked = read_result(script.output, nonce)
         if data is not None:
-            _fill(sim, data)
+            fill(sim, data)
         elif not sim.status:
             sim.status = "crashed"
             if len(script.output.encode()) >= RESULT_BYTES:
