@@ -19,7 +19,8 @@ Keys on the board (the help's Flow Designer page lists them):
   description); Ins adds a Step, B a Block; Del deletes;
 - C and J connect: choose the target on the board, Enter sets it, Del removes it, Esc cancels;
 - Ctrl+Up/Down moves a Step in its Block, Ctrl+Left/Right moves the Block (Alt too);
-- Ctrl+D the Flow window's tree, Ctrl+T the code, Alt+F9 checks, Ctrl+F9 runs, F2 saves.
+- S simulates the Flow with test doubles (:mod:`divide.ui.simulate`); Ctrl+F9 runs it for real;
+- Ctrl+D the Flow window's tree, Ctrl+T the code, Alt+F9 checks, F2 saves.
 """
 
 from __future__ import annotations
@@ -132,6 +133,7 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
         Binding("x", "context", "Context", show=False),
         Binding("f", "functions", "Functions", show=False),
         Binding("t", "test_function", "Test Function", show=False),
+        Binding("s", "simulate", "Simulate", show=False),
         Binding("ctrl+up,alt+up", "reorder(0, -1)", "Step up", show=False),
         Binding("ctrl+down,alt+down", "reorder(0, 1)", "Step down", show=False),
         Binding("ctrl+left,alt+left", "reorder(-1, 0)", "Block left", show=False),
@@ -288,6 +290,10 @@ class FlowBoard(ScrollView, TVViewMixin, can_focus=True):
     def action_connect(self, key: str) -> None:
         self._window().connect(key)
 
+    def action_simulate(self) -> None:
+        window = self._window()
+        self.app.run_worker(self.app.simulate_command(window.source), group="simulate", exclusive=True)  # type: ignore[attr-defined]
+
     def action_test_function(self) -> None:
         self._window().test_step_function()
 
@@ -401,7 +407,7 @@ class BlockDialog(_Dialog):
 class FlowDesignWindow(FlowView):
     """The board | the selected item, with Runner's verdict below (under the board when narrow)."""
 
-    HINT = _('Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T code')
+    HINT = _('Enter edit · Ins Step · B Block · C/J connect · F functions · T test · S simulate · ^T code')
     DEFAULT_CSS = """
     FlowDesignWindow .design-main { layout: horizontal; width: 1fr; height: 1fr; }
     FlowDesignWindow .design-left { width: 1fr; height: 1fr; }

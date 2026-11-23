@@ -1,0 +1,15 @@
+{
+    "description": "Large order: pauses for approval, the first charge is declined, the retry is captured",
+    "doubles": {
+        "orders:validate_order": {"returns": true},
+        "billing:compute_total": {"returns": 1250.0},
+        "needs_approval": {"returns": true},
+        "billing:charge_card": {"sequence": [
+            {"returns": {"status": "declined"}, "context": {"last_charge": "declined"}},
+            {"returns": {"status": "captured"}, "context": {"last_charge": "captured"}}
+        ]},
+        "payment_declined": {"sequence": [{"returns": true}, {"returns": false}]},
+        "send_receipt": {"returns": "receipt sent"}
+    },
+    "budget": {"steps": 200, "transfers": 50, "seconds": 5}
+}

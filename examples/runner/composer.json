@@ -4,6 +4,6 @@
     "type": "project",
     "license": "GPL-3.0-or-later",
     "require": {
-        "divengine/runner": "^0.2"
+        "divengine/runner": "^0.3"
     }
 }

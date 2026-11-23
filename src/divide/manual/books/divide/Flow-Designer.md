@@ -110,6 +110,7 @@ At 80 columns the board shows two or three lanes and the inspector goes under it
 | **X** | Edit the selected Step's context, as a tree or as JSON |
 | **F** | The Flow's Modules and Functions ([[Flow Functions]]) |
 | **T** | Test the Step's Function: run or debug it with a JSON context ([[Flow Functions]]) |
+| **S** | Simulate the Flow with test doubles, its Functions never run ([[Flow Simulation]]) |
 | **Ins** | A new Step after the selected one (on a lane's title: at the end of the Block) |
 | **B** | A new Block after the selected one's, with its first Step |
 | **Del** | Delete the Step or Block (asked first), or remove the chosen connection |
@@ -118,7 +119,7 @@ At 80 columns the board shows two or three lanes and the inspector goes under it
 | **Ctrl+D** | The Flow window's tree, at the same item |
 | **Ctrl+T** | The YAML, at the selected Step or Block |
 | **Alt+F9** | Check the Flow, with the problems in Messages |
-| **Ctrl+F9** | Run the Flow ([[Running Flows]]) |
+| **Ctrl+F9** | Run the Flow for real, its Functions with their side effects ([[Running Flows]]) |
 | **F2** | Save |
 | **Ctrl+Z / Ctrl+Y** | Undo / redo, the code's |
 

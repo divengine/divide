@@ -20,6 +20,7 @@
 * [[Estructura del Flow|Flow Structure]]
 * [[Diseñador de Flows|Flow Designer]]
 * [[Functions del Flow|Flow Functions]]
+* [[Simulación de Flows|Flow Simulation]]
 * [[Depurar PHP|Debugging PHP]]
 * [[Servidor web|Web Server]]
 * [[Archivos de datos|Data Files]]

@@ -110,6 +110,7 @@ A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. L
 | **X** | Editar el contexto del Step elegido, como árbol o como JSON |
 | **F** | Los Modules y las Functions del Flow ([[Functions del Flow|Flow Functions]]) |
 | **T** | Probar la Function del Step: ejecutarla o depurarla con un contexto JSON ([[Functions del Flow|Flow Functions]]) |
+| **S** | Simular el Flow con dobles, sin ejecutar sus Functions ([[Simulación de Flows\|Flow Simulation]]) |
 | **Ins** | Un Step nuevo después del elegido (en el título de un carril: al final del Block) |
 | **B** | Un Block nuevo después del de lo elegido, con su primer Step |
 | **Supr** | Borrar el Step o el Block (se pregunta antes), o quitar la conexión escogida |
@@ -118,7 +119,7 @@ A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. L
 | **Ctrl+D** | El árbol de la ventana Flow, en el mismo elemento |
 | **Ctrl+T** | El YAML, en el Step o Block elegido |
 | **Alt+F9** | Verificar el Flow, con los problemas en Mensajes |
-| **Ctrl+F9** | Ejecutar el Flow ([[Ejecutar Flows|Running Flows]]) |
+| **Ctrl+F9** | Ejecutar el Flow de verdad, sus Functions con sus efectos ([[Ejecutar Flows|Running Flows]]) |
 | **F2** | Guardar |
 | **Ctrl+Z / Ctrl+Y** | Deshacer / rehacer, los del código |
 

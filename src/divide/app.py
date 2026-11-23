@@ -130,6 +130,7 @@ from divide.ui.flow import FlowMixin
 from divide.ui.flowboard import FlowDesignWindow
 from divide.ui.flowfunctions import FlowFunctionsMixin, FunctionsWindow
 from divide.ui.functest import FunctionTestMixin
+from divide.ui.simulate import SimulationMixin, SimulationWindow
 from divide.ui.flowmodel import FlowModelMixin, FlowView, FlowWindow
 from divide.ui.composer import ComposerLogWindow, ComposerMixin, ComposerWindow
 from divide.ui.forge import CM_FORGE, ForgeMixin
@@ -186,6 +187,7 @@ CM_DATA_TREE = Command.USER + 14
 CM_FLOW_MODEL = Command.USER + 206  # Run > Flow structure: the Flow window (Ctrl+T on a Flow)
 CM_FLOW_DESIGN = Command.USER + 207  # Run > Flow designer: the board (Ctrl+D in a Flow view)
 CM_FLOW_FUNCTIONS = Command.USER + 220  # Run > Flow functions: the Modules and Functions (F on the board)
+CM_FLOW_SIMULATE = Command.USER + 233  # Run > Simulate Flow with doubles (Shift+F9, S on the board)
 CM_CHECK = Command.USER + 15
 CM_NEXT_ERROR = Command.USER + 16
 CM_PREV_ERROR = Command.USER + 17
@@ -226,6 +228,9 @@ CM_FIND_IN_FILES = Command.USER + 95  # Shift+F2
 CM_HELP_FULLTEXT = Command.USER + 96  # Help > Search
 CM_LANGUAGE = Command.USER + 97  # Options > Language
 DEBUG_STEPS = {CM_TRACE: "step_into", CM_STEP: "step_over", CM_STEP_OUT: "step_out", CM_GOTO_CURSOR: "cursor"}
+# the debugger's keys in the Simulation window: through the playback, never running anything
+PLAYBACK_KEYS = {CM_TRACE: ("event", 1), CM_STEP: ("step", 1), CM_STEP_OUT: ("step", -1), CM_GOTO_CURSOR: ("goto", 0),
+                 CM_RESET: ("reset", 0)}
 # The dialector's local menu
 CM_DX_EDIT = Command.USER + 70
 CM_DX_RESTORE = Command.USER + 71
@@ -250,6 +255,7 @@ COMMANDS: dict[str, int] = {
     "DATA_TREE": CM_DATA_TREE,
     "FLOW_MODEL": CM_FLOW_MODEL,
     "FLOW_FUNCTIONS": CM_FLOW_FUNCTIONS,
+    "FLOW_SIMULATE": CM_FLOW_SIMULATE,
     "CHECK": CM_CHECK,
     "NEXT_ERROR": CM_NEXT_ERROR,
     "PREV_ERROR": CM_PREV_ERROR,
@@ -365,7 +371,7 @@ class HintStatusLine(StatusLine):
         self._show()
 
 
-class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowModelMixin, FlowFunctionsMixin, FunctionTestMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
+class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowModelMixin, FlowFunctionsMixin, FunctionTestMixin, SimulationMixin, WebMixin, McpMixin, ComposerMixin, GitMixin, ForgeMixin, TraceMixin, OutlineMixin, PaletteMixin, FindInFilesMixin, LanguageMixin, Application):
     TITLE = "divide"
     ENABLE_COMMAND_PALETTE = False  # Textual's, on Ctrl+P: divide has its own (divide.ui.palette)
     CSS = """
@@ -401,6 +407,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
         Binding("alt+p,ctrl+shift+p", "command('COMMANDS')", "Commands", show=False, priority=True),
         Binding("shift+f2,ctrl+shift+f", "command('FIND_IN_FILES')", "Find in files", show=False, priority=True),
         Binding("ctrl+f9", "command('RENDER')", "Run", show=False, priority=True),
+        Binding("shift+f9", "command('FLOW_SIMULATE')", "Simulate Flow", show=False, priority=True),
         # The debugger, as in Turbo Pascal.
         Binding("f7", "command('TRACE')", "Trace into", show=False, priority=True),
         Binding("f8", "command('STEP')", "Step over", show=False, priority=True),
@@ -446,6 +453,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
         self._flow_init()
         self._flowmodel_init()
         self._functest_init()
+        self._simulation_init()
         self.folder: Path | None = root.resolve() if root is not None else None  # the open folder: the project
         self._loose_dir: Path | None = None  # without a folder: where the last file opened is
         self.initial_files = files
@@ -540,6 +548,7 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                     MenuItem(_('~F~low structure'), CM_FLOW_MODEL, "Ctrl+T"),
                     MenuItem(_('F~l~ow designer'), CM_FLOW_DESIGN, "Ctrl+D"),
                     MenuItem(_('Flow funct~i~ons'), CM_FLOW_FUNCTIONS),
+                    MenuItem(_('Simulate Flow with dou~b~les...'), CM_FLOW_SIMULATE, "Shift+F9"),
                 ),
                 SubMenu(
                     _('~D~ebug'),
@@ -969,9 +978,10 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         # F7 / F8 / F4 / Shift+F8 are the debugger's in PHP; in a template F7 traces its render;
-        # elsewhere the key goes on (the trace window's own F7 / F8).
+        # in the Simulation window they move through the playback; elsewhere the key goes on (the trace
+        # window's own F7 / F8).
         if action == "command" and parameters and parameters[0] in DEBUG_KEYS:
-            return self.debug_keys_active() or (parameters[0] == "TRACE" and self.traces_template())
+            return self.debug_keys_active() or self.wants_simulation() or (parameters[0] == "TRACE" and self.traces_template())
         if action == "command" and parameters and parameters[0] == "GOTO_INCLUDE":
             # in a commit's (or a pull request's) dialog Ctrl+Enter commits: the dialog takes the key
             return not isinstance(self.focused, MessageView) and not hasattr(getattr(self.screen, "dialog", None), "action_commit")
@@ -1130,6 +1140,12 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
                     await self.search_dialog(editor, replace=False)
                 else:
                     await self.search(editor, first=False)
+            case _ if command == CM_RENDER and self.wants_simulation():
+                await self.simulation_ctrl_f9()
+            case _ if command in PLAYBACK_KEYS and self.wants_simulation():
+                self.playback_command(*PLAYBACK_KEYS[command])
+            case _ if command == CM_FLOW_SIMULATE:
+                await self.simulate_command()
             case _ if command == CM_RENDER:
                 if self.wants_run():
                     await self.run_script_command()
@@ -2051,6 +2067,8 @@ class Divide(ColorsMixin, ExplorerMixin, LspMixin, RunMixin, FlowMixin, FlowMode
             return "Div-Setup"
         if isinstance(active, JsonTreeWindow):
             return "Data-Files"
+        if isinstance(active, SimulationWindow):
+            return "Flow-Simulation"
         if isinstance(active, FlowDesignWindow):
             return "Flow-Designer"
         if isinstance(active, FlowWindow):

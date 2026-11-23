@@ -24,6 +24,7 @@ import json
 import shutil
 from pathlib import Path
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Static
@@ -32,7 +33,7 @@ from textual_vision.constants import Command
 from textual_vision.input_line import InputLine
 from textual_vision.label import Label
 
-from divide import config
+from divide import config, themes
 from divide.run.flowfunctions import load_settings, run_options
 from divide.run.flow import (FlowRun, Runner, Saved, check_context_file, check_context_text, default_checkpoint, find_runner,
                              is_managed, prepare_checkpoint, read_saved, run_flow)
@@ -44,6 +45,8 @@ from divide.ui.windows import MessageItem
 CM_FLOW_RESUME = Command.USER + 204
 CM_FLOW_BROWSE = Command.USER + 205
 HIDDEN_KEYS = ("_runner_logs",)  # shown apart, as the log
+REAL_RUN = _("REAL RUN: the Flow's Functions run, with their side effects (files, databases, network). "
+             "To try it without them: Run > Simulate Flow with doubles (Shift+F9).")
 
 VERDICTS = {  # state -> (verdict word, ok)
     "done": (_("Done"), True),
@@ -122,10 +125,11 @@ class FlowDialog(_Dialog):
     """The initial context, function root and saved context of a Flow; Run or Resume."""
 
     DEFAULT_CSS = """
-    FlowDialog { width: 78; height: 16; }
+    FlowDialog { width: 78; height: 19; }
     FlowDialog InputLine { width: 1fr; }
     FlowDialog .flow-about { color: $text; background: $surface; height: 1; }
     FlowDialog .flow-saved { color: $text; background: $surface; height: 2; margin-top: 1; }
+    FlowDialog .flow-real { height: 2; margin-top: 1; }
     """
 
     def __init__(self, flow: Path, project: Path, runner: Runner, settings: dict, default_root: str = "") -> None:
@@ -158,6 +162,7 @@ class FlowDialog(_Dialog):
         yield Label(_('~S~ave context to, --save-context (empty: not saved)'), link=self.save_input)
         yield self.save_input
         yield self.saved_line
+        yield Static(Text(REAL_RUN, style=themes.current().token_styles()["diag.warning"]), classes="flow-real")
         with Horizontal(classes="dlg-buttons"):
             yield self.run_button
             yield self.resume_button

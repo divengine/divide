@@ -6,6 +6,6 @@
     "require": {
         "php": "^8.1",
         "divengine/div": "^6.1",
-        "divengine/runner": "^0.2"
+        "divengine/runner": "^0.3"
     }
 }

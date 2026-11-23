@@ -1,0 +1,11 @@
+{
+    "order": {
+        "id": "A-1001",
+        "buyer": "buyer@example.com",
+        "card_token": "tok_visa_4242",
+        "items": [
+            {"sku": "desk", "price": 1100.0, "qty": 1},
+            {"sku": "lamp", "price": 75.0, "qty": 2}
+        ]
+    }
+}

@@ -953,6 +953,73 @@ async def functest():
 
 
 @shot
+async def simulation():
+    """Flow Simulation on examples/runner (composer install there, Runner 0.3 or newer): the Simulate
+    Flow dialog from S on the board, the playback at the jump that retries the stock, the pause at the
+    end of the first segment, the resumed segment, and the window at 80 columns."""
+    import tempfile as _tempfile
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flowboard import FlowDesignWindow
+    from divide.ui.progress import ProgressScreen
+    from divide.ui.simulate import SimulationDialog, SimulationWindow
+    example = ROOT / "examples" / "runner"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        print("skipped simulation: composer install in examples/runner")
+        return
+    with _tempfile.TemporaryDirectory() as work:
+        root = Path(work) / "runner"
+        shutil.copytree(example, root, ignore=shutil.ignore_patterns("composer.lock", "vendor", "simulation", "runner"))
+        (root / "vendor").symlink_to(example / "vendor", target_is_directory=True)
+        flow = root / "flows" / "fulfil.yml"
+        for size, name in (((120, 34), "flow-simulation"), ((80, 24), "flow-simulation-80")):
+            app = Divide(root, [flow])
+            async with app.run_test(size=size) as pilot:
+                await settle(pilot, 10)
+                app.run_command(CM_FLOW_DESIGN)
+                await until(pilot, lambda: type(app.active_window()) is FlowDesignWindow, tries=200)
+                designer = app.active_window()
+                await until(pilot, lambda: id(designer.source.editor) in app._flow_checks, tries=300)
+                designer.board_view.focus()
+                await settle(pilot, 4)
+                await pilot.press("s")
+                await until(pilot, lambda: isinstance(getattr(app.screen, "dialog", None), SimulationDialog), tries=200)
+                app.screen.dialog.context_input.data = '{"items": [{"price": 10, "qty": 2}, {"price": 5, "qty": 1}]}'
+                await settle(pilot, 6)
+                if name == "flow-simulation":
+                    save(app, "flow-simulation-dialog")
+                await pilot.press("enter")
+                await until(pilot, lambda: isinstance(app.active_window(), SimulationWindow), tries=400)
+                await until(pilot, lambda: not isinstance(app.screen, ProgressScreen) or not app.screen.dialog.running, tries=200)
+                if isinstance(app.screen, ProgressScreen):
+                    await pilot.press("escape")
+                win = app.active_window()
+                win.board_view.focus()
+                await settle(pilot, 6)
+                if name == "flow-simulation-80":
+                    win.playback.go(next(i for i, e in enumerate(win.playback.events) if e.type == "condition" and e.step == "short"))
+                    win.refresh_view()
+                    await settle(pilot, 6)
+                    save(app, name)
+                    continue
+                save(app, "flow-simulation-paused")
+                jump = next(i for i, e in enumerate(win.playback.events) if e.type == "jump")
+                win.playback.go(jump)
+                win.refresh_view()
+                await settle(pilot, 6)
+                save(app, "flow-simulation")
+                await pilot.press("ctrl+f9")
+                await until(pilot, lambda: win.playback.segments == 2, tries=400)
+                if isinstance(app.screen, ProgressScreen):
+                    await until(pilot, lambda: not app.screen.dialog.running, tries=200)
+                    await pilot.press("escape")
+                back = next(i for i, e in enumerate(win.playback.events) if e.segment == 2 and e.type == "call.return")
+                win.playback.go(back)
+                win.refresh_view()
+                await settle(pilot, 6)
+                save(app, "flow-simulation-resumed")
+
+
+@shot
 async def trace():
     """Debug > Render trace on the shop: the row where Div decides the condition."""
     from divide.ui.tracer import TraceWindow

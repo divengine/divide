@@ -5382,8 +5382,8 @@ msgstr "Con~t~exto: un objeto JSON, pasado por referencia (Editar... como árbol
 msgid "Debug Function"
 msgstr "Depurar Function"
 
-msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T code"
-msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · ^T código"
+#~ msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T code"
+#~ msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · ^T código"
 
 msgid "Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
 msgstr "Enter abrir · ^F9 probar · Ins Function · Shift+Ins Module · Alt+F10 menú · ^R recargar"
@@ -5578,3 +5578,572 @@ msgstr "~P~robar..."
 #, python-brace-format
 msgid "── test of {name}: {state} ──"
 msgstr "── prueba de {name}: {state} ──"
+
+#, python-brace-format
+msgid " at {where}"
+msgstr " en {where}"
+
+msgid " · Ctrl+F9 resumes it"
+msgstr " · Ctrl+F9 la reanuda"
+
+msgid " · unsaved changes simulated as they are, the file not saved"
+msgstr " · los cambios sin guardar se simulan tal cual, sin guardar el archivo"
+
+msgid "\"doubles\" must be a JSON object: function -> double"
+msgstr "\"doubles\" debe ser un objeto JSON: función -> doble"
+
+#, python-brace-format
+msgid "\"{key}\" must be a JSON object"
+msgstr "\"{key}\" debe ser un objeto JSON"
+
+msgid "(kept under the Step id)"
+msgstr "(se guarda bajo el id del Step)"
+
+msgid "(message left out of the trace: Keep messages to see it)"
+msgstr "(mensaje fuera de la traza: Conservar mensajes para verlo)"
+
+msgid ", some values cut by the trace"
+msgstr ", algunos valores recortados por la traza"
+
+msgid "; values marked $type were cut or redacted by the trace"
+msgstr "; los valores marcados con $type los recortó u ocultó la traza"
+
+#, python-brace-format
+msgid "A double has an empty name, or spaces around it: \"{name}\""
+msgstr "Un doble tiene el nombre vacío o con espacios alrededor: \"{name}\""
+
+#, python-brace-format
+msgid "Add a double for {names} to {path}? The rest of the file stays as it is."
+msgstr "¿Añadir un doble para {names} a {path}? El resto del archivo queda como está."
+
+msgid "CALL"
+msgstr "CALL"
+
+#, python-brace-format
+msgid "Card {name}"
+msgstr "Tarjeta {name}"
+
+#, python-brace-format
+msgid "Changed since this simulation started: {what}. Resume simulates the snapshot it started with, as the board shows it, not the changes (Shift+F9 starts a new simulation for them). Resume?"
+msgstr "Ha cambiado desde que empezó esta simulación: {what}. Reanudar simula la copia con la que empezó, como la muestra el tablero, no los cambios (Shift+F9 empieza una simulación nueva con ellos). ¿Reanudar?"
+
+#, python-brace-format
+msgid "Changed since: {what}. The board is the Flow as simulated."
+msgstr "Ha cambiado: {what}. El tablero es el Flow tal como se simuló."
+
+msgid "Choose a Step on the board"
+msgstr "Elige un Step en el tablero"
+
+#, python-brace-format
+msgid "Context at event {n} of {total} ({type}{where}), rebuilt from the trace{approx}."
+msgstr "Contexto en el evento {n} de {total} ({type}{where}), reconstruido a partir de la traza{approx}."
+
+msgid "Context changes"
+msgstr "Cambios del contexto"
+
+msgid "Ctrl+F9 resumes it, simulated, in a new process."
+msgstr "Ctrl+F9 la reanuda, simulada, en un proceso nuevo."
+
+#, python-brace-format
+msgid "Double {name}"
+msgstr "Doble {name}"
+
+msgid "Doubles"
+msgstr "Dobles"
+
+#, python-brace-format
+msgid "Doubles of {flow}: edit what each function returns"
+msgstr "Dobles de {flow}: edita lo que devuelve cada función"
+
+msgid "Edit doubles"
+msgstr "Editar dobles"
+
+msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · S simulate · ^T code"
+msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · S simular · ^T código"
+
+#, python-brace-format
+msgid "Error: {cls} {message}"
+msgstr "Error: {cls} {message}"
+
+msgid "Events"
+msgstr "Eventos"
+
+msgid "Every function has a double: ready to simulate."
+msgstr "Todas las funciones tienen un doble: lista para simular."
+
+msgid "F4 or Enter: its next event"
+msgstr "F4 o Enter: su siguiente evento"
+
+msgid "F7/F8 event/Step · Shift back · F4 to Step · F follow · X context · ^F9 resume"
+msgstr "F7/F8 evento/Step · Shift atrás · F4 al Step · F seguir · X contexto · ^F9 reanudar"
+
+#, python-brace-format
+msgid "Flow {flow} · Runner {version}{snapshot}"
+msgstr "Flow {flow} · Runner {version}{snapshot}"
+
+msgid "Give the doubles file (Edit doubles writes one with a double for each function)."
+msgstr "Indica el archivo de dobles (Editar dobles escribe uno con un doble para cada función)."
+
+msgid "JUMP"
+msgstr "JUMP"
+
+msgid "Logs of this Step"
+msgstr "Log de este Step"
+
+#, python-brace-format
+msgid "No double for {name} ({kinds}, used by {places})"
+msgstr "No hay doble para {name} ({kinds}, la usa {places})"
+
+#, python-brace-format
+msgid "No double yet for: {names}"
+msgstr "Todavía sin doble: {names}"
+
+#, python-brace-format
+msgid "No file {path}: Edit doubles writes one with a double for each function."
+msgstr "No hay archivo {path}: Editar dobles escribe uno con un doble para cada función."
+
+#, python-brace-format
+msgid "Not a Runner trace (protocol {protocol!r}; divide reads {expected})."
+msgstr "No es una traza de Runner (protocolo {protocol!r}; divide lee {expected})."
+
+#, python-brace-format
+msgid "PHP took more than {seconds:.0f}s and was killed; the simulation stays where it was."
+msgstr "PHP tardó más de {seconds:.0f}s y se terminó; la simulación sigue donde estaba."
+
+msgid "REAL RUN: the Flow's Functions run, with their side effects (files, databases, network). To try it without them: Run > Simulate Flow with doubles (Shift+F9)."
+msgstr "EJECUCIÓN REAL: se ejecutan las Functions del Flow, con sus efectos (archivos, bases de datos, red). Para probarlo sin ellos: Ejecutar > Simular Flow con dobles (Shift+F9)."
+
+msgid "RETURN"
+msgstr "RETURN"
+
+msgid "Resume simulation"
+msgstr "Reanudar simulación"
+
+msgid "Resuming simulation"
+msgstr "Reanudando la simulación"
+
+#, python-brace-format
+msgid "Runner exited {code} but its trace says {state}."
+msgstr "Runner terminó con {code} pero su traza dice {state}."
+
+msgid "Runner is not installed in this project."
+msgstr "Runner no está instalado en este proyecto."
+
+msgid "Runner recorded no events."
+msgstr "Runner no registró ningún evento."
+
+#, python-brace-format
+msgid "Runner trace version {version}: this divide reads version {expected}. Update divide, or use the Runner it supports."
+msgstr "Traza de Runner versión {version}: este divide lee la versión {expected}. Actualiza divide, o usa el Runner que admite."
+
+msgid "Runner wrote no trace."
+msgstr "Runner no escribió ninguna traza."
+
+#, python-brace-format
+msgid "Runner {version} is installed; Simulation needs 0.3.0 or newer, the first that simulates a Flow (composer require divengine/runner:^0.3). Nothing was run. Run (Ctrl+F9) still runs the Flow for real."
+msgstr "Está instalado Runner {version}; la simulación necesita la 0.3.0 o posterior, la primera que simula un Flow (composer require divengine/runner:^0.3). No se ejecutó nada. Ejecutar (Ctrl+F9) sigue ejecutando el Flow de verdad."
+
+msgid "SIMULATION"
+msgstr "SIMULACIÓN"
+
+msgid "SIMULATION: Runner answers every condition and activity from the doubles; no Function of the project is loaded or called. Not a sandbox: the YAML and the doubles are trusted inputs."
+msgstr "SIMULACIÓN: Runner responde cada condition y activity con los dobles; no se carga ni se llama ninguna Function del proyecto. No es un sandbox: el YAML y los dobles son entradas de confianza."
+
+msgid "Said"
+msgstr "Dicho"
+
+msgid "Save the Flow once (F2): a simulation names its file."
+msgstr "Guarda el Flow una vez (F2): una simulación nombra su archivo."
+
+msgid "Segment"
+msgstr "Segmento"
+
+#, python-brace-format
+msgid "Segment {n}: {state} (exit code {code})."
+msgstr "Segmento {n}: {state} (código de salida {code})."
+
+#, python-brace-format
+msgid "Segment {n}: {state}{where}"
+msgstr "Segmento {n}: {state}{where}"
+
+msgid "Simulate Flow"
+msgstr "Simular Flow"
+
+msgid "Simulate Flow with dou~b~les..."
+msgstr "Simular Flow con do~b~les..."
+
+msgid "Simulating Flow"
+msgstr "Simulando el Flow"
+
+#, python-brace-format
+msgid "Simulation of {name}, segment {n}: {state}{hint}"
+msgstr "Simulación de {name}, segmento {n}: {state}{hint}"
+
+#, python-brace-format
+msgid "Simulation: {name}"
+msgstr "Simulación: {name}"
+
+msgid "Stopped by you: PHP was killed; the simulation stays where it was."
+msgstr "Detenida por ti: PHP se terminó; la simulación sigue donde estaba."
+
+msgid "The Simulation window has one view: the board as simulated"
+msgstr "La ventana de simulación tiene una vista: el tablero tal como se simuló"
+
+#, python-brace-format
+msgid "The YAML has errors; fix them first (Ctrl+T):\n{error}"
+msgstr "El YAML tiene errores; corrígelos primero (Ctrl+T):\n{error}"
+
+msgid "The board follows the current Step"
+msgstr "El tablero sigue al Step actual"
+
+msgid "The board stays where you move"
+msgstr "El tablero se queda donde te muevas"
+
+#, python-brace-format
+msgid "The budget {key} must be a positive number"
+msgstr "El presupuesto {key} debe ser un número positivo"
+
+#, python-brace-format
+msgid "The doubles file must be a JSON object: {\"doubles\": {...}}"
+msgstr "El archivo de dobles debe ser un objeto JSON: {\"doubles\": {...}}"
+
+#, python-brace-format
+msgid "The doubles file {name} cannot be read: {error}"
+msgstr "No se puede leer el archivo de dobles {name}: {error}"
+
+#, python-brace-format
+msgid "The doubles file {name} is not JSON: {error}"
+msgstr "El archivo de dobles {name} no es JSON: {error}"
+
+msgid "The session file of this simulation is gone: it cannot be resumed."
+msgstr "El archivo de sesión de esta simulación ya no está: no se puede reanudar."
+
+msgid "The simulation would not be complete, nothing was run:\n"
+msgstr "La simulación no estaría completa, no se ejecutó nada:\n"
+
+msgid "The trace has no list of events."
+msgstr "La traza no tiene una lista de eventos."
+
+msgid "The trace is not a JSON object."
+msgstr "La traza no es un objeto JSON."
+
+#, python-brace-format
+msgid "The trace {name} cannot be read: {error}"
+msgstr "No se puede leer la traza {name}: {error}"
+
+#, python-brace-format
+msgid "The trace {name} is not JSON: {error}"
+msgstr "La traza {name} no es JSON: {error}"
+
+#, python-brace-format
+msgid "This simulation ended {state}: there is nothing to resume."
+msgstr "Esta simulación terminó en {state}: no hay nada que reanudar."
+
+#, python-brace-format
+msgid "Trace cut ({reason}): {dropped} event(s) dropped, {compacted} compacted."
+msgstr "Traza recortada ({reason}): {dropped} evento(s) descartado(s), {compacted} compactado(s)."
+
+#, python-brace-format
+msgid "Unknown budget {key} (Runner takes steps, transfers, seconds)"
+msgstr "Presupuesto desconocido {key} (Runner admite steps, transfers, seconds)"
+
+#, python-brace-format
+msgid "Unknown key(s) in the doubles file: {keys} (Runner takes {allowed})"
+msgstr "Clave(s) desconocida(s) en el archivo de dobles: {keys} (Runner admite {allowed})"
+
+#, python-brace-format
+msgid "Written: {path}: edit what the doubles return, then Shift+F9"
+msgstr "Escrito: {path}: edita lo que devuelven los dobles, y después Shift+F9"
+
+#, python-brace-format
+msgid "a Flow used as an activity starts at {block}"
+msgstr "un Flow usado como activity empieza en {block}"
+
+msgid "a call returned here"
+msgstr "aquí volvió un call"
+
+#, python-brace-format
+msgid "a jump left the called Blocks: {frames}"
+msgstr "un jump salió de los Blocks llamados: {frames}"
+
+msgid "already run before the pause"
+msgstr "ya se ejecutó antes de la pausa"
+
+msgid "before the target of a call or jump"
+msgstr "antes del destino de un call o jump"
+
+msgid "budget"
+msgstr "presupuesto"
+
+msgid "called"
+msgstr "llamado"
+
+msgid "calls"
+msgstr "calls"
+
+msgid "context"
+msgstr "contexto"
+
+msgid "current"
+msgstr "actual"
+
+msgid "cut"
+msgstr "recorte"
+
+msgid "depth"
+msgstr "nivel"
+
+msgid "double"
+msgstr "doble"
+
+msgid "dropped"
+msgstr "descartado"
+
+#, python-brace-format
+msgid "event {n}/{total} · segment {s}/{segments}"
+msgstr "evento {n}/{total} · segmento {s}/{segments}"
+
+msgid "failed"
+msgstr "falló"
+
+msgid "false: the rest of the Step is skipped"
+msgstr "false: se salta el resto del Step"
+
+#, python-brace-format
+msgid "flow {flow}, calls {calls}"
+msgstr "flow {flow}, calls {calls}"
+
+msgid "from the initial context"
+msgstr "desde el contexto inicial"
+
+#, python-brace-format
+msgid "from {block} to {step}"
+msgstr "de {block} a {step}"
+
+msgid "function"
+msgstr "función"
+
+msgid "goes on there, does not return"
+msgstr "sigue allí, no vuelve"
+
+msgid "in a call"
+msgstr "en un call"
+
+msgid "it asked to pause: a pause follows"
+msgstr "pidió pausar: sigue una pausa"
+
+msgid "its call returns into it after the resume"
+msgstr "su call vuelve a él tras la reanudación"
+
+msgid "its condition was false: the rest of the Step was skipped"
+msgstr "su condition fue false: se saltó el resto del Step"
+
+msgid "jumped to"
+msgstr "destino de un jump"
+
+msgid "missing"
+msgstr "falta"
+
+msgid "nested"
+msgstr "anidado"
+
+#, python-brace-format
+msgid "nested Flow: {names}"
+msgstr "Flow anidado: {names}"
+
+#, python-brace-format
+msgid "no double for {function}: the run fails"
+msgstr "no hay doble para {function}: la ejecución falla"
+
+msgid "no events"
+msgstr "sin eventos"
+
+msgid "not following"
+msgstr "sin seguir"
+
+msgid "not reached"
+msgstr "no alcanzado"
+
+msgid "pause"
+msgstr "pausa"
+
+msgid "paused"
+msgstr "en pausa"
+
+msgid "reason"
+msgstr "motivo"
+
+msgid "result"
+msgstr "resultado"
+
+msgid "resumed from its checkpoint"
+msgstr "reanudada desde su checkpoint"
+
+msgid "resumed here"
+msgstr "reanudado aquí"
+
+msgid "returns here when the Block ends"
+msgstr "vuelve aquí cuando termina el Block"
+
+msgid "scope"
+msgstr "ámbito"
+
+#, python-brace-format
+msgid "simulated context · event {n}"
+msgstr "contexto simulado · evento {n}"
+
+msgid "skipped"
+msgstr "saltado"
+
+msgid "start"
+msgstr "inicio"
+
+msgid "state"
+msgstr "estado"
+
+msgid "step"
+msgstr "step"
+
+msgid "the Flow starts here"
+msgstr "aquí empieza el Flow"
+
+msgid "the Flow's YAML"
+msgstr "el YAML del Flow"
+
+msgid "the Step's context mapping, merged"
+msgstr "el context del Step, mezclado"
+
+msgid "the doubles file"
+msgstr "el archivo de dobles"
+
+msgid "the frame came from the checkpoint"
+msgstr "el frame venía del checkpoint"
+
+#, python-brace-format
+msgid "the nested Flow ends: {outcome}"
+msgstr "termina el Flow anidado: {outcome}"
+
+msgid "the run pauses after this Step"
+msgstr "la ejecución se pausa tras este Step"
+
+msgid "true: the Step goes on"
+msgstr "true: el Step continúa"
+
+msgid "underlined: taken"
+msgstr "subrayado: recorrido"
+
+msgid "visited"
+msgstr "visitado"
+
+msgid "waiting for its call"
+msgstr "esperando su call"
+
+msgid "where"
+msgstr "dónde"
+
+#, python-brace-format
+msgid "{budget}: {used} of {limit}"
+msgstr "{budget}: {used} de {limit}"
+
+#, python-brace-format
+msgid "{function}, call {n}: {outcome}"
+msgstr "{function}, llamada {n}: {outcome}"
+
+#, python-brace-format
+msgid "{label}: \"{module}\" is not a Module name"
+msgstr "{label}: \"{module}\" no es un nombre de Module"
+
+#, python-brace-format
+msgid "{label}: a condition cannot pause (Runner has no condition pause)"
+msgstr "{label}: una condition no puede pausar (Runner no tiene pausa de condition)"
+
+#, python-brace-format
+msgid "{label}: a double is a JSON object"
+msgstr "{label}: un doble es un objeto JSON"
+
+#, python-brace-format
+msgid "{label}: an outcome is a JSON object"
+msgstr "{label}: un resultado es un objeto JSON"
+
+#, python-brace-format
+msgid "{label}: context is a JSON object, with returns or pause"
+msgstr "{label}: context es un objeto JSON, con returns o pause"
+
+#, python-brace-format
+msgid "{label}: context keys starting with _ are Runner's: {keys}"
+msgstr "{label}: las claves de context que empiezan por _ son de Runner: {keys}"
+
+#, python-brace-format
+msgid "{label}: flow takes only a .yml or .yaml path"
+msgstr "{label}: flow solo admite una ruta .yml o .yaml"
+
+#, python-brace-format
+msgid "{label}: needs exactly one of returns, throws, pause (and optionally context)"
+msgstr "{label}: necesita exactamente uno de returns, throws, pause (y, si quieres, context)"
+
+#, python-brace-format
+msgid "{label}: needs exactly one of returns, throws, pause, sequence, flow"
+msgstr "{label}: necesita exactamente uno de returns, throws, pause, sequence, flow"
+
+#, python-brace-format
+msgid "{label}: no nested Flow {path} (relative to the project)"
+msgstr "{label}: no hay Flow anidado {path} (relativo al proyecto)"
+
+#, python-brace-format
+msgid "{label}: pause must be true"
+msgstr "{label}: pause debe ser true"
+
+#, python-brace-format
+msgid "{label}: sequence is a non-empty list of outcomes"
+msgstr "{label}: sequence es una lista no vacía de resultados"
+
+#, python-brace-format
+msgid "{label}: throws takes an error message"
+msgstr "{label}: throws lleva un mensaje de error"
+
+#, python-brace-format
+msgid "{name} has a double but the Flow does not use it"
+msgstr "{name} tiene un doble pero el Flow no la usa"
+
+#, python-brace-format
+msgid "{name} is not a simulation of divide"
+msgstr "{name} no es una simulación de divide"
+
+#, python-brace-format
+msgid "{name} is not a simulation of divide: {error}"
+msgstr "{name} no es una simulación de divide: {error}"
+
+#, python-brace-format
+msgid "{n} function(s) of the Flow need a double."
+msgstr "{n} función(es) del Flow necesitan un doble."
+
+#, python-brace-format
+msgid "{n} key(s){approx} · X shows it"
+msgstr "{n} clave(s){approx} · X lo muestra"
+
+#, python-brace-format
+msgid "{n} time(s) run · {state}"
+msgstr "{n} ejecución(es) · {state}"
+
+#, python-brace-format
+msgid "{reason}: {dropped} dropped, {compacted} compacted"
+msgstr "{reason}: {dropped} descartados, {compacted} compactados"
+
+#, python-brace-format
+msgid "{step} was not reached in this simulation"
+msgstr "{step} no se alcanzó en esta simulación"
+
+msgid "~D~oubles: a JSON file in Runner's --simulate format"
+msgstr "~D~obles: un archivo JSON en el formato --simulate de Runner"
+
+msgid "~E~dit doubles"
+msgstr "Edi~t~ar dobles"
+
+msgid "~K~eep error and log messages in the trace (--trace-messages)"
+msgstr "~C~onservar mensajes de error y log en la traza (--trace-messages)"
+
+msgid "~R~eplay"
+msgstr "~R~eproducir"
+
+msgid "~S~imulate"
+msgstr "~S~imular"

@@ -20,6 +20,7 @@
 * [[Flow Structure]]
 * [[Flow Designer]]
 * [[Flow Functions]]
+* [[Flow Simulation]]
 * [[Debugging PHP]]
 * [[Web Server]]
 * [[Data Files]]

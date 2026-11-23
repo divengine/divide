@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-22 18:29+0000\n"
+"POT-Creation-Date: 2026-11-23 09:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,13 +54,26 @@ msgstr ""
 msgid " JUMP goes on  "
 msgstr ""
 
+#, python-brace-format
+msgid " at {where}"
+msgstr ""
+
 msgid " on the same line"
+msgstr ""
+
+msgid " · Ctrl+F9 resumes it"
 msgstr ""
 
 msgid " · Ctrl+F9, Resume continues it"
 msgstr ""
 
 msgid " · no upstream"
+msgstr ""
+
+msgid " · unsaved changes simulated as they are, the file not saved"
+msgstr ""
+
+msgid "\"doubles\" must be a JSON object: function -> double"
 msgstr ""
 
 #, python-brace-format
@@ -76,6 +89,10 @@ msgid "\"modules\": {name} needs a folder (a string)"
 msgstr ""
 
 msgid "\"root\" must be a path (a string)"
+msgstr ""
+
+#, python-brace-format
+msgid "\"{key}\" must be a JSON object"
 msgstr ""
 
 #, python-brace-format
@@ -118,6 +135,12 @@ msgid "(cannot be read: see PHP's lint)"
 msgstr ""
 
 msgid "(its folder is made too)"
+msgstr ""
+
+msgid "(kept under the Step id)"
+msgstr ""
+
+msgid "(message left out of the trace: Keep messages to see it)"
 msgstr ""
 
 msgid "(no Functions here)"
@@ -192,6 +215,9 @@ msgid_plural "({n} files changed and not committed stay here)."
 msgstr[0] ""
 msgstr[1] ""
 
+msgid ", some values cut by the trace"
+msgstr ""
+
 #, python-brace-format
 msgid ", {name} is as it was"
 msgstr ""
@@ -215,6 +241,9 @@ msgid "... {count} more lines not shown"
 msgstr ""
 
 msgid "16 colours (Windows console)"
+msgstr ""
+
+msgid "; values marked $type were cut or redacted by the trace"
 msgstr ""
 
 #, python-brace-format
@@ -288,6 +317,10 @@ msgid ""
 "$context[<the Step's id>]; here no Step ran, so it is only returned."
 msgstr ""
 
+#, python-brace-format
+msgid "A double has an empty name, or spaces around it: \"{name}\""
+msgstr ""
+
 msgid "A folder cannot go inside itself."
 msgstr ""
 
@@ -324,6 +357,10 @@ msgid "Abort the ~m~erge"
 msgstr ""
 
 msgid "About"
+msgstr ""
+
+#, python-brace-format
+msgid "Add a double for {names} to {path}? The rest of the file stays as it is."
 msgstr ""
 
 msgid "Add a package"
@@ -504,6 +541,9 @@ msgstr ""
 msgid "Bright: in composer.json · dim: came with them"
 msgstr ""
 
+msgid "CALL"
+msgstr ""
+
 msgid "Call stack"
 msgstr ""
 
@@ -589,6 +629,10 @@ msgstr ""
 msgid "Capsules and sub-parsers"
 msgstr ""
 
+#, python-brace-format
+msgid "Card {name}"
+msgstr ""
+
 msgid "Carriage return"
 msgstr ""
 
@@ -597,6 +641,17 @@ msgstr ""
 
 #, python-brace-format
 msgid "Changed on disk, not read again (they have unsaved changes): {files}"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Changed since this simulation started: {what}. Resume simulates the "
+"snapshot it started with, as the board shows it, not the changes "
+"(Shift+F9 starts a new simulation for them). Resume?"
+msgstr ""
+
+#, python-brace-format
+msgid "Changed since: {what}. The board is the Flow as simulated."
 msgstr ""
 
 msgid "Changed: Preview again (Enter)"
@@ -613,6 +668,9 @@ msgid "Changes put aside: Git > Branches > Stashes brings them back"
 msgstr ""
 
 msgid "Checking"
+msgstr ""
+
+msgid "Choose a Step on the board"
 msgstr ""
 
 msgid "Choose a Step with an activity or a condition"
@@ -743,7 +801,16 @@ msgstr ""
 msgid "Context after:"
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"Context at event {n} of {total} ({type}{where}), rebuilt from the "
+"trace{approx}."
+msgstr ""
+
 msgid "Context before:"
+msgstr ""
+
+msgid "Context changes"
 msgstr ""
 
 msgid "Context changes (by reference)"
@@ -809,6 +876,9 @@ msgid "Count words"
 msgstr ""
 
 msgid "Co~m~plete"
+msgstr ""
+
+msgid "Ctrl+F9 resumes it, simulated, in a new process."
 msgstr ""
 
 msgid "Ctrl+F9, Resume: continues the Flow from the saved context."
@@ -1134,6 +1204,17 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+#, python-brace-format
+msgid "Double {name}"
+msgstr ""
+
+msgid "Doubles"
+msgstr ""
+
+#, python-brace-format
+msgid "Doubles of {flow}: edit what each function returns"
+msgstr ""
+
 msgid "Draft"
 msgstr ""
 
@@ -1154,6 +1235,9 @@ msgid "ENTRY"
 msgstr ""
 
 msgid "Edit as ~J~SON"
+msgstr ""
+
+msgid "Edit doubles"
 msgstr ""
 
 msgid "Edit item"
@@ -1201,8 +1285,8 @@ msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, examp
 msgstr ""
 
 msgid ""
-"Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T"
-" code"
+"Enter edit · Ins Step · B Block · C/J connect · F functions · T test · S "
+"simulate · ^T code"
 msgstr ""
 
 msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
@@ -1285,6 +1369,10 @@ msgid "Error: "
 msgstr ""
 
 #, python-brace-format
+msgid "Error: {cls} {message}"
+msgstr ""
+
+#, python-brace-format
 msgid "Error: {error}"
 msgstr ""
 
@@ -1298,6 +1386,12 @@ msgid "Escapes for characters that are hard to write, and the teaser break"
 msgstr ""
 
 msgid "Evaluate"
+msgstr ""
+
+msgid "Events"
+msgstr ""
+
+msgid "Every function has a double: ready to simulate."
 msgstr ""
 
 msgid "Every package is up to date"
@@ -1340,7 +1434,15 @@ msgstr ""
 msgid "E~x~it"
 msgstr ""
 
+msgid "F4 or Enter: its next event"
+msgstr ""
+
 msgid "F7 trace · F8 step · F4 to cursor · Ctrl+F9 run · Ctrl+F2 reset"
+msgstr ""
+
+msgid ""
+"F7/F8 event/Step · Shift back · F4 to Step · F follow · X context · ^F9 "
+"resume"
 msgstr ""
 
 msgid "F8 step · F7 into · Shift+F8 out · Space before/after"
@@ -1450,6 +1552,10 @@ msgstr ""
 msgid "Flow {flow} · Runner {version}"
 msgstr ""
 
+#, python-brace-format
+msgid "Flow {flow} · Runner {version}{snapshot}"
+msgstr ""
+
 msgid "Format (sprintf)"
 msgstr ""
 
@@ -1521,6 +1627,11 @@ msgstr ""
 
 #, python-brace-format
 msgid "Git: history of {file}"
+msgstr ""
+
+msgid ""
+"Give the doubles file (Edit doubles writes one with a double for each "
+"function)."
 msgstr ""
 
 msgid "Go to File"
@@ -1691,6 +1802,9 @@ msgstr ""
 msgid "JSON ok"
 msgstr ""
 
+msgid "JUMP"
+msgstr ""
+
 msgid "JavaScript code"
 msgstr ""
 
@@ -1741,6 +1855,9 @@ msgid "Location begin"
 msgstr ""
 
 msgid "Location end"
+msgstr ""
+
+msgid "Logs of this Step"
 msgstr ""
 
 msgid "Look for ~n~ewer versions"
@@ -1959,10 +2076,22 @@ msgstr ""
 msgid "No composer.json: Alt+F10 > New composer.json"
 msgstr ""
 
+#, python-brace-format
+msgid "No double for {name} ({kinds}, used by {places})"
+msgstr ""
+
+#, python-brace-format
+msgid "No double yet for: {names}"
+msgstr ""
+
 msgid "No file matches"
 msgstr ""
 
 msgid "No file opened yet"
+msgstr ""
+
+#, python-brace-format
+msgid "No file {path}: Edit doubles writes one with a double for each function."
 msgstr ""
 
 msgid "No folder is open. Open one now?"
@@ -2012,6 +2141,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Not JSON: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "Not a Runner trace (protocol {protocol!r}; divide reads {expected})."
 msgstr ""
 
 msgid "Not a line number"
@@ -2245,6 +2378,12 @@ msgid ""
 " modifiers. A project's only once you trust it."
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"PHP took more than {seconds:.0f}s and was killed; the simulation stays "
+"where it was."
+msgstr ""
+
 msgid "PHP · no errors"
 msgstr ""
 
@@ -2391,6 +2530,15 @@ msgstr ""
 msgid "READ-ONLY"
 msgstr ""
 
+msgid ""
+"REAL RUN: the Flow's Functions run, with their side effects (files, "
+"databases, network). To try it without them: Run > Simulate Flow with "
+"doubles (Shift+F9)."
+msgstr ""
+
+msgid "RETURN"
+msgstr ""
+
 msgid "Raw URL encode"
 msgstr ""
 
@@ -2527,7 +2675,13 @@ msgstr ""
 msgid "Result: {state}"
 msgstr ""
 
+msgid "Resume simulation"
+msgstr ""
+
 msgid "Resuming Flow"
+msgstr ""
+
+msgid "Resuming simulation"
 msgstr ""
 
 msgid "Res~u~me"
@@ -2568,10 +2722,17 @@ msgstr ""
 msgid "Runner did not answer in {s}s"
 msgstr ""
 
+#, python-brace-format
+msgid "Runner exited {code} but its trace says {state}."
+msgstr ""
+
 msgid "Runner gave no answer"
 msgstr ""
 
 msgid "Runner is not installed"
+msgstr ""
+
+msgid "Runner is not installed in this project."
 msgstr ""
 
 #, python-brace-format
@@ -2581,6 +2742,25 @@ msgid ""
 msgstr ""
 
 msgid "Runner is not installed: composer require divengine/runner"
+msgstr ""
+
+msgid "Runner recorded no events."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Runner trace version {version}: this divide reads version {expected}. "
+"Update divide, or use the Runner it supports."
+msgstr ""
+
+msgid "Runner wrote no trace."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"Runner {version} is installed; Simulation needs 0.3.0 or newer, the first"
+" that simulates a Flow (composer require divengine/runner:^0.3). Nothing "
+"was run. Run (Ctrl+F9) still runs the Flow for real."
 msgstr ""
 
 #, python-brace-format
@@ -2619,6 +2799,18 @@ msgstr ""
 msgid "Runtime (require)"
 msgstr ""
 
+msgid "SIMULATION"
+msgstr ""
+
+msgid ""
+"SIMULATION: Runner answers every condition and activity from the doubles;"
+" no Function of the project is loaded or called. Not a sandbox: the YAML "
+"and the doubles are trusted inputs."
+msgstr ""
+
+msgid "Said"
+msgstr ""
+
 msgid "Save a~l~l"
 msgstr ""
 
@@ -2639,6 +2831,9 @@ msgid "Save scenario"
 msgstr ""
 
 msgid "Save the Flow first (F2): Runner runs files."
+msgstr ""
+
+msgid "Save the Flow once (F2): a simulation names its file."
 msgstr ""
 
 msgid "Save the script first (F2): PHP runs files."
@@ -2695,6 +2890,17 @@ msgstr ""
 msgid "Searching Packagist for {query}..."
 msgstr ""
 
+msgid "Segment"
+msgstr ""
+
+#, python-brace-format
+msgid "Segment {n}: {state} (exit code {code})."
+msgstr ""
+
+#, python-brace-format
+msgid "Segment {n}: {state}{where}"
+msgstr ""
+
 msgid "Select ~a~ll"
 msgstr ""
 
@@ -2727,7 +2933,24 @@ msgstr ""
 msgid "Simple replacement"
 msgstr ""
 
+msgid "Simulate Flow"
+msgstr ""
+
+msgid "Simulate Flow with dou~b~les..."
+msgstr ""
+
 msgid "Simulated request"
+msgstr ""
+
+msgid "Simulating Flow"
+msgstr ""
+
+#, python-brace-format
+msgid "Simulation of {name}, segment {n}: {state}{hint}"
+msgstr ""
+
+#, python-brace-format
+msgid "Simulation: {name}"
 msgstr ""
 
 msgid "Some files are in conflict: solve them first."
@@ -2822,6 +3045,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "Stopped by you: PHP was killed; nothing was saved{kept}."
+msgstr ""
+
+msgid "Stopped by you: PHP was killed; the simulation stays where it was."
 msgstr ""
 
 msgid "String length"
@@ -2945,6 +3171,9 @@ msgstr ""
 msgid "The MCP server stopped: {error}"
 msgstr ""
 
+msgid "The Simulation window has one view: the board as simulated"
+msgstr ""
+
 msgid "The Step was not changed."
 msgstr ""
 
@@ -2971,10 +3200,26 @@ msgid ""
 "edits nothing."
 msgstr ""
 
+#, python-brace-format
+msgid ""
+"The YAML has errors; fix them first (Ctrl+T):\n"
+"{error}"
+msgstr ""
+
 msgid "The address is host:port, as in 127.0.0.1:8000 or localhost:8080."
 msgstr ""
 
 msgid "The blocks are written another way: add the Block in the code (Ctrl+T)"
+msgstr ""
+
+msgid "The board follows the current Step"
+msgstr ""
+
+msgid "The board stays where you move"
+msgstr ""
+
+#, python-brace-format
+msgid "The budget {key} must be a positive number"
 msgstr ""
 
 msgid ""
@@ -3056,6 +3301,18 @@ msgid ""
 msgstr ""
 
 msgid "The documentation inside divide, one book each."
+msgstr ""
+
+#, python-brace-format
+msgid "The doubles file must be a JSON object: {\"doubles\": {...}}"
+msgstr ""
+
+#, python-brace-format
+msgid "The doubles file {name} cannot be read: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "The doubles file {name} is not JSON: {error}"
 msgstr ""
 
 #, python-brace-format
@@ -3175,7 +3432,27 @@ msgstr ""
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr ""
 
+msgid "The session file of this simulation is gone: it cannot be resumed."
+msgstr ""
+
+msgid "The simulation would not be complete, nothing was run:\n"
+msgstr ""
+
 msgid "The time limit is a number of seconds, up to 3600"
+msgstr ""
+
+msgid "The trace has no list of events."
+msgstr ""
+
+msgid "The trace is not a JSON object."
+msgstr ""
+
+#, python-brace-format
+msgid "The trace {name} cannot be read: {error}"
+msgstr ""
+
+#, python-brace-format
+msgid "The trace {name} is not JSON: {error}"
 msgstr ""
 
 #, python-brace-format
@@ -3211,6 +3488,10 @@ msgid "This line is not committed yet"
 msgstr ""
 
 #, python-brace-format
+msgid "This simulation ended {state}: there is nothing to resume."
+msgstr ""
+
+#, python-brace-format
 msgid "This terminal cannot be handed over: {exc}"
 msgstr ""
 
@@ -3235,6 +3516,10 @@ msgid "Toggle ~b~reakpoint"
 msgstr ""
 
 msgid "Trace"
+msgstr ""
+
+#, python-brace-format
+msgid "Trace cut ({reason}): {dropped} event(s) dropped, {compacted} compacted."
 msgstr ""
 
 msgid "Tracing"
@@ -3319,6 +3604,14 @@ msgid "T~y~pe"
 msgstr ""
 
 msgid "URL encode"
+msgstr ""
+
+#, python-brace-format
+msgid "Unknown budget {key} (Runner takes steps, transfers, seconds)"
+msgstr ""
+
+#, python-brace-format
+msgid "Unknown key(s) in the doubles file: {keys} (Runner takes {allowed})"
 msgstr ""
 
 msgid "Unsaved: F2 saves (Div sees the saved file)"
@@ -3456,6 +3749,10 @@ msgstr ""
 msgid "Written {where}, indented as the other Blocks, with its first Step."
 msgstr ""
 
+#, python-brace-format
+msgid "Written: {path}: edit what the doubles return, then Shift+F9"
+msgstr ""
+
 msgid "Xdebug"
 msgstr ""
 
@@ -3512,9 +3809,16 @@ msgstr ""
 msgid "a .dialect file or an object of DIV_TAG_ tags is expected"
 msgstr ""
 
+#, python-brace-format
+msgid "a Flow used as an activity starts at {block}"
+msgstr ""
+
 msgid ""
 "a Module: the context's _modules, .div/runner.json \"modules\", "
 "<root>/<module>"
+msgstr ""
+
+msgid "a call returned here"
 msgstr ""
 
 msgid "a closure"
@@ -3529,6 +3833,10 @@ msgstr ""
 msgid ""
 "a folder to open as the project (. for this one) and/or files to open; "
 "with nothing, the Welcome window"
+msgstr ""
+
+#, python-brace-format
+msgid "a jump left the called Blocks: {frames}"
 msgstr ""
 
 msgid "a list of PHP function names is expected"
@@ -3573,6 +3881,9 @@ msgstr ""
 
 #, python-brace-format
 msgid "after {step}"
+msgstr ""
+
+msgid "already run before the pause"
 msgstr ""
 
 msgid "an alias"
@@ -3620,10 +3931,22 @@ msgstr ""
 msgid "bad escape \\{nxt}"
 msgstr ""
 
+msgid "before the target of a call or jump"
+msgstr ""
+
 msgid "blocks"
 msgstr ""
 
 msgid "break the loop"
+msgstr ""
+
+msgid "budget"
+msgstr ""
+
+msgid "called"
+msgstr ""
+
+msgid "calls"
 msgstr ""
 
 msgid "can only insert into an object or an array"
@@ -3673,12 +3996,21 @@ msgstr ""
 msgid "condition {shown} is never closed with {close}"
 msgstr ""
 
+msgid "context"
+msgstr ""
+
 #, python-brace-format
 msgid "could not ask Div: {exc}"
 msgstr ""
 
 #, python-brace-format
 msgid "count, max, min, sum and avg over a list: {$sum:products-price}"
+msgstr ""
+
+msgid "current"
+msgstr ""
+
+msgid "cut"
 msgstr ""
 
 #, python-brace-format
@@ -3699,6 +4031,9 @@ msgid "default: {value}"
 msgstr ""
 
 msgid "dependency"
+msgstr ""
+
+msgid "depth"
 msgstr ""
 
 #, python-brace-format
@@ -3731,6 +4066,12 @@ msgstr ""
 msgid "done"
 msgstr ""
 
+msgid "double"
+msgstr ""
+
+msgid "dropped"
+msgstr ""
+
 msgid "each default is {{\"search\": ..., \"replace\": ...}}"
 msgstr ""
 
@@ -3744,6 +4085,10 @@ msgid "entered"
 msgstr ""
 
 msgid "error"
+msgstr ""
+
+#, python-brace-format
+msgid "event {n}/{total} · segment {s}/{segments}"
 msgstr ""
 
 msgid "exception"
@@ -3763,7 +4108,13 @@ msgstr ""
 msgid "expected ':' after the key {key!r}"
 msgstr ""
 
+msgid "failed"
+msgstr ""
+
 msgid "false, the Step would skip the rest"
+msgstr ""
+
+msgid "false: the rest of the Step is skipped"
 msgstr ""
 
 msgid "fatal error"
@@ -3773,6 +4124,10 @@ msgid "file"
 msgstr ""
 
 msgid "first Block: the Flow starts here"
+msgstr ""
+
+#, python-brace-format
+msgid "flow {flow}, calls {calls}"
 msgstr ""
 
 msgid "folder"
@@ -3791,8 +4146,18 @@ msgstr ""
 msgid "from no Step"
 msgstr ""
 
+msgid "from the initial context"
+msgstr ""
+
+#, python-brace-format
+msgid "from {block} to {step}"
+msgstr ""
+
 #, python-brace-format
 msgid "from {step}"
+msgstr ""
+
+msgid "function"
 msgstr ""
 
 msgid "functions"
@@ -3821,6 +4186,9 @@ msgstr ""
 msgid "goes on from there, does not return"
 msgstr ""
 
+msgid "goes on there, does not return"
+msgstr ""
+
 msgid "if var is false"
 msgstr ""
 
@@ -3836,11 +4204,17 @@ msgstr ""
 msgid "imports"
 msgstr ""
 
+msgid "in a call"
+msgstr ""
+
 #, python-brace-format
 msgid "is not JSON: {error}"
 msgstr ""
 
 msgid "is not a JSON object"
+msgstr ""
+
+msgid "it asked to pause: a pause follows"
 msgstr ""
 
 msgid "it did not start"
@@ -3866,8 +4240,17 @@ msgstr ""
 msgid "item of {name}"
 msgstr ""
 
+msgid "its call returns into it after the resume"
+msgstr ""
+
+msgid "its condition was false: the rest of the Step was skipped"
+msgstr ""
+
 #, python-brace-format
 msgid "its first parameter is {type}: Runner passes the context, an array"
+msgstr ""
+
+msgid "jumped to"
 msgstr ""
 
 #, python-brace-format
@@ -3899,6 +4282,9 @@ msgstr ""
 msgid "merge commit"
 msgstr ""
 
+msgid "missing"
+msgstr ""
+
 msgid "module"
 msgstr ""
 
@@ -3906,10 +4292,24 @@ msgstr ""
 msgid "more than {n} folders open"
 msgstr ""
 
+msgid "nested"
+msgstr ""
+
+#, python-brace-format
+msgid "nested Flow: {names}"
+msgstr ""
+
 msgid "no Step"
 msgstr ""
 
 msgid "no data"
+msgstr ""
+
+#, python-brace-format
+msgid "no double for {function}: the run fails"
+msgstr ""
+
+msgid "no events"
 msgstr ""
 
 msgid "no language server (Options > Language servers)"
@@ -3943,6 +4343,9 @@ msgstr ""
 msgid "not connected"
 msgstr ""
 
+msgid "not following"
+msgstr ""
+
 msgid "not found"
 msgstr ""
 
@@ -3950,6 +4353,9 @@ msgid "not in the Flow"
 msgstr ""
 
 msgid "not installed"
+msgstr ""
+
+msgid "not reached"
 msgstr ""
 
 msgid "not run"
@@ -3968,6 +4374,12 @@ msgid "number format"
 msgstr ""
 
 msgid "on its first line"
+msgstr ""
+
+msgid "pause"
+msgstr ""
+
+msgid "paused"
 msgstr ""
 
 #, python-brace-format
@@ -4023,6 +4435,9 @@ msgstr ""
 msgid "ran, but the context was not saved"
 msgstr ""
 
+msgid "reason"
+msgstr ""
+
 msgid "rebased"
 msgstr ""
 
@@ -4032,6 +4447,15 @@ msgstr ""
 msgid "require"
 msgstr ""
 
+msgid "result"
+msgstr ""
+
+msgid "resumed from its checkpoint"
+msgstr ""
+
+msgid "resumed here"
+msgstr ""
+
 msgid "resumed, "
 msgstr ""
 
@@ -4039,6 +4463,9 @@ msgid "returned"
 msgstr ""
 
 msgid "returns"
+msgstr ""
+
+msgid "returns here when the Block ends"
 msgstr ""
 
 msgid "returns here when the called Block ends"
@@ -4060,6 +4487,9 @@ msgstr ""
 msgid "says paused but has no _flow_state to resume from"
 msgstr ""
 
+msgid "scope"
+msgstr ""
+
 msgid ""
 "serve divide's MCP server for the project folder over stdio, without the "
 "interface (in divide, Options > MCP server serves it over HTTP)"
@@ -4068,7 +4498,17 @@ msgstr ""
 msgid "settings"
 msgstr ""
 
+#, python-brace-format
+msgid "simulated context · event {n}"
+msgstr ""
+
+msgid "skipped"
+msgstr ""
+
 msgid "squashed into one commit"
+msgstr ""
+
+msgid "start"
 msgstr ""
 
 msgid "starts at"
@@ -4079,6 +4519,12 @@ msgid "starts at {block}"
 msgstr ""
 
 msgid "starts the project with Div in it."
+msgstr ""
+
+msgid "state"
+msgstr ""
+
+msgid "step"
 msgstr ""
 
 msgid "steps"
@@ -4103,7 +4549,16 @@ msgstr ""
 msgid "the Blocks would read back as {got}"
 msgstr ""
 
+msgid "the Flow starts here"
+msgstr ""
+
+msgid "the Flow's YAML"
+msgstr ""
+
 msgid "the Flow's id or description would change"
+msgstr ""
+
+msgid "the Step's context mapping, merged"
 msgstr ""
 
 #, python-brace-format
@@ -4127,16 +4582,26 @@ msgid ""
 " templates)"
 msgstr ""
 
+msgid "the doubles file"
+msgstr ""
+
 msgid "the engine is a .php file (autoload.php or div.php)"
 msgstr ""
 
 msgid "the file returns nothing: Runner needs it to return a callable"
 msgstr ""
 
+msgid "the frame came from the checkpoint"
+msgstr ""
+
 msgid "the name is vendor/project, in lowercase: divengine/shop"
 msgstr ""
 
 msgid "the namespace is like App\\ or Acme\\Shop\\"
+msgstr ""
+
+#, python-brace-format
+msgid "the nested Flow ends: {outcome}"
 msgstr ""
 
 msgid "the project"
@@ -4157,6 +4622,9 @@ msgid "the root"
 msgstr ""
 
 msgid "the root has no parent"
+msgstr ""
+
+msgid "the run pauses after this Step"
 msgstr ""
 
 msgid "the server stopped on its own"
@@ -4183,6 +4651,9 @@ msgstr ""
 msgid "true, the Step would run its activity, call or jump"
 msgstr ""
 
+msgid "true: the Step goes on"
+msgstr ""
+
 msgid "txt block"
 msgstr ""
 
@@ -4190,6 +4661,9 @@ msgid "type to filter"
 msgstr ""
 
 msgid "typed"
+msgstr ""
+
+msgid "underlined: taken"
 msgstr ""
 
 msgid "unexpected end, expected ']'"
@@ -4251,6 +4725,15 @@ msgid "vendor is Composer's folder, not a Module"
 msgstr ""
 
 msgid "vendor/ is missing: Alt+F10 > Install"
+msgstr ""
+
+msgid "visited"
+msgstr ""
+
+msgid "waiting for its call"
+msgstr ""
+
+msgid "where"
 msgstr ""
 
 msgid "written in the setup"
@@ -4331,6 +4814,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{branch} merged into {current}"
+msgstr ""
+
+#, python-brace-format
+msgid "{budget}: {used} of {limit}"
 msgstr ""
 
 #, python-brace-format
@@ -4422,6 +4909,10 @@ msgid "{frag} closes a loop that was never opened ({loop_b}{key}{loop_bs})"
 msgstr ""
 
 #, python-brace-format
+msgid "{function}, call {n}: {outcome}"
+msgstr ""
+
+#, python-brace-format
 msgid ""
 "{host} is not GitHub: for Gitea, Forgejo or Codeberg install tea "
 "(https://gitea.com/gitea/tea) and sign in with tea login add."
@@ -4486,6 +4977,60 @@ msgid "{key}: not a setting of {file} (root, modules)"
 msgstr ""
 
 #, python-brace-format
+msgid "{label}: \"{module}\" is not a Module name"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: a condition cannot pause (Runner has no condition pause)"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: a double is a JSON object"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: an outcome is a JSON object"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: context is a JSON object, with returns or pause"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: context keys starting with _ are Runner's: {keys}"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: flow takes only a .yml or .yaml path"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"{label}: needs exactly one of returns, throws, pause (and optionally "
+"context)"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: needs exactly one of returns, throws, pause, sequence, flow"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: no nested Flow {path} (relative to the project)"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: pause must be true"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: sequence is a non-empty list of outcomes"
+msgstr ""
+
+#, python-brace-format
+msgid "{label}: throws takes an error message"
+msgstr ""
+
+#, python-brace-format
 msgid "{module}:{name} is not a Runner reference ({what})"
 msgstr ""
 
@@ -4520,6 +5065,10 @@ msgid "{name} exists. Replace it?"
 msgstr ""
 
 #, python-brace-format
+msgid "{name} has a double but the Flow does not use it"
+msgstr ""
+
+#, python-brace-format
 msgid "{name} has been modified. Save?"
 msgstr ""
 
@@ -4543,6 +5092,14 @@ msgstr ""
 
 #, python-brace-format
 msgid "{name} is not a context of a finished run."
+msgstr ""
+
+#, python-brace-format
+msgid "{name} is not a simulation of divide"
+msgstr ""
+
+#, python-brace-format
+msgid "{name} is not a simulation of divide: {error}"
 msgstr ""
 
 #, python-brace-format
@@ -4646,10 +5203,18 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, python-brace-format
+msgid "{n} function(s) of the Flow need a double."
+msgstr ""
+
+#, python-brace-format
 msgid "{n} item"
 msgid_plural "{n} items"
 msgstr[0] ""
 msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} key(s){approx} · X shows it"
+msgstr ""
 
 #, python-brace-format
 msgid "{n} match"
@@ -4690,6 +5255,10 @@ msgid "{n} tag change:"
 msgid_plural "{n} tags change:"
 msgstr[0] ""
 msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} time(s) run · {state}"
+msgstr ""
 
 #, python-brace-format
 msgid "{n} warning"
@@ -4761,6 +5330,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{program} was not found"
+msgstr ""
+
+#, python-brace-format
+msgid "{reason}: {dropped} dropped, {compacted} compacted"
 msgstr ""
 
 #, python-brace-format
@@ -4851,6 +5424,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "{step} is not found"
+msgstr ""
+
+#, python-brace-format
+msgid "{step} was not reached in this simulation"
 msgstr ""
 
 #, python-brace-format
@@ -5069,6 +5646,9 @@ msgstr ""
 msgid "~D~ocument root"
 msgstr ""
 
+msgid "~D~oubles: a JSON file in Runner's --simulate format"
+msgstr ""
+
 msgid "~D~raft (not ready for review yet)"
 msgstr ""
 
@@ -5085,6 +5665,9 @@ msgid "~E~dit context..."
 msgstr ""
 
 msgid "~E~dit data"
+msgstr ""
+
+msgid "~E~dit doubles"
 msgstr ""
 
 msgid "~E~dit section..."
@@ -5224,6 +5807,9 @@ msgid "~J~SON"
 msgstr ""
 
 msgid "~J~ump block.step (and go on from there)"
+msgstr ""
+
+msgid "~K~eep error and log messages in the trace (--trace-messages)"
 msgstr ""
 
 msgid "~K~ey"
@@ -5436,6 +6022,9 @@ msgstr ""
 msgid "~R~eplace..."
 msgstr ""
 
+msgid "~R~eplay"
+msgstr ""
+
 msgid "~R~epository (DIV_REPO)"
 msgstr ""
 
@@ -5482,6 +6071,9 @@ msgid "~S~earch..."
 msgstr ""
 
 msgid "~S~ettings"
+msgstr ""
+
+msgid "~S~imulate"
 msgstr ""
 
 msgid "~S~quash and merge it"

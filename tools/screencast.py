@@ -1402,6 +1402,85 @@ async def function_test(rec_dir: Path) -> Recorder:
 SCENES["function-test"] = function_test
 
 
+async def flow_simulation(rec_dir: Path) -> Recorder:
+    """Flow-Simulation.md: S on the board, the doubles ready, Simulate; the playback from the start with
+    F8, the call and the jump that retries, the pause; Ctrl+F9 resumes it in a new process."""
+    from divide.app import CM_FLOW_DESIGN
+    from divide.ui.flowboard import FlowDesignWindow
+    from divide.ui.progress import ProgressScreen
+    from divide.ui.simulate import SimulationDialog, SimulationWindow
+    example = Path(__file__).resolve().parent.parent / "examples" / "runner"
+    if not (example / "vendor" / "divengine" / "runner" / "bin" / "run.php").is_file():
+        sys.exit("composer install in examples/runner first (Runner 0.3 or newer)")
+    root = rec_dir.parent / "runner"
+    shutil.copytree(example, root, ignore=shutil.ignore_patterns("vendor", "composer.lock", "simulation", "runner"))
+    (root / "vendor").symlink_to(example / "vendor", target_is_directory=True)
+    app = Divide(root, [root / "flows" / "fulfil.yml"])
+
+    def dialog():
+        d = getattr(app.screen, "dialog", None)
+        return d if isinstance(d, SimulationDialog) else None
+
+    async def box_done():
+        await rec.until(lambda: not isinstance(app.screen, ProgressScreen) or not app.screen.dialog.running, tries=400)
+        if isinstance(app.screen, ProgressScreen):
+            await rec.snap(0.8)
+            await pilot.press("escape")
+
+    async with app.run_test(size=SIZE) as pilot:
+        await settle(pilot, 10)
+        app.run_command(CM_FLOW_DESIGN)
+        await until(pilot, lambda: type(app.active_window()) is FlowDesignWindow, tries=200)
+        designer = app.active_window()
+        await until(pilot, lambda: id(designer.source.editor) in app._flow_checks, tries=300)
+        designer.board_view.focus()
+        rec = Recorder(app, pilot, rec_dir)
+        rec.caption(tr("S on the board: simulate the Flow, its Functions answered by test doubles",
+                       "S en el tablero: simular el Flow, sus Functions respondidas por dobles de prueba"))
+        await rec.snap(1.6, 8)
+        await pilot.press("s")
+        await rec.until(lambda: dialog() is not None)
+        await rec.snap(1.0)
+        text = '{"items": [{"price": 10, "qty": 2}, {"price": 5, "qty": 1}]}'
+        for end in range(8, len(text) + 8, 8):
+            dialog().context_input.data = text[:end]
+            await rec.snap(0.12, 2)
+        rec.caption(tr("Every function has a double: nothing of the project's PHP will run",
+                       "Cada función tiene un doble: no se ejecutará nada del PHP del proyecto"))
+        await rec.snap(2.6)
+        dialog().query_one("#simulate").press()
+        await rec.until(lambda: isinstance(app.active_window(), SimulationWindow), tries=400)
+        await box_done()
+        win = app.active_window()
+        win.board_view.focus()
+        rec.caption(tr("Runner simulated it and paused; the board, read-only, shows where",
+                       "Runner lo simuló y se pausó; el tablero, de solo lectura, muestra dónde"))
+        await rec.snap(3.0, 8)
+        rec.caption(tr("Ctrl+Home, then F8: Step by Step from the start; nothing runs again",
+                       "Ctrl+Inicio y F8: Step a Step desde el principio; nada se vuelve a ejecutar"))
+        await rec.press("ctrl+home", hold=1.0)
+        await rec.press("f8", "f8", "f8", "f8", hold=0.9)
+        rec.caption(tr("F7, event by event: the call into stock, the jump that retries",
+                       "F7, evento a evento: el call a stock, el jump que reintenta"))
+        await rec.press("f8", "f8", hold=0.7)
+        for _ in range(6):
+            await rec.press("f7", hold=0.5)
+        await rec.snap(1.6)
+        rec.caption(tr("Ctrl+F9 resumes the pause in a new process; the playback goes on",
+                       "Ctrl+F9 reanuda la pausa en un proceso nuevo; la reproducción sigue"))
+        await rec.press("ctrl+end", hold=1.2)
+        await pilot.press("ctrl+f9")
+        await rec.until(lambda: win.playback.segments == 2, tries=400)
+        await box_done()
+        await rec.snap(3.5, 8)
+        rec.finish()
+        await settle(pilot)
+    return rec
+
+
+SCENES["flow-simulation"] = flow_simulation
+
+
 # ------------------------------------------------------------------ output
 def _stamp(seconds: float) -> str:
     ms = round(seconds * 1000)

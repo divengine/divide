@@ -17,6 +17,7 @@
 | **Alt+P** | command palette |
 | **Shift+F2** | find in files |
 | **Ctrl+F9** | run: render the template, run the PHP script, run a [[Runner Flow\|Running Flows]] (in the debugger: go on; with the [[Web Server]] running: open the page in the browser) |
+| **Shift+F9** | simulate a [[Runner Flow\|Flow Simulation]] with test doubles: its Functions never run |
 | **Alt+F5** | Output window |
 | **Alt+F9** | check: progress box, then the Messages window |
 | **Alt+F8** / **Alt+F7** | next / previous error |
@@ -119,12 +120,26 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **X** | the Step's context, as a tree or as JSON |
 | **F** | the Flow's Modules and Functions |
 | **T** | test the Step's Function |
+| **S** | simulate the Flow ([[Flow Simulation]]) |
 | **Ins** / **B** | new Step / new Block |
 | **Del** | delete the Step or Block, or remove the chosen connection |
 | **Ctrl+↑ / Ctrl+↓** | move the Step in its Block |
 | **Ctrl+← / Ctrl+→** | move the Block |
 | **Ctrl+D** | the Flow window's tree ⇄ the board |
 | **Ctrl+Z / Ctrl+Y** | undo / redo |
+
+## Simulation window
+
+| Key | Action |
+|---|---|
+| **F7** / **Shift+F7** | next / previous event |
+| **F8** / **Shift+F8** | next / previous Step |
+| **Ctrl+Home** / **Ctrl+End** | first / last event |
+| **F4**, **Enter** on a card | the selected Step's next event |
+| **F** | follow the current Step, or not |
+| **X** | the context at the event, in the Output window |
+| **Ctrl+F2** | back to the first event |
+| **Ctrl+F9** | resume a paused simulation (a new process) |
 
 ## Flow Functions
 

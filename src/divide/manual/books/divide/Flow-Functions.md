@@ -200,5 +200,5 @@ Any other callable is not judged: an invokable object, a function's name, `requi
 ## Limits
 
 - The window makes Modules and Functions; it does not rename, move or delete them. That is the [[Project Window]]'s, and the Flow's references are then yours to change.
-- A Function test runs real PHP, once; it does not simulate a Function with mocks, nor a Flow. Running a Flow is Runner's ([[Running Flows]]).
+- A Function test runs real PHP, once; it does not simulate a Function with mocks, nor a Flow. Running a Flow is Runner's ([[Running Flows]]); simulating it with test doubles, its Functions never run, is [[Flow Simulation]].
 - References are read where they are written literally. An import whose name is computed at run time is unknown.

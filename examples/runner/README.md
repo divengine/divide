@@ -17,6 +17,12 @@ Open a Flow and press **Ctrl+F9** (Run > Run):
 - `flows/fulfil.yml`: four Blocks, calls between them and a jump that retries a Step once (`stock.short` jumps back
   to `.reserve`). Initial context `order.json`, function root `functions`.
 
+**Shift+F9** (Run > Simulate Flow with doubles, or S on the board) simulates a Flow instead, with Runner 0.3:
+none of its functions runs, each is answered by a test double, and the simulation is replayed on the board, event
+by event. `flows/fulfil.yml` has its doubles in `.div/simulations/flows/fulfil.yml.doubles.json`: the review
+skipped, the stock short once (the jump retries it), the invoice paused; Ctrl+F9 in the Simulation window resumes
+it. See [Flow Simulation](https://github.com/divengine/divide/wiki/Flow-Simulation).
+
 Run > Flow designer draws any of them as a board. For a generator developed with Runner and Div, the example the
 [Flow Designer](https://github.com/divengine/divide/wiki/Flow-Designer) page is about, see
 [`../generator`](../generator).

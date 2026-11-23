@@ -1,0 +1,514 @@
+{
+    "protocol": "divengine.runner.trace",
+    "version": 1,
+    "mode": "simulation",
+    "flow_id": "invoice",
+    "result": {
+        "state": "done",
+        "error": null,
+        "setup_error": false
+    },
+    "simulation": {
+        "double_calls": {
+            "orders:validate_order": 1,
+            "billing:compute_total": 1,
+            "needs_approval": 1,
+            "billing:charge_card": 2,
+            "payment_declined": 2,
+            "send_receipt": 1
+        }
+    },
+    "truncated": false,
+    "events": [
+        {
+            "seq": 1,
+            "type": "run.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "mode": "simulation",
+            "resume": true,
+            "checkpoint": {
+                "flow_state": {
+                    "block": "approval",
+                    "step_index": 1
+                },
+                "flow_stack": [
+                    {
+                        "block": "main",
+                        "step_index": 3
+                    }
+                ]
+            },
+            "context": {
+                "order": {
+                    "id": "A-1001",
+                    "buyer": "buyer@example.com",
+                    "card_token": {
+                        "$type": "redacted"
+                    },
+                    "items": [
+                        {
+                            "sku": "desk",
+                            "price": 1100.0,
+                            "qty": 1
+                        },
+                        {
+                            "sku": "lamp",
+                            "price": 75.0,
+                            "qty": 2
+                        }
+                    ]
+                },
+                "validated": true,
+                "total": 1250.0,
+                "approval_requested": true
+            }
+        },
+        {
+            "seq": 2,
+            "type": "block.enter",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "approval",
+            "reason": "resume"
+        },
+        {
+            "seq": 3,
+            "type": "step.skip",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "approval",
+            "step": "check",
+            "index": 1,
+            "reason": "before_checkpoint"
+        },
+        {
+            "seq": 4,
+            "type": "block.exit",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "approval"
+        },
+        {
+            "seq": 5,
+            "type": "call.return",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "from": "approval",
+            "to": {
+                "block": "main",
+                "index": 3
+            },
+            "resumed": true
+        },
+        {
+            "seq": 6,
+            "type": "block.enter",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "reason": "return"
+        },
+        {
+            "seq": 7,
+            "type": "step.skip",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "validated",
+            "index": 1,
+            "reason": "before_checkpoint"
+        },
+        {
+            "seq": 8,
+            "type": "step.skip",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "total",
+            "index": 2,
+            "reason": "before_checkpoint"
+        },
+        {
+            "seq": 9,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "approval",
+            "index": 3,
+            "continuation": true
+        },
+        {
+            "seq": 10,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "payment",
+            "index": 4,
+            "continuation": false
+        },
+        {
+            "seq": 11,
+            "type": "call",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "payment",
+            "index": 4,
+            "target": {
+                "block": "payment",
+                "index": 1
+            },
+            "returns": true
+        },
+        {
+            "seq": 12,
+            "type": "block.enter",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "reason": "call"
+        },
+        {
+            "seq": 13,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "continuation": false
+        },
+        {
+            "seq": 14,
+            "type": "activity.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "function": "billing:charge_card"
+        },
+        {
+            "seq": 15,
+            "type": "double",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "function": "billing:charge_card",
+            "call": 1,
+            "outcome": "returns"
+        },
+        {
+            "seq": 16,
+            "type": "activity.end",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "function": "billing:charge_card",
+            "result": {
+                "status": "declined"
+            },
+            "changes": [
+                {
+                    "key": "last_charge",
+                    "op": "added",
+                    "after": "declined"
+                },
+                {
+                    "key": "charge",
+                    "op": "added",
+                    "after": {
+                        "status": "declined"
+                    }
+                }
+            ]
+        },
+        {
+            "seq": 17,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "continuation": false
+        },
+        {
+            "seq": 18,
+            "type": "double",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "function": "payment_declined",
+            "call": 1,
+            "outcome": "returns"
+        },
+        {
+            "seq": 19,
+            "type": "condition",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "function": "payment_declined",
+            "result": true
+        },
+        {
+            "seq": 20,
+            "type": "jump",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "target": {
+                "block": "payment",
+                "index": 1
+            },
+            "returns": false
+        },
+        {
+            "seq": 21,
+            "type": "block.enter",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "reason": "jump"
+        },
+        {
+            "seq": 22,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "continuation": false
+        },
+        {
+            "seq": 23,
+            "type": "activity.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "function": "billing:charge_card"
+        },
+        {
+            "seq": 24,
+            "type": "double",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "function": "billing:charge_card",
+            "call": 2,
+            "outcome": "returns"
+        },
+        {
+            "seq": 25,
+            "type": "activity.end",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "charge",
+            "index": 1,
+            "function": "billing:charge_card",
+            "result": {
+                "status": "captured"
+            },
+            "changes": [
+                {
+                    "key": "last_charge",
+                    "op": "changed",
+                    "before": "declined",
+                    "after": "captured"
+                },
+                {
+                    "key": "charge",
+                    "op": "changed",
+                    "before": {
+                        "status": "declined"
+                    },
+                    "after": {
+                        "status": "captured"
+                    }
+                }
+            ]
+        },
+        {
+            "seq": 26,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "continuation": false
+        },
+        {
+            "seq": 27,
+            "type": "double",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "function": "payment_declined",
+            "call": 2,
+            "outcome": "returns"
+        },
+        {
+            "seq": 28,
+            "type": "condition",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "function": "payment_declined",
+            "result": false
+        },
+        {
+            "seq": 29,
+            "type": "step.skip",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment",
+            "step": "retry",
+            "index": 2,
+            "reason": "condition_false"
+        },
+        {
+            "seq": 30,
+            "type": "block.exit",
+            "flow_depth": 0,
+            "call_depth": 1,
+            "block": "payment"
+        },
+        {
+            "seq": 31,
+            "type": "call.return",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "from": "payment",
+            "to": {
+                "block": "main",
+                "step": "payment",
+                "index": 4
+            },
+            "resumed": false
+        },
+        {
+            "seq": 32,
+            "type": "step.start",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "receipt",
+            "index": 5,
+            "continuation": false
+        },
+        {
+            "seq": 33,
+            "type": "activity.start",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "receipt",
+            "index": 5,
+            "function": "send_receipt"
+        },
+        {
+            "seq": 34,
+            "type": "double",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "receipt",
+            "index": 5,
+            "function": "send_receipt",
+            "call": 1,
+            "outcome": "returns"
+        },
+        {
+            "seq": 35,
+            "type": "activity.end",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main",
+            "step": "receipt",
+            "index": 5,
+            "function": "send_receipt",
+            "result": "receipt sent",
+            "changes": [
+                {
+                    "key": "receipt",
+                    "op": "added",
+                    "after": "receipt sent"
+                }
+            ]
+        },
+        {
+            "seq": 36,
+            "type": "block.exit",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "block": "main"
+        },
+        {
+            "seq": 37,
+            "type": "run.end",
+            "flow_depth": 0,
+            "call_depth": 0,
+            "state": "done",
+            "error": null,
+            "setup_error": false,
+            "checkpoint": {
+                "flow_state": [],
+                "flow_stack": []
+            },
+            "context": {
+                "order": {
+                    "id": "A-1001",
+                    "buyer": "buyer@example.com",
+                    "card_token": {
+                        "$type": "redacted"
+                    },
+                    "items": [
+                        {
+                            "sku": "desk",
+                            "price": 1100.0,
+                            "qty": 1
+                        },
+                        {
+                            "sku": "lamp",
+                            "price": 75.0,
+                            "qty": 2
+                        }
+                    ]
+                },
+                "validated": true,
+                "total": 1250.0,
+                "approval_requested": true,
+                "last_charge": "captured",
+                "charge": {
+                    "status": "captured"
+                },
+                "receipt": "receipt sent"
+            }
+        }
+    ]
+}

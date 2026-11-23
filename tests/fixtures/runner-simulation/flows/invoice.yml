@@ -1,0 +1,32 @@
+id: invoice
+description: Validate and price an order, wait for approval of large totals, charge the card with one retry, then send the receipt
+blocks:
+  main:
+    steps:
+      validated:
+        module: orders
+        activity: validate_order
+      total:
+        module: billing
+        activity: compute_total
+      approval:
+        call: approval.check
+      payment:
+        call: payment.charge
+      receipt:
+        activity: send_receipt
+  approval:
+    steps:
+      check:
+        condition: needs_approval
+        context:
+          approval_requested: true
+        pause: true
+  payment:
+    steps:
+      charge:
+        module: billing
+        activity: charge_card
+      retry:
+        condition: payment_declined
+        jump: payment.charge

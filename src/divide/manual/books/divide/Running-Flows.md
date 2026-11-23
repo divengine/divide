@@ -2,6 +2,8 @@
 
 divide runs, pauses and resumes the Flows of [Divengine Runner](https://github.com/divengine/runner), the engine of the Sequential Flow Model (SFM): a Flow of Blocks, each with its Steps, which `call` and `jump` to other Blocks and `pause`. **Runner runs them, not divide**: divide starts Runner's own command line from your project's Composer installation and shows what it says. Runner parses the YAML, runs the Steps, follows the calls and saves the context.
 
+This page is the **real run**: the Flow's Functions run, with whatever they do (files, databases, the network), and the Run Flow dialog says so. To see what a Flow would do without running them, **simulate** it with test doubles (Shift+F9) and replay it step by step: see [[Flow Simulation]].
+
 ![Ctrl+F9 on a Flow: paused inside two calls, Runner's log and the context in the Output window](images/run-flow.png)
 
 ## What you need

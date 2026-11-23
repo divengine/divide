@@ -17,6 +17,7 @@
 | **Alt+P** | paleta de comandos |
 | **Shift+F2** | buscar en archivos |
 | **Ctrl+F9** | ejecutar: renderizar la plantilla, ejecutar el script PHP, ejecutar un [[Flow de Runner\|Running Flows]] (en el depurador: continuar; con el [[Servidor web\|Web Server]] en marcha: abrir la página en el navegador) |
+| **Shift+F9** | simular un [[Flow de Runner\|Flow Simulation]] con dobles de prueba: sus Functions nunca se ejecutan |
 | **Alt+F5** | ventana Salida |
 | **Alt+F9** | verificar: cuadro de progreso y después la ventana Mensajes |
 | **Alt+F8** / **Alt+F7** | error siguiente / anterior |
@@ -119,12 +120,26 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **X** | el contexto del Step, como árbol o como JSON |
 | **F** | los Modules y las Functions del Flow |
 | **T** | probar la Function del Step |
+| **S** | simular el Flow ([[Simulación de Flows\|Flow Simulation]]) |
 | **Ins** / **B** | Step nuevo / Block nuevo |
 | **Supr** | borrar el Step o el Block, o quitar la conexión escogida |
 | **Ctrl+↑ / Ctrl+↓** | mover el Step dentro de su Block |
 | **Ctrl+← / Ctrl+→** | mover el Block |
 | **Ctrl+D** | el árbol de la ventana Flow ⇄ el tablero |
 | **Ctrl+Z / Ctrl+Y** | deshacer / rehacer |
+
+## Ventana de simulación
+
+| Tecla | Acción |
+|---|---|
+| **F7** / **Shift+F7** | evento siguiente / anterior |
+| **F8** / **Shift+F8** | Step siguiente / anterior |
+| **Ctrl+Inicio** / **Ctrl+Fin** | primer / último evento |
+| **F4**, **Enter** en una tarjeta | el siguiente evento del Step seleccionado |
+| **F** | seguir o no al Step actual |
+| **X** | el contexto en el evento, en la ventana Salida |
+| **Ctrl+F2** | volver al primer evento |
+| **Ctrl+F9** | reanudar una simulación en pausa (un proceso nuevo) |
 
 ## Functions del Flow
 

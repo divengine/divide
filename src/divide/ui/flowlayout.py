@@ -19,9 +19,9 @@ when it crosses lanes, its own channel in a band; crossings are drawn as
 crossings (``┼ ╫ ╪ ╬``). All glyphs are CP437 and one cell wide.
 
 The layout is built once per text and width (:class:`Board`); selection,
-emphasis and a future playback (:class:`Overlay`: current, visited, skipped,
-paused and failed Steps, connections taken) are painted over it
-(:meth:`Board.paint`).
+emphasis and a simulation's playback (:class:`Overlay`: current, visited,
+skipped, waiting for a call, paused and failed Steps, connections taken) are
+painted over it (:meth:`Board.paint`).
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ _GLYPHS = {
     (1, 1, 1, 0): "├╠╟╞", (1, 0, 1, 1): "┤╣╢╡", (0, 1, 1, 1): "┬╦╥╤", (1, 1, 0, 1): "┴╩╨╧",
     (1, 1, 1, 1): "┼╬╫╪",
 }
-MARKS = {"current": "►", "visited": "√", "skipped": "-", "paused": "=", "failed": "X"}  # playback (divide #10)
+MARKS = {"current": "►", "visited": "√", "skipped": "-", "paused": "=", "failed": "X", "active": "»"}  # the playback's
 
 
 def glyph(dirs: dict[str, str]) -> str:
@@ -66,9 +66,9 @@ def glyph(dirs: dict[str, str]) -> str:
 
 @dataclass
 class Overlay:
-    """What a playback would show over the board (divide #10): nothing yet in the Designer."""
+    """What a simulation's playback shows over the board (:mod:`divide.ui.simulate`); none in the Designer."""
 
-    marks: dict[Key, str] = field(default_factory=dict)  # Step -> current, visited, skipped, paused, failed
+    marks: dict[Key, str] = field(default_factory=dict)  # Step -> current, visited, skipped, paused, failed, active
     taken: set[tuple[Key, str]] = field(default_factory=set)  # (Step, call|jump) connections taken
 
 

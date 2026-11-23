@@ -2,6 +2,8 @@
 
 divide ejecuta, pausa y reanuda los Flows de [Divengine Runner](https://github.com/divengine/runner), el motor del Sequential Flow Model (SFM): un Flow de Blocks, cada uno con sus Steps, que hacen `call` y `jump` a otros Blocks y `pause`. **Los ejecuta Runner, no divide**: divide inicia la línea de comandos de Runner de la instalación de Composer de tu proyecto y muestra lo que dice. Runner analiza el YAML, ejecuta los Steps, sigue los calls y guarda el contexto.
 
+Esta página es la **ejecución real**: las Functions del Flow se ejecutan, con todo lo que hagan (archivos, bases de datos, la red), y el diálogo Ejecutar Flow lo dice. Para ver lo que haría un Flow sin ejecutarlas, **simúlalo** con dobles de prueba (Shift+F9) y reprodúcelo paso a paso: ver [[Simulación de Flows|Flow Simulation]].
+
 ![Ctrl+F9 en un Flow: pausado dentro de dos calls, el registro de Runner y el contexto en la ventana Salida](images/run-flow.png)
 
 ## Lo que necesitas

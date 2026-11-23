@@ -200,5 +200,5 @@ Cualquier otro callable no se juzga: un objeto invocable, el nombre de una funci
 ## Límites
 
 - La ventana crea Modules y Functions; no los renombra, mueve ni borra. Eso es de la [[ventana de proyecto|Project Window]], y entonces las referencias del Flow las cambias tú.
-- Una prueba de Function ejecuta PHP real, una vez; no simula una Function con mocks, ni un Flow. Ejecutar un Flow es de Runner ([[Ejecutar Flows|Running Flows]]).
+- Una prueba de Function ejecuta PHP real, una vez; no simula una Function con mocks, ni un Flow. Ejecutar un Flow es de Runner ([[Ejecutar Flows|Running Flows]]); simularlo con dobles de prueba, sin ejecutar nunca sus Functions, es [[Simulación de Flows|Flow Simulation]].
 - Las referencias se leen donde están escritas literalmente. Una importación cuyo nombre se calcula al ejecutar es desconocida.

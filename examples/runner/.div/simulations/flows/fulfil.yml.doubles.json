@@ -1,0 +1,15 @@
+{
+    "description": "A small order: no review, the stock short once (retried through the jump), the invoice paused for a sign-off",
+    "doubles": {
+        "compute_total": {"returns": 25, "context": {"total": 25}},
+        "needs_approval": {"returns": false},
+        "mark_reviewed": {"returns": true},
+        "reserve_stock": {"returns": "reserved"},
+        "stock_short": {"sequence": [{"returns": true}, {"returns": false}]},
+        "billing:total": {"returns": 20},
+        "shipping:total": {"returns": 5},
+        "invoice_sum": {"pause": true, "context": {"sum": 25}},
+        "format_receipt": {"returns": "Receipt: 25"}
+    },
+    "budget": {"steps": 200, "transfers": 50, "seconds": 5}
+}
