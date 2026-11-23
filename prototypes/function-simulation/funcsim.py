@@ -182,7 +182,8 @@ def _rel(path: Path, project: Path) -> str:
 def tripwire(project: Path, work: Path) -> list[str]:
     """INI for --tripwire: a deny-list and a filesystem fence (not a sandbox)."""
     fence = os.pathsep.join(str(p) for p in (project.resolve(), HARNESS.parent.resolve(), work.resolve()))
-    return ["-d", f"disable_functions={TRIPWIRE}", "-d", f"open_basedir={fence}", "-d", "allow_url_fopen=0",
+    # Quoted: on Windows the separator is ';', which starts a comment in an unquoted ini value.
+    return ["-d", f"disable_functions={TRIPWIRE}", "-d", f'open_basedir="{fence}"', "-d", "allow_url_fopen=0",
             "-d", "allow_url_include=0"]
 
 

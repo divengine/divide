@@ -31,7 +31,7 @@ final class DivideMissingDouble extends RuntimeException
 $requestFile = $argv[1] ?? '';
 $request = is_file($requestFile) ? json_decode((string) file_get_contents($requestFile), true) : null;
 if (!is_array($request) || !isset($request['nonce'], $request['file'], $request['scenario'])) {
-    fwrite(STDERR, "divide funcsim: no request\n");
+    fprintf(STDERR, "divide funcsim: no request\n");  // fprintf: the tripwire disables fwrite
     exit(2);
 }
 
