@@ -4,6 +4,8 @@ La **simulación** ejecuta un Flow de [Runner](https://github.com/divengine/runn
 
 Simular y reproducir son una sola función. La simulación se ejecuta una vez, en un proceso PHP propio. Reproducir sus eventos nunca vuelve a ejecutar nada.
 
+![Shift+F9 en el diseñador de Flows: el diálogo Simular Flow, la simulación reproducida evento a evento en el tablero, F8 por Step, la pausa en invoice.sum y Ctrl+F9 reanudándola en un proceso nuevo](images/flow-simulation.gif)
+
 Es Runner quien simula el Flow, no divide. Usa su propio compilador y su propio motor, los mismos de una ejecución real: los mismos Blocks, Steps, `call`, `jump`, `pause`, `_flow_state` y `_flow_stack`. No hay un segundo intérprete.
 
 | | **Ejecución real** (Ctrl+F9) | **Simulación** (Shift+F9) |
@@ -55,6 +57,8 @@ Los botones:
 
 Un Flow modificado se simula tal como está en el editor. Su YAML se copia en la carpeta de la simulación (una **copia**), y **tu archivo no se guarda ni se escribe**. Sus cambios sin guardar siguen sin guardar.
 
+![El diálogo Simular Flow de flows/fulfil.yml con Runner v0.3.0: el contexto inicial en JSON, el archivo de dobles en .div/simulations, 9 funciones que necesitan un doble, todas con el suyo, y el aviso de que ninguna Function del proyecto se carga ni se llama](images/flow-simulation-dialog.png)
+
 ## El archivo de dobles
 
 El archivo de dobles es el propio archivo `--simulate` de Runner:
@@ -93,6 +97,8 @@ Cada doble funciona así:
 ## La ventana de simulación
 
 La ventana tiene el tablero del Flow tal como se simuló. Es **de solo lectura**: ninguna tecla edita el Flow en ella.
+
+![La ventana de simulación en el evento 22 de 52: el JUMP de stock.short a stock.reserve, que sigue allí y no vuelve; reserve visitado, short actual, las líneas recorridas subrayadas y la leyenda de las marcas](images/flow-simulation.png)
 
 Sobre el tablero, la tarjeta de cada Step lleva una marca a la izquierda de su título:
 
@@ -155,6 +161,10 @@ Los tipos de evento que este divide no conoce se muestran con sus campos.
 ## Pausa y reanudación
 
 Cuando una simulación se pausa, **Ctrl+F9** en su ventana la reanuda. Un **proceso PHP nuevo** continúa desde la sesión de simulación de Runner: el contexto simulado, las llamadas a cada doble (una `sequence` sigue donde iba) y una huella de las fuentes. El segmento nuevo se añade a la misma reproducción, tras el primero. Un `call` que se pausó vuelve a su Step desde el `_flow_stack` que guardó el checkpoint, y `call.return` lo dice.
+
+![El último evento del primer segmento: run.end pausado en invoice.sum, con el _flow_state y el _flow_stack exactos de Runner, y el call a main.invoice esperando volver](images/flow-simulation-paused.png)
+
+![Tras Ctrl+F9, segmento 2 de 2: call.return de invoice a main.invoice, el marco vino del checkpoint, y la simulación terminada](images/flow-simulation-resumed.png)
 
 Una reanudación usa aquello con lo que empezó la simulación:
 

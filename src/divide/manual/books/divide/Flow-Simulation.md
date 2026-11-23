@@ -4,6 +4,8 @@
 
 Simulation and replay are one feature. The simulation runs once, in a PHP process of its own. Replaying its events never runs anything again.
 
+![Shift+F9 on the Flow Designer: the Simulate Flow dialog, the simulation replayed event by event on the board, F8 by Step, the pause at invoice.sum and Ctrl+F9 resuming it in a new process](images/flow-simulation.gif)
+
 Runner simulates the Flow, not divide. It uses its own compiler and runtime, the ones a real run uses: the same Blocks, Steps, `call`, `jump`, `pause`, `_flow_state` and `_flow_stack`. There is no second interpreter.
 
 | | **Real Run** (Ctrl+F9) | **Simulation** (Shift+F9) |
@@ -55,6 +57,8 @@ The buttons:
 
 A modified Flow is simulated as it is in the editor. Its YAML is copied into the simulation's folder (a **snapshot**), and **your file is not saved or written**. Its unsaved changes stay unsaved.
 
+![The Simulate Flow dialog for flows/fulfil.yml with Runner v0.3.0: the initial context as JSON, the doubles file in .div/simulations, 9 functions that need a double, all of them with one, and the warning that no Function of the project is loaded or called](images/flow-simulation-dialog.png)
+
 ## The doubles file
 
 The doubles file is Runner's own `--simulate` file:
@@ -93,6 +97,8 @@ Each double works like this:
 ## The Simulation window
 
 The window has the Flow's board as it was simulated. It is **read-only**: no key in it edits the Flow.
+
+![The Simulation window at event 22 of 52: the JUMP from stock.short to stock.reserve, which goes on there and does not return; reserve visited, short current, the taken lines underlined and the legend of the marks](images/flow-simulation.png)
 
 Over the board, each Step's card has a mark at the left of its title:
 
@@ -155,6 +161,10 @@ Event types this divide does not know are shown with their fields.
 ## Pause and resume
 
 When a simulation pauses, **Ctrl+F9** in its window resumes it. A **new PHP process** continues from Runner's simulation session: the simulated context, the double call counts (a `sequence` goes on where it was) and a fingerprint of the sources. The new segment is added to the same playback, after the first. A `call` that paused returns into its Step from the `_flow_stack` the checkpoint kept, and `call.return` says so.
+
+![The last event of the first segment: run.end paused at invoice.sum, with Runner's exact _flow_state and _flow_stack, and the call to main.invoice waiting to return](images/flow-simulation-paused.png)
+
+![After Ctrl+F9, segment 2 of 2: call.return from invoice to main.invoice, the frame came from the checkpoint, and the simulation done](images/flow-simulation-resumed.png)
 
 A resume uses what the simulation started with:
 
