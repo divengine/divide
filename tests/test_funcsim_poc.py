@@ -178,7 +178,7 @@ def test_the_tripwire_stops_some_direct_side_effects(project, tmp_path):
     target = tmp_path / "outside.txt"
     data = scenario("direct_write", context={"path": str(target)}, doubles={})
     result = sim(project, project / "functions" / "direct_write.php", data, harden=True)
-    assert result.status == "exception"
+    assert result.status == "exception", result.stderr
     assert "file_put_contents" in result.result["exception"]["message"]
     assert not target.exists()
 
@@ -188,7 +188,7 @@ def test_the_tripwire_is_a_deny_list_not_a_sandbox(project, tmp_path):
     file = write(project, "fopen_write", 'return function (array &$c): bool {\n'
                  '    $h = fopen($c["path"], "w");\n    return stream_copy_to_stream(fopen("php://memory", "r"), $h) !== false;\n};\n')
     result = sim(project, file, scenario("fopen_write", context={"path": str(target)}, doubles={}), harden=True)
-    assert result.status == "returned"
+    assert result.status == "returned", result.stderr
     assert target.exists()  # created: fopen is not denied
 
 

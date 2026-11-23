@@ -216,7 +216,9 @@ async def simulate(project: Path, file: Path, scenario: dict, *, trace: bool = F
     php = php or shutil.which("php")
     if not php:
         raise ScenarioError("php not found in PATH")
-    work = Path(tempfile.mkdtemp(prefix="divide-funcsim-"))
+    # Resolved: on Windows the temp folder can be an 8.3 short path (RUNNER~1), which open_basedir
+    # (given the long path) would refuse, and the harness could not read its own request.
+    work = Path(tempfile.mkdtemp(prefix="divide-funcsim-")).resolve()
     try:
         request_file, nonce = _request(project, file, scenario, work)
         extra = [*(ini or []), "-d", "memory_limit=256M", "-d", "display_errors=stderr", "-d", "html_errors=0",
