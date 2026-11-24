@@ -219,5 +219,5 @@ Una simulación no es un sandbox. Runner garantiza que las funciones del Flow no
 - **El tablero solo muestra el Flow simulado.** Los eventos de un Flow anidado están en la reproducción y el panel nombra su ámbito, pero sus Steps no están en el tablero. Mientras se ejecutan, el Step que ejecuta el Flow anidado es el actual.
 - **Los dobles son datos, no PHP.** Un doble de condition no puede pausar.
 - **Cambios de primer nivel.** Los cambios del contexto comparan las claves de primer nivel. Un cambio dentro de un array anidado muestra la clave entera, antes y después.
-- **Sin pasos por PHP.** La simulación avanza por los eventos del Flow, no por las sentencias PHP. Para eso, ver [[Depurar PHP|Debugging PHP]] y Probar Function.
+- **Sin pasos por PHP.** La simulación avanza por los eventos del Flow, no por las sentencias PHP. Para eso, ver [[Depurar PHP|Debugging PHP]], Probar Function y [[Mock Simulation de una Function|Function Mock Simulation]], que ejecuta el PHP real de una Function con dobles y reproduce sus líneas.
 - **De una en una.** Se ejecuta una simulación a la vez. Una reproducción necesita su carpeta: cuando la caché la borra, ya no se puede reproducir.

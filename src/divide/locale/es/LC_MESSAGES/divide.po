@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-23 20:57+0000\n"
+"POT-Creation-Date: 2026-11-24 23:47+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -5385,8 +5385,8 @@ msgstr "Depurar Function"
 #~ msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · ^T code"
 #~ msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · ^T código"
 
-msgid "Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload"
-msgstr "Enter abrir · ^F9 probar · Ins Function · Shift+Ins Module · Alt+F10 menú · ^R recargar"
+msgid "Enter open · ^F9 test · Alt+F10 menu (Simulate...) · Ins Function · Shift+Ins Module · ^R reload"
+msgstr "Enter abrir · ^F9 probar · Alt+F10 menú (Simular...) · Ins Function · Shift+Ins Module · ^R recargar"
 
 #, python-brace-format
 msgid "Exception {cls}: {message}"
@@ -5658,8 +5658,8 @@ msgstr "Dobles de {flow}: edita lo que devuelve cada función"
 msgid "Edit doubles"
 msgstr "Editar dobles"
 
-msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · S simulate · ^T code"
-msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · S simular · ^T código"
+msgid "Enter edit · Ins Step · B Block · C/J connect · F functions · T test · Shift+T mock · S simulate · ^T code"
+msgstr "Enter editar · Ins Step · B Block · C/J conectar · F functions · T probar · Shift+T mock · S simular · ^T código"
 
 #, python-brace-format
 msgid "Error: {cls} {message}"
@@ -6297,3 +6297,300 @@ msgstr "La traza de líneas necesita Xdebug: instálalo o indica su archivo de e
 #, python-brace-format
 msgid "{name} cannot be read: {error}"
 msgstr "No se puede leer {name}: {error}"
+
+msgid " (cut)"
+msgstr " (cortada)"
+
+msgid " (in a closure)"
+msgstr " (en un closure)"
+
+msgid " Output bytes"
+msgstr " Bytes de salida"
+
+msgid " Seconds"
+msgstr " Segundos"
+
+msgid ", {n} cut"
+msgstr ", {n} cortados"
+
+msgid ": Save writes it in the saved scenario"
+msgstr ": Guardar lo escribe en el escenario guardado"
+
+msgid "; values marked $type were cut by its bounds"
+msgstr "; los valores marcados con $type los cortaron sus límites"
+
+msgid "A dependency with no double: add one to the scenario"
+msgstr "Una dependencia sin doble: añade uno al escenario"
+
+msgid "Changed by a double this line calls (after it)"
+msgstr "Cambiado por un doble que llama esta línea (después)"
+
+msgid "Changed by the lines before"
+msgstr "Cambiado por las líneas anteriores"
+
+msgid "Choose a Function: in the Functions window (Run > Flow functions), on a Step of the Flow Designer (Shift+T), or open its PHP file."
+msgstr "Elige una Function: en la ventana Functions (Ejecutar > Functions del Flow), en un Step del Diseñador del Flow (Shift+T), o abre su archivo PHP."
+
+msgid "Composer ~a~utoload (real classes)"
+msgstr "~A~utoload: clases reales"
+
+msgid "Context so far ({n} key(s)) · X shows it"
+msgstr "Contexto hasta aquí ({n} clave(s)) · X lo muestra"
+
+msgid "C~o~ntext: a JSON object (Edit... the whole scenario as a tree or JSON)"
+msgstr "C~o~ntexto: un objeto JSON (Editar... todo el escenario como árbol o JSON)"
+
+msgid "Double calls ({n})"
+msgstr "Llamadas a dobles ({n})"
+
+msgid "Exception"
+msgstr "Excepción"
+
+msgid "Expected conte~x~t keys (JSON)"
+msgstr "Claves del conte~x~to esperadas (JSON)"
+
+msgid "Expected ret~u~rn (JSON)"
+msgstr "Ret~u~rn esperado (JSON)"
+
+msgid "Fatal error"
+msgstr "Error fatal"
+
+msgid "From the scan, answering null until you say: {names}"
+msgstr "Del análisis, responden null hasta que digas otra cosa: {names}"
+
+msgid "Line limit"
+msgstr "Límite de líneas"
+
+msgid "Line trace"
+msgstr "Traza de líneas"
+
+msgid "Line {lines}: an import computed at run time; double it by its name"
+msgstr "Línea {lines}: un import calculado al ejecutar; dóblalo por su nombre"
+
+msgid "Line {line} did not run in this simulation"
+msgstr "La línea {line} no se ejecutó en esta simulación"
+
+msgid "Locals"
+msgstr "Variables locales"
+
+msgid "Logger ({n})"
+msgstr "Logger ({n})"
+
+msgid "MOCK SIMULATION"
+msgstr "MOCK SIMULATION"
+
+msgid "MOCK SIMULATION · F7/F8 line/same depth · Shift back · F4 cursor line · ^Home/^End · X context · S save"
+msgstr "MOCK SIMULATION · F7/F8 línea/misma profundidad · Shift atrás · F4 línea del cursor · ^Inicio/^Fin · X contexto · S guardar"
+
+msgid "MOCK SIMULATION · context · event {n}"
+msgstr "MOCK SIMULATION · contexto · evento {n}"
+
+msgid "Mock Simulation"
+msgstr "Mock Simulation"
+
+msgid "Mock Simulation of {name}"
+msgstr "Mock Simulation de {name}"
+
+msgid "Mock Simulation of {name}: {state}"
+msgstr "Mock Simulation de {name}: {state}"
+
+msgid "Mock Simulation: {name}"
+msgstr "Mock Simulation: {name}"
+
+msgid "Moc~k~ Simulation of a Function..."
+msgstr "Moc~k~ Simulation de una Function..."
+
+msgid "NOT pinned to a source version"
+msgstr "NO fijado a una versión del código"
+
+msgid "NOT pinned to a source version: it runs whatever the file is now"
+msgstr "NO fijado a una versión del código: ejecuta el archivo tal como esté"
+
+msgid "No double for {names}: the Function calls it (Edit... or the doubles field)"
+msgstr "Sin doble para {names}: la Function lo llama (Editar... o el campo de dobles)"
+
+msgid "No line of the Function ran."
+msgstr "No se ejecutó ninguna línea de la Function."
+
+msgid "No result"
+msgstr "Sin resultado"
+
+msgid "No such Function file"
+msgstr "No existe el archivo de la Function"
+
+msgid "Not a sandbox, not a Flow simulation: files, network, databases are real."
+msgstr "Ni sandbox ni simulación de Flow: archivos, red y BD son reales."
+
+msgid "Output ({n} bytes{cut})"
+msgstr "Salida ({n} bytes{cut})"
+
+msgid "Re-pinned to {sha}"
+msgstr "Fijado de nuevo a {sha}"
+
+msgid "Ready: every dependency the scan found has a double."
+msgstr "Listo: cada dependencia que encontró el análisis tiene un doble."
+
+msgid "Real PHP ran; only the declared dependencies were replaced. Not a sandbox."
+msgstr "Se ejecutó PHP real; solo se reemplazaron las dependencias declaradas. No es un sandbox."
+
+msgid "Repla~y~"
+msgstr "Re~p~roducir"
+
+msgid "Returned"
+msgstr "Devolvió"
+
+msgid "Run without the line trace: only its result is here."
+msgstr "Ejecutada sin la traza de líneas: aquí solo está su resultado."
+
+msgid "STALE: the file changed since the pin ({sha}): Re-pin to run it"
+msgstr "DESACTUALIZADO: el archivo cambió desde la fijación ({sha}): Refijar"
+
+msgid "Save as scenario"
+msgstr "Guardar como escenario"
+
+msgid "Saved in {path} ({pinned})"
+msgstr "Guardado en {path} ({pinned})"
+
+msgid "Scenario"
+msgstr "Escenario"
+
+msgid "Si~m~ulate"
+msgstr "Si~m~ular"
+
+msgid "Si~m~ulate..."
+msgstr "Si~m~ular..."
+
+msgid "Stale: the file changed"
+msgstr "Desactualizado: el archivo cambió"
+
+msgid "The Function was not called."
+msgstr "La Function no se llamó."
+
+msgid "The context"
+msgstr "El contexto"
+
+msgid "The context after the run (no PHP lines recorded)."
+msgstr "El contexto después de la ejecución (sin líneas PHP registradas)."
+
+msgid "The context before line {line} ran (event {n} of {total}), rebuilt from the trace{cut}."
+msgstr "El contexto antes de ejecutarse la línea {line} (evento {n} de {total}), reconstruido desde la traza{cut}."
+
+msgid "The doubles"
+msgstr "Los dobles"
+
+msgid "The expected context"
+msgstr "El contexto esperado"
+
+msgid "The expected return"
+msgstr "El return esperado"
+
+msgid "The file changed since this run: its lines are not marked"
+msgstr "El archivo cambió desde esta ejecución: sus líneas no se marcan"
+
+msgid "The line trace needs Xdebug, and this PHP has none (install it, or set its extension file in Options). Simulate without the line trace? Only the result is shown then, no lines; the PHP runs for real all the same."
+msgstr "La traza de líneas necesita Xdebug, y este PHP no lo tiene (instálalo o indica su archivo de extensión en Opciones). ¿Simular sin la traza de líneas? Entonces solo se muestra el resultado, sin líneas; el PHP se ejecuta de verdad igualmente."
+
+msgid "The scenario is for {name}: its function stays"
+msgstr "El escenario es de {name}: su function no cambia"
+
+msgid "The state before the line runs."
+msgstr "El estado antes de ejecutarse la línea."
+
+msgid "The trace stopped at limits.lines: the run did not finish"
+msgstr "La traza se detuvo en limits.lines: la ejecución no terminó"
+
+msgid "This Step has no activity or condition to simulate"
+msgstr "Este Step no tiene activity ni condition que simular"
+
+msgid "This run has no scenario to save"
+msgstr "Esta ejecución no tiene escenario que guardar"
+
+msgid "Trip~w~ire (not a sandbox)"
+msgstr "Trip~w~ire (no es un sandbox)"
+
+msgid "cut by the trace's bounds: {names}"
+msgstr "cortado por los límites de la traza: {names}"
+
+msgid "depth {n}"
+msgstr "profundidad {n}"
+
+msgid "line {line}"
+msgstr "línea {line}"
+
+msgid "line {line} · event {n}/{total}"
+msgstr "línea {line} · evento {n}/{total}"
+
+msgid "line {n}/{total}"
+msgstr "línea {n}/{total}"
+
+msgid "no"
+msgstr "no"
+
+msgid "no PHP lines recorded"
+msgstr "sin líneas PHP registradas"
+
+msgid "no lines"
+msgstr "sin líneas"
+
+msgid "not pinned to a source version"
+msgstr "no fijado a una versión del código"
+
+msgid "pinned to the file's version {sha}"
+msgstr "fijado a la versión del archivo {sha}"
+
+msgid "pinned to {sha}"
+msgstr "fijado a {sha}"
+
+msgid "pinned {sha}"
+msgstr "fijado {sha}"
+
+msgid "tripwire on"
+msgstr "tripwire activo"
+
+msgid "yes (Xdebug)"
+msgstr "sí (Xdebug)"
+
+msgid "{name} changed since the scenario was pinned ({old}; the file is {new} now): it was not run. Re-pin the scenario to the file as it is and simulate it?"
+msgstr "{name} cambió desde que se fijó el escenario ({old}; el archivo es {new} ahora): no se ejecutó. ¿Fijar de nuevo el escenario al archivo tal como está y simularlo?"
+
+msgid "{n} more statement(s) on it"
+msgstr "{n} sentencia(s) más en ella"
+
+msgid "{what} is not JSON: {why}"
+msgstr "{what} no es JSON: {why}"
+
+msgid "~A~llow in this project"
+msgstr "~P~ermitir en este proyecto"
+
+msgid "~D~oubles: importer, services (--simulate outcomes); the rest fails"
+msgstr "~D~obles: importer, services (resultados de --simulate); el resto falla"
+
+msgid "~E~xpect this run's context changes"
+msgstr "~E~sperar los cambios de contexto de esta ejecución"
+
+msgid "~E~xpect this run's return and context changes"
+msgstr "~E~sperar el return y los cambios de contexto de esta ejecución"
+
+msgid "~L~ines"
+msgstr "~L~íneas"
+
+msgid "~N~ame (.div/function-simulations/, for the team in Git)"
+msgstr "~N~ombre (.div/function-simulations/, para el equipo en Git)"
+
+msgid "~P~in to the file's version"
+msgstr "~F~ijar a la versión del archivo"
+
+msgid "~R~e-pin"
+msgstr "Refi~j~ar"
+
+msgid "~R~e-pin and simulate"
+msgstr "~R~efijar y simular"
+
+msgid "~S~cenario (Save keeps it in .div/function-simulations/)"
+msgstr "Esce~n~ario (Guardar lo deja en .div/function-simulations/)"
+
+msgid "~T~race the PHP lines (Xdebug)"
+msgstr "~T~razar las líneas PHP (Xdebug)"
+
+msgid "~W~ithout the line trace"
+msgstr "~S~in la traza de líneas"

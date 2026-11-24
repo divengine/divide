@@ -118,6 +118,14 @@ class MessageBox(_Dialog):
             for i, (label, command, bid) in enumerate(self._buttons):
                 yield Button(label, command, is_default=(i == 0), id=bid)
 
+    def on_command_message(self, message) -> None:
+        # a button of the box's own (beyond OK, Cancel, Yes, No) ends it on its command too
+        own = {command for _label, command, _bid in self._buttons}
+        if message.command in own and message.command not in (Command.OK, Command.CANCEL, Command.YES, Command.NO):
+            message.stop()
+            message.prevent_default()
+            self.end_modal(message.command)
+
     def on_key(self, event: events.Key) -> None:
         if event.character and len(event.character) == 1:
             letter = event.character.lower()

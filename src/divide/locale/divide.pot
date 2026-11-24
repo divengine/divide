@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-23 20:57+0000\n"
+"POT-Creation-Date: 2026-11-24 23:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,7 +31,13 @@ msgstr ""
 msgid "  line {n}"
 msgstr ""
 
+msgid " (cut)"
+msgstr ""
+
 msgid " (draft)"
+msgstr ""
+
+msgid " (in a closure)"
 msgstr ""
 
 #, python-brace-format
@@ -52,6 +58,12 @@ msgid " CALL returns  "
 msgstr ""
 
 msgid " JUMP goes on  "
+msgstr ""
+
+msgid " Output bytes"
+msgstr ""
+
+msgid " Seconds"
 msgstr ""
 
 #, python-brace-format
@@ -222,6 +234,10 @@ msgstr ""
 msgid ", {name} is as it was"
 msgstr ""
 
+#, python-brace-format
+msgid ", {n} cut"
+msgstr ""
+
 msgid "--mcp takes one project folder: divide --mcp /path/to/project"
 msgstr ""
 
@@ -241,6 +257,12 @@ msgid "... {count} more lines not shown"
 msgstr ""
 
 msgid "16 colours (Windows console)"
+msgstr ""
+
+msgid ": Save writes it in the saved scenario"
+msgstr ""
+
+msgid "; values marked $type were cut by its bounds"
 msgstr ""
 
 msgid "; values marked $type were cut or redacted by the trace"
@@ -323,6 +345,9 @@ msgstr ""
 msgid ""
 "A Step uses it with module: {name}, and its condition and activity are "
 "files of this folder. A Module is not a Block."
+msgstr ""
+
+msgid "A dependency with no double: add one to the scenario"
 msgstr ""
 
 msgid ""
@@ -658,6 +683,12 @@ msgstr ""
 msgid "Change ~a~ll"
 msgstr ""
 
+msgid "Changed by a double this line calls (after it)"
+msgstr ""
+
+msgid "Changed by the lines before"
+msgstr ""
+
 #, python-brace-format
 msgid "Changed on disk, not read again (they have unsaved changes): {files}"
 msgstr ""
@@ -687,6 +718,11 @@ msgid "Changes put aside: Git > Branches > Stashes brings them back"
 msgstr ""
 
 msgid "Checking"
+msgstr ""
+
+msgid ""
+"Choose a Function: in the Functions window (Run > Flow functions), on a "
+"Step of the Flow Designer (Shift+T), or open its PHP file."
 msgstr ""
 
 msgid "Choose a Step on the board"
@@ -774,6 +810,9 @@ msgid ""
 "program."
 msgstr ""
 
+msgid "Composer ~a~utoload (real classes)"
+msgstr ""
+
 msgid "Composer ~p~rogram..."
 msgstr ""
 
@@ -844,6 +883,10 @@ msgstr ""
 
 #, python-brace-format
 msgid "Context saved to {path}"
+msgstr ""
+
+#, python-brace-format
+msgid "Context so far ({n} key(s)) · X shows it"
 msgstr ""
 
 msgid "Context: unchanged"
@@ -937,6 +980,9 @@ msgid "C~o~ndition (a function: the Step runs only when it returns true)"
 msgstr ""
 
 msgid "C~o~ndition: true runs the Step, false skips it"
+msgstr ""
+
+msgid "C~o~ntext: a JSON object (Edit... the whole scenario as a tree or JSON)"
 msgstr ""
 
 msgid "C~r~eate"
@@ -1224,6 +1270,10 @@ msgid "Done"
 msgstr ""
 
 #, python-brace-format
+msgid "Double calls ({n})"
+msgstr ""
+
+#, python-brace-format
 msgid "Double {name}"
 msgstr ""
 
@@ -1304,8 +1354,8 @@ msgid "Enter edit section · Del defaults · Alt+F10 menu: transform, PHP, examp
 msgstr ""
 
 msgid ""
-"Enter edit · Ins Step · B Block · C/J connect · F functions · T test · S "
-"simulate · ^T code"
+"Enter edit · Ins Step · B Block · C/J connect · F functions · T test · "
+"Shift+T mock · S simulate · ^T code"
 msgstr ""
 
 msgid "Enter edit · Ins add · Del del · ^Enter go to · ^D board · ^T code"
@@ -1357,8 +1407,8 @@ msgid "Enter open · Del forget a recent one · type to filter"
 msgstr ""
 
 msgid ""
-"Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · "
-"^R reload"
+"Enter open · ^F9 test · Alt+F10 menu (Simulate...) · Ins Function · "
+"Shift+Ins Module · ^R reload"
 msgstr ""
 
 msgid "Enter opens it. Runner keeps an activity's result under the Step id."
@@ -1419,6 +1469,9 @@ msgstr ""
 msgid "Example template"
 msgstr ""
 
+msgid "Exception"
+msgstr ""
+
 #, python-brace-format
 msgid "Exception {cls}: {message}"
 msgstr ""
@@ -1442,6 +1495,12 @@ msgid "Expectations"
 msgstr ""
 
 msgid "Expected conte~x~t after: keys it must hold (JSON object, optional)"
+msgstr ""
+
+msgid "Expected conte~x~t keys (JSON)"
+msgstr ""
+
+msgid "Expected ret~u~rn (JSON)"
 msgstr ""
 
 msgid "Expected ret~u~rn (JSON, optional)"
@@ -1480,6 +1539,9 @@ msgid "False end prefix"
 msgstr ""
 
 msgid "False end suffix"
+msgstr ""
+
+msgid "Fatal error"
 msgstr ""
 
 #, python-brace-format
@@ -1600,6 +1662,10 @@ msgid "Friendly tag end"
 msgstr ""
 
 msgid "From the current commit; it becomes the current branch"
+msgstr ""
+
+#, python-brace-format
+msgid "From the scan, answering null until you say: {names}"
 msgstr ""
 
 #, python-brace-format
@@ -1864,6 +1930,20 @@ msgstr ""
 msgid "License"
 msgstr ""
 
+msgid "Line limit"
+msgstr ""
+
+msgid "Line trace"
+msgstr ""
+
+#, python-brace-format
+msgid "Line {lines}: an import computed at run time; double it by its name"
+msgstr ""
+
+#, python-brace-format
+msgid "Line {line} did not run in this simulation"
+msgstr ""
+
 msgid "Lines"
 msgstr ""
 
@@ -1874,10 +1954,17 @@ msgstr ""
 msgid "Local  {n}"
 msgstr ""
 
+msgid "Locals"
+msgstr ""
+
 msgid "Location begin"
 msgstr ""
 
 msgid "Location end"
+msgstr ""
+
+#, python-brace-format
+msgid "Logger ({n})"
 msgstr ""
 
 msgid "Logs of this Step"
@@ -1907,6 +1994,18 @@ msgstr ""
 
 #, python-brace-format
 msgid "MCP server: {url}"
+msgstr ""
+
+msgid "MOCK SIMULATION"
+msgstr ""
+
+msgid ""
+"MOCK SIMULATION · F7/F8 line/same depth · Shift back · F4 cursor line · "
+"^Home/^End · X context · S save"
+msgstr ""
+
+#, python-brace-format
+msgid "MOCK SIMULATION · context · event {n}"
 msgstr ""
 
 msgid "MOCK SIMULATION: real PHP runs; only declared dependencies are replaced"
@@ -1974,7 +2073,25 @@ msgstr ""
 msgid "Missing"
 msgstr ""
 
+msgid "Mock Simulation"
+msgstr ""
+
 msgid "Mock Simulation is not allowed in this project yet: it runs real PHP code"
+msgstr ""
+
+#, python-brace-format
+msgid "Mock Simulation of {name}"
+msgstr ""
+
+#, python-brace-format
+msgid "Mock Simulation of {name}: {state}"
+msgstr ""
+
+#, python-brace-format
+msgid "Mock Simulation: {name}"
+msgstr ""
+
+msgid "Moc~k~ Simulation of a Function..."
 msgstr ""
 
 msgid "Modifiers"
@@ -2010,6 +2127,12 @@ msgid "Multiple modifiers"
 msgstr ""
 
 msgid "Mutations"
+msgstr ""
+
+msgid "NOT pinned to a source version"
+msgstr ""
+
+msgid "NOT pinned to a source version: it runs whatever the file is now"
 msgstr ""
 
 msgid "Nested folders are fine (a/b/c)"
@@ -2106,6 +2229,12 @@ msgid "No composer.json: Alt+F10 > New composer.json"
 msgstr ""
 
 #, python-brace-format
+msgid ""
+"No double for {names}: the Function calls it (Edit... or the doubles "
+"field)"
+msgstr ""
+
+#, python-brace-format
 msgid "No double for {name} ({kinds}, used by {places})"
 msgstr ""
 
@@ -2135,6 +2264,9 @@ msgstr ""
 msgid "No forge"
 msgstr ""
 
+msgid "No line of the Function ran."
+msgstr ""
+
 msgid "No merge is halfway"
 msgstr ""
 
@@ -2142,6 +2274,12 @@ msgid "No problems found."
 msgstr ""
 
 msgid "No program is being debugged"
+msgstr ""
+
+msgid "No result"
+msgstr ""
+
+msgid "No such Function file"
 msgstr ""
 
 #, python-brace-format
@@ -2181,6 +2319,9 @@ msgid "Not a Runner trace (protocol {protocol!r}; divide reads {expected})."
 msgstr ""
 
 msgid "Not a line number"
+msgstr ""
+
+msgid "Not a sandbox, not a Flow simulation: files, network, databases are real."
 msgstr ""
 
 msgid "Not committed yet · "
@@ -2370,6 +2511,10 @@ msgid "Outline: {name}"
 msgstr ""
 
 msgid "Output"
+msgstr ""
+
+#, python-brace-format
+msgid "Output ({n} bytes{cut})"
 msgstr ""
 
 msgid "Output: what Div returns"
@@ -2579,6 +2724,10 @@ msgstr ""
 msgid "Raw URL encode"
 msgstr ""
 
+#, python-brace-format
+msgid "Re-pinned to {sha}"
+msgstr ""
+
 msgid ""
 "Reachable from the network: a token is required, and the traffic is not "
 "encrypted. Put a TLS reverse proxy in front, or use an SSH tunnel to "
@@ -2589,9 +2738,15 @@ msgstr ""
 msgid "Read-only: {why}"
 msgstr ""
 
+msgid "Ready: every dependency the scan found has a double."
+msgstr ""
+
 msgid ""
 "Real PHP code ran: it may have written files, used a database or the "
 "network. Not a sandbox."
+msgstr ""
+
+msgid "Real PHP ran; only the declared dependencies were replaced. Not a sandbox."
 msgstr ""
 
 msgid "Recent files"
@@ -2682,6 +2837,9 @@ msgstr ""
 msgid "Replacements"
 msgstr ""
 
+msgid "Repla~y~"
+msgstr ""
+
 msgid "Repository"
 msgstr ""
 
@@ -2724,6 +2882,9 @@ msgstr ""
 msgid "Res~u~me"
 msgstr ""
 
+msgid "Returned"
+msgstr ""
+
 #, python-brace-format
 msgid "Returned ({type}):"
 msgstr ""
@@ -2744,6 +2905,9 @@ msgid "Run in terminal"
 msgstr ""
 
 msgid "Run in termi~n~al"
+msgstr ""
+
+msgid "Run without the line trace: only its result is here."
 msgstr ""
 
 msgid ""
@@ -2845,7 +3009,14 @@ msgid ""
 "and the doubles are trusted inputs."
 msgstr ""
 
+#, python-brace-format
+msgid "STALE: the file changed since the pin ({sha}): Re-pin to run it"
+msgstr ""
+
 msgid "Said"
+msgstr ""
+
+msgid "Save as scenario"
 msgstr ""
 
 msgid "Save a~l~l"
@@ -2901,6 +3072,10 @@ msgstr ""
 msgid "Saved in {path}"
 msgstr ""
 
+#, python-brace-format
+msgid "Saved in {path} ({pinned})"
+msgstr ""
+
 msgid "Saved to"
 msgstr ""
 
@@ -2912,6 +3087,9 @@ msgid "Say into which branch it goes (main, for example)."
 msgstr ""
 
 msgid "Sa~v~e"
+msgstr ""
+
+msgid "Scenario"
 msgstr ""
 
 msgid "Script"
@@ -2990,6 +3168,12 @@ msgstr ""
 msgid "Simulation: {name}"
 msgstr ""
 
+msgid "Si~m~ulate"
+msgstr ""
+
+msgid "Si~m~ulate..."
+msgstr ""
+
 msgid "Some files are in conflict: solve them first."
 msgstr ""
 
@@ -3018,6 +3202,9 @@ msgid "Stage ~e~verything"
 msgstr ""
 
 msgid "Staged (the next commit)"
+msgstr ""
+
+msgid "Stale: the file changed"
 msgstr ""
 
 msgid "Start"
@@ -3196,6 +3383,9 @@ msgstr ""
 msgid "The Flow has two Blocks '{block}': rename them in the code (Ctrl+T)"
 msgstr ""
 
+msgid "The Function was not called."
+msgstr ""
+
 #, python-brace-format
 msgid "The MCP server could not start: {error}"
 msgstr ""
@@ -3267,7 +3457,19 @@ msgstr ""
 msgid "The changes go aside, the files go back to the last commit"
 msgstr ""
 
+msgid "The context"
+msgstr ""
+
+msgid "The context after the run (no PHP lines recorded)."
+msgstr ""
+
 msgid "The context as JSON: an object. Alt+R the tree"
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"The context before line {line} ran (event {n} of {total}), rebuilt from "
+"the trace{cut}."
 msgstr ""
 
 msgid "The context has a key divide does not read: edit it in the code (Ctrl+T)"
@@ -3340,6 +3542,9 @@ msgstr ""
 msgid "The documentation inside divide, one book each."
 msgstr ""
 
+msgid "The doubles"
+msgstr ""
+
 #, python-brace-format
 msgid "The doubles file must be a JSON object: {\"doubles\": {...}}"
 msgstr ""
@@ -3360,6 +3565,9 @@ msgstr ""
 msgid "The edit was undone: {problem}"
 msgstr ""
 
+msgid "The expected context"
+msgstr ""
+
 #, python-brace-format
 msgid "The expected context is not JSON: {why}"
 msgstr ""
@@ -3369,8 +3577,14 @@ msgid ""
 "context after"
 msgstr ""
 
+msgid "The expected return"
+msgstr ""
+
 #, python-brace-format
 msgid "The expected return is not JSON: {why}"
+msgstr ""
+
+msgid "The file changed since this run: its lines are not marked"
 msgstr ""
 
 msgid "The file there is not a context saved by Runner."
@@ -3400,6 +3614,12 @@ msgstr ""
 
 #, python-brace-format
 msgid "The last run ended {state}: Run replaces it when it ends."
+msgstr ""
+
+msgid ""
+"The line trace needs Xdebug, and this PHP has none (install it, or set "
+"its extension file in Options). Simulate without the line trace? Only the"
+" result is shown then, no lines; the PHP runs for real all the same."
 msgstr ""
 
 msgid ""
@@ -3475,6 +3695,10 @@ msgstr ""
 msgid "The same green phosphor on a black screen."
 msgstr ""
 
+#, python-brace-format
+msgid "The scenario is for {name}: its function stays"
+msgstr ""
+
 msgid "The script is running: Ctrl+F2 stops it"
 msgstr ""
 
@@ -3484,6 +3708,9 @@ msgstr ""
 msgid "The simulation would not be complete, nothing was run:\n"
 msgstr ""
 
+msgid "The state before the line runs."
+msgstr ""
+
 msgid "The time limit is a number of seconds, up to 3600"
 msgstr ""
 
@@ -3491,6 +3718,9 @@ msgid "The trace has no list of events."
 msgstr ""
 
 msgid "The trace is not a JSON object."
+msgstr ""
+
+msgid "The trace stopped at limits.lines: the run did not finish"
 msgstr ""
 
 #, python-brace-format
@@ -3513,6 +3743,9 @@ msgstr ""
 msgid "These lead to it and lose their {what}: {refs}."
 msgstr ""
 
+msgid "This Step has no activity or condition to simulate"
+msgstr ""
+
 msgid "This Step has no activity or condition to test"
 msgstr ""
 
@@ -3531,6 +3764,9 @@ msgid "This is the current branch: switch to another one first"
 msgstr ""
 
 msgid "This line is not committed yet"
+msgstr ""
+
+msgid "This run has no scenario to save"
 msgstr ""
 
 #, python-brace-format
@@ -3586,6 +3822,9 @@ msgstr ""
 msgid ""
 "Tripwire, not a sandbox: some direct side effects fail, others (fopen, "
 "PDO, static state) still happen"
+msgstr ""
+
+msgid "Trip~w~ire (not a sandbox)"
 msgstr ""
 
 msgid "True begin prefix"
@@ -4078,6 +4317,10 @@ msgid "cut"
 msgstr ""
 
 #, python-brace-format
+msgid "cut by the trace's bounds: {names}"
+msgstr ""
+
+#, python-brace-format
 msgid "data is not valid JSON ({exc}); Div will render without data"
 msgstr ""
 
@@ -4098,6 +4341,10 @@ msgid "dependency"
 msgstr ""
 
 msgid "depth"
+msgstr ""
+
+#, python-brace-format
+msgid "depth {n}"
 msgstr ""
 
 msgid "description is text"
@@ -4381,6 +4628,18 @@ msgstr ""
 msgid "limits.{key}: 1..{top}"
 msgstr ""
 
+#, python-brace-format
+msgid "line {line}"
+msgstr ""
+
+#, python-brace-format
+msgid "line {line} · event {n}/{total}"
+msgstr ""
+
+#, python-brace-format
+msgid "line {n}/{total}"
+msgstr ""
+
 msgid "local"
 msgstr ""
 
@@ -4414,6 +4673,12 @@ msgstr ""
 msgid "nested Flow: {names}"
 msgstr ""
 
+msgid "no"
+msgstr ""
+
+msgid "no PHP lines recorded"
+msgstr ""
+
 msgid "no Step"
 msgstr ""
 
@@ -4434,6 +4699,9 @@ msgstr ""
 msgid ""
 "no language server: install {names}, or set one in Options > Language "
 "servers"
+msgstr ""
+
+msgid "no lines"
 msgstr ""
 
 msgid "no result"
@@ -4468,6 +4736,9 @@ msgid "not in the Flow"
 msgstr ""
 
 msgid "not installed"
+msgstr ""
+
+msgid "not pinned to a source version"
 msgstr ""
 
 msgid "not reached"
@@ -4527,6 +4798,18 @@ msgid "php was not found in the PATH: Runner is PHP."
 msgstr ""
 
 msgid "php.ini loads Xdebug already: leave it empty"
+msgstr ""
+
+#, python-brace-format
+msgid "pinned to the file's version {sha}"
+msgstr ""
+
+#, python-brace-format
+msgid "pinned to {sha}"
+msgstr ""
+
+#, python-brace-format
+msgid "pinned {sha}"
 msgstr ""
 
 msgid "plain text"
@@ -4760,6 +5043,9 @@ msgstr ""
 msgid "too long: cut"
 msgstr ""
 
+msgid "tripwire on"
+msgstr ""
+
 msgid "true colour"
 msgstr ""
 
@@ -4858,6 +5144,9 @@ msgid "written in the setup"
 msgstr ""
 
 msgid "yes"
+msgstr ""
+
+msgid "yes (Xdebug)"
 msgstr ""
 
 #, python-brace-format, python-format
@@ -5167,6 +5456,13 @@ msgid "{name} cannot be read: {error}"
 msgstr ""
 
 #, python-brace-format
+msgid ""
+"{name} changed since the scenario was pinned ({old}; the file is {new} "
+"now): it was not run. Re-pin the scenario to the file as it is and "
+"simulate it?"
+msgstr ""
+
+#, python-brace-format
 msgid "{name} copied: Ctrl+V in a folder copies it there"
 msgstr ""
 
@@ -5351,6 +5647,10 @@ msgid "{n} match"
 msgid_plural "{n} matches"
 msgstr[0] ""
 msgstr[1] ""
+
+#, python-brace-format
+msgid "{n} more statement(s) on it"
+msgstr ""
 
 #, python-brace-format
 msgid "{n} of {count} set in this file · Enter to edit"
@@ -5581,6 +5881,10 @@ msgid "{verdict}: press any key"
 msgstr ""
 
 #, python-brace-format
+msgid "{what} is not JSON: {why}"
+msgstr ""
+
+#, python-brace-format
 msgid "{where} · a path moves it too (../{name})"
 msgstr ""
 
@@ -5650,6 +5954,9 @@ msgid "~A~ddress (host:port)"
 msgstr ""
 
 msgid "~A~ll"
+msgstr ""
+
+msgid "~A~llow in this project"
 msgstr ""
 
 msgid "~A~llowed functions (separated by ,)"
@@ -5807,6 +6114,9 @@ msgstr ""
 msgid "~D~oubles: a JSON file in Runner's --simulate format"
 msgstr ""
 
+msgid "~D~oubles: importer, services (--simulate outcomes); the rest fails"
+msgstr ""
+
 msgid "~D~raft (not ready for review yet)"
 msgstr ""
 
@@ -5844,6 +6154,12 @@ msgid "~E~rror reporting (E_ALL, E_NOTICE...)"
 msgstr ""
 
 msgid "~E~valuate..."
+msgstr ""
+
+msgid "~E~xpect this run's context changes"
+msgstr ""
+
+msgid "~E~xpect this run's return and context changes"
 msgstr ""
 
 msgid "~E~xpression"
@@ -5982,6 +6298,9 @@ msgstr ""
 msgid "~L~ibrary (a package for others)"
 msgstr ""
 
+msgid "~L~ines"
+msgstr ""
+
 msgid "~M~CP server..."
 msgstr ""
 
@@ -6023,6 +6342,9 @@ msgid "~N~ame"
 msgstr ""
 
 msgid "~N~ame (. is the folder below)"
+msgstr ""
+
+msgid "~N~ame (.div/function-simulations/, for the team in Git)"
 msgstr ""
 
 #, python-brace-format
@@ -6126,6 +6448,9 @@ msgstr ""
 msgid "~P~ause the Flow after this Step"
 msgstr ""
 
+msgid "~P~in to the file's version"
+msgstr ""
+
 msgid "~P~ort"
 msgstr ""
 
@@ -6151,6 +6476,12 @@ msgid "~P~rompt on replace"
 msgstr ""
 
 msgid "~P~ull"
+msgstr ""
+
+msgid "~R~e-pin"
+msgstr ""
+
+msgid "~R~e-pin and simulate"
 msgstr ""
 
 msgid "~R~ebase and merge it"
@@ -6211,6 +6542,9 @@ msgid "~S~ave as..."
 msgstr ""
 
 msgid "~S~ave context to, --save-context (empty: not saved)"
+msgstr ""
+
+msgid "~S~cenario (Save keeps it in .div/function-simulations/)"
 msgstr ""
 
 msgid "~S~cenario (optional; Save keeps it in .div/function-tests/)"
@@ -6294,6 +6628,9 @@ msgstr ""
 msgid "~T~race into"
 msgstr ""
 
+msgid "~T~race the PHP lines (Xdebug)"
+msgstr ""
+
 msgid "~T~ransform all tags..."
 msgstr ""
 
@@ -6352,6 +6689,9 @@ msgid "~W~hole words only"
 msgstr ""
 
 msgid "~W~indow"
+msgstr ""
+
+msgid "~W~ithout the line trace"
 msgstr ""
 
 msgid "~X~debug..."

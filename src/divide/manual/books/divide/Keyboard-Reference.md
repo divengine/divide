@@ -120,6 +120,7 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **X** | the Step's context, as a tree or as JSON |
 | **F** | the Flow's Modules and Functions |
 | **T** | test the Step's Function |
+| **Shift+T** | Mock Simulation of the Step's Function ([[Function Mock Simulation]]) |
 | **S** | simulate the Flow ([[Flow Simulation]]) |
 | **Ins** / **B** | new Step / new Block |
 | **Del** | delete the Step or Block, or remove the chosen connection |
@@ -141,6 +142,19 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **Ctrl+F2** | back to the first event |
 | **Ctrl+F9** | resume a paused simulation (a new process) |
 
+## Mock Simulation window
+
+Real PHP ran: moving through its lines runs nothing again ([[Function Mock Simulation]]).
+
+| Key | Action |
+|---|---|
+| **F7** / **Shift+F7** | next / previous line |
+| **F8** / **Shift+F8** | next / previous line at the same depth |
+| **F4** | the next time the line under the cursor ran |
+| **Ctrl+Home** / **Ctrl+End** | first / last line |
+| **X** | the context before the line, in the Output window |
+| **S** | save as scenario |
+
 ## Flow Functions
 
 | Key | Action |
@@ -148,7 +162,7 @@ Every tree and list has a filter line above it, see [[The Desktop#filtering-a-li
 | **Enter** | open the Function (at its `return`), go to the Step, or make the missing Function |
 | **Ins** / **Shift+Ins** | new Function (in the Module under the cursor) / new Module |
 | **Ctrl+F9** | test the Function: run or debug it with a JSON context |
-| **Alt+F10** / **Shift+F10** | menu: Function..., Module..., Settings (`.div/runner.json`) |
+| **Alt+F10** / **Shift+F10** | menu: Function..., Simulate... ([[Function Mock Simulation]]), Module..., Settings (`.div/runner.json`) |
 | **Ctrl+R** | read the disk again |
 
 ## Dialector

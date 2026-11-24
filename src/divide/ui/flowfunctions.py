@@ -49,6 +49,7 @@ from divide.ui.history import HistoryInput
 from divide.ui.windows import EditorWindow, HRule, VRule, _TVWindow
 
 CM_MENU_FUNCTION, CM_MENU_MODULE, CM_MENU_SETTINGS = Command.YES, Command.NO, Command.OK  # (a message box ends on these)
+CM_MENU_SIMULATE = Command.USER + 246  # the selected Function's Mock Simulation
 ROLE_LABELS = (_('~A~ctivity: does the work, its result kept under the Step id'),
                _('C~o~ndition: true runs the Step, false skips it'))
 
@@ -306,7 +307,7 @@ class FunctionTree(FilteredTree, Tree[Row], TVViewMixin):
 class FunctionsWindow(_TVWindow):
     """Modules and Functions | what the selected one is (its file, the Steps that use it, its callable)."""
 
-    HINT = _('Enter open · ^F9 test · Ins Function · Shift+Ins Module · Alt+F10 menu · ^R reload')
+    HINT = _('Enter open · ^F9 test · Alt+F10 menu (Simulate...) · Ins Function · Shift+Ins Module · ^R reload')
     BINDINGS = [
         Binding("insert", "new_function", show=False),
         Binding("shift+insert", "new_module", show=False),
@@ -734,9 +735,10 @@ class FlowFunctionsMixin:
         from divide.ui.dialogs import MessageBox
         box = MessageBox(_('Functions'), _('What now?'), [
             (_('~F~unction...'), CM_MENU_FUNCTION, "function"),
+            (_('Si~m~ulate...'), CM_MENU_SIMULATE, "simulate"),
             (_('~M~odule...'), CM_MENU_MODULE, "module"),
             (_('~S~ettings'), CM_MENU_SETTINGS, "settings"),
-            (_('Cancel'), Command.CANCEL, "cancel")], width=60)
+            (_('Cancel'), Command.CANCEL, "cancel")], width=70)
         answer = await self.run_dialog(box)  # type: ignore[attr-defined]
         if answer == CM_MENU_FUNCTION:
             win.action_new_function()
@@ -744,6 +746,9 @@ class FlowFunctionsMixin:
             win.action_new_module()
         elif answer == CM_MENU_SETTINGS:
             await self._flow_settings_file(win)
+        elif answer == CM_MENU_SIMULATE:
+            self.raise_window(win)  # type: ignore[attr-defined]
+            await self.function_simulate_command()  # type: ignore[attr-defined]
 
     async def _flow_settings_file(self, win: FunctionsWindow) -> None:
         """The project's ``.div/runner.json`` in the editor, made (after asking) with the root shown now."""

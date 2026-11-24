@@ -21,6 +21,7 @@
 * [[Diseñador de Flows|Flow Designer]]
 * [[Functions del Flow|Flow Functions]]
 * [[Simulación de Flows|Flow Simulation]]
+* [[Mock Simulation de una Function|Function Mock Simulation]]
 * [[Depurar PHP|Debugging PHP]]
 * [[Servidor web|Web Server]]
 * [[Archivos de datos|Data Files]]

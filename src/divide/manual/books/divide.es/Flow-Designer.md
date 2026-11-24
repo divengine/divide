@@ -110,6 +110,7 @@ A 80 columnas el tablero muestra dos o tres carriles y el inspector va debajo. L
 | **X** | Editar el contexto del Step elegido, como árbol o como JSON |
 | **F** | Los Modules y las Functions del Flow ([[Functions del Flow|Flow Functions]]) |
 | **T** | Probar la Function del Step: ejecutarla o depurarla con un contexto JSON ([[Functions del Flow|Flow Functions]]) |
+| **Shift+T** | Mock Simulation de la Function del Step: su PHP real con dobles para sus dependencias, reproducido línea a línea ([[Mock Simulation de una Function\|Function Mock Simulation]]) |
 | **S** | Simular el Flow con dobles, sin ejecutar sus Functions ([[Simulación de Flows\|Flow Simulation]]) |
 | **Ins** | Un Step nuevo después del elegido (en el título de un carril: al final del Block) |
 | **B** | Un Block nuevo después del de lo elegido, con su primer Step |

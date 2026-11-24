@@ -57,7 +57,7 @@ On the root's row, the contract above and where Runner looks.
 | **Enter** | On a Function: open it in the PHP editor, at its `return`. On a Step: that Step in the Flow Designer. On a missing reference: make it (below). On a Module: fold or unfold |
 | **Ins** | A new Function, in the Module under the cursor (else in the root) |
 | **Shift+Ins** | A new Module |
-| **Alt+F10** (Shift+F10) | The window's menu: Function..., Module..., Settings (`.div/runner.json`) |
+| **Alt+F10** (Shift+F10) | The window's menu: Function..., Simulate... (a [[Function Mock Simulation]] of the Function under the cursor), Module..., Settings (`.div/runner.json`) |
 | **Ctrl+F9** | Test the Function under the cursor: run or debug it with a JSON context (below) |
 | **Ctrl+R** | Read the disk again (also done when a PHP file, a Flow or the settings are saved) |
 | typing | Filter the rows |
@@ -93,6 +93,7 @@ In the Step dialog (Enter on a card, Ins for a new Step, in the Flow Designer an
 - **Function...** is about the Step's activity, or its condition when that is the field you were in:
   - **Open**: its file in the PHP editor, once the Step is written (as **OK**).
   - **Test...**: the Test Function dialog for it, once the Step is written (see Test a Function).
+  - **Simulate...**: its [[Function Mock Simulation]], once the Step is written: its real PHP with doubles for its dependencies, replayed line by line.
   - **New...**: the New Function dialog, with the Step's Module. Its **OK** fills the Step's `module` and `activity` (or `condition`) and says that the file will be made. Nothing is written yet: the Step dialog's **OK** writes the Step, as one edit of the YAML (one Ctrl+Z), makes the file and opens it. **Cancel** writes and makes nothing. If the Step cannot be written, the new file is removed.
 
 ![The Step dialog after Function... > New...: module and activity filled in, and the note that OK writes the Step and makes functions/render/publish.php](images/flow-functions-step.png)
@@ -108,6 +109,8 @@ A Step has one `module`, for both its condition and its activity: a new Function
 ![T on a Step of the Flow Designer: its Function tested with a JSON context, run and then debugged, stopped in the Function, and its report in Output](images/function-test.gif)
 
 > **It runs the project's real PHP code.** The Function and whatever it calls may write files, use a database or the network. The test runs in a PHP process of its own, with a time limit and a memory limit, but that is not a sandbox, and the debugger is not one either. Test only code you trust.
+
+Test Function calls the Function with its real dependencies. To replace the ones it declares with doubles and replay its PHP lines, see [[Function Mock Simulation]] (Shift+T on a Step): it still runs the Function's real PHP.
 
 Open it with:
 - **Ctrl+F9** on a Function in the Functions window (on one of its Steps: as that Step uses it);

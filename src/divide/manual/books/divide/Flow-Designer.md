@@ -110,6 +110,7 @@ At 80 columns the board shows two or three lanes and the inspector goes under it
 | **X** | Edit the selected Step's context, as a tree or as JSON |
 | **F** | The Flow's Modules and Functions ([[Flow Functions]]) |
 | **T** | Test the Step's Function: run or debug it with a JSON context ([[Flow Functions]]) |
+| **Shift+T** | Mock Simulation of the Step's Function: its real PHP with doubles for its dependencies, replayed line by line ([[Function Mock Simulation]]) |
 | **S** | Simulate the Flow with test doubles, its Functions never run ([[Flow Simulation]]) |
 | **Ins** | A new Step after the selected one (on a lane's title: at the end of the Block) |
 | **B** | A new Block after the selected one's, with its first Step |

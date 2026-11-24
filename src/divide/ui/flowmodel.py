@@ -54,6 +54,7 @@ Key = tuple  # ("flow",) | ("block", id) | ("step", block, id)
 CM_EDIT_CONTEXT = Command.USER + 210  # the Step dialog's Edit context... button
 CM_STEP_FUNCTION = Command.USER + 211  # the Step dialog's Function... button
 CM_FN_OPEN, CM_FN_NEW, CM_FN_TEST = Command.YES, Command.NO, Command.OK  # what Function... asks (a message box ends on these)
+CM_FN_SIMULATE = Command.USER + 245  # Function... > Simulate...: the Function's Mock Simulation
 
 
 def _style(kind: str):
@@ -103,6 +104,7 @@ class StepDialog(_Dialog):
         self.pending = None  # a Function to make on OK (flowfunctions.FunctionSpec), from New...
         self.open_function: str | None = None  # condition | activity: open its file once the Step is written
         self.test_function: str | None = None  # condition | activity: test it once the Step is written
+        self.simulate_function: str | None = None  # condition | activity: its Mock Simulation once the Step is written
         self._last_function_key = "activity"
         self.new_id = new_id or rename  # the id field: a new Step's, or the Step's own to rename it
         self.id_input = InputLine(max_len=128)
@@ -185,16 +187,19 @@ class StepDialog(_Dialog):
         qualified = f"{module}:{name}" if module else name
         if found is not None:
             about = _('{key} {name}: {path}').format(key=key, name=qualified, path=ff.shown(found, project))
-            buttons = [(_('~O~pen'), CM_FN_OPEN, "open"), (_('~T~est...'), CM_FN_TEST, "test"), (_('~N~ew...'), CM_FN_NEW, "new"),
+            buttons = [(_('~O~pen'), CM_FN_OPEN, "open"), (_('~T~est...'), CM_FN_TEST, "test"),
+                       (_('Si~m~ulate...'), CM_FN_SIMULATE, "simulate"), (_('~N~ew...'), CM_FN_NEW, "new"),
                        (_('Cancel'), Command.CANCEL, "cancel")]
         else:
             about = (_('{key} {name}: no file yet').format(key=key, name=qualified) if name
                      else _('No {key} yet: New... makes its Function').format(key=key))
             buttons = [(_('~N~ew...'), CM_FN_NEW, "new"), (_('Cancel'), Command.CANCEL, "cancel")]
-        answer = await self.app.run_dialog(MessageBox(_('Function'), about, buttons, width=max(44, min(70, len(about) + 8))))  # type: ignore[attr-defined]
-        if answer in (CM_FN_OPEN, CM_FN_TEST):
+        answer = await self.app.run_dialog(MessageBox(_('Function'), about, buttons, width=max(44 if found is None else 66, min(74, len(about) + 8))))  # type: ignore[attr-defined]
+        if answer in (CM_FN_OPEN, CM_FN_TEST, CM_FN_SIMULATE):
             if answer == CM_FN_OPEN:
                 self.open_function = key
+            elif answer == CM_FN_SIMULATE:
+                self.simulate_function = key
             else:
                 self.test_function = key
             self.end_modal(Command.OK)
@@ -619,6 +624,10 @@ class FlowView(_TVWindow):
             if step is not None and step.get(dialog.test_function):
                 app.flow_test_function(self.source, step.get("module") or None, step.get(dialog.test_function),  # type: ignore[attr-defined]
                                        dialog.test_function)
+        elif dialog.simulate_function:
+            step = self.doc.step(block_id, step_id)
+            if step is not None and step.get(dialog.simulate_function):
+                app.flow_simulate_function(self.source, step.get("module") or None, step.get(dialog.simulate_function))  # type: ignore[attr-defined]
         elif dialog.open_function:
             step = self.doc.step(block_id, step_id)
             if step is not None:
@@ -707,6 +716,18 @@ class FlowView(_TVWindow):
             self.app.notify(_('This Step has no activity or condition to test'), timeout=2)
             return
         self.app.flow_test_function(self.source, item.get("module") or None, item.get(key), key)  # type: ignore[attr-defined]
+
+    def simulate_step_function(self) -> None:
+        """Shift+T: the Mock Simulation dialog for the selected Step's activity (else its condition)."""
+        item = self.selected()
+        if not isinstance(item, fm.Step):
+            self.app.notify(_('Choose a Step with an activity or a condition'), timeout=2)
+            return
+        key = "activity" if item.get("activity") else "condition" if item.get("condition") else None
+        if key is None:
+            self.app.notify(_('This Step has no activity or condition to simulate'), timeout=2)
+            return
+        self.app.flow_simulate_function(self.source, item.get("module") or None, item.get(key))  # type: ignore[attr-defined]
 
     def goto_target(self) -> bool:
         """Ctrl+Enter: the Step a call or jump leads to (in the tree), else the activity's or condition's file."""

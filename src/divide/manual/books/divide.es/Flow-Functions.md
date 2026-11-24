@@ -57,7 +57,7 @@ En la fila de la raíz, el contrato de arriba y dónde busca Runner.
 | **Intro** | En una Function: abrirla en el editor de PHP, en su `return`. En un Step: ese Step en el diseñador de Flows. En una referencia que falta: crearla (abajo). En un Module: plegarlo o desplegarlo |
 | **Ins** | Una Function nueva, en el Module bajo el cursor (si no, en la raíz) |
 | **Shift+Ins** | Un Module nuevo |
-| **Alt+F10** (Shift+F10) | El menú de la ventana: Function..., Module..., Ajustes (`.div/runner.json`) |
+| **Alt+F10** (Shift+F10) | El menú de la ventana: Function..., Simular... (una [[Mock Simulation\|Function Mock Simulation]] de la Function bajo el cursor), Module..., Ajustes (`.div/runner.json`) |
 | **Ctrl+F9** | Probar la Function bajo el cursor: ejecutarla o depurarla con un contexto JSON (abajo) |
 | **Ctrl+R** | Leer el disco otra vez (también se hace al guardar un archivo PHP, un Flow o los ajustes) |
 | escribir | Filtrar las filas |
@@ -93,6 +93,7 @@ En el diálogo del Step (Intro en una tarjeta, Ins para un Step nuevo, en el dis
 - **Function...** trata de la activity del Step, o de su condition cuando ese es el campo en el que estabas:
   - **Abrir**: su archivo en el editor de PHP, una vez escrito el Step (como **OK**).
   - **Probar...**: el diálogo Probar Function para ella, una vez escrito el Step (ver Probar una Function).
+  - **Simular...**: su [[Mock Simulation|Function Mock Simulation]], una vez escrito el Step: su PHP real con dobles para sus dependencias, reproducido línea a línea.
   - **Nueva...**: el diálogo Nueva Function, con el Module del Step. Su **OK** rellena el `module` y la `activity` (o la `condition`) del Step y dice que el archivo se va a crear. Todavía no se escribe nada: el **OK** del diálogo del Step escribe el Step, como una sola edición del YAML (un Ctrl+Z), crea el archivo y lo abre. **Cancelar** no escribe ni crea nada. Si el Step no se puede escribir, el archivo nuevo se quita.
 
 ![El diálogo del Step después de Function... > Nueva...: module y activity rellenos, y la nota de que OK escribe el Step y crea functions/render/publish.php](images/flow-functions-step.png)
@@ -108,6 +109,8 @@ Un Step tiene un solo `module`, para su condition y su activity: se rechaza una 
 ![T sobre un Step del diseñador de Flows: su Function probada con un contexto JSON, ejecutada y después depurada, parada en la Function, y su informe en la ventana de salida](images/function-test.gif)
 
 > **Ejecuta el código PHP real del proyecto.** La Function y todo lo que llama pueden escribir archivos, usar una base de datos o la red. La prueba se ejecuta en un proceso PHP propio, con un límite de tiempo y uno de memoria, pero eso no es un sandbox, y el depurador tampoco lo es. Prueba solo código en el que confías.
+
+Probar Function llama a la Function con sus dependencias reales. Para reemplazar las que declara por dobles y reproducir sus líneas PHP, ver [[Mock Simulation de una Function|Function Mock Simulation]] (Shift+T en un Step): sigue ejecutando el PHP real de la Function.
 
 Se abre con:
 - **Ctrl+F9** sobre una Function en la ventana Functions (sobre uno de sus Steps: como la usa ese Step);

@@ -219,5 +219,5 @@ A simulation is not a sandbox. Runner guarantees that the Flow's functions are n
 - **The board shows only the simulated Flow.** A nested Flow's events are in the playback and the panel names their scope, but its Steps are not on the board. While they run, the Step that runs the nested Flow is the current one.
 - **Doubles are data, not PHP.** A condition double cannot pause.
 - **Top-level changes.** Context changes compare top-level keys. A change inside a nested array shows the whole key, before and after.
-- **No PHP stepping.** Simulation steps through the Flow's events, not PHP statements. For that, see [[Debugging PHP]] and Test Function.
+- **No PHP stepping.** Simulation steps through the Flow's events, not PHP statements. For that, see [[Debugging PHP]], Test Function, and [[Function Mock Simulation]], which runs one Function's real PHP with doubles and replays its lines.
 - **One at a time.** One simulation runs at a time. A replay needs its folder: once the cache removes it, it cannot be replayed.

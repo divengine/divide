@@ -2,7 +2,9 @@
 
 **Status:** approved (#15), with the five decisions of its review. **Engine:** `divide.run.funcsim` (#21),
 tested by `tests/test_funcsim.py`. **Line trace:** `divide.run.functrace` (#22), tested by
-`tests/test_functrace.py`. The UI (#23) is not built yet. The proof of concept of #15 (`prototypes/function-simulation`)
+`tests/test_functrace.py`. **UI:** `divide.ui.funcsim` and the static scan `divide.run.funcscan` (#23), tested by
+`tests/test_funcsim_ui.py` and `tests/test_funcscan.py`; its help is the page Function Mock Simulation (EN, ES).
+The proof of concept of #15 (`prototypes/function-simulation`)
 was removed once #22 promoted its last part; it is in the history at `7f47ab5`.
 
 ## 1. Question
@@ -172,17 +174,33 @@ Consumers ignore unknown fields and event types, as for Runner's trace. The read
 - Runner's event types and the Flow board's marks. A PHP line is shown in the **code editor** (a gutter mark plus a locals and context panel), never as a Step on the board.
 - The two protocols have different names and different trust labels. A Flow simulation runs no Function code; a Mock Simulation does.
 
-## 8. The workflow (proposed)
+## 8. The workflow (#23)
 
-1. **Pick the Function.** In the Functions window or with T on a Step, choose **Simulate...** (Shift+T). Test Function stays **Run / Debug**, for real.
-2. **The dialog.** It has the context (JSON), the doubles (pre-filled from a static scan of `_importer` calls and `$context['x']->method(` in the file, all marked `unknown: fail`), the expectations and the limits. Under them, the banner **MOCK SIMULATION: real PHP runs; only these dependencies are replaced**.
-3. **Simulate.** It runs one bounded child process with the line trace. Esc cancels.
-4. **Playback.** The code editor opens read-only on the Function, with the current line marked:
-   - F7 / Shift+F7: next / previous line;
-   - F8: next line at the same depth;
-   - Ctrl+Home / Ctrl+End: first / last event.
+1. **Pick the Function.** Shift+T on a Step of the Flow Designer, Function... > Simulate... in the Step dialog,
+   Alt+F10 > Simulate... in the Functions window, or Run > Mock Simulation of a Function (the Functions window's
+   Function, else the PHP file being edited). Test Function stays **Run / Debug**, for real: T and Ctrl+F9.
+2. **The dialog.** It has the scenario's name (saved ones offered), the context (JSON), the doubles (pre-filled from
+   `divide.run.funcscan`, a static scan of `_importer` calls and `$context['x']->method(` in the file, also through a
+   variable, each a placeholder answering `null`; `unknown` is always `fail`), the expectations, the limits and the
+   options (line trace, pin, tripwire, autoload); **Edit...** opens the whole scenario as a tree or JSON. Its banner
+   always says **MOCK SIMULATION: real PHP runs; only declared dependencies are replaced** and that it is neither a
+   sandbox nor a Flow simulation. A wrong scenario, or one where a dependency the scan found has no double, is
+   refused with nothing run. The project's opt-in is asked on the first run.
+3. **The pin.** A new scenario is pinned (its file's sha256); unticking the pin is a visible choice, and an
+   unpinned scenario is labelled **NOT pinned to a source version** in the dialog, the playback and the trace. A
+   stale scenario is re-pinned only by **Re-pin** in the dialog or **Re-pin and simulate** after a `stale` result; a
+   saved scenario changes only on Save.
+4. **Simulate.** One bounded child process with the line trace; Esc cancels. Without Xdebug, divide asks whether to
+   run without the line trace (the result only, no lines); the PHP runs for real either way.
+5. **Playback.** Its own window, the Function's file read-only with the line about to run marked in the gutter:
+   - F7 / Shift+F7: next / previous line; F8 / Shift+F8: next / previous at the same depth;
+   - F4: the next event on the cursor's line; Ctrl+Home / Ctrl+End: first / last;
+   - X: the context before the line in Output; S: **Save as scenario** (optionally expecting this run's return and
+     context changes).
 
-   The panel shows the locals changed, the context so far, the double calls and the output. The result is at the end, and **Save as scenario** keeps it.
+   The panel shows the line's depth, the locals changed, the locals and the context before the line, the double
+   calls, the logger, the output and the result or exception with the expectations. It is not an editor window:
+   the debugger's keys and marks never reach it, and moving runs nothing.
 
 ## 9. Follow-up issues
 

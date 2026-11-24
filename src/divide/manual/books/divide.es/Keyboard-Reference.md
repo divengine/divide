@@ -120,6 +120,7 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **X** | el contexto del Step, como árbol o como JSON |
 | **F** | los Modules y las Functions del Flow |
 | **T** | probar la Function del Step |
+| **Shift+T** | Mock Simulation de la Function del Step ([[Mock Simulation de una Function\|Function Mock Simulation]]) |
 | **S** | simular el Flow ([[Simulación de Flows\|Flow Simulation]]) |
 | **Ins** / **B** | Step nuevo / Block nuevo |
 | **Supr** | borrar el Step o el Block, o quitar la conexión escogida |
@@ -141,6 +142,19 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **Ctrl+F2** | volver al primer evento |
 | **Ctrl+F9** | reanudar una simulación en pausa (un proceso nuevo) |
 
+## Ventana de Mock Simulation
+
+Se ejecutó PHP real: recorrer sus líneas no vuelve a ejecutar nada ([[Mock Simulation de una Function|Function Mock Simulation]]).
+
+| Tecla | Acción |
+|---|---|
+| **F7** / **Shift+F7** | línea siguiente / anterior |
+| **F8** / **Shift+F8** | línea siguiente / anterior a la misma profundidad |
+| **F4** | la siguiente vez que se ejecutó la línea bajo el cursor |
+| **Ctrl+Inicio** / **Ctrl+Fin** | primera / última línea |
+| **X** | el contexto antes de la línea, en la ventana Salida |
+| **S** | guardar como escenario |
+
 ## Functions del Flow
 
 | Tecla | Acción |
@@ -148,7 +162,7 @@ Cada árbol y cada lista tiene encima una línea de filtro, ver [[El escritorio|
 | **Intro** | abrir la Function (en su `return`), ir al Step, o crear la Function que falta |
 | **Ins** / **Shift+Ins** | Function nueva (en el Module bajo el cursor) / Module nuevo |
 | **Ctrl+F9** | probar la Function: ejecutarla o depurarla con un contexto JSON |
-| **Alt+F10** / **Shift+F10** | menú: Function..., Module..., Ajustes (`.div/runner.json`) |
+| **Alt+F10** / **Shift+F10** | menú: Function..., Simular... ([[Mock Simulation de una Function\|Function Mock Simulation]]), Module..., Ajustes (`.div/runner.json`) |
 | **Ctrl+R** | leer el disco otra vez |
 
 ## Dialector
