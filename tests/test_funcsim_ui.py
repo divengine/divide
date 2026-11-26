@@ -338,6 +338,7 @@ async def test_a_traced_run_plays_back_line_by_line_and_moving_runs_nothing(proj
         await pilot.press("f8")
         assert win.playback.cursor == 1
         assert "Double calls (2)" in str(win.info.render())
+        assert 'mailer->send("buyer@example.com", "Total: 121") #1: returns' in str(win.info.render())  # a call, args inside
         assert file.read_bytes() == before  # moving runs nothing, writes nothing
         assert sorted(p.name for p in (project / ".div" / "function-simulation").iterdir()) == runs
         assert not app.debugging
@@ -549,3 +550,10 @@ async def test_the_dialog_and_the_banner_fit(project, size, palette):
         assert app.context_topic() == "Function-Mock-Simulation"  # F1: its help page
         await wait(pilot, lambda: win.has_class("narrow") == (win.size.width < 100), "the panel's layout does not follow the width")
         assert themes.current().name == palette
+
+
+def test_a_double_call_reads_as_a_call_never_as_what_it_returned():
+    from divide.ui.funcsim import _call_args
+    assert _call_args([None, "Total: 0"]) == 'null, "Total: 0"'
+    assert _call_args([]) == ""
+    assert _call_args(["x" * 100]).endswith("~")  # cut, and says so

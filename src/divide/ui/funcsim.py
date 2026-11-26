@@ -81,6 +81,13 @@ def _json(value, limit: int = 400) -> str:
     return text if len(text) <= limit else text[:limit - 1] + "~"
 
 
+def _call_args(args) -> str:
+    """A double's arguments as a call writes them: ``mailer->send("a", 1)``, never read as what it returned."""
+    if not isinstance(args, list):
+        return _json(args, 60)
+    return _json(args, 62)[1:].removesuffix("]")
+
+
 def _short(sha: str | None) -> str:
     return sha[:8] if sha else "-"
 
@@ -752,7 +759,7 @@ class FunctionPlaybackWindow(_TVWindow):
         head(_('Double calls ({n})').format(n=len(calls)))
         for call in calls[:30]:
             if isinstance(call, dict):
-                text.append(f"  {call.get('double')} #{call.get('call')}: {call.get('outcome')} {_json(call.get('args'), 60)}\n")
+                text.append(f"  {call.get('double')}({_call_args(call.get('args'))}) #{call.get('call')}: {call.get('outcome')}\n")
         if not calls:
             text.append("  " + _('(none)') + "\n", style=dim)
         logs = result.get("logs") or []
