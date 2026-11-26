@@ -42,7 +42,7 @@ Unsaved PHP files are saved first: PHP runs what is on disk.
 The **Mock Simulation** dialog holds a scenario. Its banner always says that real PHP runs, that it is not a sandbox and that it is not a Flow simulation.
 
 - **The first line**: the Function's file and its **pin** (below).
-- **Scenario**: a name. **Save** writes the scenario in the project, in `.div/function-simulations/<module>/<name>.<scenario>.json` (`_root` for a Function with no Module), for the team in Git. **Down** offers the saved ones, and choosing one fills the dialog. The last scenario of each Function is also remembered in your own settings, never in the project.
+- **Scenario**: a name. **Save** writes the scenario in the project, in `.div/function-simulations/<module>/<name>.<scenario>.json` (`_root` for a Function with no Module), for the team in Git. **Down** offers the saved ones, and choosing one fills the dialog. Your own settings remember only the options and the name of the scenario last used for each Function, and only after the project's opt-in: never its context or its doubles, which stay in the scenario's file.
 - **Context**: a JSON object, the context the Function gets, by reference. Keys starting with `_` belong to Runner and are refused.
 - **Doubles**: a JSON object with `importer` (other Functions, by `module:name` or `name`) and `services` (an object per context key, one outcome per method). Each outcome is one of Runner's `--simulate` outcomes: `returns`, `throws` (a message) or `sequence` (one outcome per call), with an optional `context` merged into the context.
 - **Expected return** and **Expected context keys**: optional checks, as for Test Function (the context keys are a subset the context after must hold).
@@ -53,7 +53,7 @@ The **Mock Simulation** dialog holds a scenario. Its banner always says that rea
 - **Composer autoload (real classes)**: off by default. Without it, a class the Function needs is an error that names it, never a silent real dependency. With it, those classes are real code.
 - **Edit...** opens the whole scenario as a tree or as JSON, the editor of a Step's context.
 
-**The doubles are filled in for you.** divide reads the Function's file (it does not run it) and finds what it asks its context for: `$context['_importer']('name', 'module')` and `$context['key']->method(`, also through a variable they were assigned to. Each one it finds gets a placeholder that answers `null`, and the line under the fields names the placeholders until you change them. An import whose name is computed when it runs cannot be known: the line says where it is.
+**The doubles are filled in for you.** divide reads the Function's file (it does not run it) and finds what it asks its context for: `$context['_importer']('name', 'module')` and `$context['key']->method(`, also through a variable they were assigned to. Each one it finds gets a placeholder that answers `null`, and the line under the fields names the placeholders until you change them. **Simulate** and **Save** ask before a placeholder answers `null`: **Keep null** when `null` is the answer you mean (it is a valid one), or **Back** to give it a value. A `null` in a saved scenario is what was saved, and is not asked about again. An import whose name is computed when it runs cannot be known: the line says where it is.
 
 `unknown` is always `fail`: **a dependency with no double is never the real one**. The simulation throws when the Function asks for it.
 

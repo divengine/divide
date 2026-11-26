@@ -187,15 +187,22 @@ def test_the_line_limit_truncates_the_trace(project):
     _no_php_left()
 
 
+# Two lines a turn and a 20 ms sleep: about 100 lines a second whatever the machine, so the 2-second limit
+# comes long before the line limit (100,000), which a tight loop could reach first on a fast runner.
+SLOW_LOOP = ("return function (array &$c): void {\n    while (true) {\n        $c['n'] = ($c['n'] ?? 0) + 1;\n"
+             "        usleep(20000);\n    }\n};\n")
+
+
 def test_a_timeout_mid_step_leaves_no_php(project):
-    write(project, "t", "return function (array &$c): void {\n    while (true) {\n        $c['n'] = ($c['n'] ?? 0) + 1;\n    }\n};\n")
+    write(project, "t", SLOW_LOOP)
     out = run(project, just() | {"limits": {"seconds": 2, "lines": 100_000}})
     assert out.status == "timeout" and out.events
+    assert not out.truncated and 0 < len(out.events) < 100_000  # the time limit ended it, never the line limit
     _no_php_left()
 
 
 def test_cancelling_mid_step_leaves_no_php(project):
-    write(project, "t", "return function (array &$c): void {\n    while (true) {\n        $c['n'] = ($c['n'] ?? 0) + 1;\n    }\n};\n")
+    write(project, "t", SLOW_LOOP)  # still stepping when it is cancelled, on any machine
     request = fs.request_for(project, just() | {"limits": {"lines": 100_000}})
 
     async def go() -> None:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-24 23:56+0000\n"
+"POT-Creation-Date: 2026-11-26 11:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2339,6 +2339,9 @@ msgstr ""
 msgid "Not run"
 msgstr ""
 
+msgid "Not run: give the doubles a value, or keep null when asked"
+msgstr ""
+
 #, python-brace-format
 msgid "Not running: {error}"
 msgstr ""
@@ -3737,6 +3740,13 @@ msgstr ""
 
 #, python-brace-format
 msgid "Their id is taken: {names}."
+msgstr ""
+
+#, python-brace-format
+msgid ""
+"These doubles come from the scan and answer null: {names}. Null is a "
+"valid answer when you mean it. Keep null for them, or go back and give "
+"them a value?"
 msgstr ""
 
 #, python-brace-format
@@ -5980,6 +5990,9 @@ msgstr ""
 msgid "~A~utomatic: the first one found"
 msgstr ""
 
+msgid "~B~ack"
+msgstr ""
+
 msgid "~B~ackward"
 msgstr ""
 
@@ -6284,6 +6297,12 @@ msgid "~J~ump block.step (and go on from there)"
 msgstr ""
 
 msgid "~K~eep error and log messages in the trace (--trace-messages)"
+msgstr ""
+
+msgid "~K~eep null and save"
+msgstr ""
+
+msgid "~K~eep null and simulate"
 msgstr ""
 
 msgid "~K~ey"

@@ -382,7 +382,7 @@ divide has no database. Its persistent data:
 | Div setup of a project, of the user | `<project>/.div/setup.json`, `~/.div/setup.json` (`$DIV_HOME`) | the developer, through Options > Div setup (`divide.run.setup`) |
 | Trusted PHP settings of projects | `~/.div/trust.json` (a hash per setup file) | `divide.run.setup` |
 | Mock Simulation opt-in of projects | `$XDG_CONFIG_HOME/divide/config.json`, key `function_simulation_trust` (never in the project) | `divide.run.funcsim` |
-| Mock Simulation last scenario of each Function | `$XDG_CONFIG_HOME/divide/config.json`, key `function_simulations` (never in the project) | `divide.ui.funcsim` |
+| Mock Simulation preferences of each Function (the options and the last scenario's name; never a context or a double, and only after the project's opt-in) | `$XDG_CONFIG_HOME/divide/config.json`, key `function_simulations` (never in the project) | `divide.ui.funcsim` |
 | Mock Simulation scenarios | `<project>/.div/function-simulations/<module>/<name>.<scenario>.json` (versioned) | the developer, through `divide.run.funcsim` |
 | Mock Simulation traced runs | `<project>/.div/function-simulation/<run>/` (out of Git, the retention of Flow simulations) | `divide.run.functrace` |
 | Language server caches | `$XDG_CACHE_HOME/...` | `divide.lsp.client` |

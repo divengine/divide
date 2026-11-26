@@ -185,7 +185,10 @@ Consumers ignore unknown fields and event types, as for Runner's trace. The read
    options (line trace, pin, tripwire, autoload); **Edit...** opens the whole scenario as a tree or JSON. Its banner
    always says **MOCK SIMULATION: real PHP runs; only declared dependencies are replaced** and that it is neither a
    sandbox nor a Flow simulation. A wrong scenario, or one where a dependency the scan found has no double, is
-   refused with nothing run. The project's opt-in is asked on the first run.
+   refused with nothing run. A placeholder still answering `null` is confirmed explicitly before Simulate or Save
+   (**Keep null** or **Back**): `null` stays a valid answer, never a silent default; a saved scenario's `null` is
+   what was saved. The project's opt-in is asked on the first run. The user's settings keep only the options and
+   the last scenario's name, after the opt-in: never the context or the doubles.
 3. **The pin.** A new scenario is pinned (its file's sha256); unticking the pin is a visible choice, and an
    unpinned scenario is labelled **NOT pinned to a source version** in the dialog, the playback and the trace. A
    stale scenario is re-pinned only by **Re-pin** in the dialog or **Re-pin and simulate** after a `stale` result; a

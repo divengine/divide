@@ -65,6 +65,7 @@ CM_FS_REPIN = Command.USER + 242
 CM_FS_REPLAY = Command.USER + 243
 CM_FS_ALLOW = Command.YES
 CM_FS_UNTRACED = Command.YES
+CM_FS_KEEP_NULL = Command.USER + 247
 
 NOT_SANDBOX = _('Not a sandbox, not a Flow simulation: files, network, databases are real.')
 STATUS_WORDS = {
@@ -104,17 +105,32 @@ def _last_key(project: Path, module: str | None, name: str) -> str:
     return f"{project}|{module or ''}:{name}"
 
 
+PREFERENCES = ("name", "trace", "tripwire")  # what the user's settings keep: never a context or a double
+
+
+def _preferences(entry) -> dict:
+    if not isinstance(entry, dict):
+        return {}
+    kept = {key: entry[key] for key in PREFERENCES if key in entry}
+    if not isinstance(kept.get("name", ""), str):
+        kept.pop("name")
+    return {key: value for key, value in kept.items() if key == "name" or isinstance(value, bool)}
+
+
 def last_input(project: Path, module: str | None, name: str) -> dict:
+    """The options last used for a Function and the name of its scenario (the scenario itself is in the
+    project, if it was saved)."""
     saved = config.load().get("function_simulations")
-    entry = saved.get(_last_key(project, module, name)) if isinstance(saved, dict) else None
-    return entry if isinstance(entry, dict) and isinstance(entry.get("scenario"), dict) else {}
+    return _preferences(saved.get(_last_key(project, module, name)) if isinstance(saved, dict) else None)
 
 
 def remember_input(project: Path, module: str | None, name: str, entry: dict) -> None:
-    """The last scenario of a Function and the options, in the user's own settings (never in the project)."""
+    """The options and the scenario's name, in the user's own settings (never in the project). The context
+    and the doubles are never kept there; an older entry that held them is cut down to its preferences."""
     settings = config.load()
     saved = settings.get("function_simulations") if isinstance(settings.get("function_simulations"), dict) else {}
-    saved[_last_key(project, module, name)] = entry
+    saved = {key: _preferences(value) for key, value in saved.items()}
+    saved[_last_key(project, module, name)] = _preferences(entry)
     settings["function_simulations"] = saved
     config.save(settings)
 
@@ -158,13 +174,24 @@ class FunctionSimulationDialog(_Dialog):
         self.scenarios = scenarios
         self.scan = funcscan.scan_file(file)
         self.last_replay = replay
-        scenario = last.get("scenario") if last else None
-        if not isinstance(scenario, dict) or fs.check_scenario(scenario):
+        last_name = str(last.get("name") or "") if last else ""
+        scenario = None
+        if last_name in scenarios:  # the scenario last used, from the project (the settings keep only its name)
+            try:
+                scenario = fs.load_scenario(scenarios[last_name])
+            except fs.SimulationError:
+                scenario = None
+        # the names whose double the scan put in and that answer null: simulated only once the user confirms
+        self.scanned: set[str] = set()
+        self.nulls_ok: set[str] = set()
+        self._asking = False
+        if scenario is None:
             scenario = fs.new_scenario(module, name, file)  # a new one is pinned to the file as it is
             scenario["doubles"] = self.scan.doubles()
+            self.scanned = set(self.scan.missing({}))
         self.scenario: dict = scenario
         self.scenario_input = InputLine(max_len=64)
-        self.scenario_input.data = str(last.get("name") or "") if last else ""
+        self.scenario_input.data = last_name
         self.context_input = InputLine(max_len=65536)
         self.doubles_input = InputLine(max_len=65536)
         self.return_input = InputLine(max_len=8192)
@@ -253,6 +280,41 @@ class FunctionSimulationDialog(_Dialog):
                 names=", ".join(missing[:6]) + (" ..." if len(missing) > 6 else "")))
         return (scenario if not problems else None), problems
 
+    def placeholders(self, doubles: dict) -> list[str]:
+        """The doubles the scan put in that still answer null and were not confirmed."""
+        found = []
+        for key, value in (doubles.get("importer") or {}).items():
+            if key in self.scanned and key not in self.nulls_ok and value == funcscan.PLACEHOLDER:
+                found.append(key)
+        for service, methods in (doubles.get("services") or {}).items():
+            for method, value in (methods.items() if isinstance(methods, dict) else ()):
+                key = f"{service}->{method}"
+                if key in self.scanned and key not in self.nulls_ok and value == funcscan.PLACEHOLDER:
+                    found.append(key)
+        return found
+
+    async def confirm_nulls(self, names: list[str], *, saving: bool) -> bool:
+        """Null is a valid answer, but one the user says: a scanned double is never null by default."""
+        box = MessageBox(_('Mock Simulation'), _('These doubles come from the scan and answer null: {names}. Null is a '
+                                                 'valid answer when you mean it. Keep null for them, or go back and give '
+                                                 'them a value?').format(names=", ".join(names[:8]) + (" ..." if len(names) > 8 else "")),
+                         [(_('~K~eep null and save') if saving else _('~K~eep null and simulate'), CM_FS_KEEP_NULL, "keep-null"),
+                          (_('~B~ack'), Command.CANCEL, "back")], width=66)
+        if await self.app.run_dialog(box) != CM_FS_KEEP_NULL:  # type: ignore[attr-defined]
+            self.status.update(_('Not run: give the doubles a value, or keep null when asked'))
+            return False
+        self.nulls_ok.update(names)
+        self.show_state()
+        return True
+
+    async def _simulate_after_nulls(self, names: list[str]) -> None:
+        try:
+            confirmed = await self.confirm_nulls(names, saving=False)
+        finally:
+            self._asking = False
+        if confirmed:
+            self.end_modal(Command.OK)
+
     # ------------------------------------------------------------ layout
     def compose_content(self) -> ComposeResult:
         yield self.about
@@ -312,9 +374,7 @@ class FunctionSimulationDialog(_Dialog):
             line = problems[0]
         else:
             doubles = json.loads(self.doubles_input.data or "{}")
-            placeholders = [k for k, v in (doubles.get("importer") or {}).items() if v == funcscan.PLACEHOLDER]
-            placeholders += [f"{s}->{m}" for s, ms in (doubles.get("services") or {}).items() if isinstance(ms, dict)
-                             for m, v in ms.items() if v == funcscan.PLACEHOLDER]
+            placeholders = self.placeholders(doubles)
             if placeholders:
                 line = _('From the scan, answering null until you say: {names}').format(names=", ".join(placeholders[:5]))
             elif self.scan.dynamic:
@@ -334,6 +394,7 @@ class FunctionSimulationDialog(_Dialog):
             except fs.SimulationError as exc:
                 self.status.update(str(exc))
                 return
+            self.scanned = set()  # a saved scenario's nulls are what was saved: intended
         self.show_state()
 
     def on_cluster_changed(self, message) -> None:
@@ -406,6 +467,8 @@ class FunctionSimulationDialog(_Dialog):
         if scenario is None:
             self.app.notify(problems[0], severity="error", timeout=6)
             return
+        if (names := self.placeholders(scenario["doubles"])) and not await self.confirm_nulls(names, saving=True):
+            return
         path = fs.scenario_file(self.project, self.module, self.func_name, name)
         if name in self.scenarios and await self.app.run_dialog(confirm(  # type: ignore[attr-defined]
                 _('Save scenario'), _('Replace the scenario {name} in {path}?').format(name=name, path=fm._shown(path, self.project)))) != Command.YES:
@@ -427,14 +490,19 @@ class FunctionSimulationDialog(_Dialog):
             self.app.notify(problems[0], severity="error", timeout=6)
             self.status.update(problems[0])
             return False
+        if names := self.placeholders(scenario["doubles"]):  # asked first; simulated once confirmed
+            if not self._asking:  # (valid() is called twice per end_modal: one question)
+                self._asking = True
+                self.run_worker(self._simulate_after_nulls(names), exclusive=True)
+            return False
         self.scenario = scenario
         self.trace = self._checked("trace")
         self.tripwire = self._checked("tripwire")
         return True
 
     def entry(self) -> dict:
-        return {"name": self.scenario_input.data.strip(), "scenario": self.scenario, "trace": self.trace,
-                "tripwire": self.tripwire}
+        """What the user's settings keep: the options and the scenario's name, never its context or doubles."""
+        return {"name": self.scenario_input.data.strip(), "trace": self.trace, "tripwire": self.tripwire}
 
 
 class SaveScenarioDialog(_Dialog):
@@ -835,13 +903,13 @@ class FunctionSimulationMixin:
         if dialog.replay and dialog.last_replay is not None:
             self.open_function_run(dialog.last_replay)
             return
-        remember_input(project, module, name, dialog.entry())
         if not fs.trusted(project):
             box = MessageBox(title, fs.TRUST_TEXT, [(_('~A~llow in this project'), CM_FS_ALLOW, "allow"),
                                                     (_('Cancel'), Command.CANCEL, "cancel")], width=66)
             if await self.run_dialog(box) != CM_FS_ALLOW:  # type: ignore[attr-defined]
                 return
             fs.trust(project)
+        remember_input(project, module, name, dialog.entry())  # only after the opt-in, and only the preferences
         trace = dialog.trace
         if trace:
             from divide.run.dbgp import xdebug_ini
@@ -870,7 +938,6 @@ class FunctionSimulationMixin:
                 return
             scenario = json.loads(json.dumps(scenario))
             scenario["function"]["sha256"] = fs.sha256(file)
-            remember_input(project, module, name, {**dialog.entry(), "scenario": scenario})
         folder = None
         if trace:
             try:

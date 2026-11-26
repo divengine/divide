@@ -91,6 +91,10 @@ async def wait(pilot, condition, what: str, tries: int = 400) -> None:
     pytest.fail(what)
 
 
+def settings(project: Path) -> dict:
+    return json.loads((project.parent / "config" / "divide" / "config.json").read_text(encoding="utf-8"))
+
+
 def dialog_of(app, kind):
     dialog = getattr(app.screen, "dialog", None)
     return dialog if isinstance(dialog, kind) else None
@@ -188,12 +192,15 @@ async def test_the_first_simulation_asks_for_the_opt_in_and_without_xdebug_offer
         await wait(pilot, lambda: dialog_of(app, MessageBox), "no opt-in question")
         box = dialog_of(app, MessageBox)
         assert "not a sandbox and not side-effect-free" in box._text
-        await pilot.press("escape")  # not allowed: nothing runs, nothing recorded
+        await pilot.press("escape")  # not allowed: nothing runs, nothing recorded, not even in the settings
         await pilot.pause(0.4)
         assert not fs.trusted(project) and playback(app) is None
+        assert "function_simulations" not in settings(project)
 
         dialog = await open_dialog(app, pilot, project)
-        assert json.loads(dialog.context_input.data) == CONTEXT  # the last input, remembered
+        assert json.loads(dialog.context_input.data) == {}  # the context is never kept in the user's settings
+        dialog.context_input.data = json.dumps(CONTEXT)
+        dialog.doubles_input.data = json.dumps(DOUBLES)
         await pilot.press("alt+m")
         await wait(pilot, lambda: dialog_of(app, MessageBox), "no opt-in question")
         await pilot.press("a")
@@ -209,6 +216,87 @@ async def test_the_first_simulation_asks_for_the_opt_in_and_without_xdebug_offer
         assert "Returned" in str(win.verdict.render()) and "notified" in str(win.verdict.render())
         assert "MOCK SIMULATION" in str(win.bar.render()) and "Not a sandbox" in str(win.bar.render())
     assert not (project / ".div" / "function-simulation").exists()  # an untraced run is not kept
+    # after the opt-in, the user's settings keep the preferences only: no context, no doubles
+    kept = settings(project)["function_simulations"]
+    assert list(kept.values()) == [{"name": "", "trace": True, "tripwire": False}]
+    text = (project.parent / "config" / "divide" / "config.json").read_text(encoding="utf-8")
+    assert "buyer@example.com" not in text and "mailer" not in text and "billing:tax" not in text
+
+
+def test_older_settings_with_a_scenario_are_cut_down_to_the_preferences(project):
+    from divide import config
+    from divide.ui.funcsim import last_input, remember_input
+
+    data = config.load()
+    data["function_simulations"] = {"other|:x": {"name": "a", "trace": True, "tripwire": False,
+                                                 "scenario": {"context": {"secret": "s3cr3t"}}}}
+    config.save(data)
+    assert last_input(project, None, "checkout") == {}
+    remember_input(project, None, "checkout", {"name": "large", "trace": True, "tripwire": True,
+                                              "scenario": {"context": CONTEXT, "doubles": DOUBLES}})
+    kept = settings(project)["function_simulations"]
+    assert kept == {"other|:x": {"name": "a", "trace": True, "tripwire": False},
+                    f"{project}|:checkout": {"name": "large", "trace": True, "tripwire": True}}
+    assert last_input(project, None, "checkout") == {"name": "large", "trace": True, "tripwire": True}
+
+
+async def test_scanned_null_doubles_need_a_confirmation_and_null_stays_a_valid_answer(project):
+    from divide.app import Divide
+    from divide.ui.dialogs import MessageBox
+    from divide.ui.funcsim import FunctionSimulationDialog
+
+    fs.trust(project)
+    app = Divide(project, [project / "functions" / "checkout.php"])
+    async with app.run_test(size=(120, 34)) as pilot:
+        dialog = await open_dialog(app, pilot, project)
+        dialog.context_input.data = json.dumps(CONTEXT)
+        dialog.options.value &= ~1  # no line trace: this test needs no Xdebug
+        dialog.post_message(type(dialog.options).Changed(dialog.options.value))
+        await pilot.pause(0.2)
+        assert dialog.placeholders(json.loads(dialog.doubles_input.data)) == ["billing:tax", "mailer->send"]
+
+        # Save asks too; Back saves nothing
+        dialog.scenario_input.data = "nulls"
+        await pilot.press("alt+v")
+        await wait(pilot, lambda: dialog_of(app, MessageBox), "Save did not ask about the null doubles")
+        assert "billing:tax, mailer->send" in dialog_of(app, MessageBox)._text
+        await pilot.press("escape")
+        await pilot.pause(0.3)
+        assert not (project / ".div" / "function-simulations").exists()
+
+        # Simulate asks; Back runs nothing and the dialog stays
+        await pilot.press("alt+m")
+        await wait(pilot, lambda: dialog_of(app, MessageBox), "Simulate did not ask about the null doubles")
+        box = dialog_of(app, MessageBox)
+        assert "answer null" in box._text and "billing:tax, mailer->send" in box._text
+        await pilot.press("b")
+        await wait(pilot, lambda: dialog_of(app, FunctionSimulationDialog) is dialog, "Back did not return to the dialog")
+        assert "Not run" in str(dialog.status.render()) and playback(app) is None
+
+        # a value given to one: only the other is asked about
+        doubles = json.loads(dialog.doubles_input.data)
+        doubles["importer"]["billing:tax"] = {"returns": 0}
+        dialog.doubles_input.data = json.dumps(doubles)
+        await pilot.press("alt+m")
+        await wait(pilot, lambda: dialog_of(app, MessageBox), "no question for the one left null")
+        box = dialog_of(app, MessageBox)
+        assert "mailer->send" in box._text and "billing:tax" not in box._text
+        await pilot.press("k")  # Keep null and simulate: null is the answer meant
+        await finish_progress(app, pilot)
+        await wait(pilot, lambda: playback(app) is not None, "no playback window")
+        verdict = str(playback(app).verdict.render())
+        assert "pending" in verdict  # the mailer's double answered null, as confirmed
+    # a null the user saved in a scenario is intended: no question
+    scenario = fs.new_scenario(None, "checkout", project / "functions" / "checkout.php", context=CONTEXT)
+    scenario["doubles"] = {"importer": {"billing:tax": {"returns": None}}, "services": {"mailer": {"send": {"returns": None}}}}
+    fs.save_scenario(project, "intended", scenario)
+    app = Divide(project, [project / "functions" / "checkout.php"])
+    async with app.run_test(size=(120, 34)) as pilot:
+        dialog = await open_dialog(app, pilot, project)
+        choose(dialog, "intended")
+        await pilot.pause(0.2)
+        assert dialog.placeholders(json.loads(dialog.doubles_input.data)) == []
+        assert "answering null" not in str(dialog.status.render())
 
 
 @needs_xdebug

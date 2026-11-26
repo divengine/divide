@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: divide VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/divengine/divide/issues\n"
-"POT-Creation-Date: 2026-11-24 23:47+0000\n"
+"POT-Creation-Date: 2026-11-26 11:26+0000\n"
 "PO-Revision-Date: 2026-11-16 02:29+0000\n"
 "Last-Translator: divide\n"
 "Language: es\n"
@@ -6594,3 +6594,25 @@ msgstr "~T~razar las líneas PHP (Xdebug)"
 
 msgid "~W~ithout the line trace"
 msgstr "~S~in la traza de líneas"
+
+msgid "Not run: give the doubles a value, or keep null when asked"
+msgstr "No se ejecutó: da un valor a los dobles, o mantén null"
+
+#, python-brace-format
+msgid ""
+"These doubles come from the scan and answer null: {names}. Null is a "
+"valid answer when you mean it. Keep null for them, or go back and give "
+"them a value?"
+msgstr ""
+"Estos dobles vienen del análisis y responden null: {names}. Null es una "
+"respuesta válida cuando es lo que quieres. ¿Mantener null para ellos, o "
+"volver y darles un valor?"
+
+msgid "~B~ack"
+msgstr "~V~olver"
+
+msgid "~K~eep null and save"
+msgstr "~M~antener null y guardar"
+
+msgid "~K~eep null and simulate"
+msgstr "~M~antener null y simular"
