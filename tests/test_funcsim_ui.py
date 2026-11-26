@@ -107,7 +107,10 @@ async def open_dialog(app, pilot, project: Path):
     await pilot.pause(0.3)
     app.run_command(CM_FUNCTION_SIMULATE)
     await wait(pilot, lambda: dialog_of(app, FunctionSimulationDialog), "no Mock Simulation dialog")
-    return dialog_of(app, FunctionSimulationDialog)
+    dialog = dialog_of(app, FunctionSimulationDialog)
+    # mounted: its about line (the file, the pin) is filled on mount, which a slow runner reaches later
+    await wait(pilot, lambda: str(dialog.about.render()).strip(), "the dialog's about line was never filled")
+    return dialog
 
 
 def choose(dialog, name: str) -> None:
