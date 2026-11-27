@@ -354,7 +354,13 @@ class FunctionsWindow(_TVWindow):
         self.app.theme_changed_signal.subscribe(self, lambda _theme: self.call_after_refresh(self.rebuild))
 
     def on_resize(self, event: events.Resize) -> None:
-        self.set_class(event.size.width < 100, "narrow")
+        self._narrow(event.size.width)
+
+    def _narrow(self, width: int) -> None:
+        """Under 100 columns the panel goes under the tree. Also from the window's own size when it is
+        filled (#33): its Resize may come after that, so the class never waits for it."""
+        if width:
+            self.set_class(width < 100, "narrow")
 
     # ------------------------------------------------------------ data
     @property
@@ -375,6 +381,7 @@ class FunctionsWindow(_TVWindow):
             if ff._key(path) not in keys:
                 flows.append(path)
         self.catalog = ff.catalog(self.project, self.functions(), flows=flows, texts=texts)
+        self._narrow(self.size.width)
         self.rebuild()
 
     def action_reload(self) -> None:
