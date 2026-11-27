@@ -592,6 +592,9 @@ class FunctionPlaybackWindow(_TVWindow):
         self.verdict = Static("", classes="fp-result")
         self.playback = ftr.LinePlayback(trace)
         self.view: ftr.LineView | None = None
+        # its text is the trace's, which is whole before the window opens: written now, so the window is
+        # never shown, nor read, empty before its first refresh (#33); the marks and the cursor follow on mount
+        self.paint_text()
 
     def compose_content(self) -> ComposeResult:
         with Horizontal(classes="fp-main"):
@@ -672,13 +675,18 @@ class FunctionPlaybackWindow(_TVWindow):
         if row is not None:
             self.code.move_cursor((row, 0))
             self.code.scroll_cursor_visible(center=True)
-        self.show_bar()
-        self.info.update(self.describe())
-        self.show_result()
+        self.paint_text()
         frame = self.frame
         if isinstance(frame, IndicatorFrame):
             frame.set_indicator(_('line {n}/{total}').format(n=self.playback.cursor + 1, total=len(self.playback))
                                 if len(self.playback) else _('no lines'))
+
+    def paint_text(self) -> None:
+        """The bar, the panel and the result, from the trace and the cursor alone."""
+        self.view = self.playback.view()
+        self.show_bar()
+        self.info.update(self.describe())
+        self.show_result()
 
     def pin_words(self) -> tuple[str, bool]:
         if not self.trace.pinned:
