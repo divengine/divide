@@ -1,5 +1,7 @@
 """The project window unfolds a file into its members (its outline), like Eclipse."""
 
+import time
+from collections import deque
 from pathlib import Path
 
 import pytest
@@ -27,12 +29,75 @@ async def settle(pilot, n=10):
         await pilot.pause()
 
 
-async def until(pilot, check, tries=100):
+async def until(pilot, check, tries=100, state=None):
     for _ in range(tries):
         if check():
             return
         await pilot.pause(0.05)
-    raise AssertionError("timed out")
+    raise AssertionError("timed out" + (f"\n{state()}" if state is not None else ""))
+
+
+def trace_tree(monkeypatch) -> deque:
+    """The project tree's work, in the order it ran (the last 80 steps, timed): its reloads, the folders
+    read again after a change outside divide, every fill of a file's members (and whether that node was
+    still in the tree) and the expansions handled. Shown only when the test fails (#16)."""
+    from divide.ui.windows import ProjectTree
+    log: deque = deque(maxlen=80)
+    start = time.monotonic()
+
+    def note(what: str) -> None:
+        log.append(f"{time.monotonic() - start:7.3f} {what}")
+
+    def name(node) -> str:
+        data = node.data
+        if isinstance(data, MemberEntry) and data.member is not None:
+            return f"{data.path.name}:{data.member.text}"
+        return data.path.name if data is not None else "?"
+
+    reload_, refresh, fill, expanded = (ProjectTree._reload, ProjectTree._refresh_folders, ProjectTree.fill_members,
+                                        ProjectTree._on_tree_node_expanded)
+
+    async def _reload(self, node):
+        note(f"reload {name(node)} start (lock {'held' if self.lock.is_locked else 'free'})")
+        try:
+            await reload_(self, node)
+        finally:
+            note(f"reload {name(node)} end")
+
+    async def _refresh_folders(self, folders):
+        note(f"watch: read again {sorted(Path(f).name for f in folders)}")
+        await refresh(self, folders)
+        note("watch: done")
+
+    def fill_members(self, node):
+        note(f"fill {name(node)} (in the tree: {self._tree_nodes.get(node.id) is node}, "
+             f"{len(node.children)} children before)")
+        fill(self, node)
+
+    async def on_expanded(self, event):
+        note(f"expanded {name(event.node)} (in the tree: {self._tree_nodes.get(event.node.id) is event.node})")
+        await expanded(self, event)
+
+    monkeypatch.setattr(ProjectTree, "_reload", _reload)
+    monkeypatch.setattr(ProjectTree, "_refresh_folders", _refresh_folders)
+    monkeypatch.setattr(ProjectTree, "fill_members", fill_members)
+    monkeypatch.setattr(ProjectTree, "_on_tree_node_expanded", on_expanded)
+    return log
+
+
+def tree_state(tree, log) -> str:
+    """Every row with its kind, whether it is unfolded and whether its node is in the tree, then the log."""
+    rows = []
+    stack = [(c, 0) for c in reversed(tree.root.children)]
+    while stack:
+        node, depth = stack.pop()
+        data = node.data
+        text = data.member.text if isinstance(data, MemberEntry) else node.label.plain
+        rows.append(f"{'  ' * depth}{text} [{type(data).__name__}, {'open' if node.is_expanded else 'folded'}, "
+                    f"{len(node.children)} children{'' if tree._tree_nodes.get(node.id) is node else ', NOT IN THE TREE'}]")
+        stack.extend((c, depth + 1) for c in reversed(node.children))
+    return ("the tree now:\n  " + "\n  ".join(rows) + f"\nlock {'held' if tree.lock.is_locked else 'free'}"
+            + "\nwhat it did:\n  " + "\n  ".join(log))
 
 
 def labels(node, depth=0) -> list[str]:
@@ -55,8 +120,9 @@ def project(tmp_path: Path) -> Path:
     return root.resolve()
 
 
-async def test_a_file_unfolds_into_its_members_and_enter_goes_there(tmp_path):
+async def test_a_file_unfolds_into_its_members_and_enter_goes_there(tmp_path, monkeypatch):
     root = project(tmp_path)
+    log = trace_tree(monkeypatch)
     app = Divide(root, [])
     async with app.run_test(size=(100, 30)) as pilot:
         await settle(pilot)
@@ -99,7 +165,8 @@ async def test_a_file_unfolds_into_its_members_and_enter_goes_there(tmp_path):
         await tree.reload()
         await settle(pilot)
         # unfolded again once read (the save's own notice may reload the folder meanwhile, later on macOS)
-        await until(pilot, lambda: "    + add(string $name): self" in labels(tree.root), tries=200)
+        await until(pilot, lambda: "    + add(string $name): self" in labels(tree.root), tries=200,
+                    state=lambda: tree_state(tree, log))
         cart = next(c for c in tree.root.children if c.label.plain == "cart.php")
 
         # Del on a member deletes nothing
